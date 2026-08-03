@@ -1,0 +1,1 @@
+import type{MetadataRoute}from"next";export default function manifest():MetadataRoute.Manifest{return{name:"Dukenim — MEREY",short_name:"MEREY",description:"Магазин MEREY",start_url:"/s/demo-shop",display:"standalone",background_color:"#ffffff",theme_color:"#0E5C4A",icons:[{src:"/icon.svg",sizes:"any",type:"image/svg+xml"}]}}

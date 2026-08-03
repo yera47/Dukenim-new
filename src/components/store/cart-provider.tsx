@@ -1,0 +1,5 @@
+"use client";
+import {createContext,useContext,useMemo,useState} from "react";import type{Product}from"@/lib/demo-data";
+type Item={product:Product;variantId:string;qty:number};type Cart={items:Item[];add:(p:Product,v:string)=>void;remove:(id:string)=>void;clear:()=>void;count:number;total:number};const Context=createContext<Cart|null>(null);
+export function CartProvider({children}:{children:React.ReactNode}){const[items,setItems]=useState<Item[]>([]);const value=useMemo<Cart>(()=>({items,add:(product,variantId)=>setItems(x=>{const f=x.find(i=>i.variantId===variantId);return f?x.map(i=>i.variantId===variantId?{...i,qty:i.qty+1}:i):[...x,{product,variantId,qty:1}]}),remove:id=>setItems(x=>x.filter(i=>i.variantId!==id)),clear:()=>setItems([]),count:items.reduce((a,b)=>a+b.qty,0),total:items.reduce((a,b)=>a+b.product.price*b.qty,0)}),[items]);return <Context.Provider value={value}>{children}</Context.Provider>}
+export function useCart(){const v=useContext(Context);if(!v)throw new Error("CartProvider missing");return v}

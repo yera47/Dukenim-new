@@ -1,0 +1,3 @@
+import{CartProvider}from"@/components/store/cart-provider";import{StoreHeader}from"@/components/store/store-header";
+import{InstallPrompt}from"@/components/store/install-prompt";
+export default async function StoreLayout({children,params}:{children:React.ReactNode;params:Promise<{slug:string}>}){const{slug}=await params;return <CartProvider><StoreHeader slug={slug}/>{children}<InstallPrompt/><footer className="mt-24 border-t border-black/10 py-12"><div className="container flex flex-wrap justify-between gap-6"><div><b className="text-xl tracking-[.2em]">MEREY</b><p className="muted mt-2 text-sm">Кызылорда · © 2026</p></div><div className="text-sm"><p>Instagram</p><p className="mt-2">WhatsApp: +7 777 000 00 00</p></div></div></footer></CartProvider>}
