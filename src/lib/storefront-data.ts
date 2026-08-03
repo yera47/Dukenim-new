@@ -1,0 +1,3 @@
+import{createClient}from"@/lib/supabase/server";import{getStorefrontProduct,getStorefrontProducts}from"@/lib/queries/storefront";import{products as demoProducts,type Product}from"@/lib/demo-data";
+export async function loadProducts(tenantId:string):Promise<Product[]>{if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)return demoProducts;const client=await createClient();return getStorefrontProducts(client,tenantId)}
+export async function loadProduct(tenantId:string,productId:string):Promise<Product|null>{if(!process.env.NEXT_PUBLIC_SUPABASE_URL||!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)return demoProducts.find(p=>p.id===productId)??null;const client=await createClient();return getStorefrontProduct(client,tenantId,productId)}

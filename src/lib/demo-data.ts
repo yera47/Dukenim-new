@@ -1,4 +1,4 @@
-export type Product = { id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; variants:{id:string;size:string|null;color:string;stock:number}[] };
+export type Product = { id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; images?:string[]; variants:{id:string;size:string|null;color:string;stock:number}[] };
 export const tenant={name:"MEREY",slug:"demo-shop",tagline:"Вещи, которые остаются с вами",city:"Кызылорда",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#0E5C4A",plan:"standard" as const};
 export const products:Product[]=[
  {id:"p1",title:"Жакет Essential",description:"Структурный жакет свободного кроя из плотной костюмной ткани.",price:42900,oldPrice:49900,category:"Новинки",featured:true,variants:[{id:"v1",size:"S",color:"Графит",stock:4},{id:"v2",size:"M",color:"Графит",stock:2},{id:"v3",size:"L",color:"Графит",stock:0}]},
