@@ -1,13 +1,23 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
-
-// Replace with generated types after linking Supabase:
-// npx supabase gen types typescript --linked > src/types/database.ts
-export interface Database {
-  public: {
-    Tables: Record<string, { Row: Record<string, Json>; Insert: Record<string, Json | undefined>; Update: Record<string, Json | undefined>; Relationships: [] }>;
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
-    Enums: Record<string, never>;
-    CompositeTypes: Record<string, never>;
-  };
-}
+export type Json=string|number|boolean|null|{[key:string]:Json|undefined}|Json[];
+type Table<Row>={Row:Row;Insert:Partial<Row>;Update:Partial<Row>;Relationships:[]};
+type TenantRow={id:string;slug:string;custom_domain:string|null;name:string;tagline:string|null;logo_url:string|null;accent_color:string;city:string|null;phone:string|null;whatsapp:string|null;instagram:string|null;plan:"basic"|"standard"|"pro";status:"active"|"paused"|"trial";created_at:string};
+type ProductRow={id:string;tenant_id:string;category_id:string|null;title:string;description:string|null;price:number;old_price:number|null;images:string[];is_active:boolean;is_featured:boolean;sort_order:number;created_at:string};
+type VariantRow={id:string;product_id:string;tenant_id:string;size:string|null;color:string|null;sku:string|null;stock_qty:number;is_active:boolean};
+type OrderRow={id:string;tenant_id:string;customer_id:string|null;order_number:number|null;source:"online"|"offline";status:"new"|"confirmed"|"assembled"|"delivering"|"done"|"cancelled";delivery_method:string|null;delivery_address:string|null;delivery_cost:number;subtotal:number;total:number;payment_method:string|null;payment_status:"pending"|"paid"|"failed"|"refunded";staff_id:string|null;created_at:string};
+export type Database={public:{Tables:{
+tenants:Table<TenantRow>;
+profiles:Table<{user_id:string;role:"customer"|"owner"|"superadmin";created_at:string}>;
+tenant_users:Table<{id:string;tenant_id:string;user_id:string;role:"owner"|"admin"|"staff"}>;
+categories:Table<{id:string;tenant_id:string;name:string;slug:string;sort_order:number;is_active:boolean}>;
+products:Table<ProductRow>;
+product_variants:Table<VariantRow>;
+customers:Table<{id:string;tenant_id:string;phone:string;name:string|null;first_order:string|null;last_order:string|null;orders_count:number;total_spent:number}>;
+orders:Table<OrderRow>;
+order_items:Table<{id:string;order_id:string;tenant_id:string;variant_id:string|null;title_snapshot:string;price_snapshot:number;qty:number}>;
+stock_movements:Table<{id:string;tenant_id:string;variant_id:string;delta:number;reason:"sale"|"return"|"restock"|"correction"|"writeoff";order_id:string|null;staff_id:string|null;created_at:string}>;
+delivery_zones:Table<{id:string;tenant_id:string;name:string;cost:number;free_from:number|null;eta_text:string|null;is_active:boolean}>;
+tenant_settings:Table<{tenant_id:string;delivery_enabled:boolean;pickup_enabled:boolean;payment_online:boolean;payment_provider:string|null;merchant_id:string|null;merchant_key:string|null;min_order:number}>;
+subscriptions:Table<{id:string;tenant_id:string;plan:"basic"|"standard"|"pro";status:"active"|"canceled";started_at:string;current_period_end:string|null}>;
+change_requests:Table<{id:string;tenant_id:string;text:string;status:"new"|"in_progress"|"done";created_at:string}>;
+messages:Table<{id:string;tenant_id:string;from_role:"owner"|"superadmin";text:string;created_at:string}>;
+};Views:{[_ in never]:never};Functions:{is_superadmin:{Args:Record<PropertyKey,never>;Returns:boolean};user_tenant_ids:{Args:Record<PropertyKey,never>;Returns:string[]}};Enums:{profile_role:"customer"|"owner"|"superadmin";tenant_role:"owner"|"admin"|"staff";plan_type:"basic"|"standard"|"pro";tenant_status:"active"|"paused"|"trial";order_source:"online"|"offline";order_status:"new"|"confirmed"|"assembled"|"delivering"|"done"|"cancelled";payment_status:"pending"|"paid"|"failed"|"refunded";stock_reason:"sale"|"return"|"restock"|"correction"|"writeoff"};CompositeTypes:{[_ in never]:never}}};
