@@ -1,1 +1,1 @@
-import{AdminShell}from"@/components/admin/admin-shell";export default function Layout({children}:{children:React.ReactNode}){return <AdminShell>{children}</AdminShell>}
+import{AdminShell}from"@/components/admin/admin-shell";import{requireRole}from"@/lib/auth";export default async function Layout({children}:{children:React.ReactNode}){await requireRole(["owner","superadmin"]);return <AdminShell>{children}</AdminShell>}
