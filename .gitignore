@@ -1,0 +1,8 @@
+/node_modules
+/.next
+/.npm-cache
+/.pnpm-store
+/.env*
+!.env.example
+/coverage
+*.log
