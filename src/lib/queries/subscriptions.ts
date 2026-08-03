@@ -1,0 +1,3 @@
+import type{SupabaseClient}from"@supabase/supabase-js";import type{Database}from"@/types/database";import type{Plan}from"@/lib/plans";
+export async function activateSubscription(client:SupabaseClient<Database>,tenantId:string,plan:Plan){const end=new Date();end.setMonth(end.getMonth()+1);return client.rpc("activate_subscription",{p_tenant_id:tenantId,p_plan:plan,p_period_end:end.toISOString()})}
+export async function getActiveSubscription(client:SupabaseClient<Database>,tenantId:string){return client.from("subscriptions").select("*").eq("tenant_id",tenantId).eq("status","active").order("started_at",{ascending:false}).limit(1).maybeSingle()}
