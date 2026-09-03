@@ -48,6 +48,7 @@ export function describeAzureFoundryResponse(payload: unknown) {
   const firstChoice = choices?.[0] && typeof choices[0] === "object" ? choices[0] as Record<string, unknown> : null;
   const message = firstChoice?.message && typeof firstChoice.message === "object" ? firstChoice.message as Record<string, unknown> : null;
   const content = message?.content;
+  const reasoningContent = message?.reasoning_content;
   const firstPart = Array.isArray(content) && content[0] && typeof content[0] === "object" ? content[0] as Record<string, unknown> : null;
   const usage = root?.usage && typeof root.usage === "object" ? root.usage as Record<string, unknown> : null;
 
@@ -58,8 +59,13 @@ export function describeAzureFoundryResponse(payload: unknown) {
     firstChoiceKeys: firstChoice ? Object.keys(firstChoice).sort() : [],
     messageKeys: message ? Object.keys(message).sort() : [],
     contentType: Array.isArray(content) ? "array" : typeof content,
+    contentLength: typeof content === "string" ? content.length : null,
+    reasoningContentType: typeof reasoningContent,
+    reasoningContentLength: typeof reasoningContent === "string" ? reasoningContent.length : null,
+    finishReason: typeof firstChoice?.finish_reason === "string" ? firstChoice.finish_reason : null,
     contentParts: Array.isArray(content) ? content.length : null,
     firstPartKeys: firstPart ? Object.keys(firstPart).sort() : [],
     usageKeys: usage ? Object.keys(usage).sort() : [],
+    usageValueTypes: usage ? Object.fromEntries(Object.entries(usage).map(([key, value]) => [key, typeof value])) : {},
   };
 }

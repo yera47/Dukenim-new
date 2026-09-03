@@ -27,7 +27,7 @@ describe("parseAzureFoundryResponse", () => {
       choices: [{ message: { content: "private response", reasoning_content: "private reasoning" } }],
       usage: { total_tokens: 7 },
     });
-    expect(description).toMatchObject({ contentType: "string", messageKeys: ["content", "reasoning_content"] });
+    expect(description).toMatchObject({ contentType: "string", contentLength: 16, messageKeys: ["content", "reasoning_content"] });
     expect(JSON.stringify(description)).not.toContain("private");
   });
 });

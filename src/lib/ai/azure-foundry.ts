@@ -62,7 +62,7 @@ export async function createAzureFoundryChatCompletion(messages: AzureFoundryMes
       model: config.deployment,
       messages,
       temperature: 0.2,
-      max_tokens: 600,
+      max_tokens: 1_600,
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(45_000),
