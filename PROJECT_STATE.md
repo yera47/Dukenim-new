@@ -15,7 +15,7 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Stock changes must go through `stock_movements`.
 - Public storefront route: `/s/[slug]`.
 - Polar checkout, signed subscription webhook and customer portal are implemented and production-configured with four KZT products. The integration fails closed when configuration is incomplete and applies signed deliveries atomically. Polar payout/business onboarding still requires the owner's legal and bank details, so successful settlement must not be claimed yet.
-- Google sign-in is configured in Google Cloud and Supabase Auth for `dukenim.kz`, with the app audience in production and the Vercel feature flag enabled. Production E2E exposed an invalid Google client secret in Supabase; rotate and replace it before calling Google sign-in live. Apple remains disabled until Apple Developer membership and credentials are available.
+- Google sign-in is live: the Google Cloud OAuth client has a fresh persistent secret stored only in Supabase Auth, the audience is in production, and a full production E2E completed from `/login` through Google consent to both `/root` and `/admin`. The previous Google secret remains enabled temporarily and should be revoked only with an explicit owner confirmation. Apple remains disabled until Apple Developer membership and credentials are available.
 - Trial entitlement is enforced server-side: every trial has an explicit seven-day end, paid-tier actions use the effective `next_plan` during that window, public storefront RLS and server lookup reject expired trials, and AI API access uses the same entitlement decision.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
 - CRM integration requests are prepared in source only. Azure Foundry now has a server-only OpenAI-compatible client, a superadmin-protected test endpoint, and `/root/ai`; production model access remains disabled until a newly rotated key and the endpoint/deployment variables are stored in Vercel secrets.
@@ -45,7 +45,7 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - The threshold and wordmark dot are Aged Gold in the current approved system.
 - Font: Manrope.
 - Older green-accent `dukenim-approved-*`, `dukenim-logo-combo*`, and older PDFs are historical, not the current source of truth.
-- The application UI still contains older green/orange and Nomad palette values; brand implementation is not yet fully unified.
+- The shared application tokens and owner navigation now use the approved Black Jade/Aged Gold/Pale Stone system. Some feature-specific legacy CSS remains and should be removed incrementally when those screens are touched.
 
 ## Marketing system
 
@@ -59,4 +59,4 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 
 Catalog lifecycle is now represented on each tenant as `not_started`, `building`, or `ready`; the corresponding migration is applied to the connected production Supabase project. The dashboard routes owners to explicit catalog creation before product creation.
 
-The workspace contains uncommitted product, brand, and marketing changes. Do not assume they are deployed merely because files exist locally. Verify Git, Vercel, Supabase, and domain state before making release claims.
+The latest production release before the current navigation pass is `9708bed`. Google OAuth and authenticated owner/root access were verified on production after that release. The complete responsive admin navigation pass is locally verified and still requires commit, push, Vercel readiness, and authenticated production visual smoke before it is considered deployed.
