@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, Check, ChevronRight, ShieldCheck } from "lucide-react";
@@ -5,6 +6,15 @@ import { HeroArt } from "@/components/marketing/hero-art";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { LaunchSection } from "@/components/marketing/launch-section";
 import { MarketingFaq } from "@/components/marketing/marketing-faq";
+import { StructuredData } from "@/components/marketing/structured-data";
+import { siteTitle, siteDescription, openGraph } from "@/lib/site";
+
+export const metadata: Metadata = {
+  title: { absolute: siteTitle },
+  description: siteDescription,
+  alternates: { canonical: "/" },
+  openGraph: openGraph({ url: "/" }),
+};
 
 const systemRows = [
   ["Витрина", "Покупатель выбирает товар в магазине, который выглядит как ваш бренд."],
@@ -14,6 +24,7 @@ const systemRows = [
 
 export default function Home() {
   return <main className="nomad-site dukenim-story">
+    <StructuredData />
     <header className="nomad-header fixed inset-x-0 top-0 z-50 border-b border-[#2e3633] bg-[color:rgb(7_11_11/.94)] text-[#f2ede0] backdrop-blur-xl"><div className="container flex h-20 items-center justify-between gap-4">
       <Link href="/" aria-label="Dukenim — на главную" className="flex shrink-0 items-center"><Image src="/brand/dukenim-flat-master-reversed.png" alt="Dukenim" width={310} height={104} priority className="h-auto w-[154px]" /></Link>
       <nav className="desktop-only flex items-center gap-7 text-sm font-bold text-[#dbd6c9]"><a href="#products">Продукт</a><a href="#system">Как работает</a><a href="#pricing">Тарифы</a><a href="#security">Безопасность</a></nav>

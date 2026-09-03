@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft, Check } from "lucide-react";
 import { LoginForm } from "./login-form";
+
+export const metadata: Metadata = {
+  title: "Вход в кабинет",
+  description: "Войдите в кабинет владельца магазина Dukenim или в центр управления платформой.",
+  alternates: { canonical: "/login" },
+  robots: { index: false, follow: true },
+};
 
 export default function LoginPage() {
   return <main className="grid min-h-screen bg-[var(--surface)] lg:grid-cols-[1.06fr_.94fr]">

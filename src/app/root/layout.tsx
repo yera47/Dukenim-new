@@ -1,1 +1,1 @@
-import{requireRole}from"@/lib/auth";export default async function RootLayout({children}:{children:React.ReactNode}){await requireRole(["superadmin"]);return children}
+import type{Metadata}from"next";import{requireRole}from"@/lib/auth";export const metadata:Metadata={robots:{index:false,follow:false}};export default async function RootLayout({children}:{children:React.ReactNode}){await requireRole(["superadmin"]);return children}

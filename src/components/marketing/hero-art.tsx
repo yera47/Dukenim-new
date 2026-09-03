@@ -1,12 +1,26 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const states = ["Каталог", "Товар", "Корзина", "Заказ"];
+
+const HERO_FILM_POSTER = "/design/dukenim-hero-monolith-base-v1.png";
+const REDUCED_MOTION_QUERY = "(prefers-reduced-motion: reduce)";
+
+function subscribeToReducedMotion(onChange: () => void) {
+  const query = window.matchMedia(REDUCED_MOTION_QUERY);
+  query.addEventListener("change", onChange);
+  return () => query.removeEventListener("change", onChange);
+}
+
+function getReducedMotion() {
+  return window.matchMedia(REDUCED_MOTION_QUERY).matches;
+}
 
 export function HeroArt() {
   const ref = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
+  const reducedMotion = useSyncExternalStore(subscribeToReducedMotion, getReducedMotion, () => true);
 
   useEffect(() => {
     const hero = ref.current?.closest<HTMLElement>(".landing-hero");
@@ -44,7 +58,12 @@ export function HeroArt() {
   const filmUrl = process.env.NEXT_PUBLIC_HIGGSFIELD_HERO_VIDEO;
   return (
     <div ref={ref} onPointerMove={move} onPointerLeave={() => { ref.current?.style.setProperty("--mx", "0px"); ref.current?.style.setProperty("--my", "0px"); }} className={`hero-art-sculpture hero-step-${step}`} aria-hidden="true">
-      {filmUrl ? <video className="hero-higgsfield-film" autoPlay muted loop playsInline preload="metadata" poster="/design/dukenim-hero-monolith-base-v1.png"><source src={filmUrl} type="video/mp4"/></video> : null}
+      {filmUrl
+        ? reducedMotion
+          // Reduced motion: keep the atmospheric layer as a still frame, no autoplaying video.
+          ? <img className="hero-higgsfield-film" src={HERO_FILM_POSTER} alt="" />
+          : <video className="hero-higgsfield-film" autoPlay muted loop playsInline preload="metadata" poster={HERO_FILM_POSTER}><source src={filmUrl} type="video/mp4" /></video>
+        : null}
       <div className="story-architecture" aria-hidden="true">
         <i className="story-monolith story-monolith-a"/><i className="story-monolith story-monolith-b"/><i className="story-monolith story-monolith-c"/><i className="story-monolith story-monolith-d"/><i className="story-monolith story-monolith-e"/>
         <i className="story-cable story-cable-a"/><i className="story-cable story-cable-b"/><i className="story-cable story-cable-c"/>

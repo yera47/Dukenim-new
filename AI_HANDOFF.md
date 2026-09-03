@@ -1,8 +1,21 @@
 # Dukenim — AI handoff
 
-Updated: 2026-09-02 by Codex
+Updated: 2026-09-03 by Codex
 
 ## Latest outcome
+
+Public launch metadata and resilient system-pages pass — 2026-09-03:
+
+- Restored the current `main` branch from `yera47/Dukenim-new`, installed the existing dependency set, and used the authenticated Claude Code session in an isolated clone for a bounded implementation pass. Codex reviewed and transferred the resulting source changes into this workspace.
+- Added one canonical site identity module, route-aware metadata, dynamic 1200×630 Open Graph/Twitter artwork with bundled Cyrillic Manrope fonts, platform favicon/PWA icons and manifest, `robots.txt`, a public-only sitemap, and truthful Organization/WebSite/SoftwareApplication JSON-LD based on the confirmed tariffs. Login and protected `/admin` and `/root` areas are explicitly `noindex`; login is excluded from the sitemap; legal pages have route-specific canonicals.
+- Added branded 404, route error, and global error surfaces; corrected the remaining MEREY labels in the platform manifest and cookie notice; and removed the obsolete green platform icon.
+- Added `marketing/HIGGSFIELD-HERO-SPEC.md`, a production-ready eight-second hero-film brief with prompts, storyboard, safe areas, exports, size limits, and review criteria. No Higgsfield asset was generated because paid generation was unavailable; no credits were spent. The landing still works without the optional film, and reduced-motion visitors receive the static poster instead of autoplay.
+- External account audit: Vercel production is Ready from GitHub commit `7ea2e2d` and serves `dukenim.kz`; the Supabase project is paused; Azure Foundry exists but is not wired into Vercel; Polar has no products; Cloudflare has no managed domain; the two GitLab mirrors are empty; Backblaze is not authenticated; Figma contains the current Dukenim design-system file; and the Instagram account is logged in but still empty.
+- Nothing from this pass has been committed, pushed, deployed, purchased, or applied to production. Supabase migrations remain unapplied. The local dependency audit still reports three high-severity findings that require a scoped non-breaking review.
+
+Next recommended action: complete local type/build/smoke and visual checks, then obtain explicit approval before committing, pushing, or deploying. Resume and inspect Supabase separately before applying the pending CRM and AI Studio migrations; only then connect production secrets and providers.
+
+## Previous latest outcome
 
 P0/P1 implementation pass — 2026-09-02:
 

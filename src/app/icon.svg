@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dukenim">
+  <rect width="512" height="512" rx="116" fill="#071B17"/>
+  <path fill="#F4F0E8" fill-rule="evenodd" d="M138 116h150c81 0 142 61 142 140s-61 140-142 140H138V116Zm74 66v148h72c46 0 78-31 78-74s-32-74-78-74h-72Z"/>
+  <path fill="#B08A50" d="M212 330h150l-26-40H238l-26 40Z"/>
+</svg>
