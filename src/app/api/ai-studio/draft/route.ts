@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth";
+import { getSessionContext } from "@/lib/auth";
 import { tenantHasPlan } from "@/lib/plan-access";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { aiStudioRequestSchema, createAiStudioDraft, getAiStudioStatus } from "@/lib/ai/studio";
@@ -7,7 +7,9 @@ import { AzureFoundryError } from "@/lib/ai/azure-foundry";
 
 export async function POST(request: Request) {
   try {
-    const context = await requireRole(["owner", "superadmin"]);
+    const context = await getSessionContext();
+    if (!context?.user) return NextResponse.json({ error: "Войдите в аккаунт." }, { status: 401 });
+    if (!["owner", "superadmin"].includes(context.role)) return NextResponse.json({ error: "Недостаточно прав." }, { status: 403 });
     if (!context.tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту." }, { status: 400 });
     if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "AI Studio доступен на тарифе «Бренд»." }, { status: 403 });
     const input = aiStudioRequestSchema.safeParse(await request.json().catch(() => null));
