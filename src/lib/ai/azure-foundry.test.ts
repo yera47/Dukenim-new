@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseAzureFoundryResponse } from "./azure-response";
+import { describeAzureFoundryResponse, parseAzureFoundryResponse } from "./azure-response";
 
 describe("parseAzureFoundryResponse", () => {
   it("accepts the standard chat completion shape", () => {
@@ -20,5 +20,14 @@ describe("parseAzureFoundryResponse", () => {
       content: "Ответ Kimi",
       usage: { prompt_tokens: undefined, completion_tokens: undefined, total_tokens: undefined },
     });
+  });
+
+  it("describes only response structure for safe diagnostics", () => {
+    const description = describeAzureFoundryResponse({
+      choices: [{ message: { content: "private response", reasoning_content: "private reasoning" } }],
+      usage: { total_tokens: 7 },
+    });
+    expect(description).toMatchObject({ contentType: "string", messageKeys: ["content", "reasoning_content"] });
+    expect(JSON.stringify(description)).not.toContain("private");
   });
 });

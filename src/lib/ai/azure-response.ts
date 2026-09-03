@@ -41,3 +41,25 @@ export function parseAzureFoundryResponse(payload: unknown) {
 
   return { content, usage };
 }
+
+export function describeAzureFoundryResponse(payload: unknown) {
+  const root = payload && typeof payload === "object" ? payload as Record<string, unknown> : null;
+  const choices = root && Array.isArray(root.choices) ? root.choices : null;
+  const firstChoice = choices?.[0] && typeof choices[0] === "object" ? choices[0] as Record<string, unknown> : null;
+  const message = firstChoice?.message && typeof firstChoice.message === "object" ? firstChoice.message as Record<string, unknown> : null;
+  const content = message?.content;
+  const firstPart = Array.isArray(content) && content[0] && typeof content[0] === "object" ? content[0] as Record<string, unknown> : null;
+  const usage = root?.usage && typeof root.usage === "object" ? root.usage as Record<string, unknown> : null;
+
+  return {
+    rootType: Array.isArray(payload) ? "array" : typeof payload,
+    rootKeys: root ? Object.keys(root).sort() : [],
+    choicesLength: choices?.length ?? null,
+    firstChoiceKeys: firstChoice ? Object.keys(firstChoice).sort() : [],
+    messageKeys: message ? Object.keys(message).sort() : [],
+    contentType: Array.isArray(content) ? "array" : typeof content,
+    contentParts: Array.isArray(content) ? content.length : null,
+    firstPartKeys: firstPart ? Object.keys(firstPart).sort() : [],
+    usageKeys: usage ? Object.keys(usage).sort() : [],
+  };
+}

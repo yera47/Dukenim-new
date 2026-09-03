@@ -1,6 +1,6 @@
 import "server-only";
 import { z } from "zod";
-import { parseAzureFoundryResponse } from "./azure-response";
+import { describeAzureFoundryResponse, parseAzureFoundryResponse } from "./azure-response";
 
 const configSchema = z.object({
   endpoint: z.string().url(),
@@ -72,9 +72,11 @@ export async function createAzureFoundryChatCompletion(messages: AzureFoundryMes
     throw new AzureFoundryError(`Azure AI вернул ошибку ${response.status}.`, response.status);
   }
 
+  const payload: unknown = await response.json();
   try {
-    return parseAzureFoundryResponse(await response.json());
+    return parseAzureFoundryResponse(payload);
   } catch {
+    console.error("[azure-ai] Unexpected response shape", describeAzureFoundryResponse(payload));
     throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.");
   }
 }
