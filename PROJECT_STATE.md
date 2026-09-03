@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Product
 
@@ -14,7 +14,9 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Prices are integer KZT values.
 - Stock changes must go through `stock_movements`.
 - Public storefront route: `/s/[slug]`.
-- Real payment provider is not connected; never imply successful real payment processing. Tariff selections may be captured as requests only until company requisites and a provider are connected.
+- Real payment provider is not connected; never imply successful real payment processing. Tariff selections may be captured as requests only until company requisites and a provider are connected. A real, env-gated Polar checkout/webhook/customer-portal integration exists in source (branch `claude/dukenim-production-hardening-lyql7q`) and falls back to the honest request-only flow whenever `POLAR_ACCESS_TOKEN`/product IDs/webhook secret are absent — it has not been exercised against a live Polar account.
+- Google/Apple sign-in uses real Supabase OAuth (not a mock); the sign-in buttons now render only for the provider whose `NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED`/`NEXT_PUBLIC_APPLE_OAUTH_ENABLED` flag is `true`, so no dead button is shown until Supabase Auth has real redirect credentials configured for that provider.
+- Trial entitlement is enforced server-side consistently (not just via the `/admin/*` middleware redirect): during an active 7-day trial the tenant is entitled at its picked `next_plan`; once trial ends without a paid subscription, entitlement collapses to the stored `plan` for every caller of `tenantHasPlan`, including API routes outside the admin middleware matcher.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
 - CRM integration requests are prepared in source only. Azure Foundry now has a server-only OpenAI-compatible client, a superadmin-protected test endpoint, and `/root/ai`; production model access remains disabled until a newly rotated key and the endpoint/deployment variables are stored in Vercel secrets.
 
@@ -32,6 +34,8 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Demonstration data exists; confirmed customer testimonials and commercial performance metrics do not.
 - Legal templates (offer, privacy and cookies) exist but require real company details and legal review before commercial launch.
 - Production has RLS-protected tables for promotion codes, tariff checkout requests, promotion redemptions, and root audit events. The public guest checkout RPC is still legacy-exposed until the server-side replacement is deployed and smoke-tested; its lockdown migration must not be applied earlier.
+- `/admin/ai-studio` and `/admin/requests` (tenant-scoped `change_requests`/`messages`, already RLS-protected, with a root queue at `/root`) now cross-link each other as an explicit "ИИ-помощник / написать в поддержку" choice; no new ticket schema was needed.
+- Audit finding (2026-09-03): `supabase/migrations/202608140001`, `202608140002`, and `202608170001_restore_commerce_operations.sql` reference Postgres types (`public.tenant_plan`, `public.delivery_method`, `public.payment_method`) that no migration in this repository ever creates — only `public.plan_type` exists from the initial schema. Production must have these created ad-hoc outside migration history; replaying `supabase/migrations/` on a fresh database would fail until this is reconciled. An additive, idempotent fix migration exists in source but is not applied; confirm the real production values before trusting it further.
 
 ## Brand source of truth
 
