@@ -7,14 +7,18 @@ import { createClient } from "@/lib/supabase/client";
 
 type SocialAuthButtonsProps = { next: string; mode: "login" | "register" };
 
-const providers: Array<{ provider: Provider; label: string }> = [
-  { provider: "google", label: "Google" },
-  { provider: "apple", label: "Apple" },
+const allProviders: Array<{ provider: Provider; label: string; enabled: boolean }> = [
+  { provider: "google", label: "Google", enabled: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true" },
+  { provider: "apple", label: "Apple", enabled: process.env.NEXT_PUBLIC_APPLE_OAUTH_ENABLED === "true" },
 ];
+const providers = allProviders.filter((item) => item.enabled);
+export const hasSocialAuthProviders = providers.length > 0;
 
 export function SocialAuthButtons({ next, mode }: SocialAuthButtonsProps) {
   const [pending, setPending] = useState<Provider | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+
+  if (providers.length === 0) return null;
 
   async function signIn(provider: Provider) {
     setMessage(null);

@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-02
+Last reviewed: 2026-09-03
 
 ## Product
 
@@ -14,7 +14,9 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Prices are integer KZT values.
 - Stock changes must go through `stock_movements`.
 - Public storefront route: `/s/[slug]`.
-- Real payment provider is not connected; never imply successful real payment processing. Tariff selections may be captured as requests only until company requisites and a provider are connected.
+- Polar checkout, signed subscription webhook and customer portal are implemented and production-configured with four KZT products. The integration fails closed when configuration is incomplete and applies signed deliveries atomically. Polar payout/business onboarding still requires the owner's legal and bank details, so successful settlement must not be claimed yet.
+- Google sign-in is configured in Google Cloud and Supabase Auth for `dukenim.kz`, with the app audience in production and the Vercel feature flag enabled. Apple remains disabled until Apple Developer membership and credentials are available.
+- Trial entitlement is enforced server-side: every trial has an explicit seven-day end, paid-tier actions use the effective `next_plan` during that window, public storefront RLS and server lookup reject expired trials, and AI API access uses the same entitlement decision.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
 - CRM integration requests are prepared in source only. Azure Foundry now has a server-only OpenAI-compatible client, a superadmin-protected test endpoint, and `/root/ai`; production model access remains disabled until a newly rotated key and the endpoint/deployment variables are stored in Vercel secrets.
 
@@ -32,6 +34,8 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Demonstration data exists; confirmed customer testimonials and commercial performance metrics do not.
 - Legal templates (offer, privacy and cookies) exist but require real company details and legal review before commercial launch.
 - Production has RLS-protected tables for promotion codes, tariff checkout requests, promotion redemptions, and root audit events. The public guest checkout RPC is still legacy-exposed until the server-side replacement is deployed and smoke-tested; its lockdown migration must not be applied earlier.
+- `/admin/ai-studio` and `/admin/requests` (tenant-scoped `change_requests`/`messages`, already RLS-protected, with a root queue at `/root`) now cross-link each other as an explicit "ИИ-помощник / написать в поддержку" choice; no new ticket schema was needed.
+- Audit finding (2026-09-03): the historical local migration chain cannot be replayed cleanly because older 12-digit files reference types whose creation is not represented. Production was verified directly and contains the authoritative enum values. No ineffective late "fix" migration is retained; baseline/reconcile the old history before any blanket database push.
 
 ## Brand source of truth
 
