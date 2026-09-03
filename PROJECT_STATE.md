@@ -18,7 +18,7 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Google sign-in is live: the Google Cloud OAuth client has a fresh persistent secret stored only in Supabase Auth, the audience is in production, and a full production E2E completed from `/login` through Google consent to both `/root` and `/admin`. The previous Google secret remains enabled temporarily and should be revoked only with an explicit owner confirmation. Apple remains disabled until Apple Developer membership and credentials are available.
 - Trial entitlement is enforced server-side: every trial has an explicit seven-day end, paid-tier actions use the effective `next_plan` during that window, public storefront RLS and server lookup reject expired trials, and AI API access uses the same entitlement decision.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
-- CRM integration requests are prepared in source only. Azure Foundry now has a server-only OpenAI-compatible client, a superadmin-protected test endpoint, and `/root/ai`; production model access remains disabled until a newly rotated key and the endpoint/deployment variables are stored in Vercel secrets.
+- CRM integration requests are prepared in source only. Azure Foundry is live in production through the server-only OpenAI-compatible client and the `Kimi-K2.6` deployment. The rotated key and endpoint/deployment configuration are stored only in Vercel Production; `/root/ai` and the tenant `/admin/ai-studio` generation flow were both verified end to end on 2026-09-03.
 
 ## Resilience infrastructure
 
@@ -59,4 +59,4 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 
 Catalog lifecycle is now represented on each tenant as `not_started`, `building`, or `ready`; the corresponding migration is applied to the connected production Supabase project. The dashboard routes owners to explicit catalog creation before product creation.
 
-Production release `dd1a63b` is Ready on Vercel and aliased to `dukenim.kz`/`www.dukenim.kz`. Google OAuth and authenticated owner/root access are verified. The responsive admin navigation is also verified in production at desktop and 390×844 mobile viewports, including the complete «Ещё» menu and its AI Studio route.
+Production release `c0b7753` is Ready on Vercel and aliased to `dukenim.kz`/`www.dukenim.kz`. Google OAuth and authenticated owner/root access are verified. The responsive admin navigation is verified at desktop and 390×844 mobile viewports, including the complete «Ещё» menu. Azure `Kimi-K2.6` passes the superadmin diagnostic and produces a schema-valid tenant AI Studio draft in production.
