@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Dukenim</title>
+  <desc id="desc">Белый знак D в форме двери и золотая дорога на фоне цвета чёрного нефрита.</desc>
+  <rect width="1080" height="1080" fill="#071B17"/>
+  <path fill="#FFFDF8" fill-rule="evenodd" d="M350 210H503C675 210 774 304 774 450S675 690 503 690H350V210Zm97 80V606H523C572 606 599 573 599 524V391C599 351 582 329 545 318L447 290Z"/>
+  <path fill="#B08A50" d="M443 606H523L571 690H396L443 606Z"/>
+  <path fill="#B08A50" d="M389 724H578L641 812H326L389 724Z"/>
+  <path fill="#B08A50" d="M312 852H655L747 970H220L312 852Z"/>
+</svg>

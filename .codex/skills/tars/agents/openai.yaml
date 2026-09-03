@@ -1,0 +1,4 @@
+interface:
+  display_name: "Tars"
+  short_description: "Переиспользует компоненты Dukenim перед новой разработкой."
+  default_prompt: "Используй Tars, чтобы реализовать задачу в Dukenim через переиспользование существующих компонентов."

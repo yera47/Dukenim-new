@@ -1,0 +1,59 @@
+{
+  "runId": "dukenim-design-system-20260820",
+  "fileKey": "ZZlwpD1qf4Ic7o86Cw3K4C",
+  "phase": "landing-rebuild",
+  "step": "hero-directions-and-ai-studio-built-awaiting-owner-selection",
+  "entities": {
+    "pages": {
+      "cover": "0:1",
+      "gettingStarted": "10:2",
+      "foundations": "10:3",
+      "components": "10:5",
+      "screens": "10:6",
+      "referenceBoard": "10:7",
+      "landingRebuild": "25:4"
+    },
+    "collections": {
+      "primitives": "VariableCollectionId:3:2",
+      "colorOperate": "VariableCollectionId:5:4",
+      "colorPersuade": "VariableCollectionId:5:5"
+      ,"spacing": "VariableCollectionId:6:2"
+      ,"radius": "VariableCollectionId:6:3"
+    },
+    "variables": {
+      "jade/950": "VariableID:3:3",
+      "gold/500": "VariableID:3:4",
+      "stone/50": "VariableID:3:5",
+      "graphite/900": "VariableID:3:6",
+      "sand/200": "VariableID:3:7",
+      "white": "VariableID:5:2",
+      "jade/700": "VariableID:5:3"
+    },
+    "styles": {
+      "displayHero": "S:d56b56b6d4b1425f547472ce73ce79c49531d315,",
+      "headingH1": "S:b5f1ce6cf6c60c3463087cff7dd735b978f1faaa,",
+      "headingH2": "S:48bcc7068cf7c47a5ce17f305637e37eb147ba52,",
+      "effectSoft": "S:482ef37d6bc339499560e6e164934b2253cbb894,",
+      "effectPressed": "S:59eba0ee0c0411b58fd604683e234f05c754f6e4,"
+    },
+    "components": {
+      "logoReversed": "26:8",
+      "buttonPrimary": "26:9",
+      "buttonSecondary": "26:12"
+    },
+    "screens": {
+      "landingHeroArchivedV0": "25:5",
+      "landingHeroMonolithicAtelier": "43:14",
+      "landingHeroObsidianGallery": "45:14",
+      "landingHeroKazakhFuture": "45:101",
+      "landingHeroMonolithicAtelierMobile": "49:14",
+      "landingHeroMonolithicAtelierTimeline": "43:14",
+      "landingAiStudioControlledDesign": "55:14"
+    },
+    "assets": {
+      "basaltMonolithRender": "public/design/dukenim-hero-monolith-base-v1.png",
+      "figmaUploadedMonolithAsset": "38:2"
+    }
+  },
+  "completedSteps": ["P0.a", "P0.b", "P0.c", "P0.d", "P1.a", "P1.b", "P1.c", "P1.d", "P1.e", "P2.a", "P2.b", "P2.c", "P2.d", "P3.a", "P3.b", "P3.c"]
+}

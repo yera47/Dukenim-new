@@ -1,2 +1,14 @@
-import{ImagePlus}from"lucide-react";import{createProductAction}from"@/app/admin/actions";
-export default function NewProduct(){return <><div><p className="muted text-sm">Каталог / Новый товар</p><h1 className="mt-1 text-3xl font-semibold">Добавить товар</h1><p className="muted mt-2">Заполните основное и нажмите «Сохранить» — обычно это занимает меньше минуты.</p></div><form action={createProductAction} className="mt-7 grid gap-6 xl:grid-cols-[1fr_360px]"><section className="card space-y-6 p-6"><label className="block text-sm font-bold">Название<input name="title" required minLength={2} className="input mt-2" placeholder="Например, Жакет Essential"/></label><label className="block text-sm font-bold">Описание<textarea name="description" className="input mt-2 min-h-32 py-3" placeholder="Материал, посадка, особенности"/></label><div className="grid gap-4 md:grid-cols-2"><label className="text-sm font-bold">Цена, ₸<input name="price" required min={0} className="input mt-2" type="number"/></label><label className="text-sm font-bold">Старая цена, ₸<input name="oldPrice" min={0} className="input mt-2" type="number"/></label></div><div><b>Размеры и начальные остатки</b><p className="muted mt-1 text-sm">Без размеров оставьте первый размер пустым.</p><div className="mt-3 space-y-2">{[0,1,2].map(i=><div key={i} className="grid grid-cols-4 gap-2"><input name="size" className="input" placeholder="Размер"/><input name="color" className="input" placeholder="Цвет"/><input name="sku" className="input" placeholder="SKU"/><input name="stock" min={0} defaultValue={0} className="input" type="number" aria-label="Остаток"/></div>)}</div></div></section><aside className="space-y-5"><div className="card p-6"><b>Фотографии</b><label className="mt-4 grid aspect-square w-full cursor-pointer place-items-center rounded-[var(--r-card)] border-2 border-dashed border-slate-300 text-slate-500"><span className="text-center"><ImagePlus className="mx-auto"/><small className="mt-2 block">До 4 фото, каждое до 5 МБ</small></span><input name="images" accept="image/*" multiple type="file" className="hidden"/></label></div><div className="card p-6"><label className="flex justify-between gap-4"><span><b>Показывать на витрине</b><small className="muted block">Сразу после сохранения</small></span><input name="isActive" type="checkbox" defaultChecked/></label><button className="btn btn-primary mt-6 w-full">Сохранить товар</button></div></aside></form></>}
+import { ProductForm } from "@/components/admin/product-form";
+import { redirect } from "next/navigation";
+import { requireRole } from "@/lib/auth";
+import { getTenant } from "@/lib/queries/owner";
+import { createClient } from "@/lib/supabase/server";
+
+export default async function NewProduct() {
+  const { tenantId } = await requireRole(["owner", "superadmin"]);
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    const { data: tenant } = await getTenant(await createClient(), tenantId!);
+    if (!tenant || tenant.catalog_status === "not_started") redirect("/admin/catalog/create");
+  }
+  return <><div><p className="muted text-sm">Каталог / Новый товар</p><h1 className="mt-1 text-3xl font-semibold">Добавить товар</h1><p className="muted mt-2">Заполните основное и нажмите «Сохранить» — обычно это занимает меньше минуты.</p></div><ProductForm /></>;
+}

@@ -1,15 +1,99 @@
 "use client";
+
 import { useState } from "react";
-import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store, SwatchBook } from "lucide-react";
-import { planFeatures, planName, planPrice, type Plan } from "@/lib/plans";
-const plans: Plan[] = ["basic", "standard", "pro"];
+import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store } from "lucide-react";
+import { planAnnualPrice, planAnnualSaving, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
+
+type Billing = "month" | "year";
+
+function money(value: number) {
+  return new Intl.NumberFormat("ru-KZ").format(value);
+}
+
 export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan } }) {
-  const [step, setStep] = useState(1), [plan, setPlan] = useState<Plan>(tenant.next_plan), [pending, setPending] = useState(false), [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState(1);
+  const [plan, setPlan] = useState<Plan>(tenant.next_plan === "pro" ? "standard" : tenant.next_plan);
+  const [billing, setBilling] = useState<Billing>("month");
+  const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const trialDate = new Date(tenant.trial_ends_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "long" });
-  async function finish() { setPending(true); setError(null); const response = await fetch("/api/onboarding", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan }) }); const data = await response.json() as { error?: string }; if (!response.ok) { setError(data.error ?? "Не удалось сохранить выбор."); setPending(false); return; } location.href = "/admin"; }
-  return <main className="min-h-screen bg-[var(--surface)]"><header className="border-b border-[var(--line)]"><div className="container flex h-20 items-center"><span className="tumar-mark"/><b className="ml-3 text-xl">Dukenim</b><div className="ml-auto text-right"><span className="data-label">БЕСПЛАТНО ДО {trialDate.toUpperCase()}</span><div className="mt-1 flex gap-1">{[1,2,3].map(x => <span key={x} className={`h-1.5 w-10 ${x <= step ? "bg-[var(--accent)]" : "bg-[var(--line)]"}`}/>)}</div></div></div></header><div className="container max-w-6xl py-12">
-    {step === 1 && <section className="grid gap-10 lg:grid-cols-[.8fr_1.2fr] lg:items-center"><div><div className="data-label">ШАГ 1 ИЗ 3</div><h1 className="mt-3 text-5xl font-extrabold leading-[1.02]">Основа вашего магазина</h1><p className="mt-5 text-lg leading-8 text-[var(--ink-60)]">Пространство <b>{tenant.name}</b> уже создано. За несколько шагов подготовим его к первой продаже.</p><button onClick={() => setStep(2)} className="btn btn-primary mt-8">Начать настройку <ArrowRight size={18}/></button></div><div className="panel-dark rounded-[16px] p-7"><div className="data-label text-white/42">ВАШ АДРЕС</div><strong className="mt-3 block text-3xl">dukenim.kz/s/{tenant.slug}</strong><div className="mt-8 grid gap-3 sm:grid-cols-3">{[[SwatchBook,"Оформление"],[PackagePlus,"Первый товар"],[Store,"Публикация"]].map(([I,t]) => { const Icon = I as typeof Store; return <div key={String(t)} className="border-t border-white/12 pt-4"><Icon className="text-[var(--accent-bright)]"/><b className="mt-4 block">{String(t)}</b></div>; })}</div></div></section>}
-    {step === 2 && <section><div className="max-w-2xl"><div className="data-label">ШАГ 2 ИЗ 3</div><h1 className="mt-3 text-5xl font-extrabold">Выберите будущий тариф</h1><p className="mt-4 text-lg leading-8 text-[var(--ink-60)]">Сегодня оплаты нет. До {trialDate} доступны все возможности. Тариф можно изменить до оплаты.</p></div><div className="mt-9 grid gap-5 md:grid-cols-3">{plans.map(p => <button key={p} onClick={() => setPlan(p)} className={`relative rounded-[14px] p-6 text-left transition ${plan === p ? "panel-dark shadow-[var(--shadow-lg)]" : "bg-[var(--bg)]"}`}><span className={`data-label ${plan === p ? "text-[var(--accent-bright)]" : ""}`}>{planName[p]}</span><b className="tabular mt-5 block text-3xl">{planPrice[p].toLocaleString("ru-KZ")} ₸</b><small className={plan === p ? "text-white/52" : "text-[var(--ink-60)]"}>в месяц после trial</small><div className="mt-6 space-y-3">{planFeatures[p].map(f => <p key={f} className="flex gap-2 text-sm"><Check size={17} className={plan === p ? "text-[var(--accent-bright)]" : "text-[var(--success)]"}/>{f}</p>)}</div></button>)}</div><div className="mt-8 flex justify-between"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18}/> Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18}/></button></div></section>}
-    {step === 3 && <section className="mx-auto max-w-3xl"><div className="data-label">ШАГ 3 ИЗ 3</div><h1 className="mt-3 text-5xl font-extrabold">Всё готово к работе</h1><p className="mt-4 text-lg leading-8 text-[var(--ink-60)]">До {trialDate} открыт полный доступ. Затем вы сможете оформить тариф <b>{planName[plan]}</b>; автоматического списания не будет.</p><div className="mt-8 border-y border-[var(--line)]">{["Добавьте первый товар и фотографию", "Настройте цвета, контакты и доставку", "Поделитесь адресом магазина с покупателями"].map((x,i) => <div key={x} className="grid grid-cols-[44px_1fr_auto] items-center border-b border-[var(--line)] py-5 last:border-0"><span className="tabular text-[var(--ink-40)]">0{i+1}</span><b>{x}</b><Check className="text-[var(--success)]"/></div>)}</div>{error && <p className="mt-5 text-[var(--danger)]">{error}</p>}<div className="mt-8 flex justify-between"><button onClick={() => setStep(2)} className="btn btn-secondary"><ChevronLeft size={18}/> Назад</button><button disabled={pending} onClick={finish} className="btn btn-cta">{pending ? <><LoaderCircle className="animate-spin"/> Сохраняем…</> : <>Открыть кабинет <ArrowRight size={18}/></>}</button></div></section>}
-  </div></main>;
+
+  async function finish() {
+    setPending(true);
+    setError(null);
+    const response = await fetch("/api/onboarding", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ plan }),
+    });
+    const data = await response.json() as { error?: string };
+    if (!response.ok) {
+      setError(data.error ?? "Не удалось сохранить выбор тарифа.");
+      setPending(false);
+      return;
+    }
+    location.href = "/admin";
+  }
+
+  return <main className="onboarding-builder min-h-screen bg-[var(--surface)]">
+    <header className="border-b border-[var(--line)] bg-[var(--surface)]">
+      <div className="container flex h-20 items-center gap-4">
+        <span className="tumar-mark"><Store size={18} /></span><b className="text-xl">Dukenim</b>
+        <div className="ml-auto hidden text-right sm:block">
+          <span className="data-label">БЕСПЛАТНО ДО {trialDate.toUpperCase()}</span>
+          <div className="mt-1 flex gap-1">{[1, 2, 3].map((item) => <span key={item} className={`h-1.5 w-10 ${item <= step ? "bg-[var(--accent)]" : "bg-[var(--line)]"}`} />)}</div>
+        </div>
+      </div>
+    </header>
+    <div className="container max-w-6xl py-10 md:py-14">
+      {step === 1 && <section className="builder-step onboarding-welcome">
+        <p className="data-label">ШАГ 1 ИЗ 3</p>
+        <h1>Магазин создан. Теперь выберите, как он будет работать.</h1>
+        <p className="onboarding-lead">Первые 7 дней — полный доступ без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
+        <div className="onboarding-address"><span>Адрес вашей витрины</span><b>dukenim.kz/s/{tenant.slug}</b></div>
+        <div className="onboarding-benefits">
+          {[
+            "Каталог, заказы и CRM синхронизированы",
+            "Любое изменение можно сделать позже",
+            "Деньги не спишутся автоматически",
+          ].map((item) => <p key={item}><Check size={18} />{item}</p>)}
+        </div>
+        <div className="builder-actions"><span>Следующий шаг — понятный выбор тарифа.</span><button onClick={() => setStep(2)} className="btn btn-primary">Посмотреть тарифы <ArrowRight size={18} /></button></div>
+      </section>}
+
+      {step === 2 && <section className="builder-step">
+        <div className="builder-intro">
+          <p>ШАГ 2 ИЗ 3</p><h1>Выберите возможности магазина.</h1>
+          <span>Сначала — прозрачная цена и набор функций. Визуальный стиль, шаблон и палитру вы настроите в кабинете, когда появится первый товар.</span>
+        </div>
+        <div className="builder-billing mt-7"><button type="button" className={billing === "month" ? "is-active" : ""} onClick={() => setBilling("month")}>Помесячно</button><button type="button" className={billing === "year" ? "is-active" : ""} onClick={() => setBilling("year")}>За год</button></div>
+        <div className="onboarding-plan-grid">
+          {publicPlans.map((item) => {
+            const annual = billing === "year";
+            const amount = annual ? planAnnualPrice[item] : planPrice[item];
+            return <button type="button" key={item} onClick={() => setPlan(item)} className={`onboarding-plan-card ${plan === item ? "is-selected" : ""}`}>
+              <div className="flex items-start justify-between gap-4"><div><p className="data-label">ТАРИФ</p><h2>{planName[item]}</h2></div>{plan === item && <span className="onboarding-selected"><Check size={16} /> Выбран</span>}</div>
+              <strong>{money(amount)} ₸<small>{annual ? "за год" : "в месяц"}</small></strong>
+              {annual && <em>Экономия {money(planAnnualSaving[item])} ₸</em>}
+              <ul>{planFeatures[item].map((feature) => <li key={feature}><Check size={16} />{feature}</li>)}</ul>
+            </button>;
+          })}
+        </div>
+        <p className="onboarding-note">Тариф начнёт действовать после пробного периода. В первые 7 дней доступен весь функционал.</p>
+        <div className="builder-actions"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
+      </section>}
+
+      {step === 3 && <section className="builder-step onboarding-finish">
+        <p className="data-label">ШАГ 3 ИЗ 3</p><h1>Начнём с первого товара.</h1>
+        <p className="onboarding-lead">После входа кабинет покажет короткий маршрут запуска. Сначала добавьте товар и фото; затем откроются настройка витрины, акции и аналитика.</p>
+        <div className="onboarding-steps">
+          <div><span>01</span><PackagePlus size={23} /><b>Первый товар</b><p>Название, цена, остаток и фотографии.</p></div>
+          <div><span>02</span><Store size={23} /><b>Витрина</b><p>Шаблон и палитра после появления каталога.</p></div>
+          <div><span>03</span><Check size={23} /><b>Публикация</b><p>Проверьте каталог и поделитесь ссылкой.</p></div>
+        </div>
+        {error && <p role="alert" className="mt-5 text-[var(--danger)]">{error}</p>}
+        <div className="builder-actions"><button onClick={() => setStep(2)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button disabled={pending} onClick={finish} className="btn btn-cta">{pending ? <><LoaderCircle className="animate-spin" />Сохраняем…</> : <>Открыть кабинет <ArrowRight size={18} /></>}</button></div>
+      </section>}
+    </div>
+  </main>;
 }

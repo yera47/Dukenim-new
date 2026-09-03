@@ -1,0 +1,22 @@
+name: Marketing trend scan
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Trigger protected Dukenim trend collector
+        env:
+          MARKETING_CRON_URL: ${{ secrets.MARKETING_CRON_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          test -n "$MARKETING_CRON_URL"
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --retry 2 --max-time 90 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$MARKETING_CRON_URL"

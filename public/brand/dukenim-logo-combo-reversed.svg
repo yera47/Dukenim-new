@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 144" role="img" aria-labelledby="title desc">
+  <title id="title">Dukenim</title>
+  <desc id="desc">Светлая версия логотипа Dukenim для тёмного фона.</desc>
+  <g transform="translate(8 8)">
+    <path fill="#FFFDF8" d="M8 8h42c39 0 66 24 66 56s-27 56-66 56H8V8Zm30 28v58l30-9V45l-30-9Z"/>
+    <path fill="#2F8F68" d="M35 93h36l11 27H25l10-27Z"/>
+    <path fill="#06271F" fill-opacity=".35" d="m38 93 30-8v8H38Z"/>
+  </g>
+  <text x="150" y="99" fill="#FFFDF8" font-family="Manrope, Arial, sans-serif" font-size="76" font-weight="800" letter-spacing="-3">dukenim</text>
+  <circle cx="527" cy="93" r="7" fill="#2F8F68"/>
+</svg>

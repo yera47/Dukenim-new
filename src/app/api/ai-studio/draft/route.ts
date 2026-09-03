@@ -1,0 +1,34 @@
+import { NextResponse } from "next/server";
+import { requireRole } from "@/lib/auth";
+import { tenantHasPlan } from "@/lib/plan-access";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { aiStudioRequestSchema, createAiStudioDraft, getAiStudioStatus } from "@/lib/ai/studio";
+import { AzureFoundryError } from "@/lib/ai/azure-foundry";
+
+export async function POST(request: Request) {
+  try {
+    const context = await requireRole(["owner", "superadmin"]);
+    if (!context.tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту." }, { status: 400 });
+    if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "AI Studio доступен на тарифе «Бренд»." }, { status: 403 });
+    const input = aiStudioRequestSchema.safeParse(await request.json().catch(() => null));
+    if (!input.success) return NextResponse.json({ error: "Опишите задачу от 8 до 800 символов и выберите разрешённый сценарий." }, { status: 400 });
+    if (!getAiStudioStatus().configured) return NextResponse.json({ error: "AI Studio готов в интерфейсе, но серверная Azure-настройка ещё не завершена." }, { status: 503 });
+    const admin = createAdminClient();
+    const since = new Date(Date.now() - 86_400_000).toISOString();
+    const [{ count: tenantCount }, { count: platformCount }] = await Promise.all([
+      admin.from("ai_studio_generations").select("id", { count: "exact", head: true }).eq("tenant_id", context.tenantId).gte("created_at", since),
+      admin.from("ai_studio_generations").select("id", { count: "exact", head: true }).gte("created_at", since),
+    ]);
+    const tenantLimit = Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS ?? 5);
+    const platformLimit = Number(process.env.AZURE_AI_MAX_PLATFORM_DAILY_REQUESTS ?? 250);
+    if ((tenantCount ?? 0) >= tenantLimit) return NextResponse.json({ error: "Дневной лимит AI Studio для магазина исчерпан. Попробуйте завтра." }, { status: 429 });
+    if ((platformCount ?? 0) >= platformLimit) return NextResponse.json({ error: "AI Studio временно занят. Попробуйте позднее." }, { status: 429 });
+    const result = await createAiStudioDraft(input.data.intent, input.data.brief);
+    const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output: result.draft, model: getAiStudioStatus().deployment, usage: result.usage ?? {} });
+    if (saved.error) return NextResponse.json({ error: "Черновик создан, но не удалось сохранить журнал. Настройте миграцию AI Studio." }, { status: 500 });
+    return NextResponse.json({ draft: result.draft });
+  } catch (error) {
+    const status = error instanceof AzureFoundryError && error.status && error.status < 500 ? error.status : 502;
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось создать черновик AI Studio." }, { status });
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "runId": "dukenim-pricing-crm-20260902",
+  "phase": "phase3-complete",
+  "step": "pricing-plan-card/validated",
+  "fileKey": "ZZlwpD1qf4Ic7o86Cw3K4C",
+  "pageId": "25:4",
+  "entities": {
+    "frames": {
+      "aiStudio": "55:14"
+    },
+    "components": {
+      "pricingPlanCardVariants": ["68:2", "68:9", "68:16", "68:23"],
+      "pricingPlanCard": "69:2"
+    },
+    "collections": {
+      "primitives": "VariableCollectionId:3:2",
+      "operate": "VariableCollectionId:5:4",
+      "persuade": "VariableCollectionId:5:5",
+      "spacing": "VariableCollectionId:6:2",
+      "radius": "VariableCollectionId:6:3"
+    },
+    "variables": {
+      "jade950": "VariableID:3:3",
+      "gold500": "VariableID:3:4",
+      "stone50": "VariableID:3:5",
+      "graphite900": "VariableID:3:6",
+      "sand200": "VariableID:3:7"
+    }
+  },
+  "completedSteps": ["P0.a", "P0.b", "P0.c", "P0.d", "P0.e", "P0.f", "P3.a", "P3.b", "P3.c", "P3.d", "P3.e", "P3.f", "P3.g", "P3.h"],
+  "pendingValidations": []
+}

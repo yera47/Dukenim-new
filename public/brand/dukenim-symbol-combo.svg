@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144" role="img" aria-label="Dukenim">
+  <g transform="translate(8 8)">
+    <path fill="#101713" d="M8 8h42c39 0 66 24 66 56s-27 56-66 56H8V8Zm30 28v58l30-9V45l-30-9Z"/>
+    <path fill="#2F8F68" d="M35 93h36l11 27H25l10-27Z"/>
+    <path fill="#101713" fill-opacity=".16" d="m38 93 30-8v8H38Z"/>
+  </g>
+</svg>

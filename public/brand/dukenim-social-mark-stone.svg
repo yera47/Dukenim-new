@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-labelledby="title desc">
+  <title id="title">Dukenim</title>
+  <desc id="desc">Знак Dukenim цвета чёрного нефрита с золотым порогом на светлом каменном фоне.</desc>
+  <rect width="1080" height="1080" fill="#F4F0E8"/>
+  <path fill="#071B17" fill-rule="evenodd" d="M286 252H470C676 252 794 365 794 540S676 828 470 828H286V252Zm116 96V727H493C552 727 584 687 584 628V469C584 421 564 394 520 381L402 348Z"/>
+  <path fill="#B08A50" d="M397 727H493L550 828H340L397 727Z"/>
+</svg>

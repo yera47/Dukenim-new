@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="4096" height="4096" viewBox="0 0 4096 4096">
+  <rect width="4096" height="4096" fill="#071B17"/>
+
+  <!-- Approved D rebuilt as clean vector geometry. -->
+  <g transform="translate(1332.6 1270.55) scale(7.3)">
+    <path fill="#FFFDF8" fill-rule="evenodd" d="
+      M0 0H104
+      C155 0 196 40.5 196 91.5
+      V154.5
+      C196 187 170.5 213 140.5 213
+      H0Z
+      M55 72
+      L110.5 84.5
+      C120.8 86.9 126 94.6 126 105.5
+      V181H55Z"/>
+    <path fill="#B08A50" d="M55 181H126L150 213H29Z"/>
+  </g>
+
+  <!-- Road axis follows the centre of the approved threshold, not the canvas. -->
+  <g fill="#B08A50">
+    <path d="M1544.5 2900H2427.5L2466 2985H1506Z"/>
+    <path d="M1476 3095H2496L2551 3195H1421Z"/>
+    <path d="M1391 3305H2581L2646 3420H1326Z"/>
+  </g>
+</svg>
