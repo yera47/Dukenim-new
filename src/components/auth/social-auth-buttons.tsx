@@ -28,7 +28,8 @@ export function SocialAuthButtons({ next, mode }: SocialAuthButtonsProps) {
     }
     setPending(provider);
     try {
-      const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+      const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
+      const redirectTo = `${configuredOrigin || window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
       const { error } = await createClient().auth.signInWithOAuth({ provider, options: { redirectTo } });
       if (error) {
         setMessage("Этот способ входа пока не включён. Выберите email или обратитесь в поддержку.");
