@@ -59,4 +59,4 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 
 Catalog lifecycle is now represented on each tenant as `not_started`, `building`, or `ready`; the corresponding migration is applied to the connected production Supabase project. The dashboard routes owners to explicit catalog creation before product creation.
 
-The latest production release before the current navigation pass is `9708bed`. Google OAuth and authenticated owner/root access were verified on production after that release. The complete responsive admin navigation pass is locally verified and still requires commit, push, Vercel readiness, and authenticated production visual smoke before it is considered deployed.
+Production release `dd1a63b` is Ready on Vercel and aliased to `dukenim.kz`/`www.dukenim.kz`. Google OAuth and authenticated owner/root access are verified. The responsive admin navigation is also verified in production at desktop and 390×844 mobile viewports, including the complete «Ещё» menu and its AI Studio route.
