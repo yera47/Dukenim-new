@@ -303,6 +303,7 @@ section.bg-\[\#a24a34\] h2{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.02}
 .admin-sheet-actions{display:grid;gap:.5rem;margin-top:1rem;border-top:1px solid var(--line);padding-top:1rem}.admin-sheet-actions>a{display:flex;align-items:center;gap:.55rem;min-height:2.8rem;border-radius:.75rem;padding:.65rem .8rem;background:#071b17;color:#f4f0e8;font-size:.78rem;font-weight:850}.admin-sheet-actions>a:first-child svg{color:#d2ad70}
 .root-store-switch{position:fixed;z-index:50;right:1.25rem;bottom:1.25rem;display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgb(232 223 208/.22);border-radius:.8rem;padding:.75rem .9rem;background:#b08a50;color:#071b17;font-size:.8rem;font-weight:900;box-shadow:0 1rem 2.5rem rgb(0 0 0/.28)}
 @keyframes adminFade{from{opacity:0}to{opacity:1}}@keyframes adminSheet{from{opacity:0;transform:translateY(1.5rem) scale(.98)}to{opacity:1;transform:none}}
+@media(min-width:48rem){.admin-mobile-nav,.admin-sheet-layer{display:none}}
 @media(max-width:25rem){.admin-sheet nav{grid-template-columns:1fr}.admin-root-chip{display:none}}
 @media(prefers-reduced-motion:reduce){.admin-sheet-layer,.admin-sheet{animation:none}}
 
