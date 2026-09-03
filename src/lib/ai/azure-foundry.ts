@@ -1,21 +1,11 @@
 import "server-only";
 import { z } from "zod";
+import { parseAzureFoundryResponse } from "./azure-response";
 
 const configSchema = z.object({
   endpoint: z.string().url(),
   apiKey: z.string().min(20),
   deployment: z.string().min(1),
-});
-
-const completionSchema = z.object({
-  choices: z.array(z.object({
-    message: z.object({ content: z.string().nullable() }),
-  })).min(1),
-  usage: z.object({
-    prompt_tokens: z.number().int().nonnegative().optional(),
-    completion_tokens: z.number().int().nonnegative().optional(),
-    total_tokens: z.number().int().nonnegative().optional(),
-  }).optional(),
 });
 
 export type AzureFoundryMessage = {
@@ -82,10 +72,9 @@ export async function createAzureFoundryChatCompletion(messages: AzureFoundryMes
     throw new AzureFoundryError(`Azure AI вернул ошибку ${response.status}.`, response.status);
   }
 
-  const parsed = completionSchema.safeParse(await response.json());
-  if (!parsed.success) throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.");
-  const content = parsed.data.choices[0]?.message.content?.trim();
-  if (!content) throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.");
-
-  return { content, usage: parsed.data.usage };
+  try {
+    return parseAzureFoundryResponse(await response.json());
+  } catch {
+    throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.");
+  }
 }
