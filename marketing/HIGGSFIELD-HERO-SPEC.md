@@ -4,9 +4,10 @@ Last reviewed: 2026-09-03
 
 ## Status and boundaries
 
-- This is a **production brief**, not a generated asset. In the environment where it was
-  written there was no authorised Higgsfield access without buying credits, so no video was
-  generated and no money was spent.
+- Generated on 2026-09-03 in Higgsfield with Seedance 2.0 Mini using the approved prompt:
+  8 seconds, 16:9, 720p, 2,056,962 bytes. The accepted source is stored at
+  `public/design/dukenim-hero-atelier-loop-v1.mp4`. One generation consumed 20 of the 45
+  credits already present on the account; no credits or subscription were purchased.
 - The hero must remain fully usable **without** this film. `src/components/marketing/hero-art.tsx`
   keeps its built-in animated CRM / product / phone composition as the visual fallback, and the
   film is an atmospheric layer behind the real interface — never a replacement for it
@@ -142,9 +143,9 @@ owner approval of the exact cost.
 
 ## Integration in code
 
-- `src/components/marketing/hero-art.tsx` reads `NEXT_PUBLIC_HIGGSFIELD_HERO_VIDEO`. Set it to
-  the deployed `/…/dukenim-hero-atelier-loop-v1.mp4` URL **only after** the review checklist
-  passes. While it is blank, the built-in scene renders and nothing is missing.
+- `src/components/marketing/hero-art.tsx` uses the reviewed local
+  `/design/dukenim-hero-atelier-loop-v1.mp4` asset by default. `NEXT_PUBLIC_HIGGSFIELD_HERO_VIDEO`
+  may override it with a CDN URL later; the built-in animated scene remains layered above it.
 - The component now also checks `prefers-reduced-motion`: when the user asks for reduced motion,
   the `<video autoPlay loop>` is not rendered at all — only the still poster — so the film adds
   zero motion for those users. Keep this behaviour if the slot is refactored.
