@@ -259,6 +259,40 @@ Deliberately did **not** port over a parallel skills-based content-generation sy
 
 ## Current work in progress
 
+### Design/product logic clarification — 2026-09-04
+
+Owner confirmed that AI Studio is the primary work instrument for store owners, with explicit jobs and reviewable drafts. Human support must remain a separate support system, while every AI Studio conversation provides a direct contextual handoff link to a human. The design rebuild brief and decision log now contain the block-level logic; visual implementation has not started.
+
+Next: audit the current AI Studio/support routes and map the handoff states before changing shared UI or marketing sections.
+
+Audit result: `/admin/ai-studio` is already a dedicated owner route and links to `/admin/requests`; `/admin/requests` already has owner↔Dukenim messages and a request list. The AI API currently produces only the constrained text-draft format, while catalog-structure/banner work from Claude PR #2 is not on `main`. There is no contextual AI→support handoff parameter or conversation record yet. Keep the existing Brand entitlement and server-side guards unchanged during the design pass; treat “primary instrument” as information architecture and owner workflow, not an unapproved billing change.
+
+Implemented first workflow slice: onboarding now enters `/admin/ai-studio`; the AI Studio page reads catalog lifecycle state and shows a guided “создайте каталог” state with a locked illustration before generation is available. The existing plan guard remains explicit. Changed files: `src/app/onboarding/onboarding-flow.tsx`, `src/app/admin/ai-studio/page.tsx`, `src/app/admin/ai-studio/ai-studio-client.tsx`, `src/app/globals.css`. Check: `npx tsc --noEmit` passed. Remaining: business-vertical selection persistence, real catalog/banner generation, contextual support handoff, and PR #2 credit/webhook/onboarding integrity fixes.
+
+Second workflow slice: onboarding now captures a business vertical, sends it through `/api/onboarding`, and persists it through additive migration `20260904090000_business_vertical_onboarding.sql`; invalid profile-update failures are surfaced instead of silently reporting success. The first-run AI Studio gate remains active. Check: `npx tsc --noEmit` passed. The migration is not yet applied to production, and AI structure/banner generation still requires the separately reviewed PR work.
+
+Third workflow slice: added the controlled `catalog_structure` AI intent, validated JSON structure output, server routing and generation journaling, plus an owner preview list. Updated the onboarding and generation database types and migration constraint. Checks: `npx tsc --noEmit` and `npm test` (14/14) passed. Banner/image generation, credit reservation, Polar idempotency and contextual support handoff remain before release.
+
+Support entry now uses `/admin/requests?source=ai-studio` so the support screen can identify an AI-originated request without mixing support history into AI Studio. Full context persistence still remains to be implemented.
+
+Added `AI_STUDIO_STATE_MODEL.md` as the shared state and security contract. AI errors now expose a direct human-support handoff link. Check: `npx tsc --noEmit` passed. The PR #2 credit reservation/idempotency fixes still require an additive credits migration and server-route update before those features can be enabled.
+
+Security slice started: migration `20260904100000_ai_credit_reservation.sql` adds row-locked reserve/refund RPCs, and `/api/ai-studio/draft` reserves credits before model execution and refunds on model or journal failure. The route remains safely disabled until the migration is applied. Check: `npx tsc --noEmit` passed. Polar purchase idempotency still needs the corrected purchase-insert guard.
+
+Polar idempotency guard added to the same migration: `grant_purchased_ai_credits` now increments the tenant balance only when a new `polar_order_id` row is actually inserted, while duplicate webhook event IDs return false. No webhook route was enabled for credit purchases yet; product/event mapping must be wired and tested before production.
+
+Applied both new migrations to Supabase project `gklgbesydbottkqilihb` and verified the columns/table/functions exist. Added server-only Azure image-generation client and documented `AZURE_AI_FOUNDRY_IMAGE_DEPLOYMENT`; it remains disabled until a real image deployment is provisioned. Security advisors still show pre-existing public SECURITY DEFINER warnings and leaked-password protection disabled; no unrelated production auth function was changed. Checks: `npx tsc --noEmit`, `npm test` (14/14).
+
+Azure follow-up (2026-09-04): registered `Microsoft.CloudShell` successfully and ran the corrected deployment command for `dukenim-image` (capacity 1; removed the stray `jnrhj`). Azure returned `InvalidResourceProperties: Failed to validate policies for model MAI-Image-2.5/2026-06-02`; `az policy assignment list` at the resource-group scope returned no assignments. Foundry also reports no deployment and its custom-deployment form remains loading, so the model is currently blocked by an Azure-side policy/model validation issue. Do not set `AZURE_AI_FOUNDRY_IMAGE_DEPLOYMENT` or claim image generation is live until Azure accepts the deployment.
+
+FLUX follow-up (2026-09-04): enumerated the account catalog and confirmed `FLUX-1.1-pro`, `FLUX-1-Kontext-pro`, `FLUX.2-pro`, and `FLUX.2-flex` are listed. Attempted `FLUX-1.1-pro` version `1` on the existing `AIServices` account; Azure returned `DeploymentModelNotSupported` (model not supported for this account deployment). This account therefore cannot currently host the preferred FLUX deployment through the CLI; use a Hub/Foundry resource or an external provider such as fal.ai, keeping image generation disabled until credentials and a successful health check exist.
+
+fal.ai integration (2026-09-04): owner authenticated fal.ai under the primary `yersat47@gmail.com` account, completed onboarding and created a server API key. The secret is stored only as Vercel Production `FAL_KEY`; it is not present in shared docs. Added server-only fal image client, `/api/ai-studio/banner`, banner intent and preview, with 20-credit reservation/refund and generation journal. Applied Supabase migration `ai_banner_intent` to allow the new journal intent. No deployment was triggered; Vercel requires a new deployment for the environment variable and code to become live.
+
+Release verification: `npm run build` completed successfully (51 routes; only existing `next/image` advisories). Local `next start` smoke returned 200 for `/`, `/login`, `/register`, `/onboarding`, `/admin/ai-studio`, and `/admin/requests?source=ai-studio`; protected cron endpoint correctly returned 401 without its secret. Azure Image and real Polar credit-purchase webhook remain externally unconfigured; no false success is claimed.
+
+Created Polar product `AI Studio — 100 кредитов` (private, one-time, 9,900 ₸) in the verified Dukenim organization. Added `/api/polar/ai-credits` checkout route, `POLAR_AI_CREDITS_PRODUCT_ID` configuration, and signed `order.paid` webhook handling wired to the idempotent grant RPC. The product ID is documented only in `.env.example`; it still must be added as a server-only Vercel secret and the Polar webhook endpoint must be configured to deliver `order.paid`. Azure Foundry UI opened successfully but remained stuck on “Loading user settings”, so no image deployment was created; `AZURE_AI_FOUNDRY_IMAGE_DEPLOYMENT` remains unset. Checks: `npx tsc --noEmit`, `npm test` (14/14).
+
 - Product, brand, and marketing changes remain uncommitted in the shared workspace.
 - Marketing engine exists locally but production migration/deployment has not been confirmed.
 - `marketing/research/` is new and uncommitted — 2GIS counts are directional (city/category size ordering), not yet exclusion-corrected.

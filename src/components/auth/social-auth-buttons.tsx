@@ -8,7 +8,9 @@ import { createClient } from "@/lib/supabase/client";
 type SocialAuthButtonsProps = { next: string; mode: "login" | "register" };
 
 const allProviders: Array<{ provider: Provider; label: string; enabled: boolean }> = [
-  { provider: "google", label: "Google", enabled: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED === "true" },
+  // Google is the primary owner sign-in. Supabase remains the authority; if its
+  // provider is not configured yet, the button reports a safe actionable error.
+  { provider: "google", label: "Google", enabled: process.env.NEXT_PUBLIC_GOOGLE_OAUTH_ENABLED !== "false" },
   { provider: "apple", label: "Apple", enabled: process.env.NEXT_PUBLIC_APPLE_OAUTH_ENABLED === "true" },
 ];
 const providers = allProviders.filter((item) => item.enabled);
