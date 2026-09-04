@@ -4,6 +4,11 @@ Updated: 2026-09-04 by Codex
 
 ## Latest outcome
 
+Design rebuild handoff prepared — 2026-09-04:
+
+- Added `CLAUDE_DESIGN_REBUILD_BRIEF.md` as the shared, repository-grounded plan for the next design-code and product-ideology series. It preserves the current brandbook, routes, commerce logic, RLS, tariffs and external-integration boundaries while asking Claude Code to begin with a read-only audit and one recommended visual direction.
+- The brief intentionally does not add a new confirmed decision to `DECISIONS.md`: the owner requested a redesign, but the exact visual direction is to be proposed after the audit.
+
 Native mobile foundation, PWA and secure push-delivery source — 2026-09-04:
 
 - Released `b8a0e54` (PWA) and `537b1f2` (mobile foundation) to `main`; Vercel Production is Ready and `https://dukenim.kz/`, `https://dukenim.kz/sw.js` plus the web manifest return HTTP 200. The service worker caches only public static assets and leaves API, auth, admin and root paths network-only.
