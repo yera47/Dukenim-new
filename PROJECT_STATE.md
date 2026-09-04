@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-03
+Last reviewed: 2026-09-04
 
 ## Product
 
@@ -35,7 +35,7 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Legal templates (offer, privacy and cookies) exist but require real company details and legal review before commercial launch.
 - Production has RLS-protected tables for promotion codes, tariff checkout requests, promotion redemptions, and root audit events. The public guest checkout RPC is still legacy-exposed until the server-side replacement is deployed and smoke-tested; its lockdown migration must not be applied earlier.
 - `/admin/ai-studio` and `/admin/requests` (tenant-scoped `change_requests`/`messages`, already RLS-protected, with a root queue at `/root`) now cross-link each other as an explicit "ИИ-помощник / написать в поддержку" choice; no new ticket schema was needed.
-- Storefronts have PWA manifests and a narrow service-worker shell that caches public static assets only. Admin, root, auth and API routes remain network-only to avoid retaining tenant or session data in browser storage. A native iOS application, APNs push, barcode camera scanning and widgets remain separate workstreams.
+- Storefronts have PWA manifests and a narrow service-worker shell that caches public static assets only. Admin, root, auth and API routes remain network-only to avoid retaining tenant or session data in browser storage. A native Expo iOS/Android client now exists under `apps/mobile`: it uses the approved Dukenim identity, shares public Supabase Auth configuration, recognizes owner/superadmin profile roles, requests notification permission, and has camera barcode scanning. It is source-verified but is not yet an App Store/TestFlight release; APNs token delivery, a secure server notification outbox, iOS widgets and native social OAuth remain separate completion steps.
 - Audit finding (2026-09-03): the historical local migration chain cannot be replayed cleanly because older 12-digit files reference types whose creation is not represented. Production was verified directly and contains the authoritative enum values. No ineffective late "fix" migration is retained; baseline/reconcile the old history before any blanket database push.
 
 ## Brand source of truth
