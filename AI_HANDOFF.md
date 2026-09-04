@@ -4,19 +4,20 @@ Updated: 2026-09-04 by Codex
 
 ## Latest outcome
 
-Native mobile foundation and safe PWA release — 2026-09-04:
+Native mobile foundation, PWA and secure push-delivery source — 2026-09-04:
 
 - Released `b8a0e54` (PWA) and `537b1f2` (mobile foundation) to `main`; Vercel Production is Ready and `https://dukenim.kz/`, `https://dukenim.kz/sw.js` plus the web manifest return HTTP 200. The service worker caches only public static assets and leaves API, auth, admin and root paths network-only.
 - Created `apps/mobile`, an Expo SDK 57 iOS/Android client with the registered `kz.dukenim.app` identifiers and the approved Dukenim colours. It includes existing-account email/password sign-in through Supabase (using only public `EXPO_PUBLIC_*` config), owner/superadmin role recognition, a real camera barcode scanner, and notification-permission/channel setup. Root actions are intentionally not copied into an unaudited mobile client.
 - Added `20260904065723_mobile_push_notifications.sql`: a user-owned device-token table with individual `select`/`insert`/`update`/`delete` RLS policies and no tenant/customer data. The mobile client now creates an Expo token only on a physical device after login and permission, then upserts it through the RLS path. Do not apply this migration blindly: production's historical migration chain is known not to replay cleanly; reconcile/apply it directly only after schema verification.
+- Added `20260904071504_mobile_notification_outbox.sql` and `/api/cron/mobile-push`: a new order queues tenant-member delivery work, while a `CRON_SECRET`-protected server handler claims one row at a time, sends only user-owned enabled Expo device tokens, and retries bounded failures. The internal trigger function is `SECURITY DEFINER` only because a guest order is created inside an existing trusted database RPC; direct execution is revoked from all public roles. This source migration is also deliberately unapplied, and no Vercel schedule is declared until the production schema and plan constraints are verified.
 - In the owner-selected `Dukenim` Polar organization, created the first official product: `Dukenim Старт — ежемесячно`, recurring KZT 24 900. It is deliberately not connected to Vercel or checkout yet, so live billing remains wholly on the existing `dukenimkz` integration until the planned all-at-once migration is tested. Polar's Stripe payout form is open for the owner because it requires their e-mail and financial details.
 - The Polar-created Stripe Connect Express payout onboarding is persistently blocked by “Too many attempts” and an unavailable email field. Stripe Support's assistant confirmed that it cannot reset the session. An owner-authorized request was sent to Polar Support asking it to reset the onboarding or issue a new hosted link; await their reply before retrying the form.
-- Native verification passed: `pnpm --dir apps/mobile exec tsc --noEmit`, Expo public config resolution, and `expo export --platform web`. Web app verification also remains green: root `tsc`, 14 tests, and the full 50-route Next production build. Existing five `next/image` advisories remain.
+- Native verification passed: `pnpm --dir apps/mobile exec tsc --noEmit`, Expo public config resolution, and `expo export --platform web`. Web app verification also remains green: root `tsc`, 14 tests, and the full 51-route Next production build. Existing five `next/image` advisories remain.
 - Do not claim native push delivery, widgets, TestFlight/App Store publication, or mobile Google/Apple OAuth yet. They need an Expo/EAS project, device token table plus server-side outbox/provider delivery, an iOS widget target, native OAuth client registration, and live device checks. The Apple web Service ID/App ID are configured, but the one-time downloaded Apple private `.p8` key is not available to the workspace, so Apple login remains disabled until it is securely supplied to Supabase.
 
 Changed files: `apps/mobile/**`, `supabase/migrations/20260904065723_mobile_push_notifications.sql`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.json`, `PROJECT_STATE.md`, `AI_HANDOFF.md`.
 
-Next: complete the secure Apple private-key handoff and schema verification/apply for device tokens, then establish the server delivery outbox before enabling visible production claims.
+Next: inspect the production schema directly, apply the two mobile migrations in a reconciled manner, then configure an allowed Vercel schedule and complete a physical-device Expo receipt test. Complete the secure Apple private-key handoff and EAS project before TestFlight work.
 
 Production activation and reviewed Claude integration — 2026-09-03:
 
