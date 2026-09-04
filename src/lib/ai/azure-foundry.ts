@@ -46,6 +46,80 @@ export function getAzureFoundryStatus() {
   return { configured: valid, deployment: deployment ?? null, endpoint: endpoint ?? null, hasApiKey };
 }
 
+const imageConfigSchema = z.object({
+  endpoint: z.string().url(),
+  apiKey: z.string().min(20),
+  deployment: z.string().min(1),
+});
+
+function getImageConfig() {
+  const parsed = imageConfigSchema.safeParse({
+    endpoint: process.env.AZURE_AI_FOUNDRY_ENDPOINT,
+    apiKey: process.env.AZURE_AI_FOUNDRY_API_KEY,
+    deployment: process.env.AZURE_AI_FOUNDRY_IMAGE_DEPLOYMENT,
+  });
+
+  if (!parsed.success) {
+    throw new AzureFoundryError("Генерация баннеров ещё не настроена на сервере.");
+  }
+
+  return { ...parsed.data, endpoint: parsed.data.endpoint.replace(/\/+$/, "") };
+}
+
+// Separate from getAzureFoundryStatus(): the image deployment is optional and independent of
+// the text deployment, so a missing image model never breaks text drafts and vice versa.
+export function getAzureFoundryImageStatus() {
+  const deployment = process.env.AZURE_AI_FOUNDRY_IMAGE_DEPLOYMENT;
+  const valid = imageConfigSchema.safeParse({
+    endpoint: process.env.AZURE_AI_FOUNDRY_ENDPOINT,
+    apiKey: process.env.AZURE_AI_FOUNDRY_API_KEY,
+    deployment,
+  }).success;
+  return { configured: valid, deployment: deployment ?? null };
+}
+
+const imageResponseSchema = z.object({
+  data: z.array(z.object({ b64_json: z.string().optional(), url: z.string().url().optional() })).min(1),
+});
+
+export async function createAzureFoundryImage(prompt: string) {
+  const config = getImageConfig();
+  if (!prompt.trim() || prompt.length > 4_000) {
+    throw new AzureFoundryError("Некорректное описание баннера.");
+  }
+
+  const response = await fetch(`${config.endpoint}/images/generations`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "api-key": config.apiKey,
+    },
+    body: JSON.stringify({
+      model: config.deployment,
+      prompt,
+      size: "1024x1024",
+      n: 1,
+    }),
+    cache: "no-store",
+    signal: AbortSignal.timeout(60_000),
+  });
+
+  if (!response.ok) {
+    throw new AzureFoundryError(`Генератор баннеров вернул ошибку ${response.status}.`, response.status);
+  }
+
+  const payload: unknown = await response.json();
+  const parsed = imageResponseSchema.safeParse(payload);
+  if (!parsed.success) {
+    console.error("[azure-ai] Unexpected image response shape", describeAzureFoundryResponse(payload));
+    throw new AzureFoundryError("Генератор баннеров вернул ответ неизвестного формата.");
+  }
+
+  const [image] = parsed.data.data;
+  if (!image.b64_json && !image.url) throw new AzureFoundryError("Генератор баннеров не вернул изображение.");
+  return image;
+}
+
 export async function createAzureFoundryChatCompletion(messages: AzureFoundryMessage[]) {
   const config = getConfig();
   if (!messages.length || messages.some((message) => !message.content.trim() || message.content.length > 12_000)) {
