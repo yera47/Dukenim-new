@@ -6,14 +6,14 @@ Updated: 2026-09-04 by Codex
 
 Native mobile foundation and safe PWA release — 2026-09-04:
 
-- Released `b8a0e54` to `main`; Vercel Production is Ready and `https://dukenim.kz/sw.js` plus the web manifest return HTTP 200. The service worker caches only public static assets and leaves API, auth, admin and root paths network-only.
+- Released `b8a0e54` (PWA) and `537b1f2` (mobile foundation) to `main`; Vercel Production is Ready and `https://dukenim.kz/`, `https://dukenim.kz/sw.js` plus the web manifest return HTTP 200. The service worker caches only public static assets and leaves API, auth, admin and root paths network-only.
 - Created `apps/mobile`, an Expo SDK 57 iOS/Android client with the registered `kz.dukenim.app` identifiers and the approved Dukenim colours. It includes existing-account email/password sign-in through Supabase (using only public `EXPO_PUBLIC_*` config), owner/superadmin role recognition, a real camera barcode scanner, and notification-permission/channel setup. Root actions are intentionally not copied into an unaudited mobile client.
 - Native verification passed: `pnpm --dir apps/mobile exec tsc --noEmit`, Expo public config resolution, and `expo export --platform web`. Web app verification also remains green: root `tsc`, 14 tests, and the full 50-route Next production build. Existing five `next/image` advisories remain.
 - Do not claim native push delivery, widgets, TestFlight/App Store publication, or mobile Google/Apple OAuth yet. They need an Expo/EAS project, device token table plus server-side outbox/provider delivery, an iOS widget target, native OAuth client registration, and live device checks. The Apple web Service ID/App ID are configured, but the one-time downloaded Apple private `.p8` key is not available to the workspace, so Apple login remains disabled until it is securely supplied to Supabase.
 
 Changed files: `apps/mobile/**`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, `tsconfig.json`, `PROJECT_STATE.md`, `AI_HANDOFF.md`.
 
-Next: commit/push the mobile foundation, then complete the secure Apple private-key handoff and establish the mobile notification backend before enabling visible production claims.
+Next: complete the secure Apple private-key handoff, then establish the mobile notification backend before enabling visible production claims.
 
 Production activation and reviewed Claude integration — 2026-09-03:
 
