@@ -4,30 +4,34 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/queries/owner";
 import { getActiveSubscription } from "@/lib/queries/subscriptions";
-import { planAnnualPrice, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
+import { planAnnualPrice, planFeatures, planMonthlyAiCredits, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
 import { isPolarConfigured } from "@/lib/polar";
 import { TrialTimer } from "@/components/admin/trial-timer";
+import { CreditTopUpButton } from "./credit-topup-button";
 
 const plans = publicPlans;
-export default async function PlanPage({ searchParams }: { searchParams: Promise<{ locked?: string; expired?: string; checkout?: string; portal?: string }> }) {
+export default async function PlanPage({ searchParams }: { searchParams: Promise<{ locked?: string; expired?: string; checkout?: string; portal?: string; topup?: string }> }) {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
   const query = await searchParams;
-  let plan: Plan = "basic", nextPlan: Plan = "standard", period: string | null = null, trialEndsAt: string | null = null, status = "trial", polarCustomerId: string | null = null;
+  let plan: Plan = "basic", nextPlan: Plan = "standard", period: string | null = null, trialEndsAt: string | null = null, status = "trial", polarCustomerId: string | null = null, aiCreditBalance = 0;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL && tenantId) {
     const client = await createClient();
     const [tenantResult, subscriptionResult] = await Promise.all([getTenant(client, tenantId), getActiveSubscription(client, tenantId)]);
     const tenant = tenantResult.data;
-    if (tenant) { plan = tenant.plan; nextPlan = tenant.next_plan ?? "standard"; trialEndsAt = tenant.trial_ends_at; status = tenant.status; polarCustomerId = tenant.polar_customer_id; }
+    if (tenant) { plan = tenant.plan; nextPlan = tenant.next_plan ?? "standard"; trialEndsAt = tenant.trial_ends_at; status = tenant.status; polarCustomerId = tenant.polar_customer_id; aiCreditBalance = tenant.ai_credit_balance; }
     period = subscriptionResult.data?.current_period_end ?? null;
   }
   const polarAvailable = isPolarConfigured();
+  const topUpConfigured = Boolean(process.env.POLAR_AI_CREDIT_TOPUP_PRODUCT_ID);
   return <>
     <div className="flex flex-wrap items-end justify-between gap-4"><div><div className="data-label">ПОДПИСКА</div><h1 className="mt-2 text-3xl font-extrabold">Тариф и доступ</h1></div><div className="flex items-center gap-3">{status === "trial" && trialEndsAt && <TrialTimer endsAt={trialEndsAt}/>}{polarAvailable && polarCustomerId && <a href="/api/polar/portal" className="btn btn-secondary text-sm">Управление подпиской</a>}</div></div>
     {(query.locked || query.expired) && <div className="mt-5 flex gap-3 rounded-[var(--r-card)] bg-[var(--accent-soft)] p-4"><LockKeyhole className="shrink-0 text-[var(--accent)]"/><p><b>{query.expired ? "Бесплатный период завершён." : "Эта функция входит в другой тариф."}</b><span className="muted block text-sm">Выберите подходящий план, чтобы продолжить работу без ограничений.</span></p></div>}
     {query.checkout === "success" && <div className="mt-5 flex gap-3 rounded-[var(--r-card)] bg-[var(--accent-soft)] p-4"><ShieldCheck className="shrink-0 text-[var(--accent)]"/><p><b>Оплата отправлена провайдеру.</b><span className="muted block text-sm">Тариф обновится в течение минуты, как только Polar подтвердит подписку.</span></p></div>}
+    {query.topup === "success" && <div className="mt-5 flex gap-3 rounded-[var(--r-card)] bg-[var(--accent-soft)] p-4"><ShieldCheck className="shrink-0 text-[var(--accent)]"/><p><b>Оплата токенов отправлена провайдеру.</b><span className="muted block text-sm">Баланс AI Studio обновится в течение минуты.</span></p></div>}
     {query.portal && <div className="mt-5 flex gap-3 rounded-[var(--r-card)] bg-[var(--accent-soft)] p-4"><LockKeyhole className="shrink-0 text-[var(--accent)]"/><p><b>{query.portal === "no_subscription" ? "Активной подписки пока нет." : "Управление подпиской пока недоступно."}</b><span className="muted block text-sm">{query.portal === "no_subscription" ? "Портал откроется после первой успешной оплаты." : "Провайдер оплаты ещё не подключён."}</span></p></div>}
     <section className="card mt-6 overflow-hidden"><div className="bg-[var(--accent-dark)] p-7 text-white"><span className="badge bg-white/10 text-[var(--accent-bright)]">{status === "trial" ? "7 ДНЕЙ БЕСПЛАТНО" : "ТЕКУЩИЙ ПЛАН"}</span><h2 className="mt-4 text-4xl font-extrabold">{planName[status === "trial" ? nextPlan : plan]}</h2><p className="mt-2 text-white/65">{status === "trial" ? `После бесплатного периода: от ${planPrice[nextPlan].toLocaleString("ru-KZ")} ₸ в месяц. ${polarAvailable ? "Списание не начнётся автоматически — тариф нужно оплатить отдельно." : "Оплата станет доступна после подключения платёжного провайдера."}` : period ? `Активен до ${new Date(period).toLocaleDateString("ru-KZ")}` : "Управление подпиской"}</p></div></section>
     <div className="mt-6 grid gap-4 xl:grid-cols-2">{plans.map((item) => <article key={item} className={`card flex flex-col p-6 ${item === nextPlan ? "ring-2 ring-[var(--accent)]" : ""}`}><div className="flex items-start justify-between"><div><p className="data-label">КАТАЛОГ + ПОДПИСКА</p><h2 className="mt-2 text-2xl font-extrabold">{planName[item]}</h2></div>{item === nextPlan && <span className="badge">ВЫБРАН</span>}</div><p className="mt-4 text-3xl font-extrabold tabular">{planPrice[item].toLocaleString("ru-KZ")} ₸<span className="text-sm font-medium text-[var(--ink-60)]"> / мес.</span></p><p className="mt-2 text-sm text-[var(--ink-60)]">или {planAnnualPrice[item].toLocaleString("ru-KZ")} ₸ за год</p><div className="my-6 h-px bg-[var(--line)]"/><div className="flex-1 space-y-3">{planFeatures[item].map(feature => <p key={feature} className="flex gap-2 text-sm"><Check size={18} className="shrink-0 text-[var(--success)]"/>{feature}</p>)}</div><Link href={`/admin/plan/checkout?plan=${item}`} className={`btn mt-6 w-full ${item === nextPlan ? "btn-primary" : "btn-secondary"}`}>Выбрать {planName[item]} <ArrowRight size={17}/></Link></article>)}</div>
     <p className="mt-5 flex items-center gap-2 text-sm text-[var(--ink-60)]"><ShieldCheck size={17}/> Оплата откроется у сертифицированного провайдера. Dukenim не хранит данные банковских карт.</p>
+    <section className="card mt-6 p-6"><p className="data-label">AI STUDIO</p><h2 className="mt-2 text-xl font-extrabold">Токены: {aiCreditBalance}</h2><p className="muted mt-1 text-sm">Ежемесячно пополняется до {planMonthlyAiCredits[plan]} на тарифе «{planName[plan]}». Тексты, структура каталога и рекламные баннеры расходуют разное количество токенов.</p>{topUpConfigured && <CreditTopUpButton />}</section>
   </>;
 }

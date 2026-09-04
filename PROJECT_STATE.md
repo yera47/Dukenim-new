@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-04
+Last reviewed: 2026-09-05
 
 ## Product
 
@@ -19,6 +19,8 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Trial entitlement is enforced server-side: every trial has an explicit seven-day end, paid-tier actions use the effective `next_plan` during that window, public storefront RLS and server lookup reject expired trials, and AI API access uses the same entitlement decision.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
 - CRM integration requests are prepared in source only. Azure Foundry is live in production through the server-only OpenAI-compatible client and the `Kimi-K2.6` deployment. The rotated key and endpoint/deployment configuration are stored only in Vercel Production; `/root/ai` and the tenant `/admin/ai-studio` generation flow were both verified end to end on 2026-09-03.
+- AI Studio is available on both tariffs (source, branch `claude/ai-studio-credits-vertical-onboarding`, not yet merged/applied), gated by a per-tenant monthly AI-credit wallet instead of a Brand-only lock — see the 2026-09-05 `DECISIONS.md` entry. It now has 5 controlled intents (hero/promotion/catalog_copy/catalog_structure/banner); the banner intent generates promotional-graphic-only images via a separate, optional Azure image deployment and fails closed honestly when that deployment isn't configured (it is not configured anywhere yet). A small AI-credit top-up is purchasable through a dedicated Polar one-time product, also unconfigured until the owner creates it. Exact credit numbers are draft engineering defaults, not final pricing.
+- Onboarding now also asks for a business vertical and catalog-vs-one-page format (`tenants.business_vertical`/`storefront_format`, same branch as above); this data is captured and can steer AI Studio briefs, but storefront templates and the admin dashboard are not yet filtered/adapted by vertical — that remains a deferred follow-up, not delivered.
 
 ## Resilience infrastructure
 

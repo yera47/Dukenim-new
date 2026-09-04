@@ -13,6 +13,12 @@ export const planSetupPrice: Record<Plan, number> = { basic: 0, standard: 0, pro
 export const planFirstPayment: Record<Plan, number> = planPrice;
 export const planName: Record<Plan, string> = { basic: "Старт", standard: "Бренд", pro: "Бренд" };
 export function hasPlan(current: Plan, required: Plan) { return planRank[current] >= planRank[required]; }
+// Draft engineering defaults, not a priced commitment: pending real Azure/Kimi-K2.6 and image-model
+// cost reconciliation before the owner treats these numbers as final. AI Studio is now available on
+// both tariffs; this monthly credit wallet (lazily refilled, see refill_and_get_ai_credits) is the
+// differentiator instead of a hard Brand-only lock. Brand keeps its own exclusive depth separately:
+// exact palette, custom domain, campaigns/brand-blocks and extended analytics (see planFeatures).
+export const planMonthlyAiCredits: Record<Plan, number> = { basic: 30, standard: 120, pro: 120 };
 export const planFeatures: Record<Plan, string[]> = {
   basic: ["Готовые шаблоны под нишу", "Подобранные цветовые палитры", "Логотип, каталог и заказы", "Адрес slug.dukenim.kz", "Постоянный футер Dukenim"],
   standard: ["Всё из тарифа «Старт»", "Точная палитра бренда", "Собственный домен", "Акции, кампании и бренд-блоки", "Расширенная аналитика витрины"],
