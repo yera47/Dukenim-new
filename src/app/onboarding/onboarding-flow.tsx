@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store } from "lucide-react";
 import { planAnnualPrice, planAnnualSaving, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
+import type { BusinessVertical } from "@/types/database";
 
 type Billing = "month" | "year";
+const verticals: Array<{ id: BusinessVertical; label: string }> = [{ id: "fashion", label: "Одежда и обувь" }, { id: "beauty", label: "Красота и косметика" }, { id: "food", label: "Еда и напитки" }, { id: "flowers", label: "Цветы и подарки" }, { id: "services", label: "Услуги" }, { id: "home", label: "Дом и интерьер" }, { id: "other", label: "Другое" }];
 
 function money(value: number) {
   return new Intl.NumberFormat("ru-KZ").format(value);
@@ -12,6 +14,7 @@ function money(value: number) {
 
 export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan } }) {
   const [step, setStep] = useState(1);
+  const [vertical, setVertical] = useState<BusinessVertical | null>(null);
   const [plan, setPlan] = useState<Plan>(tenant.next_plan === "pro" ? "standard" : tenant.next_plan);
   const [billing, setBilling] = useState<Billing>("month");
   const [pending, setPending] = useState(false);
@@ -24,7 +27,7 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
     const response = await fetch("/api/onboarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan }),
+      body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog" }),
     });
     const data = await response.json() as { error?: string };
     if (!response.ok) {
@@ -32,7 +35,8 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
       setPending(false);
       return;
     }
-    location.href = "/admin";
+    // AI Studio is the owner's first workspace; catalog creation is its first guided action.
+    location.href = "/admin/ai-studio";
   }
 
   return <main className="onboarding-builder min-h-screen bg-[var(--surface)]">
@@ -48,8 +52,9 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
     <div className="container max-w-6xl py-10 md:py-14">
       {step === 1 && <section className="builder-step onboarding-welcome">
         <p className="data-label">ШАГ 1 ИЗ 3</p>
-        <h1>Магазин создан. Теперь выберите, как он будет работать.</h1>
+        <h1>Сначала настроим AI Studio под ваш бизнес.</h1>
         <p className="onboarding-lead">Первые 7 дней — полный доступ без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
+        <div className="builder-niche-grid mt-8">{verticals.map((item) => <button type="button" key={item.id} onClick={() => setVertical(item.id)} className={vertical === item.id ? "is-selected" : ""}><span>{item.label}</span></button>)}</div>
         <div className="onboarding-address"><span>Адрес вашей витрины</span><b>dukenim.kz/s/{tenant.slug}</b></div>
         <div className="onboarding-benefits">
           {[
@@ -58,7 +63,7 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
             "Деньги не спишутся автоматически",
           ].map((item) => <p key={item}><Check size={18} />{item}</p>)}
         </div>
-        <div className="builder-actions"><span>Следующий шаг — понятный выбор тарифа.</span><button onClick={() => setStep(2)} className="btn btn-primary">Посмотреть тарифы <ArrowRight size={18} /></button></div>
+        <div className="builder-actions"><span>Выбор бизнеса влияет на подсказки и структуру каталога.</span><button disabled={!vertical} onClick={() => setStep(2)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
       </section>}
 
       {step === 2 && <section className="builder-step">

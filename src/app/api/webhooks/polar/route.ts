@@ -43,6 +43,22 @@ export async function POST(request: Request) {
   if (!eventId) return NextResponse.json({ error: "Missing webhook id" }, { status: 400 });
   const payload = event as unknown as Json;
 
+  // One-time AI-credit product: only signed paid orders with our product and tenant metadata grant credits.
+  if (event.type === "order.paid") {
+    const order = event.data as Record<string, unknown>;
+    const metadata = (order.metadata ?? {}) as Record<string, unknown>;
+    const tenantId = typeof metadata.tenantId === "string" ? metadata.tenantId : null;
+    const productId = typeof order.productId === "string" ? order.productId : null;
+    const amount = typeof order.amount === "number" ? order.amount : 0;
+    if (productId === process.env.POLAR_AI_CREDITS_PRODUCT_ID?.trim() && tenantId && metadata.purchaseType === "ai_credits") {
+      const { error } = await createAdminClient().rpc("grant_purchased_ai_credits" as never, { p_event_id: eventId, p_event_type: event.type, p_payload: payload, p_tenant_id: tenantId, p_order_id: typeof order.id === "string" ? order.id : eventId, p_credits: 100, p_amount_kzt: amount } as never);
+      if (error) return NextResponse.json({ error: "Failed to apply AI credit purchase" }, { status: 500 });
+      return NextResponse.json({ received: true, creditsGranted: true });
+    }
+    await recordIgnoredEvent(eventId, event.type, payload);
+    return NextResponse.json({ received: true, ignored: true });
+  }
+
   if (!event.type.startsWith("subscription.")) {
     await recordIgnoredEvent(eventId, event.type, payload);
     return NextResponse.json({ received: true, ignored: true });

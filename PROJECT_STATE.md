@@ -61,3 +61,6 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 Catalog lifecycle is now represented on each tenant as `not_started`, `building`, or `ready`; the corresponding migration is applied to the connected production Supabase project. The dashboard routes owners to explicit catalog creation before product creation.
 
 Production release `c0b7753` is Ready on Vercel and aliased to `dukenim.kz`/`www.dukenim.kz`. Google OAuth and authenticated owner/root access are verified. The responsive admin navigation is verified at desktop and 390×844 mobile viewports, including the complete «Ещё» menu. Azure `Kimi-K2.6` passes the superadmin diagnostic and produces a schema-valid tenant AI Studio draft in production.
+
+Local design rebuild has started: the public homepage now includes a review-first AI Studio work-centre block with a separate human-support path, placed between launch workflow and pricing. The slice passes TypeScript/build but is not deployed yet.
+Design references (local, 2026-09-04): hero now uses `public/design/dukenim-home-hero-reference-v6.png` with separate catalog, CRM and phone objects in one warm room. Blocks 02 and 03 were regenerated to continue the same room and palette; no deployment yet.

@@ -1,7 +1,7 @@
 import "server-only";
 import { Polar } from "@polar-sh/sdk";
 
-export { getPolarProductId, planFromPolarProductId, isPolarConfigured, isPolarWebhookConfigured, type BillingPeriod } from "@/lib/polar-plan";
+export { getPolarProductId, getPolarAiCreditsProductId, planFromPolarProductId, isPolarConfigured, isPolarWebhookConfigured, type BillingPeriod } from "@/lib/polar-plan";
 
 let cachedClient: Polar | null = null;
 export function getPolarClient(): Polar {

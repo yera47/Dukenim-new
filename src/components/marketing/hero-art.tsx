@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 const states = ["Каталог", "Товар", "Корзина", "Заказ"];
+const catalogCategories = ["Одежда", "Мебель", "Beauty", "Аксессуары"];
 
 const HERO_FILM_POSTER = "/design/dukenim-hero-monolith-base-v1.png";
 const DEFAULT_HERO_FILM = "/design/dukenim-hero-atelier-loop-v1.mp4";
@@ -21,6 +22,7 @@ function getReducedMotion() {
 export function HeroArt() {
   const ref = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(0);
+  const [category, setCategory] = useState(0);
   const reducedMotion = useSyncExternalStore(subscribeToReducedMotion, getReducedMotion, () => true);
 
   useEffect(() => {
@@ -47,6 +49,12 @@ export function HeroArt() {
     return () => { window.removeEventListener("scroll", onScroll); if (frame) window.cancelAnimationFrame(frame); };
   }, []);
 
+  useEffect(() => {
+    if (reducedMotion || step !== 0) return;
+    const timer = window.setInterval(() => setCategory((value) => (value + 1) % catalogCategories.length), 2400);
+    return () => window.clearInterval(timer);
+  }, [reducedMotion, step]);
+
   function move(event: React.PointerEvent<HTMLDivElement>) {
     if (event.pointerType !== "mouse") return;
     const bounds = event.currentTarget.getBoundingClientRect();
@@ -59,6 +67,7 @@ export function HeroArt() {
   const filmUrl = process.env.NEXT_PUBLIC_HIGGSFIELD_HERO_VIDEO || DEFAULT_HERO_FILM;
   return (
     <div ref={ref} onPointerMove={move} onPointerLeave={() => { ref.current?.style.setProperty("--mx", "0px"); ref.current?.style.setProperty("--my", "0px"); }} className={`hero-art-sculpture hero-step-${step}`} aria-hidden="true">
+      <img className="hero-room-reference" src="/design/dukenim-home-hero-reference-v6.png" alt="" />
       {filmUrl
         ? reducedMotion
           // Reduced motion: keep the atmospheric layer as a still frame, no autoplaying video.
@@ -85,7 +94,7 @@ export function HeroArt() {
 
       <div className="story-phone">
         <div className="story-phone-top"><i/><b>{states[step]}</b><span>⌕</span></div>
-        {step === 0 && <div className="story-catalog-grid"><article className="coat"/><article className="cap"/><article className="bag"/><article className="shoe"/></div>}
+        {step === 0 && <div className={`story-catalog-grid category-${category}`}><small className="story-catalog-category">{catalogCategories[category]}</small><article className="coat"/><article className="cap"/><article className="bag"/><article className="shoe"/></div>}
         {step === 1 && <div className="story-product-view"><div className="story-bag"><i/><i/></div><b>Сумка Atelier</b><span>48 900 ₸</span><span className="story-action">В корзину</span></div>}
         {step === 2 && <div className="story-cart"><b>Корзина</b><div><span className="bag"/><section><strong>Сумка Atelier</strong><small>48 900 ₸</small></section></div><p>Итого <strong>48 900 ₸</strong></p><span className="story-action">Перейти к оплате</span></div>}
         {step === 3 && <div className="story-success"><i>✓</i><b>Заказ оформлен</b><span>Владелец получил новый заказ</span><small>№ DK-2048</small></div>}

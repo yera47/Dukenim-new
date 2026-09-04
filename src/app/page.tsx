@@ -5,6 +5,7 @@ import { ArrowRight, Check, ChevronRight, ShieldCheck } from "lucide-react";
 import { HeroArt } from "@/components/marketing/hero-art";
 import { PricingSection } from "@/components/marketing/pricing-section";
 import { LaunchSection } from "@/components/marketing/launch-section";
+import { AiStudioSection } from "@/components/marketing/ai-studio-section";
 import { MarketingFaq } from "@/components/marketing/marketing-faq";
 import { StructuredData } from "@/components/marketing/structured-data";
 import { siteTitle, siteDescription, openGraph } from "@/lib/site";
@@ -43,6 +44,7 @@ export default function Home() {
     <section id="system" className="story-system"><div className="container story-system-grid"><div className="story-system-copy"><h2>От первого товара до заказа — в одном маршруте.</h2><Link className="story-text-link" href="/register">Создать свой магазин <ArrowRight size={17} /></Link></div><div className="story-ledger">{systemRows.map(([name, text], index) => <div key={name} className={index === 1 ? "is-current" : ""}><span>{name}</span><p>{text}</p><ChevronRight size={22} /></div>)}</div></div></section>
 
     <LaunchSection />
+    <AiStudioSection />
     <PricingSection />
 
     <MarketingFaq />

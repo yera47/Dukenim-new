@@ -39,3 +39,5 @@ export function isPolarConfigured(plan?: Plan, period?: BillingPeriod): boolean 
 export function isPolarWebhookConfigured(): boolean {
   return Boolean(process.env.POLAR_WEBHOOK_SECRET?.trim());
 }
+
+export function getPolarAiCreditsProductId(): string | null { return process.env.POLAR_AI_CREDITS_PRODUCT_ID?.trim() || null; }
