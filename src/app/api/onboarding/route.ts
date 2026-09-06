@@ -8,20 +8,17 @@ const validVerticals = new Set<BusinessVertical>(["fashion", "beauty", "food", "
 
 export async function POST(request: Request) {
   try {
-    const { plan, businessVertical, storefrontFormat } = await request.json() as { plan?: PublicPlan; businessVertical?: unknown; storefrontFormat?: unknown };
+    const { plan, businessVertical, storefrontFormat, billingPeriod } = await request.json() as { plan?: PublicPlan; businessVertical?: unknown; storefrontFormat?: unknown; billingPeriod?: unknown };
     if (!isPublicPlan(plan)) return NextResponse.json({ error: "Выберите доступный тариф." }, { status: 400 });
+    if (typeof businessVertical !== "string" || !validVerticals.has(businessVertical as BusinessVertical)) return NextResponse.json({ error: "Выберите тип бизнеса." }, { status: 400 });
+    if (storefrontFormat !== "catalog" && storefrontFormat !== "one_page") return NextResponse.json({ error: "Выберите формат витрины." }, { status: 400 });
+    if (billingPeriod !== "monthly" && billingPeriod !== "annual") return NextResponse.json({ error: "Выберите период оплаты." }, { status: 400 });
     const { tenantId } = await requireRole(["owner", "superadmin"]);
     if (!tenantId) return NextResponse.json({ error: "Магазин не найден." }, { status: 400 });
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const client = await createClient();
-      const { error } = await client.rpc("complete_onboarding", { p_tenant_id: tenantId, p_next_plan: plan });
-      if (error) {
-        const fallback = await client.from("tenants").update({ plan, next_plan: plan, onboarding_completed: true }).eq("id", tenantId);
-        if (fallback.error) return NextResponse.json({ error: fallback.error.message }, { status: 400 });
-      }
-      const vertical = typeof businessVertical === "string" && validVerticals.has(businessVertical as BusinessVertical) ? businessVertical as BusinessVertical : null;
-      const profileUpdate = await client.from("tenants").update({ business_vertical: vertical, storefront_format: storefrontFormat === "one_page" ? "one_page" : "catalog" }).eq("id", tenantId);
-      if (profileUpdate.error && !/business_vertical|storefront_format/i.test(profileUpdate.error.message)) return NextResponse.json({ error: "Не удалось сохранить профиль бизнеса. Попробуйте ещё раз." }, { status: 400 });
+      const { error } = await client.rpc("complete_onboarding_v2", { p_tenant_id: tenantId, p_next_plan: plan, p_business_vertical: businessVertical, p_storefront_format: storefrontFormat, p_preferred_billing_period: billingPeriod });
+      if (error) return NextResponse.json({ error: "Не удалось сохранить настройки запуска. Обновите страницу и попробуйте ещё раз." }, { status: 503 });
     }
     return NextResponse.json({ success: true });
   } catch {

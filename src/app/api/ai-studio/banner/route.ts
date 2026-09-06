@@ -19,15 +19,19 @@ export async function POST(request: Request) {
     const rpc = admin as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
     const cost = 20;
     const reservation = await rpc.rpc("reserve_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost, p_monthly_allotment: 120 });
-    if (reservation.error) return NextResponse.json({ error: reservation.error.message.includes("Insufficient") ? "Лимит AI Studio исчерпан. Пополните кредиты или попробуйте позже." : "AI Studio ещё не готов: примените миграцию кредитов." }, { status: reservation.error.message.includes("Insufficient") ? 429 : 503 });
+    if (reservation.error) {
+      const exhausted = reservation.error.message.includes("Insufficient");
+      return NextResponse.json({ error: exhausted ? "Лимит AI Studio исчерпан. Пополните кредиты или попробуйте позже." : "AI Studio временно недоступен.", needsTopup: exhausted }, { status: exhausted ? 429 : 503 });
+    }
+    const creditsRemaining = typeof reservation.data === "number" ? reservation.data : null;
     let result;
     try { result = await createFalImage(`Рекламный баннер для магазина. ${input.data.brief}. Без текста, логотипов, людей и изображений одежды или конкретного товара; чистая абстрактная брендовая композиция.`); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost }); throw error; }
-    const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: "banner", input_summary: input.data.brief, output: { imageUrl: result.imageUrl }, model: getFalImageStatus().model, usage: { provider: "fal.ai", credits: cost } });
-    if (saved.error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost }); return NextResponse.json({ error: "Баннер создан, но журнал не сохранился. Кредит возвращён." }, { status: 500 }); }
-    return NextResponse.json({ imageUrl: result.imageUrl });
+    const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: "banner", input_summary: input.data.brief, output: { imageUrl: result.imageUrl }, model: getFalImageStatus().model, usage: { provider: "fal.ai", credits: cost }, credit_cost: cost }).select("id").single();
+    if (saved.error || !saved.data) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost }); return NextResponse.json({ error: "Баннер создан, но журнал не сохранился. Кредит возвращён." }, { status: 500 }); }
+    return NextResponse.json({ imageUrl: result.imageUrl, generationId: saved.data.id, creditsRemaining });
   } catch (error) {
     const status = error instanceof FalImageError && error.status && error.status < 500 ? error.status : 502;
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось создать баннер." }, { status });
+    return NextResponse.json({ error: status === 429 ? "Генератор баннеров достиг временного лимита. Попробуйте немного позже." : "Не удалось создать баннер. Попробуйте ещё раз." }, { status });
   }
 }

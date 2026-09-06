@@ -40,7 +40,7 @@ export function StructuredData() {
             price: planPrice.basic,
             priceCurrency: "KZT",
             url: absoluteUrl("/register?plan=basic"),
-            description: "Каталог, корзина, заказы и CRM Dukenim. 7 дней полного доступа без карты.",
+            description: "Каталог, корзина, заказы и AI-помощник. 7 дней выбранного тарифа без карты.",
           },
           {
             "@type": "Offer",
@@ -55,7 +55,7 @@ export function StructuredData() {
             price: planPrice.standard,
             priceCurrency: "KZT",
             url: absoluteUrl("/register?plan=standard"),
-            description: "Собственный домен, точная палитра, акции, кампании и AI Studio.",
+            description: "CRM, точная палитра, акции, кампании и AI-баннеры.",
           },
           {
             "@type": "Offer",

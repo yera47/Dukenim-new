@@ -1,5 +1,33 @@
 # Dukenim — AI handoff
 
+## Active continuation — 2026-09-06
+
+### Release preparation update
+
+- Corrected optical sizing of D + wordmark and mobile controls/safe-area spacing; added `marketing/BRAND_WEB_2026.md` as current digital brand specification. Old PDF was not regenerated. Mobile 390×844 home/registration screenshots inspected; cookie surface corrected to monochrome.
+- Vercel staged production `dukenim-e88ww2d6r-yersat47-s-projects.vercel.app` reached Ready. Real production-runtime checkout creation passed for all four Polar tariff products; no payment was executed. Previous token belonged to the wrong setup: created an organization token in Dukenim with only checkouts:write/customer_sessions:write, securely saved in Vercel. Token expires 2026-10-06 and needs rotation before then. The production subscriptions table currently has zero rows linked to Polar; this does not independently prove no provider-side subscription exists.
+- `scripts/release-check.mjs` runs ONLY with explicit DUKENIM_VERIFY_POLAR=1: creates four unpaid configuration-check checkout sessions during a release build and prints only pass/fail. Normal builds do not contact Polar. Payout/review and signed credit purchase completion remain unverified.
+- Cloud smoke: homepage/login 200, unauthenticated admin 307, AI draft POST 401. Final domain release underway, not yet confirmed at this entry.
+- EAS CLI whoami returned Not logged in; no EAS project config/signing/build submission exists. App Store upload could not proceed. No credentials or App Store state were fabricated.
+
+- Owner changed direction to a ChatGPT-inspired monochrome product UI without decorative room imagery. Homepage rebuilt in `src/app/page.tsx` + `home.module.css`; `monochrome.css` and global tokens migrate pricing/FAQ/platform surfaces. Full cabinet/mobile migration remains unfinished. Preserve tenant palettes and photography.
+- Preview: http://localhost:3001/. This working tree has NOT been confirmed deployed. Preserve all accumulated changes.
+- Session source work: server-authoritative storefront checkout v2, onboarding preferences, contextual support, AI banner-to-campaign drafts, safe redirects, effective-plan checks, Polar webhook amount/credit validation and dependency updates. Six targeted 20260905 migrations from support_request_context through ai_banner_campaign_link were applied earlier in this session. Legacy public order RPC was restricted: matching source release is a priority. Never blanket-push historical migrations.
+- Latest fixes: middleware keeps refreshed auth cookies on redirects, enforces selected-plan trial access, and fails closed on Vercel if Supabase config is absent. Added seven entitlement regression tests and defensive HTTP headers in next.config.ts.
+- Checks: TypeScript clean; 28/28 tests; final production build passed with 54 static pages (webpack cache serialization warnings only). Local homepage returns 200 with the new design and security headers. Prior production dependency audit reported zero advisories. This is not a penetration-test certification.
+- `scripts/check-polar-configuration.mjs` is a read-only credential-safe product-access probe. Vercel env run could not execute it against production because protected secrets cannot be pulled; no key was printed. Still requires a check in an authorized server runtime or secure configuration UI.
+- RELEASE BLOCKER: Vercel now has the new Dukenim Polar product IDs and webhook secret, but access-token organization and legacy subscription continuity are unverified. A deployment activates those env changes. Verify token/products/webhook together before release. Business review/payout remains incomplete; never claim billing migration finished.
+- Still required: final mobile/desktop visual QA, authenticated deployed order/onboarding/AI/support checks, cross-tenant negative tests, restoration-tested backups, legal details, native signing/TestFlight/push/widgets. Apple OAuth remains disabled until verified.
+- Next: finish visual QA, resolve Polar safely without exposing secrets, verify and deploy authorized changes, report the exact live URL. Older notes below are historical.
+
+### Continuation update — 2026-09-06
+
+- Added `CommerceMotion` (`src/components/marketing/commerce-motion.tsx` + module CSS): a real, lightweight product story that transitions between buyer selection, checkout/order confirmation and owner CRM. It auto-advances only while visible, pauses when hidden, supports manual stage controls and honors reduced-motion preferences. It is explanatory UI, not a fake order or payment.
+- Added `DukenimLogo` using the supplied official symbol raster with monochrome CSS presentation; homepage, login, registration and admin navigation now show the same D mark without redrawing its geometry.
+- Added `/root/diagnostics`: server-authenticated, read-only configuration/database/audit view with links to AI and integration diagnostics. Root server actions now reject local demo sessions before creating the service-role client; `src/app/root/actions.test.ts` covers all six mutation entry points.
+- Primary account check against production Supabase confirmed one `superadmin` profile for the owner email; no duplicate account was created.
+- Checks: `pnpm test` 34/34, `npx tsc --noEmit` clean, `pnpm build` clean (54 static pages; one unused-import warning was fixed; no new build errors). Local visual QA confirmed the motion block and monochrome logo at `http://localhost:3001/#products`.
+
 Updated: 2026-09-04 by Codex
 
 ## Latest outcome

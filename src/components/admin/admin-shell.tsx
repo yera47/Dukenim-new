@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { DukenimLogo } from "@/components/dukenim-logo";
 import { usePathname } from "next/navigation";
 import {
   BarChart3,
@@ -19,12 +20,12 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
-  Store,
   Users,
   WalletCards,
   X,
 } from "lucide-react";
 import { logout } from "@/app/login/actions";
+import { planName, type Plan } from "@/lib/plans";
 import { TrialTimer } from "./trial-timer";
 
 const nav = [
@@ -50,7 +51,7 @@ type AdminShellProps = {
   tenant: {
     name: string;
     slug: string;
-    plan: string;
+    plan: Plan;
     status: string;
     trialEndsAt: string | null;
   };
@@ -76,13 +77,13 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   }, [menuOpen]);
 
   const section = nav.find(([href]) => isCurrent(pathname, href));
-  const isLocked = (href: string) => role === "owner" && tenant.status !== "trial" && tenant.plan === "basic" && standardOnly.has(href);
+  const isLocked = (href: string) => role === "owner" && tenant.plan === "basic" && standardOnly.has(href);
 
   return (
     <div className="admin-frame min-h-[100dvh]">
       <aside className="admin-sidebar panel-dark fixed inset-y-0 left-0 z-30 hidden w-72 p-5 md:flex md:flex-col">
         <Link href="/admin" className="admin-brand flex items-center gap-3 text-xl font-extrabold">
-          <span className="tumar-mark"><Store size={18} /></span>
+          <DukenimLogo inverse compact/>
           <span className="min-w-0 truncate">{tenant.name}</span>
         </Link>
         <div className="data-label mt-3 pl-13 text-white/38">ПАНЕЛЬ МАГАЗИНА</div>
@@ -122,7 +123,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             <small>{section?.[1] ?? "Кабинет"}</small>
             <div className="flex min-w-0 items-center gap-2.5">
               <b className="truncate">{tenant.name}</b>
-              <span className="badge hidden sm:inline-flex">{tenant.plan.toUpperCase()}</span>
+              <span className="badge hidden sm:inline-flex">{planName[tenant.plan]}</span>
               {tenant.status === "trial" && tenant.trialEndsAt && <TrialTimer endsAt={tenant.trialEndsAt} />}
             </div>
           </div>

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Manrope } from "next/font/google";
 import "./globals.css";
+import "./monochrome.css";
 import { CookieConsent } from "@/components/cookie-consent";
 import { ServiceWorkerRegistration } from "@/components/pwa/service-worker-registration";
 import { siteUrl, siteName, siteTitle, siteDescription, siteLocale, siteKeywords, brand } from "@/lib/site";

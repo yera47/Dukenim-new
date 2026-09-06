@@ -1,0 +1,24 @@
+/* Platform surfaces only. Never desaturate tenant photographs or brand palettes. */
+@media(max-width:760px){input,textarea,select{font-size:16px}.btn,.input{min-height:44px}.admin-mobile-nav{bottom:max(.75rem,env(safe-area-inset-bottom))}.admin-sheet-layer{padding-bottom:max(.75rem,env(safe-area-inset-bottom))}.root-store-switch{bottom:max(1rem,env(safe-area-inset-bottom))}}
+.admin-sidebar{background:#171717!important;border-color:#333;box-shadow:none}.admin-brand{color:#fff}.admin-desktop-nav>a{color:#bcbcbc}.admin-desktop-nav>a:hover svg{color:#fff}.admin-desktop-nav>a.is-active{background:#f0f0f0;color:#171717;box-shadow:none}.admin-desktop-nav>a.is-active svg{color:#171717}.admin-desktop-nav>a.is-active:before{background:#fff}
+.admin-root-link{color:#eee;border-color:#555}.admin-root-link:hover{background:#333}.admin-store-link{color:#eee}.admin-logout{color:#aaa}.admin-topbar{background:rgb(255 255 255/.94)}.admin-avatar{background:#222;color:#fff;box-shadow:none}.admin-mobile-nav{background:rgb(23 23 23/.97);border-color:#444;color:#fff;box-shadow:0 10px 30px #0002}.admin-mobile-nav>a,.admin-mobile-nav>button{color:#bcbcbc}.admin-mobile-nav .is-active{background:#eee;color:#171717}.admin-sheet-layer{background:#0007}.admin-sheet{background:#fff;border-color:#ddd;box-shadow:0 20px 60px #0003}
+.admin-frame .card{border:1px solid #e5e5e5;box-shadow:none}.admin-frame .badge{background:#eee;color:#444}.input{border-color:#d8d8d8}.input:hover{border-color:#aaa}.badge{color:#444}
+@media(prefers-reduced-motion:no-preference){.admin-frame main{animation:platformEnter .28s ease-out}.input,.btn{transition:background-color .18s,border-color .18s,box-shadow .18s,transform .18s}@keyframes platformEnter{from{opacity:.5;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}}
+.btn-primary,.btn-cta{box-shadow:none}.btn-primary:hover{background:#333;box-shadow:none}.btn-secondary:hover{border-color:#aaa;background:#f5f5f5}
+.pricing-rebuild{padding:96px 0;background:#fafafa;color:#171717}
+.pricing-rebuild-shell{max-width:1120px}
+.pricing-rebuild-top{display:block}.pricing-rebuild-copy{max-width:680px;margin:0 auto 44px;text-align:center}
+.pricing-eyebrow{color:#666}.pricing-eyebrow::after{background:#aaa}.pricing-rebuild-copy h2{max-width:none;font-size:clamp(30px,4vw,48px);line-height:1.12;color:#171717}
+.pricing-lead,.pricing-saving-note{color:#666}.pricing-billing-switch{background:#eee;border:1px solid #ddd;border-radius:999px;padding:4px}
+.pricing-billing-switch button{color:#555;border-radius:999px}.pricing-billing-switch button.is-active{background:#fff;color:#171717;box-shadow:0 1px 4px #0001}
+.pricing-rebuild-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px}
+.pricing-rebuild-card,.pricing-rebuild-card.is-brand{background:#fff;color:#171717;border:1px solid #dedede;border-radius:24px;box-shadow:none;padding:32px}
+.pricing-rebuild-card.is-brand{border-color:#555}.pricing-card-topline p,.pricing-rebuild-card h3,.pricing-rebuild-price strong{color:#171717}
+.pricing-card-topline span{background:#f1f1f1;color:#444;border-color:#ddd}.pricing-rebuild-price span,.pricing-rebuild-card li{color:#626262}
+.pricing-rebuild-card li svg,.pricing-rebuild-card.is-brand li svg{color:#333}.pricing-rebuild-card.is-brand li,.pricing-rebuild-card.is-brand .pricing-rebuild-price span{color:#626262}.pricing-card-action,.is-brand .pricing-card-action{border:1px solid #171717;border-radius:999px;background:#171717;color:white}
+.pricing-crm-launch{background:#fff;color:#171717;border:1px solid #e3e3e3;border-radius:24px;margin-top:24px;padding:32px}
+.pricing-crm-copy h3,.pricing-crm-copy p,.pricing-crm-copy>p:not(.pricing-eyebrow),.pricing-crm-copy details,.pricing-crm-copy summary,.pricing-crm-copy ol,.pricing-crm-safety{color:#626262}.pricing-crm-copy h3{color:#171717}.pricing-crm-promo>b{background:#e9e9e9;color:#333}
+.pricing-crm-promo{background:#f5f5f5;border:0;border-radius:16px;color:#444}.pricing-crm-promo strong{color:#171717}
+.story-faq{background:#fff;color:#171717;padding:80px 0}.story-faq h2{color:#171717}.story-faq details{border-color:#e3e3e3}.story-faq summary{color:#171717}.story-faq details p{color:#626262}
+.ai-studio-hero{background:#fff;color:#171717;border:1px solid #e3e3e3;box-shadow:none}.ai-studio-hero h1,.ai-studio-hero h2{color:#171717}
+@media(max-width:760px){.pricing-rebuild{padding:64px 0}.pricing-rebuild-cards{grid-template-columns:1fr}.pricing-rebuild-card,.pricing-rebuild-card.is-brand,.pricing-crm-launch{padding:24px}.pricing-crm-launch{grid-template-columns:1fr}}

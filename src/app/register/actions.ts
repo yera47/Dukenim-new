@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { isPublicPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -12,6 +13,10 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const name = String(formData.get("name") ?? "").trim();
   const business = String(formData.get("business") ?? "").trim();
   const socialRegistration = formData.get("socialRegistration") === "true";
+  const requestedPlan = String(formData.get("plan") ?? "");
+  const nextPlan = isPublicPlan(requestedPlan) ? requestedPlan : "standard";
+  const billingValue = formData.get("billing");
+  const billing = billingValue === "year" || billingValue === "annual" ? "year" : "month";
   const password = String(formData.get("password") ?? "");
   const passwordConfirmation = String(formData.get("passwordConfirmation") ?? "");
 
@@ -28,8 +33,12 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();
     if (!user?.email) return { error: "Сессия входа не найдена. Начните вход через Google или Apple ещё раз." };
-    const existingMembership = await admin.from("tenant_users").select("tenant_id").eq("user_id", user.id).maybeSingle();
-    if (existingMembership.error) return { error: "Не удалось проверить существующий кабинет. Попробуйте ещё раз." };
+    const [existingMembership, existingProfile] = await Promise.all([
+      admin.from("tenant_users").select("tenant_id").eq("user_id", user.id).maybeSingle(),
+      admin.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
+    ]);
+    if (existingMembership.error || existingProfile.error) return { error: "Не удалось проверить существующий кабинет. Попробуйте ещё раз." };
+    if (existingProfile.data?.role === "superadmin") return { error: "Администраторский аккаунт уже настроен. Войдите в кабинет." };
     if (existingMembership.data) return { error: "Для этого аккаунта магазин уже создан. Войдите в кабинет." };
     email = user.email.toLowerCase();
     userId = user.id;
@@ -46,7 +55,7 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const existing = await admin.from("tenants").select("id").eq("slug", slug).maybeSingle();
   if (existing.data) slug = `${slug}-${userId.slice(0, 5)}`;
   const trialEnd = new Date(Date.now() + 7 * 86400000).toISOString();
-  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: "standard", trial_ends_at: trialEnd, onboarding_completed: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
+  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: nextPlan, preferred_billing_period: billing === "year" ? "annual" : "monthly", trial_ends_at: trialEnd, onboarding_completed: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
   if (tenantError || !tenant) {
     if (shouldDeleteUserOnFailure) await admin.auth.admin.deleteUser(userId);
     return { error: "Не удалось создать магазин. Попробуйте другое название." };
@@ -69,5 +78,5 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
     const { error: signInError } = await client.auth.signInWithPassword({ email, password });
     if (signInError) return { error: "Аккаунт создан. Войдите с указанными данными." };
   }
-  redirect("/onboarding");
+  redirect(`/onboarding?billing=${billing}`);
 }

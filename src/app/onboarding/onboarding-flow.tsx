@@ -12,11 +12,11 @@ function money(value: number) {
   return new Intl.NumberFormat("ru-KZ").format(value);
 }
 
-export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan } }) {
+export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan }; initialBilling?: Billing }) {
   const [step, setStep] = useState(1);
   const [vertical, setVertical] = useState<BusinessVertical | null>(null);
   const [plan, setPlan] = useState<Plan>(tenant.next_plan === "pro" ? "standard" : tenant.next_plan);
-  const [billing, setBilling] = useState<Billing>("month");
+  const [billing, setBilling] = useState<Billing>(initialBilling);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const trialDate = new Date(tenant.trial_ends_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "long" });
@@ -27,7 +27,7 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
     const response = await fetch("/api/onboarding", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog" }),
+      body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: billing === "year" ? "annual" : "monthly" }),
     });
     const data = await response.json() as { error?: string };
     if (!response.ok) {
@@ -53,12 +53,12 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
       {step === 1 && <section className="builder-step onboarding-welcome">
         <p className="data-label">ШАГ 1 ИЗ 3</p>
         <h1>Сначала настроим AI Studio под ваш бизнес.</h1>
-        <p className="onboarding-lead">Первые 7 дней — полный доступ без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
+        <p className="onboarding-lead">Первые 7 дней — доступ к выбранному тарифу без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
         <div className="builder-niche-grid mt-8">{verticals.map((item) => <button type="button" key={item.id} onClick={() => setVertical(item.id)} className={vertical === item.id ? "is-selected" : ""}><span>{item.label}</span></button>)}</div>
         <div className="onboarding-address"><span>Адрес вашей витрины</span><b>dukenim.kz/s/{tenant.slug}</b></div>
         <div className="onboarding-benefits">
           {[
-            "Каталог, заказы и CRM синхронизированы",
+            "Витрина, каталог и заказы связаны",
             "Любое изменение можно сделать позже",
             "Деньги не спишутся автоматически",
           ].map((item) => <p key={item}><Check size={18} />{item}</p>)}
@@ -84,13 +84,13 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
             </button>;
           })}
         </div>
-        <p className="onboarding-note">Тариф начнёт действовать после пробного периода. В первые 7 дней доступен весь функционал.</p>
+        <p className="onboarding-note">Тариф начнёт действовать после пробного периода. В первые 7 дней доступны все функции выбранного тарифа.</p>
         <div className="builder-actions"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
       </section>}
 
       {step === 3 && <section className="builder-step onboarding-finish">
         <p className="data-label">ШАГ 3 ИЗ 3</p><h1>Начнём с первого товара.</h1>
-        <p className="onboarding-lead">После входа кабинет покажет короткий маршрут запуска. Сначала добавьте товар и фото; затем откроются настройка витрины, акции и аналитика.</p>
+        <p className="onboarding-lead">После входа AI Studio покажет короткий маршрут запуска. Сначала создайте каталог и добавьте товар; затем настройте витрину и опубликуйте ссылку.</p>
         <div className="onboarding-steps">
           <div><span>01</span><PackagePlus size={23} /><b>Первый товар</b><p>Название, цена, остаток и фотографии.</p></div>
           <div><span>02</span><Store size={23} /><b>Витрина</b><p>Шаблон и палитра после появления каталога.</p></div>

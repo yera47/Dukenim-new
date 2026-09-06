@@ -2,6 +2,7 @@ import "server-only";
 import { NextResponse } from "next/server";
 import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 import type { Subscription } from "@polar-sh/sdk/models/components/subscription.js";
+import type { Order } from "@polar-sh/sdk/models/components/order.js";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { planFromPolarProductId } from "@/lib/polar";
 import type { Json } from "@/types/database";
@@ -45,13 +46,13 @@ export async function POST(request: Request) {
 
   // One-time AI-credit product: only signed paid orders with our product and tenant metadata grant credits.
   if (event.type === "order.paid") {
-    const order = event.data as Record<string, unknown>;
-    const metadata = (order.metadata ?? {}) as Record<string, unknown>;
-    const tenantId = typeof metadata.tenantId === "string" ? metadata.tenantId : null;
-    const productId = typeof order.productId === "string" ? order.productId : null;
-    const amount = typeof order.amount === "number" ? order.amount : 0;
+    const order = event.data as Order;
+    const metadata = order.metadata;
+    const tenantId = typeof metadata.tenantId === "string" && /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(metadata.tenantId) ? metadata.tenantId : null;
+    const productId = order.productId;
+    const amountKzt = order.currency.toLowerCase() === "kzt" ? Math.max(0, Math.round(order.totalAmount / 100)) : 0;
     if (productId === process.env.POLAR_AI_CREDITS_PRODUCT_ID?.trim() && tenantId && metadata.purchaseType === "ai_credits") {
-      const { error } = await createAdminClient().rpc("grant_purchased_ai_credits" as never, { p_event_id: eventId, p_event_type: event.type, p_payload: payload, p_tenant_id: tenantId, p_order_id: typeof order.id === "string" ? order.id : eventId, p_credits: 100, p_amount_kzt: amount } as never);
+      const { error } = await createAdminClient().rpc("grant_purchased_ai_credits" as never, { p_event_id: eventId, p_event_type: event.type, p_payload: payload, p_tenant_id: tenantId, p_order_id: order.id, p_credits: 100, p_amount_kzt: amountKzt } as never);
       if (error) return NextResponse.json({ error: "Failed to apply AI credit purchase" }, { status: 500 });
       return NextResponse.json({ received: true, creditsGranted: true });
     }

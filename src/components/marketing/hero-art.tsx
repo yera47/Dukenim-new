@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRef } from "react";
 
 /**
@@ -30,10 +31,13 @@ export function HeroArt() {
       }}
       aria-label="Витрина, CRM и мобильный заказ Dukenim"
     >
-      <img
+      <Image
         className="hero-room-reference"
-        src="/design/dukenim-home-hero-reference-v6.png"
+        src="/design/dukenim-home-hero-clean-v7.png"
         alt="Интерфейс магазина Dukenim: каталог, CRM и мобильный заказ"
+        fill
+        priority
+        sizes="100vw"
       />
     </div>
   );

@@ -3,6 +3,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/queries/owner";
+import { computeEntitlement } from "@/lib/entitlement";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -13,12 +14,14 @@ export default async function Layout({ children }: { children: React.ReactNode }
         name: "MEREY",
         slug: "demo-shop",
         plan: "standard" as const,
+        next_plan: "standard" as const,
         status: "trial" as const,
         trial_ends_at: new Date(Date.now() + 7 * 86400000).toISOString(),
       }
     : (await getTenant(await createClient(), tenantId!)).data;
 
   if (!tenant) return null;
+  const entitlement = computeEntitlement(tenant);
 
   return (
     <AdminShell
@@ -26,7 +29,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       tenant={{
         name: tenant.name,
         slug: tenant.slug,
-        plan: tenant.plan,
+        plan: entitlement.plan,
         status: tenant.status,
         trialEndsAt: tenant.trial_ends_at,
       }}

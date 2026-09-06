@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { DukenimLogo } from "@/components/dukenim-logo";
 import { ArrowLeft, Check } from "lucide-react";
 import { LoginForm } from "./login-form";
 
@@ -13,8 +14,7 @@ export const metadata: Metadata = {
 export default function LoginPage() {
   return <main className="grid min-h-screen bg-[var(--surface)] lg:grid-cols-[1.06fr_.94fr]">
     <section className="panel-dark relative hidden overflow-hidden p-12 lg:flex lg:flex-col lg:justify-between">
-      <div className="tumar-field absolute inset-0 opacity-40" />
-      <Link href="/" className="relative flex items-center gap-3 text-xl font-extrabold"><span className="tumar-mark" /> Dukenim</Link>
+      <Link href="/" className="relative flex items-center gap-3 text-xl font-extrabold"><DukenimLogo inverse/></Link>
       <div className="relative max-w-xl">
         <div className="data-label text-white/50">ЕДИНАЯ СИСТЕМА ТОРГОВЛИ</div>
         <h1 className="mt-4 text-6xl font-extrabold leading-[.98]">Магазин работает.<br/><span className="text-[var(--accent-bright)]">Вы всё видите.</span></h1>

@@ -1,2 +1,10 @@
-import{NextResponse}from"next/server";import{processPayment}from"@/lib/payment";
-export async function POST(request:Request){const body=await request.json() as{amount?:number;reference?:string;description?:string};if(!Number.isInteger(body.amount)||!body.reference)return NextResponse.json({error:"Invalid payment request"},{status:400});const result=await processPayment({amount:body.amount!,reference:body.reference,currency:"KZT",description:body.description??"Dukenim payment"});return NextResponse.json(result)}
+import { NextResponse } from "next/server";
+
+// Legacy placeholder kept fail-closed so no client-supplied amount can ever be
+// treated as a real payment. Subscriptions use the authenticated Polar routes.
+export async function POST() {
+  return NextResponse.json(
+    { error: "Онлайн-оплата заказов ещё не подключена. Используйте оплату при получении." },
+    { status: 503 },
+  );
+}

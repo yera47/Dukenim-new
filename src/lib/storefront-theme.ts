@@ -22,7 +22,7 @@ export const templateCatalog = [
   {key:"market",name:"Маркет",minPlan:"basic",description:"Практичная витрина для ассортимента и категорий."},
   {key:"journal",name:"Журнал",minPlan:"standard",description:"Истории, подборки и коллекции для бренда."},
   {key:"gallery",name:"Галерея",minPlan:"standard",description:"Премиальная подача коллекций, акций и кампаний."},
-  {key:"signature",name:"Сигнатура",minPlan:"standard",description:"Гибкая витрина для собственного домена."},
+  {key:"signature",name:"Сигнатура",minPlan:"standard",description:"Гибкая витрина для фирменных кампаний."},
 ] as const;
 
 // The first-run choice is deliberately compact: two distinct, curated directions per public plan.

@@ -23,6 +23,8 @@ This positioning is a testable marketing hypothesis, not an immutable fact. Meas
 
 ## Current brand
 
+2026-09-06 owner update: platform website/cabinet now moves to monochrome, ChatGPT-inspired simplicity with restrained explanatory phone/CRM illustrations. The previous gold/room website direction is superseded. Existing social assets and the old PDF below have not been regenerated or republished; do not describe them as the updated web design.
+
 - Use `public/brand/dukenim-flat-*` and the August 2026 brandbook.
 - Black Jade `#071B17`, Aged Gold `#B08A50`, Pale Stone `#F4F0E8`, Graphite `#101713`, Warm Sand `#E8DFD0`.
 - Manrope typography.

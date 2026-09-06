@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ url: checkout.url });
-  } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось начать оплату" }, { status: 400 });
+  } catch {
+    return NextResponse.json({ error: "Не удалось начать оплату. Попробуйте ещё раз или напишите в поддержку." }, { status: 502 });
   }
 }

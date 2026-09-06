@@ -2,6 +2,8 @@
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
+- 2026-09-06: Owner requested a ChatGPT-inspired black-and-white platform website/cabinet without decorative room imagery. Phone/CRM illustrations are only for explaining the product. This supersedes the cinematic gold/room website direction; preserve configurable tenant branding and commerce/security rules.
+
 - 2026-08-17: A storefront catalog is an explicit owner-created resource: registration creates an account, then the owner creates and names a catalog, then adds its first product. Product creation must never silently create a catalog.
 - 2026-08-17: Catalog creation includes the first design choice. Each public tariff offers two distinct curated storefront templates and curated palettes; «Бренд» also allows a brand accent colour.
 - 2026-08-17: Claude Code must turn substantial owner requests into a repository-grounded, structured Codex brief before delegation, preserving the owner’s explicit constraints and acceptance criteria.

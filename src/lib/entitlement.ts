@@ -3,8 +3,7 @@ import type { Plan } from "@/lib/plans";
 export type TenantEntitlement = { active: boolean; plan: Plan; trialActive: boolean; expired: boolean };
 export type EntitlementInput = { plan: Plan; next_plan: Plan | null; status: "active" | "paused" | "trial"; trial_ends_at: string | null };
 
-// Trial is a neutral full-access period (owner decision, 2026-08-18): while it is running,
-// entitlement is based on the plan the owner is heading toward (`next_plan`), not the
+// During a valid trial, entitlement is based on the selected plan (`next_plan`), not the
 // placeholder `basic` plan stored on the row. Once the trial ends without a paid
 // subscription, entitlement collapses to the stored `plan` and `expired` becomes true.
 export function computeEntitlement(tenant: EntitlementInput, now = Date.now()): TenantEntitlement {

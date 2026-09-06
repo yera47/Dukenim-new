@@ -3,11 +3,16 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { Database } from "@/types/database";
 import { getProfileRole, getUserTenant } from "@/lib/queries/auth";
 import { getTenant } from "@/lib/queries/owner";
+import { computeEntitlement } from "@/lib/entitlement";
 
 export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return NextResponse.next();
+  if (!url || !key) {
+    // Local UI previews may use fixtures; hosted cabinets must never fail open.
+    if (process.env.VERCEL) return new NextResponse("Сервис временно недоступен", { status: 503 });
+    return NextResponse.next();
+  }
 
   let response = NextResponse.next({ request });
   const client = createServerClient<Database>(url, key, {
@@ -21,12 +26,18 @@ export async function middleware(request: NextRequest) {
     },
   });
 
+  const redirect = (target: URL) => {
+    const redirected = NextResponse.redirect(target);
+    response.cookies.getAll().forEach(cookie => redirected.cookies.set(cookie));
+    return redirected;
+  };
+
   const { data: { user } } = await client.auth.getUser();
-  if (!user) return NextResponse.redirect(new URL("/login", request.url));
+  if (!user) return redirect(new URL("/login", request.url));
 
   const { data: profile } = await getProfileRole(client, user.id);
-  if (request.nextUrl.pathname.startsWith("/root") && profile?.role !== "superadmin") return NextResponse.redirect(new URL("/admin", request.url));
-  if (request.nextUrl.pathname.startsWith("/admin") && !["owner", "superadmin"].includes(profile?.role ?? "")) return NextResponse.redirect(new URL("/login", request.url));
+  if (request.nextUrl.pathname.startsWith("/root") && profile?.role !== "superadmin") return redirect(new URL("/admin", request.url));
+  if (request.nextUrl.pathname.startsWith("/admin") && !["owner", "superadmin"].includes(profile?.role ?? "")) return redirect(new URL("/login", request.url));
 
   if (profile?.role === "owner") {
     const { data: membership } = await getUserTenant(client, user.id);
@@ -36,21 +47,21 @@ export async function middleware(request: NextRequest) {
 
       // Older production databases may not have onboarding_completed yet.
       // Only an explicit false should block the cabinet route.
-      if (tenant?.onboarding_completed === false && !onOnboarding) return NextResponse.redirect(new URL("/onboarding", request.url));
-      if (tenant?.onboarding_completed === true && onOnboarding) return NextResponse.redirect(new URL("/admin", request.url));
+      if (tenant?.onboarding_completed === false && !onOnboarding) return redirect(new URL("/onboarding", request.url));
+      if (tenant?.onboarding_completed === true && onOnboarding) return redirect(new URL("/admin", request.url));
 
-      const expired = tenant?.status === "trial" && tenant.trial_ends_at && new Date(tenant.trial_ends_at).getTime() <= Date.now();
-      if (expired && !request.nextUrl.pathname.startsWith("/admin/plan")) {
+      const entitlement = tenant ? computeEntitlement(tenant) : null;
+      if (entitlement && !entitlement.active && !request.nextUrl.pathname.startsWith("/admin/plan")) {
         const target = new URL("/admin/plan", request.url);
         target.searchParams.set("expired", "1");
-        return NextResponse.redirect(target);
+        return redirect(target);
       }
 
       const restricted = ["/admin/stock", "/admin/analytics", "/admin/customers"];
-      if (tenant?.status !== "trial" && tenant?.plan === "basic" && restricted.some(path => request.nextUrl.pathname.startsWith(path))) {
+      if (entitlement?.active && entitlement.plan === "basic" && restricted.some(path => request.nextUrl.pathname.startsWith(path))) {
         const target = new URL("/admin/plan", request.url);
         target.searchParams.set("locked", "standard");
-        return NextResponse.redirect(target);
+        return redirect(target);
       }
     }
   }

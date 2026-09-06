@@ -2,6 +2,13 @@
 
 Last reviewed: 2026-09-04
 
+## Update — 2026-09-06 (release not confirmed)
+
+- Local homepage now uses the owner's monochrome direction. Full cabinet/mobile redesign remains incomplete; old gold/room website branding below is historical.
+- Checkout v2, support context, onboarding preferences and AI campaign linking are implemented locally; six targeted 20260905 migrations were applied this session. Legacy anonymous order RPC was restricted. Matching source deployment/smoke remains a priority.
+- Polar Dukenim products and production webhook exist; Vercel IDs/secret were changed. Access-token organization, old subscriptions and checkout remain unverified: migration is NOT complete. Backup, legal and native release gates remain open.
+- The local public product story now has a reduced-motion-safe interactive transition from storefront phone to order to CRM (`CommerceMotion`). The official D symbol is reused as a monochrome mark in homepage/auth/admin surfaces. `/root/diagnostics` is a read-only superadmin health/audit page; root mutations reject local demo sessions.
+
 ## Product
 
 Dukenim is a multi-tenant commerce platform for small and growing retailers in Kazakhstan. A customer uses a branded catalog/storefront while the owner manages products, orders, stock, customers, and analytics from `/admin`. Platform administration lives at `/root`.

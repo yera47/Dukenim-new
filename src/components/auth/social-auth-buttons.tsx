@@ -46,7 +46,7 @@ export function SocialAuthButtons({ next, mode }: SocialAuthButtonsProps) {
   return <div className="space-y-3">
     <div className="grid gap-2 sm:grid-cols-2">
       {providers.map(({ provider, label }) => <button key={provider} type="button" onClick={() => signIn(provider)} disabled={Boolean(pending)} className="btn btn-secondary w-full text-sm disabled:opacity-55" aria-label={`Продолжить с ${label}`}>
-        {pending === provider ? <LoaderCircle size={17} className="animate-spin" /> : <span aria-hidden="true" className="font-extrabold">{label}</span>}
+        {pending === provider && <LoaderCircle size={17} className="animate-spin" />}
         {pending === provider ? "Открываем…" : `Продолжить с ${label}`}
       </button>)}
     </div>

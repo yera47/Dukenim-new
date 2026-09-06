@@ -1,17 +1,35 @@
-"use client";
+import { notFound } from "next/navigation";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getCheckoutOptions } from "@/lib/queries/orders";
+import { resolveTenant } from "@/lib/tenant";
+import { CheckoutClient, type CheckoutZone } from "./checkout-client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { CheckCircle2, ChevronLeft } from "lucide-react";
-import { money } from "@/lib/demo-data";
-import { useCart } from "@/components/store/cart-provider";
-import { useParams } from "next/navigation";
+export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const tenant = await resolveTenant(slug);
+  if (!tenant) notFound();
 
-type Result = { orderNumber: number; total: number };
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return <CheckoutClient slug={slug} deliveryEnabled pickupEnabled minOrder={0} zones={[{ id: "00000000-0000-4000-8000-000000000001", name: "По городу", cost: 1500, freeFrom: null, etaText: "1–2 дня" }]}/>;
+  }
 
-export default function Checkout() {
-  const { slug } = useParams<{ slug: string }>(); const { items, total, clear } = useCart(); const [step, setStep] = useState(1); const [name, setName] = useState(""); const [phone, setPhone] = useState(""); const [delivery, setDelivery] = useState("courier"); const [address, setAddress] = useState(""); const [payment, setPayment] = useState("cash"); const [result, setResult] = useState<Result | null>(null); const [error, setError] = useState<string | null>(null); const [pending, setPending] = useState(false);
-  async function submit() { setPending(true); setError(null); const response = await fetch("/api/orders", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: address, paymentMethod: payment, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) }) }); const data = await response.json() as Result & { error?: string }; setPending(false); if (!response.ok) { setError(data.error ?? "Не удалось оформить заказ"); return; } clear(); setResult(data); }
-  if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58} /><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">Сумма: {money(result.total)}. Магазин свяжется с вами.</p><Link href={`/s/${slug}`} className="btn btn-cta mt-7">Вернуться в магазин</Link></div></main>;
-  return <main className="container py-10"><Link href={`/s/${slug}/cart`} className="muted inline-flex gap-1 text-sm"><ChevronLeft size={17} /> Корзина</Link><div className="mx-auto mt-8 max-w-3xl"><div className="mb-8 flex justify-between">{["Контакты", "Доставка", "Подтверждение"].map((title, index) => <div key={title} className={`flex items-center gap-2 text-sm font-bold ${step >= index + 1 ? "text-[var(--accent)]" : "text-[var(--ink-60)]"}`}><span className="grid size-8 place-items-center rounded-full border">{index + 1}</span><span className="desktop-only">{title}</span></div>)}</div><section className="card p-6 md:p-9">{step === 1 && <><h1 className="text-3xl font-semibold">Ваши контакты</h1><p className="muted mt-2">Регистрация не нужна — только данные для связи.</p><div className="mt-7 grid gap-4"><input value={name} onChange={(event) => setName(event.target.value)} className="input" placeholder="Ваше имя" /><input value={phone} onChange={(event) => setPhone(event.target.value)} className="input" placeholder="+7 777 000 00 00" /></div></>}{step === 2 && <><h1 className="text-3xl font-semibold">Способ получения</h1><div className="mt-7 grid gap-3"><label className="card flex gap-4 p-4"><input checked={delivery === "courier"} onChange={() => setDelivery("courier")} type="radio" /><span><b>Доставка по городу</b><small className="muted block">Стоимость подтвердит магазин</small></span></label><label className="card flex gap-4 p-4"><input checked={delivery === "pickup"} onChange={() => setDelivery("pickup")} type="radio" /><span><b>Самовывоз — бесплатно</b><small className="muted block">Адрес уточнит магазин</small></span></label>{delivery === "courier" && <textarea value={address} onChange={(event) => setAddress(event.target.value)} className="input min-h-24 py-3" placeholder="Адрес доставки" />}</div></>}{step === 3 && <><h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.variantId} className="flex justify-between border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.product.price * item.qty)}</b></p>)}<p className="flex justify-between pt-3 text-xl font-bold"><span>Товары</span><span>{money(total)}</span></p></div><div className="mt-6 grid gap-3"><label className="card flex gap-3 p-4"><input type="radio" checked={payment === "cash"} onChange={() => setPayment("cash")} /><span><b>При получении</b><small className="muted block">Наличными или Kaspi QR при получении</small></span></label><label className="card flex gap-3 p-4 opacity-60"><input type="radio" checked={payment === "online"} onChange={() => setPayment("online")} /><span><b>Онлайн-оплата</b><small className="muted block">Появится после подключения провайдера</small></span></label></div></>}{error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-[var(--danger)]">{error}</p>}<div className="mt-8 flex justify-between"><button disabled={step === 1} onClick={() => setStep((value) => value - 1)} className="btn btn-secondary disabled:opacity-0">Назад</button>{step < 3 ? <button disabled={(step === 1 && (!name || !phone)) || (step === 2 && delivery === "courier" && !address)} onClick={() => setStep((value) => value + 1)} className="btn btn-cta disabled:opacity-50">Продолжить</button> : <button disabled={pending || !items.length || payment === "online"} onClick={submit} className="btn btn-cta disabled:opacity-50">{pending ? "Оформляем…" : "Подтвердить заказ"}</button>}</div></section></div></main>;
+  const options = await getCheckoutOptions(createAdminClient(), tenant.id);
+  if (options.error) {
+    return <CheckoutClient slug={slug} deliveryEnabled={false} pickupEnabled={false} minOrder={0} zones={[]}/>;
+  }
+  const zones: CheckoutZone[] = options.zones.map((zone) => ({
+    id: zone.id,
+    name: zone.name,
+    cost: zone.cost,
+    freeFrom: zone.free_from,
+    etaText: zone.eta_text,
+  }));
+
+  return <CheckoutClient
+    slug={slug}
+    deliveryEnabled={Boolean(options.settings?.delivery_enabled && zones.length)}
+    pickupEnabled={options.settings?.pickup_enabled ?? true}
+    minOrder={options.settings?.min_order ?? 0}
+    zones={zones}
+  />;
 }

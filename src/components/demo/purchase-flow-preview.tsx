@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styles from "./purchase-flow-preview.module.css";
 
 const productPhoto = "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260902_100009_9eea2fd0-eeae-4319-b198-50e29d34ada0.png";
@@ -10,17 +11,17 @@ export function PurchaseFlowPreview() {
     <section className={styles.grid}>
       <article className={styles.block}>
         <div className={styles.blockTop}><b>01</b><span>Каталог в телефоне</span></div>
-        <div className={styles.phone}><div className={styles.notch}/><div className={styles.storebar}><b>JANYM_DA</b><span>⌕　♡　🛍</span></div><img src={productPhoto} alt="Товар в карточке каталога"/><div className={styles.product}><small>КУРТКА SOFT UTILITY</small><h2>48 900 ₸</h2><div className={styles.size}><span>S</span><span className={styles.selected}>M</span><span>L</span></div><button>В корзину <i>→</i></button></div></div>
+        <div className={styles.phone}><div className={styles.notch}/><div className={styles.storebar}><b>JANYM_DA</b><span>⌕　♡　🛍</span></div><Image unoptimized width={720} height={900} src={productPhoto} alt="Товар в карточке каталога"/><div className={styles.product}><small>КУРТКА SOFT UTILITY</small><h2>48 900 ₸</h2><div className={styles.size}><span>S</span><span className={styles.selected}>M</span><span>L</span></div><button>В корзину <i>→</i></button></div></div>
         <div className={styles.copy}><h3>Выбор без переписки</h3><p>Фото, цена, размер и наличие сразу в карточке товара.</p></div>
       </article>
       <article className={styles.block}>
         <div className={styles.blockTop}><b>02</b><span>Корзина и способ получения</span></div>
-        <div className={styles.phone}><div className={styles.notch}/><div className={styles.storebar}><b>Корзина</b><span>×</span></div><div className={styles.orderItem}><img src={setPhoto} alt="Товар в корзине"/><span><b>Двойка Cloud navy</b><small>Размер M · 52 900 ₸</small></span></div><div className={styles.choice}><b>Как получить</b><p>◉ Доставка с примеркой</p><p>○ Самовывоз и бронь</p></div><div className={styles.choice}><b>Оплата</b><p>◉ При получении</p><small>Kaspi QR при выдаче</small></div><button className={styles.checkout}>Подтвердить · 52 900 ₸ <i>→</i></button></div>
+        <div className={styles.phone}><div className={styles.notch}/><div className={styles.storebar}><b>Корзина</b><span>×</span></div><div className={styles.orderItem}><Image unoptimized width={180} height={225} src={setPhoto} alt="Товар в корзине"/><span><b>Двойка Cloud navy</b><small>Размер M · 52 900 ₸</small></span></div><div className={styles.choice}><b>Как получить</b><p>◉ Доставка с примеркой</p><p>○ Самовывоз и бронь</p></div><div className={styles.choice}><b>Оплата</b><p>◉ При получении</p><small>Kaspi QR при выдаче</small></div><button className={styles.checkout}>Подтвердить · 52 900 ₸ <i>→</i></button></div>
         <div className={styles.copy}><h3>Условия без сюрпризов</h3><p>Покупатель выбирает доставку или бронь. Оплата — только реальным способом магазина.</p></div>
       </article>
       <article className={styles.block}>
         <div className={styles.blockTop}><b>03</b><span>Заказ сразу в приложении</span></div>
-        <div className={styles.dashboard}><div className={styles.side}><strong>D</strong><span>Главная</span><span className={styles.active}>Заказы</span><span>Товары</span><span>Клиенты</span></div><div className={styles.content}><p>Сегодня · 12 августа</p><h2>Новый заказ <em>●</em></h2><div className={styles.orderRow}><img src={productPhoto} alt="Заказ товара"/><span><b>#DK-2048 · Куртка Soft utility</b><small>Размер M · доставка с примеркой</small></span><strong>48 900 ₸</strong></div><div className={styles.status}><span>Новый</span><i>→</i><span>Подтверждён</span><i>→</i><span>Выдан</span></div></div></div>
+        <div className={styles.dashboard}><div className={styles.side}><strong>D</strong><span>Главная</span><span className={styles.active}>Заказы</span><span>Товары</span><span>Клиенты</span></div><div className={styles.content}><p>Сегодня · 12 августа</p><h2>Новый заказ <em>●</em></h2><div className={styles.orderRow}><Image unoptimized width={180} height={225} src={productPhoto} alt="Заказ товара"/><span><b>#DK-2048 · Куртка Soft utility</b><small>Размер M · доставка с примеркой</small></span><strong>48 900 ₸</strong></div><div className={styles.status}><span>Новый</span><i>→</i><span>Подтверждён</span><i>→</i><span>Выдан</span></div></div></div>
         <div className={styles.copy}><h3>Владелец видит заказ сразу</h3><p>Заказ появляется в CRM: можно подтвердить, собрать, выдать или перевести в доставку.</p></div>
       </article>
     </section>

@@ -7,8 +7,8 @@ import { useState } from "react";
 type Billing = "month" | "year";
 
 const plans = [
-  { key: "basic", name: "Старт", summary: "Продажи без лишней переписки.", monthly: 24900, yearly: 239000, saving: 59800, features: ["Каталог, корзина и заказы", "CRM Dukenim, склад и сотрудники", "Товары и фотографии без лимита", "Готовые палитры и шаблоны", "Адрес slug.dukenim.kz"] },
-  { key: "standard", name: "Бренд", summary: "Ваш бренд. Умная система продаж.", monthly: 34900, yearly: 335000, saving: 83800, features: ["Всё из тарифа «Старт»", "Собственный домен и точная палитра", "Акции, кампании и редактор блоков", "AI Studio: черновики витрины", "Расширенная аналитика"] },
+  { key: "basic", name: "Старт", summary: "Продажи без лишней переписки.", monthly: 24900, yearly: 239000, saving: 59800, features: ["Каталог, корзина и заказы", "AI Studio: тексты и структура каталога", "Товары и фотографии без лимита", "Готовые палитры и шаблоны", "Постоянная ссылка dukenim.kz/s/магазин"] },
+  { key: "standard", name: "Бренд", summary: "Ваш бренд. Умная система продаж.", monthly: 34900, yearly: 335000, saving: 83800, features: ["Всё из тарифа «Старт»", "CRM: остатки, клиенты и аналитика", "Точная палитра и расширенные шаблоны", "Акции, бренд-блоки и AI-баннеры", "Расширенная аналитика витрины"] },
 ] as const;
 
 function price(value: number) { return new Intl.NumberFormat("ru-KZ").format(value); }
@@ -21,7 +21,7 @@ export function PricingSection() {
     <div className="pricing-rebuild-top"><div className="pricing-rebuild-copy">
       <p className="pricing-eyebrow">Тарифы Dukenim</p>
       <h2>Начните с продаж. Растите с брендом.</h2>
-      <p className="pricing-lead">Обе подписки включают 7 дней полного доступа без карты. Выбирайте период, а не скрытые условия.</p>
+      <p className="pricing-lead">Обе подписки включают 7 дней доступа к выбранному тарифу без карты. Выбирайте период, а не скрытые условия.</p>
       <div className="pricing-billing-switch" role="group" aria-label="Период оплаты">
         <button type="button" className={billing === "month" ? "is-active" : ""} aria-pressed={billing === "month"} onClick={() => setBilling("month")}>Ежемесячно</button>
         <button type="button" className={billing === "year" ? "is-active" : ""} aria-pressed={billing === "year"} onClick={() => setBilling("year")}>За год · выгоднее</button>
@@ -35,7 +35,7 @@ export function PricingSection() {
       return <article key={plan.key} className={`pricing-rebuild-card${isBrand ? " is-brand" : ""}`}>
         <div className="pricing-card-topline"><p>{plan.name}</p>{isBrand && <span><Sparkles size={13} /> AI Studio</span>}</div>
         <h3>{plan.summary}</h3>
-        <div className="pricing-rebuild-price"><strong>{price(yearly ? plan.yearly : plan.monthly)} ₸</strong><span>{yearly ? `в год · экономия ${price(plan.saving)} ₸` : "в месяц · 7 дней полного доступа"}</span></div>
+        <div className="pricing-rebuild-price"><strong>{price(yearly ? plan.yearly : plan.monthly)} ₸</strong><span>{yearly ? `в год · экономия ${price(plan.saving)} ₸` : "в месяц · 7 дней выбранного тарифа"}</span></div>
         <ul>{plan.features.map((feature) => <li key={feature}><Check size={16} />{feature}</li>)}</ul>
         <Link href={`/register?plan=${plan.key}&billing=${billing}`} className="pricing-card-action">Выбрать «{plan.name}» <ArrowRight size={17} /></Link>
       </article>;
