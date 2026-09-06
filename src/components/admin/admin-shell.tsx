@@ -29,15 +29,16 @@ import { planName, type Plan } from "@/lib/plans";
 import { TrialTimer } from "./trial-timer";
 
 const nav = [
+  ["/admin/ai-studio", "AI Studio", Sparkles],
   ["/admin", "Обзор", LayoutDashboard],
   ["/admin/catalog", "Каталог", Package],
   ["/admin/orders", "Заказы", ReceiptText],
   ["/admin/stock", "Склад", Boxes],
   ["/admin/analytics", "Аналитика", BarChart3],
   ["/admin/customers", "Клиенты", Users],
-  ["/admin/ai-studio", "AI Studio", Sparkles],
   ["/admin/requests", "Поддержка", MessageSquare],
   ["/admin/integrations", "Интеграции", Link2],
+  ["/admin/domains", "Ссылка и домен", ExternalLink],
   ["/admin/plan", "Тариф", WalletCards],
   ["/admin/settings", "Настройки", Settings],
 ] as const;

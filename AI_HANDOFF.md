@@ -1,5 +1,19 @@
 # Dukenim — AI handoff
 
+## Active continuation — 2026-09-07: AI-first catalog workflow
+
+- Owner explicitly requests AI chat as the first workspace after onboarding; niche-specific storefronts/media, a useful full root console, clear domains guidance and continued product/security auditing. Do not treat this slice as completion of that entire request.
+- Implemented a responsive two-column Studio (prompt/result), primary desktop/mobile AI navigation, in-place catalog/product editors and return to Studio after save. No longer locks AI until the first product. Last saved structure survives catalog creation via tenant-scoped generation lookup.
+- Added POST /api/ai-studio/structure/apply: authenticated owner/superadmin + active entitlement + existing catalog, loads persisted AI output filtered by tenant, inserts sections through session/RLS. Stable generation-based slugs and existing unique (tenant_id,slug) make retries non-destructive/idempotent. No arbitrary client output is applied. Product creation can select these categories and verifies tenant ownership before uploads/save.
+- The structure action saves category names only; descriptions are proposal text. It does not generate products/prices, publish a whole site or provide general-purpose autonomous chat. Latest structure only is restored; full conversation history and context-aware follow-up are unfinished.
+- Added /admin/domains: real existing storefront link and explicit human-assisted DNS workflow; no invented DNS target or automated verification claim. Homepage/FAQ/pricing explain AI in both plans without changing prices.
+- Root access changes now validate IDs/enums/reasons, require a pre-change audit and use one UPDATE for plan/status; failures are no longer ignored. Full tenant/catalog CRUD console remains unfinished.
+- Checks: tsc clean, 45 tests pass, production build passes (56 generated routes). Desktop and 390px Studio screenshots inspected locally; browser verified editor opens in place and offline save correctly refuses without fake success. Production category uniqueness/RLS inspected; rollback transaction verified repeated insertion leaves one row and no persistent test data.
+- Files: admin/ai-studio/**, admin/domains/page.tsx, api/ai-studio/{draft,structure/apply}/**, admin/actions.ts, admin/catalog/new/page.tsx, root/actions{,.test}.ts, components/admin/{admin-shell,catalog-setup-form,product-form}.tsx, homepage, pricing and FAQ.
+- Higgsfield: balance read showed 134 credits, no unlimited/free generation. Requested spending ceiling asynchronously; no credits spent, no new image/video generated. Product-photoshoot skill inspected; do not claim media production complete.
+- Next: verify this release on production with an authenticated new-store journey. Expand root tenant operations with audit; implement niche previews/templates and human-readable conversational state; fix DB-level category ownership enforcement (server path now checks, legacy product RPC still needs review); add media only after budget selection. Native/TestFlight, legal/payout/backup gates remain open.
+- Previous release d49ea5e was confirmed Ready and aliased to www.dukenim.kz on this date. Current release status must be checked after publishing, not inferred.
+
 ## Active continuation — 2026-09-06
 
 ### Release preparation update

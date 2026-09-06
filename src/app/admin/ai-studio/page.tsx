@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, MessageSquare, Sparkles } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { tenantEntitlement } from "@/lib/plan-access";
 import { hasPlan } from "@/lib/plans";
-import { getAiStudioStatus } from "@/lib/ai/studio";
+import { aiStudioStructureSchema, getAiStudioStatus } from "@/lib/ai/studio";
 import { AiStudioClient } from "./ai-studio-client";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/queries/owner";
@@ -15,12 +15,16 @@ export default async function AiStudioPage() {
   const status = getAiStudioStatus();
   const tenant = tenantId && process.env.NEXT_PUBLIC_SUPABASE_URL ? (await getTenant(await createClient(), tenantId)).data : null;
   const catalogStatus = tenant?.catalog_status ?? "not_started";
+  const client = tenant ? await createClient() : null;
+  const latest = client ? (await client.from("ai_studio_generations").select("id,output").eq("tenant_id", tenantId!).eq("intent", "catalog_structure").order("created_at", { ascending: false }).limit(1).maybeSingle()).data : null;
+  const parsed = aiStudioStructureSchema.safeParse(latest?.output);
+  const initialStructure = latest && parsed.success ? { generationId: latest.id, structure: parsed.data } : undefined;
+  const categories = client ? (await client.from("categories").select("id,name").eq("tenant_id", tenantId!).eq("is_active", true).order("sort_order")).data ?? [] : [];
   return <section className="ai-studio-page">
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--r-card)] border border-[var(--line)] bg-[var(--surface-2)] p-4 text-sm">
-      <p><b>Не про текст витрины?</b> <span className="muted">Опишите вопрос команде Dukenim напрямую.</span></p>
-      <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary shrink-0"><MessageSquare size={16}/> Нужна помощь человека <ArrowRight size={15}/></Link>
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <div><p className="muted text-sm">Ваш помощник в магазине</p><h1 className="mt-1 text-2xl font-bold">AI Studio</h1></div>
+      <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать человеку</Link>
     </div>
-    <div className="ai-studio-hero"><span className="data-label">РАБОЧИЙ ЦЕНТР ВЛАДЕЛЬЦА · AI STUDIO</span><Sparkles size={28}/><h1>Соберите магазин<br/>вместе с AI.</h1><p>AI помогает подготовить каталог, тексты и визуальные материалы. Вы проверяете каждый результат и сами решаете, что публиковать.</p></div>
-    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} />
+    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} initialStructure={initialStructure} categories={categories} />
   </section>;
 }

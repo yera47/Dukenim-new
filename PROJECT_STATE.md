@@ -2,6 +2,12 @@
 
 Last reviewed: 2026-09-04
 
+## Update — 2026-09-07
+
+- AI-first first-run workflow is implemented in source: Studio available before first product, embedded catalog/product editors, real explicit saving of generated category names, mobile-primary AI navigation, and a domain help page. TypeScript, 45 tests and production build passed; production authenticated E2E remains required.
+- Root plan/status mutation now validates input, records intent before mutation and updates both fields together. Full root catalog CRUD is still incomplete.
+- The previous d49ea5e release is verified Ready on both canonical domains. The four Polar tariff checkout creations were verified in its release preparation; real settlement/payout is not verified. Higgsfield production is pending a spending ceiling, not completed.
+
 ## Update — 2026-09-06 (release not confirmed)
 
 - Local homepage now uses the owner's monochrome direction. Full cabinet/mobile redesign remains incomplete; old gold/room website branding below is historical.

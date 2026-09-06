@@ -1,31 +1,182 @@
 "use client";
-import { useState } from "react";
+
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
-import { ArrowRight, LockKeyhole, PackagePlus, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Check, LoaderCircle, Send, Sparkles } from "lucide-react";
+import { CatalogSetupForm } from "@/components/admin/catalog-setup-form";
+import { ProductForm } from "@/components/admin/product-form";
+import styles from "./studio.module.css";
+
 type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
 type Banner = { imageUrl: string; generationId: string };
 type Structure = { sections: Array<{ name: string; description: string }> };
 const intents: Array<{ id: Intent; title: string; text: string }> = [
-  { id: "hero", title: "Главный блок", text: "Переосмыслить обещание и CTA витрины." },
-  { id: "promotion", title: "Акция", text: "Собрать честный черновик кампании." },
-  { id: "catalog_copy", title: "Подборка", text: "Описать категорию или сезонный выбор." },
-  { id: "catalog_structure", title: "Структура каталога", text: "Собрать разделы под выбранный тип бизнеса." },
-  { id: "banner", title: "Рекламный баннер · Бренд", text: "Создать визуальную основу кампании без товара и текста." },
+  { id: "catalog_structure", title: "Разделы каталога", text: "Что продаёте и как покупатели выбирают товар?" },
+  { id: "hero", title: "Описание магазина", text: "Расскажите, что отличает ваш магазин и кому он подходит." },
+  { id: "catalog_copy", title: "Текст подборки", text: "Какие товары объединяем и что важно покупателю?" },
+  { id: "promotion", title: "Объявление об акции", text: "Укажите реальные условия, сроки и товары акции." },
+  { id: "banner", title: "Фон для баннера", text: "Опишите настроение и композицию. Фотографии реального товара добавляются отдельно." },
 ];
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus }: { enabled: boolean; imageEnabled: boolean; brand: boolean; catalogStatus: "not_started" | "building" | "ready" }) {
-  const [intent, setIntent] = useState<Intent>("catalog_structure"), [brief, setBrief] = useState(""), [pending, setPending] = useState(false), [purchasePending, setPurchasePending] = useState(false), [campaignPending, setCampaignPending] = useState(false), [campaignId, setCampaignId] = useState<string | null>(null), [error, setError] = useState(""), [draft, setDraft] = useState<Draft | null>(null), [structure, setStructure] = useState<Structure | null>(null), [banner, setBanner] = useState<Banner | null>(null), [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
-  async function createDraft() { setPending(true); setError(""); setDraft(null); setStructure(null); setBanner(null); setCampaignId(null); try { const endpoint = intent === "banner" ? "/api/ai-studio/banner" : "/api/ai-studio/draft"; const body = intent === "banner" ? { brief } : { intent, brief }; const response = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }); const data = await response.json(); if (!response.ok) { if (data.needsTopup) setCreditsRemaining(0); throw new Error(data.error); } setDraft(data.draft ?? null); setStructure(data.structure ?? null); setBanner(data.imageUrl && data.generationId ? { imageUrl: data.imageUrl, generationId: data.generationId } : null); if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining); } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось создать результат."); } finally { setPending(false); } }
-  async function buyCredits() { setPurchasePending(true); setError(""); try { const response = await fetch("/api/polar/ai-credits", { method: "POST" }); const data = await response.json(); if (!response.ok || !data.url) throw new Error(data.error ?? "Не удалось открыть оплату."); window.location.assign(data.url); } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось открыть оплату."); setPurchasePending(false); } }
-  async function addBannerToCampaigns() { if (!banner) return; setCampaignPending(true); setError(""); try { const response = await fetch("/api/ai-studio/banner/campaign", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ generationId: banner.generationId }) }); const data = await response.json(); if (!response.ok || !data.campaignId) throw new Error(data.error ?? "Не удалось создать кампанию."); setCampaignId(data.campaignId); } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось создать кампанию."); } finally { setCampaignPending(false); } }
-  if (catalogStatus !== "ready") {
-    const building = catalogStatus === "building";
-    return <div className="ai-studio-first-run"><div><span className="data-label">ПЕРВЫЙ ШАГ</span><h2>{building ? "Добавьте первый товар" : "Сначала создайте каталог"}</h2><p>{building ? "Основа каталога уже готова. Добавьте название, цену, остаток и фотографию первого товара — после сохранения AI Studio откроет рабочие инструменты." : "Выберите тип бизнеса и основу витрины. Затем добавьте первый товар — после этого AI Studio откроет рабочие инструменты вашего магазина."}</p><a className="btn btn-primary" href={building ? "/admin/catalog/new" : "/admin/catalog/create"}><PackagePlus size={17}/> {building ? "Добавить первый товар" : "Создать каталог"} <ArrowRight size={17}/></a></div><div className="ai-studio-locked-illustration" aria-hidden="true"><span>{building ? "ПЕРВЫЙ ТОВАР" : "КАТАЛОГ"}</span><i/><i/><i/></div></div>;
-  }
+type Props = {
+  enabled: boolean; imageEnabled: boolean; brand: boolean;
+  catalogStatus: "not_started" | "building" | "ready";
+  storeName: string; slug: string; plan: "basic" | "standard" | "pro";
+  initialStructure?: { generationId: string; structure: Structure };
+  categories?: Array<{ id: string; name: string }>;
+};
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, storeName, slug, plan, initialStructure, categories = [] }: Props) {
+  const router = useRouter();
+  const [intent, setIntent] = useState<Intent>("catalog_structure");
+  const [brief, setBrief] = useState("");
+  const [submitted, setSubmitted] = useState("");
+  const [pending, setPending] = useState(false);
+  const [purchasePending, setPurchasePending] = useState(false);
+  const [campaignPending, setCampaignPending] = useState(false);
+  const [campaignId, setCampaignId] = useState<string | null>(null);
+  const [error, setError] = useState("");
+  const [draft, setDraft] = useState<Draft | null>(null);
+  const [structure, setStructure] = useState<Structure | null>(initialStructure?.structure ?? null);
+  const [generationId, setGenerationId] = useState<string | null>(initialStructure?.generationId ?? null);
+  const [structureSaving, setStructureSaving] = useState(false);
+  const [structureSaved, setStructureSaved] = useState(false);
+  const [banner, setBanner] = useState<Banner | null>(null);
+  const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
+  const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  useEffect(() => {
+    if (workspaceOpen) document.getElementById("studio-setup")?.scrollIntoView({ block: "start", behavior: "instant" });
+  }, [workspaceOpen]);
+  const [copied, setCopied] = useState(false);
+  const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
   const canRun = intent === "banner" ? imageEnabled : enabled;
-  const unavailable = intent === "banner" && !brand
-    ? <><LockKeyhole size={16}/> Баннеры входят в тариф «Бренд». Тексты и структура каталога доступны уже сейчас.</>
-    : "Этот сценарий пока не подключён к серверу.";
+  const selected = intents.find((item) => item.id === intent)!;
   const supportHref = `/admin/requests?source=ai-studio&intent=${intent}`;
-  return <div className="ai-studio-grid"><div className="ai-studio-form">{intents.map((item) => <button key={item.id} onClick={() => setIntent(item.id)} type="button" className={intent === item.id ? "is-selected" : ""}><b>{item.title}</b><span>{item.text}</span></button>)}<label>Опишите ваш бизнес и задачу<textarea value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={800} placeholder="Например: женская одежда, базовые вещи на каждый день, спокойная палитра."/></label><button onClick={createDraft} disabled={!canRun || brief.trim().length < 8 || pending} className="btn btn-primary">{pending ? "AI собирает результат…" : <><Sparkles size={17}/>Создать результат</>}</button>{!canRun && <p className="ai-studio-note">{unavailable}</p>}{creditsRemaining !== null && creditsRemaining <= 20 && <div className="ai-studio-credit-warning"><span>Осталось AI-кредитов: <b>{creditsRemaining}</b></span><button type="button" onClick={buyCredits} disabled={purchasePending}>{purchasePending ? "Открываем оплату…" : "Добавить 100 кредитов"}</button></div>}{error && <p role="alert" className="ai-studio-error">{error} <a href={supportHref}>Нужна помощь человека →</a></p>}</div><aside className="ai-studio-preview"><span className="data-label">ПРЕДПРОСМОТР — НЕ ОПУБЛИКОВАНО</span>{banner ? <><Image unoptimized width={1600} height={900} src={banner.imageUrl} alt="Предпросмотр рекламного баннера" className="ai-studio-banner-preview"/><div className="mt-4 flex flex-wrap gap-2"><button type="button" onClick={addBannerToCampaigns} disabled={campaignPending || Boolean(campaignId)} className="btn btn-primary">{campaignPending ? "Создаём черновик…" : campaignId ? "Черновик создан" : "Добавить в кампании"}</button><a href={banner.imageUrl} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">Открыть изображение <ArrowRight size={16}/></a></div>{campaignId && <a href="/admin/settings#campaigns" className="mt-3 inline-flex text-sm font-bold text-[var(--accent)]">Настроить и опубликовать кампанию →</a>}<em>Проверьте изображение и текст кампании перед публикацией.</em></> : structure ? <><h2>Структура каталога</h2><div className="ai-studio-structure-list">{structure.sections.map((section) => <div key={section.name}><b>{section.name}</b><p>{section.description}</p></div>)}</div><em>Проверьте разделы и перенесите подходящие в каталог вручную.</em></> : draft ? <><small>{draft.eyebrow}</small><h2>{draft.title}</h2><p>{draft.body}</p><button type="button">{draft.ctaLabel}</button><em>Сначала проверьте текст, затем вручную перенесите его в настройки витрины или акцию.</em></> : <><h2>Ваш результат появится здесь.</h2><p>AI подготовит черновик, который вы проверите перед публикацией.</p></>}</aside></div>;
+
+  async function createDraft() {
+    if (pending || !canRun || brief.trim().length < 8) return;
+    setPending(true); setError(""); setCopied(false);
+    setGenerationId(null); setStructureSaved(false);
+    setDraft(null); setStructure(null); setBanner(null); setCampaignId(null);
+    setSubmitted(brief.trim());
+    try {
+      const response = await fetch(intent === "banner" ? "/api/ai-studio/banner" : "/api/ai-studio/draft", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(intent === "banner" ? { brief } : { intent, brief }),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        if (data.needsTopup) setCreditsRemaining(0);
+        throw new Error(data.error || "Не удалось получить ответ. Попробуйте ещё раз.");
+      }
+      setDraft(data.draft ?? null); setStructure(data.structure ?? null);
+      setGenerationId(data.generationId ?? null);
+      setBanner(data.imageUrl && data.generationId ? { imageUrl: data.imageUrl, generationId: data.generationId } : null);
+      if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось получить ответ."); }
+    finally { setPending(false); }
+  }
+  async function buyCredits() {
+    setPurchasePending(true); setError("");
+    try {
+      const response = await fetch("/api/polar/ai-credits", { method: "POST" });
+      const data = await response.json();
+      if (!response.ok || !data.url) throw new Error(data.error ?? "Не удалось открыть оплату.");
+      window.location.assign(data.url);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось открыть оплату."); setPurchasePending(false); }
+  }
+  async function addBannerToCampaigns() {
+    if (!banner) return;
+    setCampaignPending(true); setError("");
+    try {
+      const response = await fetch("/api/ai-studio/banner/campaign", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId: banner.generationId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.campaignId) throw new Error(data.error ?? "Не удалось сохранить кампанию.");
+      setCampaignId(data.campaignId);
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось сохранить кампанию."); }
+    finally { setCampaignPending(false); }
+  }
+  async function copyResult() {
+    const text = structure ? structure.sections.map((s) => `${s.name}\n${s.description}`).join("\n\n") : draft ? [draft.eyebrow, draft.title, draft.body, draft.ctaLabel].filter(Boolean).join("\n\n") : "";
+    try { await navigator.clipboard.writeText(text); setCopied(true); }
+    catch { setError("Браузер не разрешил копирование. Выделите текст результата вручную."); }
+  }
+  async function saveStructure() {
+    if (!generationId || structureSaving) return;
+    setStructureSaving(true); setError("");
+    try {
+      const response = await fetch("/api/ai-studio/structure/apply", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.saved) throw new Error(data.error ?? "Не удалось сохранить разделы.");
+      setStructureSaved(true); router.refresh();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось сохранить разделы."); }
+    finally { setStructureSaving(false); }
+  }
+
+  return <div className={styles.workspace}>
+    <ol className={styles.steps} aria-label="Этапы запуска магазина">
+      {["Создать основу", "Добавить товары", "Проверить витрину"].map((label, index) =>
+        <li key={label} aria-current={index === step ? "step" : undefined}>
+          <span>{index < step ? <Check size={15}/> : index + 1}</span>{label}
+        </li>)}
+    </ol>
+    <div className={styles.columns}>
+      <section className={styles.chat} aria-label="Помощник AI Studio">
+        <div className={styles.assistant}>
+          <Sparkles size={22} aria-hidden="true"/>
+          <div><h2>{step === 0 ? "Начнём с вашего магазина." : step === 1 ? "Основа есть. Теперь — первый товар." : "Что улучшим в магазине?"}</h2>
+            <p>{step === 0 ? "Расскажите, что продаёте. AI предложит разделы и текст, а рядом вы сможете создать настоящую витрину. Сначала предложение — затем ваше решение." : step === 1 ? "Добавьте свои фотографии, цену и остаток. AI доступен уже сейчас: поможет сформулировать описание и организовать ассортимент." : "Подготовим текст, подборку или фон для акции. Товары, заказы и настройки всегда доступны в меню."}</p>
+          </div>
+        </div>
+        <div className={styles.choices} aria-label="Задача для помощника">
+          {intents.map((item) => <button key={item.id} type="button" aria-pressed={intent === item.id} disabled={pending} onClick={() => setIntent(item.id)}>{item.title}</button>)}
+        </div>
+        {submitted && <div className={styles.userMessage}><small>Ваш запрос</small><p>{submitted}</p></div>}
+        <div aria-live="polite" role="status">
+          {pending && <p className={styles.waiting}><LoaderCircle size={18} className="animate-spin"/> Готовлю предложение для вашего магазина…</p>}
+          {!pending && (draft || structure || banner) && <p className={styles.answer}>Предложение готово в блоке результата. Проверьте факты перед использованием. Ничего не опубликовано автоматически.</p>}
+        </div>
+        <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void createDraft(); }}>
+          <label htmlFor="studio-message">{selected.text}</label>
+          <textarea id="studio-message" value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={800} minLength={8} required rows={4} placeholder="Например: магазин базовой женской одежды. Нужны понятные разделы: верх, низ, обувь. Тон — простой, без громких обещаний."/>
+          <div><small>{brief.length}/800 · {intent === "catalog_structure" ? "5 кредитов" : intent === "banner" ? "20 кредитов" : "1 кредит"}</small><button type="submit" disabled={!canRun || brief.trim().length < 8 || pending} aria-label="Отправить запрос"><Send size={18}/></button></div>
+        </form>
+        {!canRun && <p className={styles.notice}>{intent === "banner" && !brand ? "Фоны для баннеров входят в «Бренд». Разделы и тексты доступны на обоих тарифах." : "Генерация сейчас недоступна. Создание каталога вручную и поддержка остаются доступны."}</p>}
+        {creditsRemaining !== null && creditsRemaining <= 20 && <div className={styles.notice}>Осталось {creditsRemaining} кредитов. <button type="button" onClick={buyCredits} disabled={purchasePending}>{purchasePending ? "Открываем оплату…" : "Купить ещё 100"}</button></div>}
+        {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
+        <p className={styles.footnote}>AI помогает с разделами, текстами и фонами. Не меняет цены, остатки или DNS самостоятельно. <Link href="/admin/domains">Ссылка и свой домен →</Link></p>
+      </section>
+      <aside className={styles.preview} aria-label="Результат и создание магазина">
+        <div className={styles.previewHeading}><span>Ваш магазин</span><small>{step === 0 ? "Основа ещё не сохранена" : step === 1 ? "Ожидает первый товар" : "Каталог создан"}</small></div>
+        <h2>{storeName}</h2>
+        <p className={styles.address}>dukenim.kz/s/{slug}</p>
+        <div className={styles.nextStep}>
+          <b>{step === 0 ? "Создайте основу каталога" : step === 1 ? "Добавьте первый товар" : "Посмотрите глазами покупателя"}</b>
+          <p>{step === 0 ? "Название и оформление сохранятся в вашем магазине. Товары добавляются следующим шагом." : step === 1 ? "Используйте фотографии реального товара. Проверьте цену, варианты и доступность перед сохранением." : "Проверьте товары, контакты и способы получения заказа, прежде чем делиться ссылкой."}</p>
+          {step < 2 ? <button type="button" className="btn btn-primary" aria-expanded={workspaceOpen} aria-controls="studio-setup" onClick={() => setWorkspaceOpen(!workspaceOpen)}>{workspaceOpen ? "Свернуть редактор" : step === 0 ? "Создать каталог здесь" : "Добавить товар здесь"} <ArrowRight size={16}/></button> : <Link className="btn btn-primary" href={`/s/${slug}`} target="_blank" rel="noopener noreferrer">Открыть витрину <ArrowRight size={16}/></Link>}
+        </div>
+        <div className={styles.result}>
+          <small>ПРЕДЛОЖЕНИЕ AI · НЕ ОПУБЛИКОВАНО</small>
+          {banner ? <><Image unoptimized width={1600} height={900} src={banner.imageUrl} alt="Предложенный фон для баннера"/><button className="btn btn-secondary" type="button" disabled={campaignPending || Boolean(campaignId)} onClick={addBannerToCampaigns}>{campaignPending ? "Сохраняем…" : campaignId ? "Сохранено в кампании" : "Сохранить в кампании"}</button>{campaignId && <Link href="/admin/settings#campaigns">Проверить и опубликовать кампанию →</Link>}</> :
+          structure ? <>{structure.sections.map((section, index) => <div key={index} className={styles.category}><h3>{section.name}</h3><p>{section.description}</p></div>)}<p>{structureSaved ? "Разделы сохранены. Теперь при добавлении товара выберите нужный раздел." : step === 0 ? "Сохраните основу каталога ниже. Это предложение останется доступным после сохранения." : "Добавим названия разделов в ваш каталог. Существующие товары и разделы не изменятся."}</p><button type="button" className="btn btn-primary" disabled={step === 0 || !generationId || structureSaving || structureSaved || pending} onClick={saveStructure}>{structureSaving ? "Сохраняем…" : structureSaved ? "Разделы сохранены" : "Добавить разделы в каталог"}</button></> :
+          draft ? <><span>{draft.eyebrow}</span><h3>{draft.title}</h3><p>{draft.body}</p><b>{draft.ctaLabel}</b><p>Текст ещё не перенесён в настройки магазина.</p></> :
+          <p>Напишите помощнику слева — здесь появятся разделы, текст или фон. На телефоне результат находится сразу под чатом.</p>}
+          {(draft || structure) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
+        </div>
+        <Link className={styles.support} href={supportHref}>Не получается? Передать вопрос команде Dukenim →</Link>
+      </aside>
+    </div>
+    {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
+      <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
+      <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
+      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} fromStudio/> : <ProductForm fromStudio categories={categories}/>}
+    </section>}
+  </div>;
 }

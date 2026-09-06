@@ -41,9 +41,9 @@ export async function POST(request: Request) {
     try { result = input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : await createAiStudioDraft(input.data.intent, input.data.brief); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); throw error; }
     const output = "structure" in result ? result.structure : result.draft;
-    const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost });
-    if (saved.error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); return NextResponse.json({ error: "Черновик создан, но не удалось сохранить журнал. Кредит возвращён." }, { status: 500 }); }
-    return NextResponse.json("structure" in result ? { structure: result.structure, creditsRemaining } : { draft: result.draft, creditsRemaining });
+    const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost }).select("id").single();
+    if (saved.error || !saved.data) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); return NextResponse.json({ error: "Черновик создан, но не удалось сохранить журнал. Кредит возвращён." }, { status: 500 }); }
+    return NextResponse.json("structure" in result ? { structure: result.structure, creditsRemaining, generationId: saved.data.id } : { draft: result.draft, creditsRemaining, generationId: saved.data.id });
   } catch (error) {
     const status = error instanceof AzureFoundryError && error.status && error.status < 500 ? error.status : 502;
     return NextResponse.json({ error: status === 429 ? "AI Studio достиг временного лимита. Попробуйте немного позже." : "Не удалось создать черновик AI Studio. Попробуйте ещё раз." }, { status });
