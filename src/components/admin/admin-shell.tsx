@@ -27,8 +27,10 @@ import {
 import { logout } from "@/app/login/actions";
 import { planName, type Plan } from "@/lib/plans";
 import { TrialTimer } from "./trial-timer";
+import { businessWorkflow } from "@/lib/business-workflow";
+import type { BusinessVertical } from "@/types/database";
 
-const nav = [
+const baseNav = [
   ["/admin/ai-studio", "AI Studio", Sparkles],
   ["/admin", "Обзор", LayoutDashboard],
   ["/admin/catalog", "Каталог", Package],
@@ -43,7 +45,6 @@ const nav = [
   ["/admin/settings", "Настройки", Settings],
 ] as const;
 
-const mobilePrimary = nav.slice(0, 4);
 const standardOnly = new Set(["/admin/stock", "/admin/analytics", "/admin/customers"]);
 
 type AdminShellProps = {
@@ -55,6 +56,7 @@ type AdminShellProps = {
     plan: Plan;
     status: string;
     trialEndsAt: string | null;
+    vertical?: BusinessVertical;
   };
 };
 
@@ -63,6 +65,9 @@ function isCurrent(pathname: string, href: string) {
 }
 
 export function AdminShell({ children, role, tenant }: AdminShellProps) {
+  const workflow = businessWorkflow(tenant.vertical);
+  const nav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
+  const mobilePrimary = nav.slice(0, 4);
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
 

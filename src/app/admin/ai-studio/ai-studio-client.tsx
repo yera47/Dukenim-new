@@ -219,7 +219,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
       <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
-      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories}/>}
+      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
   </div>;
 }
