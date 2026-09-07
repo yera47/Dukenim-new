@@ -412,6 +412,12 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### New onboarding launch scope — 2026-09-08
+
+Release verified READY and canonical www alias: dpl_Cg6ZdC4uawBDeFNmUJP8eEjdP9Zq. Local and hosted build passed. Production API smoke rejects both services/event with HTTP 400 before auth/data writes. This supersedes pending status below.
+
+55283f9 pushed. Shared launch-verticals list controls onboarding UI and API validation: services/event rejected; food explicitly ready-made dishes, other explicitly goods. Existing tenants/enum/demo data unchanged; this is an application onboarding restriction, not a new database constraint or implemented booking/ticket/recipe engine. Corrected misleading onboarding order to catalog/design → product → verify/share. Changed onboarding-flow, onboarding API, launch-verticals helper and five API tests. 87 tests and tsc passed; build/deployment verification pending. New target dpl_Cg6ZdC4uawBDeFNmUJP8eEjdP9Zq. Public niche demos still include services/event and need separate marketing alignment; no unsupported capability should be sold as complete.
+
 ### Business vertical audit and platform-only admin — 2026-09-08 (latest)
 
 Source c638e86 pushed; Vercel dpl_HzaXadNxP4ReJkpev6guMiG1EAgo READY and www.dukenim.kz aliased. Includes previous fail-closed order API fix. 82 tests, tsc and local/production build passed. Current vertical audit/working prompt: docs/BUSINESS_VERTICAL_AUDIT.md.
