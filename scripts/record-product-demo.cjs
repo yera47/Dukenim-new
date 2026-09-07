@@ -18,11 +18,14 @@ const origin = process.argv[3] || "http://localhost:3003";
       // Fresh, local-only browser contexts contain no production account session.
       await page.waitForTimeout(1800);
       if(scene.name==="storefront"){
-        await page.getByRole("link",{name:/Жакет Essential 42/}).click();
+        await page.goto(origin+"/s/demo-shop/catalog",{waitUntil:"networkidle"});
+        await page.evaluate(()=>window.scrollBy({top:320,behavior:"smooth"}));
+        await page.waitForTimeout(1200);
+        await page.goto(origin+"/s/demo-shop/product/p1",{waitUntil:"networkidle"});
         await page.waitForTimeout(1600);
         await page.getByRole("button",{name:"Добавить в корзину"}).click();
         await page.waitForTimeout(900);
-        await page.getByRole("link",{name:"Корзина"}).click();
+        await page.getByRole("link",{name:/Корзина,/}).click();
         await page.waitForTimeout(1500);
         await page.getByRole("link",{name:"Оформить заказ"}).click();
         await page.waitForTimeout(1800);
@@ -39,7 +42,7 @@ const origin = process.argv[3] || "http://localhost:3003";
       await page.screenshot({path:"output/"+scene.name+"-capture.png"});
       const video=page.video();
       await context.close();
-      await video.saveAs("public/design/dukenim-"+scene.name+"-recording.webm");
+      await video.saveAs("public/design/serik-"+scene.name+"-recording.webm");
       console.log(scene.name+" recorded");
     }));
   } finally { await browser.close(); }

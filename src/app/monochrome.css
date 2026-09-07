@@ -22,3 +22,9 @@
 .story-faq{background:#fff;color:#171717;padding:80px 0}.story-faq h2{color:#171717}.story-faq details{border-color:#e3e3e3}.story-faq summary{color:#171717}.story-faq details p{color:#626262}
 .ai-studio-hero{background:#fff;color:#171717;border:1px solid #e3e3e3;box-shadow:none}.ai-studio-hero h1,.ai-studio-hero h2{color:#171717}
 @media(max-width:760px){.pricing-rebuild{padding:64px 0}.pricing-rebuild-cards{grid-template-columns:1fr}.pricing-rebuild-card,.pricing-rebuild-card.is-brand,.pricing-crm-launch{padding:24px}.pricing-crm-launch{grid-template-columns:1fr}}
+.pricing-rebuild-card.is-brand{position:relative;background:radial-gradient(ellipse at 100% 0,rgba(170,245,220,.12),transparent 60%),#151918;border:1px solid #98e6c9;color:#fff;box-shadow:0 0 0 1px #98e6c926,0 16px 50px #183d2924}
+.pricing-rebuild-card.is-brand .pricing-card-topline p,.pricing-rebuild-card.is-brand h3,.pricing-rebuild-card.is-brand .pricing-rebuild-price strong{color:#fff}
+.pricing-rebuild-card.is-brand li,.pricing-rebuild-card.is-brand .pricing-rebuild-price span{color:#d6e2dc}
+.pricing-rebuild-card.is-brand li svg{color:#a6f2d4}
+.pricing-rebuild-card.is-brand .pricing-card-action{background:#b4f5d9;color:#102219;border-color:#b4f5d9;box-shadow:0 0 22px #b4f5d91a}
+.pricing-rebuild-card.is-brand .pricing-card-action:hover{background:#d8ffeb;color:#102219}

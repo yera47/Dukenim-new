@@ -9,7 +9,7 @@ import { computeEntitlement } from "@/lib/entitlement";
 
 export default async function Settings(){
   const {tenantId}=await requireRole(["owner","superadmin"]);
-  const demo={name:"MEREY",slug:"demo-shop",tagline:"Вещи, которые остаются с вами",city:"Кызылорда",phone:"+7 777 000 00 00",accent_color:"#0E5C4A",plan:"standard" as const,next_plan:"standard" as const,status:"active" as const,trial_ends_at:null};
+  const demo={name:"Серик Шоп",slug:"demo-shop",tagline:"Вещи, которые остаются с вами",city:"Кызылорда",phone:"+7 777 000 00 00",accent_color:"#0E5C4A",plan:"standard" as const,next_plan:"standard" as const,status:"active" as const,trial_ends_at:null};
   const client=process.env.NEXT_PUBLIC_SUPABASE_URL?await createClient():null;
   const tenant=client?(await getTenant(client,tenantId!)).data:demo;if(!tenant)return null;
   const settings=client?(await getStorefrontSettings(client,tenantId!)).data:null;

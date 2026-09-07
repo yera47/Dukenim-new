@@ -11,7 +11,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
   const { role, tenantId } = await requireRole(["owner", "superadmin"]);
   const tenant = !process.env.NEXT_PUBLIC_SUPABASE_URL
     ? {
-        name: "MEREY",
+        name: "Серик Шоп",
         slug: "demo-shop",
         plan: "standard" as const,
         next_plan: "standard" as const,

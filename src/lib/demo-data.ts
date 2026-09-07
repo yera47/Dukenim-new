@@ -1,6 +1,6 @@
 import { extraDemoProducts } from "./demo-extra-products";
 export type Product = { id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; images?:string[]; variants:{id:string;size:string|null;color:string;stock:number}[] };
-export const tenant={name:"FORMA",slug:"demo-shop",tagline:"Вещи, которые работают вместе",city:"Казахстан",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#171717",plan:"standard" as const};
+export const tenant={name:"Серик Шоп",slug:"demo-shop",tagline:"Вещи, которые работают вместе",city:"Казахстан",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#171717",plan:"standard" as const};
 export const products:Product[]=[
  ...extraDemoProducts,
  {id:"p1",title:"Жакет Essential",description:"Структурный жакет свободного кроя из плотной костюмной ткани.",price:42900,oldPrice:49900,category:"Новинки",featured:true,images:["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260906_215334_14f0ebab-ac72-4af5-bcf3-dcc5c4db29a8.png"],variants:[{id:"v1",size:"S",color:"Графит",stock:4},{id:"v2",size:"M",color:"Графит",stock:2},{id:"v3",size:"L",color:"Графит",stock:0}]},
@@ -10,7 +10,7 @@ export const products:Product[]=[
 ];
 export const money=(value:number)=>new Intl.NumberFormat("ru-KZ").format(value)+" ₸";
 export const orders=[
- {id:"1042",name:"Алина",total:71700,status:"Новый",source:"online",date:"Сегодня, 14:32"},
- {id:"1041",name:"Дана",total:35900,status:"Собирается",source:"online",date:"Сегодня, 12:10"},
+ {id:"1042",name:"Серик",total:71700,status:"Новый",source:"online",date:"Сегодня, 14:32"},
+ {id:"1041",name:"Серик",total:35900,status:"Собирается",source:"online",date:"Сегодня, 12:10"},
  {id:"1040",name:"Продажа в зале",total:28900,status:"Готов",source:"offline",date:"Сегодня, 10:45"},
 ];

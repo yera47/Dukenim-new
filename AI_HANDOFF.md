@@ -412,6 +412,11 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Serik naming / pricing / recordings
+Replaced demo tenant/niche names, demo customer names and person/company placeholders with Серик / Серик Шоп. Actual DB tenants untouched. Re-recorded local storefront and owner UI as public/design/serik-{storefront,workspace}-recording.webm; RecordedCommerce references new filenames to invalidate old video cache. Inspected owner screenshot confirms Серик Шоп. Brand pricing gets restrained mint neon on dark card, same prices/features, no animation. Updated docs/CATALOG_CREATION_AUDIT.md with current execution prompt.
+Checks: tsc, 64 tests, build; local presentation smoke 390/1440 passed (name placeholders, storefront name, page width); pricing and recording end screenshots inspected. Release in progress.
+Real first-run persistence E2E is NOT complete: current authenticated browser account is existing Dukenim storefront /s/dukenim-6d4bb, catalog already building. Read-only production check finds no tenant slug test%, qa-% or serik-%. Need an isolated authenticated test account to exercise registration/create/read-back, not an administrative SQL write or resetting this owner's store. No test users or DB rows created this turn.
+
 ### Catalog creation audit and first fix
 
 Release confirmed: 38324c0, dpl_4zrrBjQq8TvNLt4YqKmAuNkCV14c READY and www/apex aliased. Production build passed; unauthenticated /admin/ai-studio returns 307 /login. No authenticated model/save E2E was claimed or performed. This supersedes the pending deployment note below.

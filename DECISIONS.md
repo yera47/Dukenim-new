@@ -2,6 +2,8 @@
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
+- 2026-09-07: Demonstration people and name placeholders use «Серик»; demonstration businesses use «Серик Шоп», in honour of the owner's grandfather. Do not rename actual tenants. Owner permits a restrained neon accent for the Brand pricing card.
+
 - 2026-09-07: Owner specifies a completely featureless closed mask for the promo character: no eyes, eye holes, nose, mouth or face relief. Keep the Dukenim logo. Expand photography beyond fashion to every demo business and cover their sections.
 
 - 2026-09-07: Owner explicitly makes AI Studio the main workspace immediately after registration/business details: conversational guidance, adjacent catalog preview/editor, primary mobile navigation, clear human support and explicit application of results. Wants niche-specific templates/media, useful audited root administration and domain setup guidance. This supersedes requiring catalog completion before AI tools become available; user remains in control of publishing.

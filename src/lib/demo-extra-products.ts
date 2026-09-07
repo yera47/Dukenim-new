@@ -1,10 +1,10 @@
 import type { Product } from "./demo-data";
 export const extraDemoProducts: Product[] = [
-  { id: "p7", title: "Сумка Daily", description: "Лаконичная сумка на каждый день. Демонстрационная модель FORMA.", category: "Аксессуары", price: 27900, images: ["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_120149_8ec63d61-d55a-40be-b200-b8f8b1200966.png"], variants: [{ id: "v-demo-p7", size: null, color: "Чёрный", stock: 12 }] },
+  { id: "p7", title: "Сумка Daily", description: "Лаконичная сумка на каждый день. Демонстрационная модель Серик Шоп.", category: "Аксессуары", price: 27900, images: ["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_120149_8ec63d61-d55a-40be-b200-b8f8b1200966.png"], variants: [{ id: "v-demo-p7", size: null, color: "Чёрный", stock: 12 }] },
   {
     "id": "p5",
     "title": "Свитер Soft",
-    "description": "Демонстрационная модель коллекции FORMA.",
+    "description": "Демонстрационная модель коллекции Серик Шоп.",
     "category": "Трикотаж",
     "price": 32900,
     "images": [
@@ -22,7 +22,7 @@ export const extraDemoProducts: Product[] = [
   {
     "id": "p6",
     "title": "Кеды Everyday",
-    "description": "Демонстрационная модель коллекции FORMA.",
+    "description": "Демонстрационная модель коллекции Серик Шоп.",
     "category": "Обувь",
     "price": 38900,
     "images": [
@@ -40,7 +40,7 @@ export const extraDemoProducts: Product[] = [
   {
     "id": "p8",
     "title": "Футболка Base",
-    "description": "Демонстрационная модель коллекции FORMA.",
+    "description": "Демонстрационная модель коллекции Серик Шоп.",
     "category": "Футболки",
     "price": 12900,
     "images": [
@@ -58,7 +58,7 @@ export const extraDemoProducts: Product[] = [
   {
     "id": "p9",
     "title": "Тренч City",
-    "description": "Демонстрационная модель коллекции FORMA.",
+    "description": "Демонстрационная модель коллекции Серик Шоп.",
     "category": "Верхняя одежда",
     "price": 64900,
     "images": [
@@ -76,7 +76,7 @@ export const extraDemoProducts: Product[] = [
   {
     "id": "p10",
     "title": "Джинсы Straight",
-    "description": "Демонстрационная модель коллекции FORMA.",
+    "description": "Демонстрационная модель коллекции Серик Шоп.",
     "category": "Джинсы",
     "price": 29900,
     "images": [
