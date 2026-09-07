@@ -8,9 +8,9 @@ import { useCart } from "@/components/store/cart-provider";
 
 export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: number | null; etaText: string | null };
 type Result = { orderNumber: number; total: number };
-type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; minOrder: number; zones: CheckoutZone[] };
+type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; minOrder: number; zones: CheckoutZone[]; demo?: boolean };
 
-export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, minOrder, zones }: Props) {
+export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, minOrder, zones, demo = false }: Props) {
   const { items, total, clear } = useCart();
   const firstMethod = deliveryEnabled ? "courier" : "pickup";
   const [step, setStep] = useState(1);
@@ -31,6 +31,12 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, minOrder,
   async function submit() {
     setPending(true);
     setError(null);
+    if (demo) {
+      setResult({ orderNumber: 1043, total: total + deliveryCost });
+      setPending(false);
+      clear();
+      return;
+    }
     const response = await fetch("/api/orders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
