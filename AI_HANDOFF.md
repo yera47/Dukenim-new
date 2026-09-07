@@ -412,6 +412,12 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### EAS linked — 2026-09-08 (latest)
+
+Expo login confirmed. Created/linked @yersat47/dukenim (projectId 0d65ce93-0cbd-403c-abd1-03f2d6906da4). Expo install --fix aligned four SDK57 patches; mobile tsc/lint and 21/21 expo-doctor pass. app.json project linkage, package.json and root pnpm-lock changed. Removed incidental Android RECORD_AUDIO permission and disabled camera audio plugin setting because app only scans barcodes.
+
+Production iOS build attempted, stopped before cloud build: missing distribution certificate/provisioning credentials. Remote buildNumber initialized to 1. No IPA, build completion or TestFlight upload. EAS production public Supabase env absent; configure before useful build. Encryption export declaration still needs review. Interactive `eas credentials --platform ios` session selected production and is waiting at Apple login Y/n; opened terminal panel for owner to perform login privately. Do not collect Apple password/OTP in chat or commit credentials. Next: Apple credential setup, public env, native bundle/device QA; current app still has placeholder operations and no native social OAuth. Previous notes saying EAS not logged in are superseded.
+
 ### Mobile TestFlight preparation — 2026-09-08 (latest)
 
 Read apps/mobile/AGENTS.md and SDK57/EAS build+submit docs. Added apps/mobile/eas.json with internal preview/store production profiles and remote auto-increment. Fixed index.tsx profile lookup from id to user_id and auth-event role refresh with stale-result guard; does not require tenant for superadmin. Mobile tsc and expo lint pass. expo-doctor 20/21: expected patches @expo/ui57.0.16, expo57.0.20, notifications57.0.17, router57.0.19; installed versions one patch earlier. No upgrades yet.

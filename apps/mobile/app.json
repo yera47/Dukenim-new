@@ -19,7 +19,10 @@
         "monochromeImage": "../../public/icon-512.png"
       },
       "package": "kz.dukenim.app",
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
     },
     "web": {
       "output": "static",
@@ -31,7 +34,8 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Dukenim использует камеру только для сканирования штрихкода товара."
+          "cameraPermission": "Dukenim использует камеру только для сканирования штрихкода товара.",
+          "recordAudioAndroid": false
         }
       ],
       [
@@ -47,6 +51,13 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0d65ce93-0cbd-403c-abd1-03f2d6906da4"
+      }
+    },
+    "owner": "yersat47"
   }
 }
