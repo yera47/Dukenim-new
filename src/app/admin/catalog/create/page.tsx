@@ -12,5 +12,5 @@ export default async function CreateCatalog() {
   if (!tenant) redirect("/admin");
   if (tenant.catalog_status !== "not_started") redirect(tenant.catalog_status === "ready" ? "/admin/catalog" : "/admin/catalog/new");
   const entitlement = computeEntitlement(tenant);
-  return <><div><p className="muted text-sm">Первый запуск</p><h1 className="mt-1 text-3xl font-semibold">Создайте каталог</h1><p className="muted mt-2 max-w-2xl">Выберите оформление будущей витрины, затем добавьте товары. Это отдельный шаг: товар сам по себе не создаёт каталог.</p></div><CatalogSetupForm defaultName={tenant.name} slug={tenant.slug} plan={entitlement.plan} /></>;
+  return <><div><p className="muted text-sm">Первый запуск</p><h1 className="mt-1 text-3xl font-semibold">Создайте каталог</h1><p className="muted mt-2 max-w-2xl">Выберите оформление будущей витрины, затем добавьте товары. Это отдельный шаг: товар сам по себе не создаёт каталог.</p></div><CatalogSetupForm defaultName={tenant.name} slug={tenant.slug} plan={entitlement.plan} vertical={tenant.business_vertical ?? "other"} /></>;
 }

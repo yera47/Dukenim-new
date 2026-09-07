@@ -4,6 +4,8 @@ Last reviewed: 2026-09-04
 
 ## Update — 2026-09-07
 
+- Release 95b38d1 is Ready on canonical domains; authenticated production UI check confirms new AI Studio. This verifies deployment/UI, not the full new-store write journey.
+
 - AI-first first-run workflow is implemented in source: Studio available before first product, embedded catalog/product editors, real explicit saving of generated category names, mobile-primary AI navigation, and a domain help page. TypeScript, 45 tests and production build passed; production authenticated E2E remains required.
 - Root plan/status mutation now validates input, records intent before mutation and updates both fields together. Full root catalog CRUD is still incomplete.
 - The previous d49ea5e release is verified Ready on both canonical domains. The four Polar tariff checkout creations were verified in its release preparation; real settlement/payout is not verified. Higgsfield production is pending a spending ceiling, not completed.
@@ -75,5 +77,6 @@ Catalog lifecycle is now represented on each tenant as `not_started`, `building`
 
 Production release `c0b7753` is Ready on Vercel and aliased to `dukenim.kz`/`www.dukenim.kz`. Google OAuth and authenticated owner/root access are verified. The responsive admin navigation is verified at desktop and 390×844 mobile viewports, including the complete «Ещё» menu. Azure `Kimi-K2.6` passes the superadmin diagnostic and produces a schema-valid tenant AI Studio draft in production.
 
-Local design rebuild has started: the public homepage now includes a review-first AI Studio work-centre block with a separate human-support path, placed between launch workflow and pricing. The slice passes TypeScript/build but is not deployed yet.
+The current release candidate extends the monochrome public homepage with an inspected Higgsfield promo film and interactive niche storefront examples. The same niche-preset engine now powers the live catalog preview inside AI Studio/catalog setup. Generated goods are explicitly labeled as demonstrations. TypeScript, 45 tests and the 56-route production build pass; this candidate is awaiting commit/push and production verification.
+Production Supabase now enforces category/tenant ownership inside `create_product_with_variants`; migration `20260907073737_enforce_product_category_tenant.sql` is applied and verified.
 Design references (local, 2026-09-04): hero now uses `public/design/dukenim-home-hero-reference-v6.png` with separate catalog, CRM and phone objects in one warm room. Blocks 02 and 03 were regenerated to continue the same room and palette; no deployment yet.

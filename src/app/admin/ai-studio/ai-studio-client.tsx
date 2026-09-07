@@ -8,6 +8,7 @@ import { ArrowRight, Check, LoaderCircle, Send, Sparkles } from "lucide-react";
 import { CatalogSetupForm } from "@/components/admin/catalog-setup-form";
 import { ProductForm } from "@/components/admin/product-form";
 import styles from "./studio.module.css";
+import type { BusinessVertical } from "@/types/database";
 
 type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
@@ -24,10 +25,11 @@ type Props = {
   enabled: boolean; imageEnabled: boolean; brand: boolean;
   catalogStatus: "not_started" | "building" | "ready";
   storeName: string; slug: string; plan: "basic" | "standard" | "pro";
+  vertical: BusinessVertical;
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, storeName, slug, plan, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, storeName, slug, plan, vertical, initialStructure, categories = [] }: Props) {
   const router = useRouter();
   const [intent, setIntent] = useState<Intent>("catalog_structure");
   const [brief, setBrief] = useState("");
@@ -176,7 +178,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
       <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
-      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} fromStudio/> : <ProductForm fromStudio categories={categories}/>}
+      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio/> : <ProductForm fromStudio categories={categories}/>}
     </section>}
   </div>;
 }

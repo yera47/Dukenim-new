@@ -356,3 +356,17 @@ section.bg-\[\#a24a34\] h2{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.02}
 
 /* The Brand card owns both classes; keep its feature copy legible on jade. */
 .pricing-rebuild-card.is-brand li{color:#e8dfd0}
+
+.niche-preview{min-height:480px;padding:24px;overflow:hidden}
+.niche-preview header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:15px;border-bottom:1px solid currentColor}
+.niche-preview header span{font-size:10px;text-transform:uppercase;opacity:.55}
+.niche-preview nav{display:flex;gap:14px;overflow:auto;padding:16px 0;font-size:11px;white-space:nowrap}
+.niche-preview nav button{opacity:.5}.niche-preview nav button[aria-pressed=true]{opacity:1;font-weight:800;text-decoration:underline;text-underline-offset:5px}
+.niche-preview-content{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.65fr);gap:24px;align-items:center}
+.niche-preview-content h3{font-size:clamp(26px,4vw,46px);line-height:1;letter-spacing:-.05em;margin-top:12px}
+.niche-preview-content p{font-size:12px;line-height:1.7;margin-top:14px}
+.niche-preview-content article{padding:12px;border-radius:12px;box-shadow:0 12px 32px #00000016}
+.niche-preview-photo{aspect-ratio:1;background-size:cover!important;background-position:center!important;border-radius:8px;position:relative}
+.niche-preview-photo span{position:absolute;left:7px;bottom:7px;background:#fff;color:#111;border-radius:5px;padding:4px 6px;font-size:8px}
+.niche-preview-content article>b,.niche-preview-content article>strong{display:block;font-size:11px;margin-top:9px}.niche-preview-content article>strong{margin-top:3px}
+@media(max-width:640px){.niche-preview{min-height:0;padding:18px}.niche-preview-content{grid-template-columns:1fr}.niche-preview-content article{max-width:260px}.niche-preview-content h3{font-size:32px}}
