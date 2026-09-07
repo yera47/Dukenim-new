@@ -381,6 +381,7 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 
 ### 2026-09-07 AI storefront-design action (latest)
 
+- Follow-up release `81d06eb` adds explicit application of AI hero copy and idempotent «Бренд» promotion drafts. Hero save preserves the active visual theme and image; promotion save is always `draft`, never auto-published. Both use the signed-in RLS client, tenant-filtered persisted generation output and entitlement checks. Vercel `dpl_5AHSM3XKDY8ZV1CqqoqM65hHQuHe` is Ready and aliased; 55/55 tests and the 59-route build pass, and the unauthenticated production API correctly returns 401.
 - Added `store_design` to the real Azure-backed AI Studio flow. The model receives the tenant business vertical and only template/palette keys allowed by the effective tariff; its JSON response is schema-validated and journaled before use.
 - The owner sees a compact hero/layout/palette proposal and must press «Применить оформление». The protected apply route uses the user's Supabase session and RLS, filters by tenant and intent, rechecks the plan, and preserves an existing hero image and brand colour. It does not change products, prices, stock, DNS or publish content automatically.
 - Applied and verified production migration `20260907110158_ai_store_design_intent.sql` on project `gklgbesydbottkqilihb`. Existing database-advisor warnings are unchanged; leaked-password protection and exposed legacy helper functions still require a separate deliberate security pass.
