@@ -2,6 +2,8 @@
 
 Last reviewed: 2026-09-07
 
+2026-09-08: c638e86 published on canonical domain (dpl_HzaXadNxP4ReJkpev6guMiG1EAgo READY). Main platform administrator no longer has a personal tenant, per owner request; account/role retained and deletion audited. Tenantless admin routes to root. Product creation inputs and quantity navigation now adapt to eight business verticals; true service scheduling, event ticketing and ingredient inventory remain unimplemented. 82 tests, tsc/build pass. See docs/BUSINESS_VERTICAL_AUDIT.md and docs/PRELAUNCH_AUDIT.md; no full authenticated commerce E2E claim.
+
 Serik presentation release 55a6f37: dpl_GXd7mTehtyNnr7gLpo5PUYB7pGqR Ready/aliased. Demo names and person/business placeholders now Серик / Серик Шоп. Fresh phone and CRM recordings with new URLs; Brand card has restrained neon emphasis, pricing unchanged. Presentation smoke passes on canonical domain at 390/1440; both WebM assets serve successfully. 64 tests, tsc/build pass. Real first-run persistence E2E still requires isolated authenticated test account; existing owner store was not reset or renamed.
 
 Catalog wizard release 38324c0: dpl_4zrrBjQq8TvNLt4YqKmAuNkCV14c READY and canonical aliases confirmed. First-run design step offers validated AI template/palette recommendations; competing separate composer removed. tsc, 64 tests and production build pass. Anonymous AI Studio redirects to login. Authenticated first-run generation/save E2E remains unverified. Detailed audit and execution prompt: docs/CATALOG_CREATION_AUDIT.md.

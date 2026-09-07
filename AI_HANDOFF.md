@@ -412,6 +412,16 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Business vertical audit and platform-only admin — 2026-09-08 (latest)
+
+Source c638e86 pushed; Vercel dpl_HzaXadNxP4ReJkpev6guMiG1EAgo READY and www.dukenim.kz aliased. Includes previous fail-closed order API fix. 82 tests, tsc and local/production build passed. Current vertical audit/working prompt: docs/BUSINESS_VERTICAL_AUDIT.md.
+
+Added business-workflow helper and tests, adapted product form labels/examples/limitations from real tenant vertical in both Studio and separate creation route, adapted stock page and desktop/mobile nav. Service quantity remains a finite order limit, NOT calendar booking; food stock remains prepared portions, NOT ingredients. Existing-product editor, public checkout, summaries and true scheduling/ticketing remain open. No claim of complete vertical engines or authenticated commerce E2E.
+
+Owner explicitly requested retaining main superadmin but deleting own unused store. Exact account/store relationship and cascade dependencies checked; target had no products/orders/subscriptions/purchases and only one member. Deleted only that store in guarded transaction with platform audit record; own Auth account/profile preserved and verified superadmin with zero memberships. One AI result/settings cascaded; no separate recovery copy created. Other accounts/stores were NOT deleted. No identifiers or private identity copied to shared docs.
+
+Admin layout now redirects tenantless superadmin to /root; root hides own-store link when no membership. Actual authenticated browser redirect/root smoke still to be checked; SQL confirms account retained. Next: separate service-request checkout, safe scheduling model, existing edit flow, full authenticated E2E and remaining prelaunch gates.
+
 ### Prelaunch audit — 2026-09-08 (latest)
 
 Source commit 4f04adb pushed main. Removed fake successful order response when Supabase configuration is absent; API fails closed with 503. Added seven order input/configuration tests. Checks: 71 tests, TypeScript, production build, diff check pass. Changed src/app/api/orders/route.ts, route.test.ts; execution prompt and evidence-backed launch gates in docs/PRELAUNCH_AUDIT.md.

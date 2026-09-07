@@ -30,6 +30,8 @@ This is an append-only decision log. New entries must reflect an explicit owner 
 
 ## 2026-08
 
+- 2026-09-08: Owner wants platform administration without a personal store; retain the main superadmin account independently of tenant membership and remove its unused store. Business-specific workflows must reflect actual capabilities rather than treating every business as a clothing warehouse.
+
 - Build the complete production product, not a disposable demo.
 - `dukenim.kz` is the platform domain; client storefronts are separate tenant experiences.
 - `/admin` is the client-owner cabinet; `/root` is the Dukenim superadmin panel.
