@@ -413,6 +413,10 @@ After material work, replace the sections above with the latest concise state. P
 ## Continuation — demo navigation, 2026-09-07
 
 ### Next media continuation
+
+RELEASE VERIFIED: dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx Ready and aliased to both canonical domains; all 14 production media checks passed. Mask asset HTTP 200. tsc + 59 tests + final Vercel build pass. Next substantive work: distinct niche presentation/semantics and conversational creation, not more random generation. Balance 5 credits prevents the previously estimated 22.5-credit video without owner funding; do not purchase automatically.
+
+Final source 62b9c10, candidate dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx. All 14 local browser media checks passed; masks and all niche grids visually inspected. Corrected beauty first item to «Базовый дуэт ухода» because its existing photo shows two items, not cleanser. Final card refinement stacks prices on desktop too. Balance verified 5 credits. Remaining: final production status/smoke and commit docs. Store creation chat and audited shop deletion are NOT implemented by this media change.
 Owner clarified featureless closed mask (no facial features) and all-niche demo photographs. Generated 25 distinct product/service/event illustrations plus the corrected mask still (26 images, 52 credits; expected balance 5, no top-up). Exact image URLs in src/lib/demo-media.ts; mask in public/design/dukenim-featureless-mask.png. All demo offerings now have unique images; beauty/food five offerings, others four, fashion ten. Shared ProductCard mobile title/price stacked; redundant about/platform pitch removed from storefront. Prompt updated in docs/ASTRA_PRODUCT_REBUILD.md. Checks so far: tsc, 59 tests; build/browser/release underway. Full promo video not generated, root/AI dialogue backlog unchanged. Do not conflate illustrated service offerings with scheduling or ticketing implementation.
 
 Release confirmed READY: dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ, aliased www.dukenim.kz, source dce2749. Production browser smoke passed at 390px; desktop follow-up running at documentation time. Earlier in-progress note below is superseded by this status.

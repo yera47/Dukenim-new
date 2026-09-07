@@ -2,6 +2,10 @@
 
 Last reviewed: 2026-09-07
 
+Media release confirmed: dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx READY, www.dukenim.kz and apex aliased. All seven niche media smoke checks passed on production at 390/1440; mask PNG returns 200. Source 62b9c10. This supersedes the in-progress media note below.
+
+Media continuation source 62b9c10: every demo offering has an image; beauty/food five positions, other non-fashion demos four each. Generated 25 niche illustrations and one corrected featureless-mask still. No new video is complete. Higgsfield balance verified 5 credits, no top-up. Browser media/loading/overflow checks passed for all seven niches at 390 and 1440; tsc and 59 tests pass. Final Vercel release is being checked before reporting publication.
+
 Latest demo release: dce2749; Vercel dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ reached READY and alias www.dukenim.kz. `/demo` offers eight business examples; fashion has ten products, black/white styling, separate catalog/category routes and return to Studio. Tests: 58 passing, tsc/build passing; local mobile/desktop navigation passed. Outstanding work is explicitly tracked in docs/REQUEST_AUDIT_20260907.md, including unfinished promo video and conversational builder.
 
 ## Update — 2026-09-07
