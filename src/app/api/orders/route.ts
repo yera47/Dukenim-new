@@ -16,7 +16,7 @@ type Body = {
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-function parseItems(value: unknown, allowDemoIds = false): CheckoutItem[] | null {
+function parseItems(value: unknown): CheckoutItem[] | null {
   if (!Array.isArray(value) || value.length < 1 || value.length > 50) return null;
   const seen = new Set<string>();
   const items: CheckoutItem[] = [];
@@ -24,7 +24,7 @@ function parseItems(value: unknown, allowDemoIds = false): CheckoutItem[] | null
     if (!item || typeof item !== "object") return null;
     const variantId = "variantId" in item ? String(item.variantId) : "";
     const qty = "qty" in item ? Number(item.qty) : Number.NaN;
-    if ((!allowDemoIds && !uuidPattern.test(variantId)) || (allowDemoIds && !/^(?:v\d+|[0-9a-f-]{36})$/i.test(variantId)) || !Number.isInteger(qty) || qty < 1 || qty > 20 || seen.has(variantId)) return null;
+    if (!uuidPattern.test(variantId) || !Number.isInteger(qty) || qty < 1 || qty > 20 || seen.has(variantId)) return null;
     seen.add(variantId);
     items.push({ variantId, qty });
   }
@@ -42,6 +42,11 @@ function safeOrderError(message?: string) {
 }
 
 export async function POST(request: Request) {
+  // Demonstration checkout is explicitly simulated by the demo client, never by
+  // the real order endpoint. Missing configuration must not report a saved order.
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json({ error: "Оформление заказа временно недоступно. Попробуйте позже." }, { status: 503 });
+  }
   try {
     const raw = await request.text();
     if (raw.length > 64_000) return NextResponse.json({ error: "Заказ слишком большой" }, { status: 413 });
@@ -52,7 +57,7 @@ export async function POST(request: Request) {
     const deliveryAddress = typeof body.deliveryAddress === "string" ? body.deliveryAddress.trim() : "";
     const deliveryMethod = body.deliveryMethod === "delivery" ? "courier" : body.deliveryMethod;
     const zoneId = typeof body.zoneId === "string" && uuidPattern.test(body.zoneId) ? body.zoneId : null;
-    const items = parseItems(body.items, !process.env.NEXT_PUBLIC_SUPABASE_URL);
+    const items = parseItems(body.items);
 
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || name.length < 2 || name.length > 80 || phone.length > 30 || phone.replace(/\D/g, "").length < 7 || !items) {
       return NextResponse.json({ error: "Проверьте контакты и товары в заказе" }, { status: 400 });
@@ -60,8 +65,6 @@ export async function POST(request: Request) {
     if (deliveryMethod !== "pickup" && deliveryMethod !== "courier") return NextResponse.json({ error: "Выберите способ получения" }, { status: 400 });
     if (deliveryMethod === "courier" && (deliveryAddress.length < 4 || deliveryAddress.length > 500)) return NextResponse.json({ error: "Укажите полный адрес доставки" }, { status: 400 });
     if ((body.paymentMethod ?? "cash") !== "cash") return NextResponse.json({ error: "Сейчас доступна только оплата при получении" }, { status: 400 });
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return NextResponse.json({ orderId: "demo", orderNumber: 1043, total: items.reduce((sum, item) => sum + item.qty * 42900, 0) });
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return NextResponse.json({ error: "Оформление заказа временно недоступно. Попробуйте позже." }, { status: 503 });
 
     const client = createAdminClient();
     const { data: tenant } = await getPublicTenantBySlug(client, slug);
