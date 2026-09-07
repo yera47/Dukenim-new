@@ -157,17 +157,8 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       <Link href={supportHref}>Написать человеку</Link>
     </section> : <section>
       <button type="button" onClick={()=>setWorkspaceOpen(false)} className="text-sm text-neutral-500">← В начало Studio</button>
-      <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio/>
-      <div className={styles.assistant}><Sparkles size={20}/><p>Опишите ассортимент — помогу подготовить разделы для вашего каталога.</p></div>
-      {structure&&<div className={styles.result}>{structure.sections.map(section=><p key={section.name}><b>{section.name}</b> — {section.description}</p>)}<p>Предложение сохранено. После создания каталога вы сможете добавить эти разделы в AI Studio.</p></div>}
-      {!enabled&&<p className={styles.notice}>AI сейчас недоступен. Можно продолжить создание вручную или <Link href={supportHref}>написать в поддержку</Link>.</p>}
-      {creditsRemaining !== null && creditsRemaining <= 12 && <p role="status" className={styles.notice}>Доступный объём AI заканчивается. <Link href="/admin/settings/usage">Посмотреть использование</Link></p>}
-      <form className={styles.composer} onSubmit={event=>{event.preventDefault();void createDraft();}}>
-        <label htmlFor="studio-message">Обсудить разделы с AI</label>
-        <textarea id="studio-message" value={brief} onChange={event=>setBrief(event.target.value)} maxLength={800} required minLength={8} rows={2} placeholder="Расскажите, что вы продаёте и какие разделы нужны"/>
-        <div><span role="status">{pending?"Готовлю разделы…":""}</span><button disabled={pending||!enabled||brief.trim().length<8} aria-label="Отправить запрос"><Send size={18}/></button></div>
-      </form>
-      {error&&<p role="alert" className={styles.error}>{error}</p>}
+      <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/>
+
     </section>}
   </div>;
 
@@ -228,7 +219,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
       <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
-      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio/> : <ProductForm fromStudio categories={categories}/>}
+      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories}/>}
     </section>}
   </div>;
 }

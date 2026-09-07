@@ -412,6 +412,12 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Catalog creation audit and first fix
+- Detailed evidence/working prompt/ordered backlog: docs/CATALOG_CREATION_AUDIT.md.
+- Removed competing structure composer beneath first-run wizard. CatalogSetupForm now offers store_design AI selection at its design step, updates the illustrative template/palette preview, validates returned keys against available choices and keeps manual fallback. No automatic save/publish; existing create action remains unchanged. Controls are disabled during request; errors preserve input.
+- Files: catalog-setup-form, ai-studio-client, catalog-recommendation + five tests. tsc, 64 tests, production build passed. No database or role changes. Authenticated first-run model/save E2E has NOT been executed for this change.
+- Remaining: server-resumable draft/history, atomic plan application, exact shared preview, reference attachments, real product/import and publication E2E. AI design response hero copy is not applied in this step; UI explicitly says only template/colours and separate text/sections. Deployment not yet confirmed at this note.
+
 ### Next media continuation
 
 RELEASE VERIFIED: dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx Ready and aliased to both canonical domains; all 14 production media checks passed. Mask asset HTTP 200. tsc + 59 tests + final Vercel build pass. Next substantive work: distinct niche presentation/semantics and conversational creation, not more random generation. Balance 5 credits prevents the previously estimated 22.5-credit video without owner funding; do not purchase automatically.
