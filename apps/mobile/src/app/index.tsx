@@ -22,18 +22,31 @@ export default function HomeScreen() {
   useEffect(() => {
     const client = supabase;
     if (!client) { setLoading(false); return; }
+    let active = true;
+    let revision = 0;
     const load = async () => {
+      const requestRevision = ++revision;
       const { data: { user: current } } = await client.auth.getUser();
-      setUser(current);
+      let nextRole: Role = "customer";
       if (current) {
-        const { data } = await client.from("profiles").select("role").eq("id", current.id).maybeSingle();
-        if (data?.role === "owner" || data?.role === "superadmin") setRole(data.role);
+        const { data } = await client.from("profiles").select("role").eq("user_id", current.id).maybeSingle();
+        if (data?.role === "owner" || data?.role === "superadmin") nextRole = data.role;
       }
+      if (!active || requestRevision !== revision) return;
+      setUser(current);
+      setRole(nextRole);
       setLoading(false);
     };
     void load();
-    const { data } = client.auth.onAuthStateChange((_event, session) => setUser(session?.user ?? null));
-    return () => data.subscription.unsubscribe();
+    const { data } = client.auth.onAuthStateChange((_event, session) => {
+      ++revision;
+      setUser(session?.user ?? null);
+      setRole("customer");
+      // Run database work outside the synchronous auth callback.
+      if (session) setTimeout(() => { if (active) void load(); }, 0);
+      else setLoading(false);
+    });
+    return () => { active = false; ++revision; data.subscription.unsubscribe(); };
   }, []);
 
   const signIn = async () => {

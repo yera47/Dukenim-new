@@ -412,6 +412,12 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Mobile TestFlight preparation — 2026-09-08 (latest)
+
+Read apps/mobile/AGENTS.md and SDK57/EAS build+submit docs. Added apps/mobile/eas.json with internal preview/store production profiles and remote auto-increment. Fixed index.tsx profile lookup from id to user_id and auth-event role refresh with stale-result guard; does not require tenant for superadmin. Mobile tsc and expo lint pass. expo-doctor 20/21: expected patches @expo/ui57.0.16, expo57.0.20, notifications57.0.17, router57.0.19; installed versions one patch earlier. No upgrades yet.
+
+EAS whoami: Not logged in. Started browser login; user action pending. No EAS project linked, credentials created, build submitted or IPA uploaded. Do not claim TestFlight availability. New files/changes not yet committed at this note. Main mobile screen remains largely placeholder; native Google/Apple OAuth, actual native orders/root operations, device push E2E, icon/review/privacy requirements still open. Next: user finishes Expo browser login (restart login if callback expired), link existing/intended project, configure only public env, align SDK patches, bundle check, Apple signing and internal TestFlight build. Public App Store submission must wait for functional device QA.
+
 ### New onboarding launch scope — 2026-09-08
 
 Release verified READY and canonical www alias: dpl_Cg6ZdC4uawBDeFNmUJP8eEjdP9Zq. Local and hosted build passed. Production API smoke rejects both services/event with HTTP 400 before auth/data writes. This supersedes pending status below.
