@@ -2,15 +2,13 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { isPublicPlan, type PublicPlan } from "@/lib/plans";
 import { createClient } from "@/lib/supabase/server";
-import type { BusinessVertical } from "@/types/database";
-
-const validVerticals = new Set<BusinessVertical>(["fashion", "beauty", "food", "flowers", "services", "home", "other"]);
+import { isLaunchVertical } from "@/lib/launch-verticals";
 
 export async function POST(request: Request) {
   try {
     const { plan, businessVertical, storefrontFormat, billingPeriod } = await request.json() as { plan?: PublicPlan; businessVertical?: unknown; storefrontFormat?: unknown; billingPeriod?: unknown };
     if (!isPublicPlan(plan)) return NextResponse.json({ error: "Выберите доступный тариф." }, { status: 400 });
-    if (typeof businessVertical !== "string" || !validVerticals.has(businessVertical as BusinessVertical)) return NextResponse.json({ error: "Выберите тип бизнеса." }, { status: 400 });
+    if (!isLaunchVertical(businessVertical)) return NextResponse.json({ error: "Выберите доступный тип торговли. Запись на услуги и продажа билетов пока не подключены." }, { status: 400 });
     if (storefrontFormat !== "catalog" && storefrontFormat !== "one_page") return NextResponse.json({ error: "Выберите формат витрины." }, { status: 400 });
     if (billingPeriod !== "monthly" && billingPeriod !== "annual") return NextResponse.json({ error: "Выберите период оплаты." }, { status: 400 });
     const { tenantId } = await requireRole(["owner", "superadmin"]);

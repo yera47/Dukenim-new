@@ -4,9 +4,9 @@ import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store } from "lucide-react";
 import { planAnnualPrice, planAnnualSaving, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
 import type { BusinessVertical } from "@/types/database";
+import { launchVerticals as verticals } from "@/lib/launch-verticals";
 
 type Billing = "month" | "year";
-const verticals: Array<{ id: BusinessVertical; label: string }> = [{ id: "fashion", label: "Одежда и обувь" }, { id: "beauty", label: "Красота и косметика" }, { id: "food", label: "Еда и напитки" }, { id: "flowers", label: "Цветы и подарки" }, { id: "services", label: "Услуги" }, { id: "home", label: "Дом и интерьер" }, { id: "other", label: "Другое" }];
 
 function money(value: number) {
   return new Intl.NumberFormat("ru-KZ").format(value);
@@ -55,6 +55,8 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
         <h1>Сначала настроим AI Studio под ваш бизнес.</h1>
         <p className="onboarding-lead">Первые 7 дней — доступ к выбранному тарифу без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
         <div className="builder-niche-grid mt-8">{verticals.map((item) => <button type="button" key={item.id} onClick={() => setVertical(item.id)} className={vertical === item.id ? "is-selected" : ""}><span>{item.label}</span></button>)}</div>
+        <p className="muted mt-4 text-sm">Сейчас — каталоги товаров и готовой еды. Запись на услуги и билеты мероприятий пока недоступны.</p>
+        {vertical === "food" && <p className="mt-3 text-sm" role="status">Учитываются готовые блюда и порции. Склад ингредиентов, рецептуры и автоматическое списание продуктов не входят в этот сценарий.</p>}
         <div className="onboarding-address"><span>Адрес вашей витрины</span><b>dukenim.kz/s/{tenant.slug}</b></div>
         <div className="onboarding-benefits">
           {[
@@ -69,7 +71,7 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
       {step === 2 && <section className="builder-step">
         <div className="builder-intro">
           <p>ШАГ 2 ИЗ 3</p><h1>Выберите возможности магазина.</h1>
-          <span>Сначала — прозрачная цена и набор функций. Визуальный стиль, шаблон и палитру вы настроите в кабинете, когда появится первый товар.</span>
+          <span>Выберите тариф. Затем в AI Studio вы создадите каталог и выберете оформление, после этого добавите первый товар.</span>
         </div>
         <div className="builder-billing mt-7"><button type="button" className={billing === "month" ? "is-active" : ""} onClick={() => setBilling("month")}>Помесячно</button><button type="button" className={billing === "year" ? "is-active" : ""} onClick={() => setBilling("year")}>За год</button></div>
         <div className="onboarding-plan-grid">
@@ -89,11 +91,11 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
       </section>}
 
       {step === 3 && <section className="builder-step onboarding-finish">
-        <p className="data-label">ШАГ 3 ИЗ 3</p><h1>Начнём с первого товара.</h1>
+        <p className="data-label">ШАГ 3 ИЗ 3</p><h1>Начнём с вашего каталога.</h1>
         <p className="onboarding-lead">После входа AI Studio покажет короткий маршрут запуска. Сначала создайте каталог и добавьте товар; затем настройте витрину и опубликуйте ссылку.</p>
         <div className="onboarding-steps">
-          <div><span>01</span><PackagePlus size={23} /><b>Первый товар</b><p>Название, цена, остаток и фотографии.</p></div>
-          <div><span>02</span><Store size={23} /><b>Витрина</b><p>Шаблон и палитра после появления каталога.</p></div>
+          <div><span>01</span><Store size={23} /><b>Каталог и оформление</b><p>Название, шаблон и палитра в AI Studio.</p></div>
+          <div><span>02</span><PackagePlus size={23} /><b>Первый товар</b><p>Название, цена, остаток и фотографии.</p></div>
           <div><span>03</span><Check size={23} /><b>Публикация</b><p>Проверьте каталог и поделитесь ссылкой.</p></div>
         </div>
         {error && <p role="alert" className="mt-5 text-[var(--danger)]">{error}</p>}
