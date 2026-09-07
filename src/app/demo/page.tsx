@@ -1,0 +1,12 @@
+import Link from "next/link";
+import { demoSlug, demoVerticals } from "@/lib/demo-catalogs";
+import { nichePresets } from "@/lib/niche-presets";
+
+export default function DemoPage() {
+  return <main className="min-h-screen bg-white text-neutral-900"><div className="mx-auto max-w-6xl px-6 py-10">
+    <nav className="flex justify-between text-sm"><Link href="/">← Dukenim</Link><Link href="/admin/ai-studio">К созданию каталога →</Link></nav>
+    <header className="max-w-2xl py-16"><p className="mb-4 text-sm text-neutral-500">ПОПРОБУЙТЕ DUKENIM</p><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">Какой у вас бизнес?</h1><p className="mt-6 text-lg text-neutral-500">Откройте пример, пройдите по разделам и попробуйте оформление заказа.</p></header>
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{demoVerticals.map(vertical => { const preset = nichePresets[vertical]; return <Link key={vertical} href={`/s/${demoSlug(vertical)}`} className="group overflow-hidden rounded-2xl border border-neutral-200 transition-colors hover:border-neutral-700"><div className="flex aspect-[4/3] items-center justify-center bg-neutral-100">{preset.imageUrl ? <img src={preset.imageUrl} alt={preset.product} className="h-full w-full object-cover"/> : <span className="text-3xl font-semibold tracking-tight">{preset.storeName}</span>}</div><div className="p-6"><h2 className="text-xl font-semibold">{preset.label} <span className="float-right">↗</span></h2><p className="mt-2 text-sm text-neutral-500">{preset.headline}</p></div></Link>; })}</div>
+    <p className="mt-8 text-sm text-neutral-500">Демонстрационные магазины. Заказы не отправляются и деньги не списываются.</p>
+  </div></main>;
+}

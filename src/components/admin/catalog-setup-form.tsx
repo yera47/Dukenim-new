@@ -13,7 +13,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const templates = launchTemplatesForPlan(plan);
   const [step, setStep] = useState(0);
   const [templateKey, setTemplateKey] = useState<string>(templates[0].key);
-  const [paletteKey, setPaletteKey] = useState("paper-forest");
+  const [paletteKey, setPaletteKey] = useState("mono");
   const [catalogName, setCatalogName] = useState(defaultName);
   const palette = paletteByKey(paletteKey);
   return <form action={action} onSubmit={event => {

@@ -1,3 +1,29 @@
-import type{CSSProperties}from"react";import type{Metadata}from"next";import Link from"next/link";import{notFound}from"next/navigation";import{CartProvider}from"@/components/store/cart-provider";import{StoreHeader}from"@/components/store/store-header";import{InstallPrompt}from"@/components/store/install-prompt";import{resolveTenant}from"@/lib/tenant";import{createClient}from"@/lib/supabase/server";import{getStorefrontSettings}from"@/lib/queries/owner";import{paletteByKey,safeBrandColor}from"@/lib/storefront-theme";
-export async function generateMetadata({params}:{params:Promise<{slug:string}>}):Promise<Metadata>{const{slug}=await params;const tenant=await resolveTenant(slug);return tenant?{title:tenant.name,description:tenant.tagline??`Магазин ${tenant.name}`,manifest:`/s/${slug}/manifest.webmanifest`}:{} }
-export default async function StoreLayout({children,params}:{children:React.ReactNode;params:Promise<{slug:string}>}){const{slug}=await params;const tenant=await resolveTenant(slug);if(!tenant)notFound();const settings=process.env.NEXT_PUBLIC_SUPABASE_URL?(await getStorefrontSettings(await createClient(),tenant.id)).data:null;const palette=paletteByKey(settings?.palette_key);const accent=tenant.plan==="basic"?palette.accent:safeBrandColor(settings?.brand_color,tenant.accent_color);const style={"--tenant-accent":accent,"--store-bg":palette.background,"--store-surface":palette.surface,"--store-ink":palette.ink,"--store-muted":palette.muted,"--store-accent-ink":palette.accentInk}as CSSProperties;const subtle=tenant.plan!=="basic";return <div style={style} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]"><CartProvider><StoreHeader slug={slug} name={tenant.name}/>{children}<InstallPrompt/><footer className="mt-24 border-t border-black/10 bg-[var(--store-surface)] py-12"><div className="container flex flex-wrap items-end justify-between gap-7"><div><b className="text-xl">{tenant.name}</b><p className="mt-2 text-sm opacity-60">{tenant.city??"Казахстан"} · © 2026</p></div><div className={`max-w-xs text-sm ${subtle?"opacity-55":"opacity-80"}`}><b className="block">Создано на Dukenim</b><p className="mt-2">Запустите свой каталог, принимайте заказы и управляйте ими в одном кабинете.</p><Link className="mt-3 inline-block font-bold underline underline-offset-4" href="/register">Создать каталог на Dukenim →</Link></div><div className="text-sm opacity-65"><Link href="/legal/privacy">Конфиденциальность</Link><span className="px-2">·</span><Link href="/legal/offer">Условия</Link></div></div></footer></CartProvider></div>}
+import type { CSSProperties } from "react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { CartProvider } from "@/components/store/cart-provider";
+import { StoreHeader } from "@/components/store/store-header";
+import { InstallPrompt } from "@/components/store/install-prompt";
+import { resolveTenant } from "@/lib/tenant";
+import { loadProducts } from "@/lib/storefront-data";
+import { demoVerticalById } from "@/lib/demo-catalogs";
+import { createClient } from "@/lib/supabase/server";
+import { getStorefrontSettings } from "@/lib/queries/owner";
+import { paletteByKey, safeBrandColor } from "@/lib/storefront-theme";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params; const tenant = await resolveTenant(slug);
+  return tenant ? { title: tenant.name, description: tenant.tagline ?? `Магазин ${tenant.name}`, manifest: `/s/${slug}/manifest.webmanifest` } : {};
+}
+export default async function StoreLayout({ children, params }: { children: React.ReactNode; params: Promise<{ slug: string }> }) {
+  const { slug } = await params; const tenant = await resolveTenant(slug); if (!tenant) notFound();
+  const demo = Boolean(demoVerticalById(tenant.id));
+  const settings = !demo && process.env.NEXT_PUBLIC_SUPABASE_URL ? (await getStorefrontSettings(await createClient(), tenant.id)).data : null;
+  const palette = demo ? { background: "#ffffff", surface: "#fafafa", ink: "#171717", muted: "#737373", accent: "#171717", accentInk: "#ffffff" } : paletteByKey(settings?.palette_key);
+  const accent = demo || tenant.plan === "basic" ? palette.accent : safeBrandColor(settings?.brand_color, tenant.accent_color);
+  const style = { "--tenant-accent": accent, "--store-bg": palette.background, "--store-surface": palette.surface, "--store-ink": palette.ink, "--store-muted": palette.muted, "--store-accent-ink": palette.accentInk } as CSSProperties;
+  const products = await loadProducts(tenant.id);
+  const categories = Array.from(new Set(products.map(product => product.category).filter(Boolean)));
+  return <div style={style} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]"><CartProvider key={slug}><StoreHeader slug={slug} name={tenant.name} categories={categories} demo={demo}/>{children}{!demo && <InstallPrompt/>}<footer className="mt-16 border-t border-black/10 py-10"><div className="container flex flex-wrap justify-between gap-5 text-sm"><span>{tenant.name} · {tenant.city ?? "Казахстан"}</span><Link href={demo ? "/admin/ai-studio" : "/register"}>Создать свой каталог на Dukenim →</Link><Link href="/legal/privacy">Конфиденциальность</Link></div></footer></CartProvider></div>;
+}

@@ -1,3 +1,17 @@
 "use client";
-import{useState}from"react";import Link from"next/link";import{Menu,Search,ShoppingBag,X}from"lucide-react";import{useCart}from"./cart-provider";
-export function StoreHeader({slug,name}:{slug:string;name:string}){const{count}=useCart();const[open,setOpen]=useState(false);const close=()=>setOpen(false);return <header className="sticky top-0 z-30 border-b border-black/10 bg-[var(--store-surface)]/90 backdrop-blur"><div className="container flex h-18 items-center justify-between"><Link href={`/s/${slug}`} className="text-2xl font-black tracking-[.08em]">{name}</Link><nav className="desktop-only flex gap-8 text-sm font-semibold"><Link href={`/s/${slug}`}>Новинки</Link><Link href={`/s/${slug}#catalog`}>Каталог</Link><Link href={`/s/${slug}#about`}>О бренде</Link></nav><div className="flex items-center gap-2"><Link aria-label="Перейти к каталогу" title="Каталог" href={`/s/${slug}#catalog`} className="p-2"><Search size={20}/></Link><Link aria-label="Корзина" className="relative p-2" href={`/s/${slug}/cart`}><ShoppingBag size={21}/>{count>0&&<span className="absolute right-0 top-0 grid size-5 place-items-center rounded-full bg-[var(--tenant-accent)] text-[10px] text-[var(--store-accent-ink)]">{count}</span>}</Link><button type="button" onClick={()=>setOpen(value=>!value)} className="p-2 md:hidden" aria-label={open?"Закрыть меню":"Открыть меню"} aria-expanded={open}>{open?<X size={22}/>:<Menu size={22}/>}</button></div></div>{open&&<nav className="container grid gap-1 border-t border-black/10 py-3 text-sm font-semibold md:hidden"><Link onClick={close} className="rounded-lg px-3 py-3 hover:bg-black/5" href={`/s/${slug}`}>Новинки</Link><Link onClick={close} className="rounded-lg px-3 py-3 hover:bg-black/5" href={`/s/${slug}#catalog`}>Каталог</Link><Link onClick={close} className="rounded-lg px-3 py-3 hover:bg-black/5" href={`/s/${slug}#about`}>О бренде</Link></nav>}</header>}
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ShoppingBag } from "lucide-react";
+import { useCart } from "./cart-provider";
+
+export function StoreHeader({ slug, name, categories = [], demo = false }: { slug: string; name: string; categories?: string[]; demo?: boolean }) {
+  const { count } = useCart();
+  const pathname = usePathname();
+  const base = `/s/${slug}`;
+  const links = [{ label: "Все товары", href: `${base}/catalog` }, ...categories.map(label => ({ label, href: `${base}/category/${encodeURIComponent(label)}` }))];
+  return <header className="sticky top-0 z-30 border-b border-black/10 bg-[var(--store-surface)]">
+    {demo && <div className="border-b border-black/10"><div className="container flex flex-wrap justify-between gap-3 py-3 text-xs"><Link href="/demo">← Другие примеры</Link><span className="hidden opacity-50 sm:inline">Демонстрационный каталог</span><Link href="/admin/ai-studio" className="font-semibold">К созданию каталога →</Link></div></div>}
+    <div className="container flex h-20 items-center justify-between"><Link href={base} className="text-2xl font-semibold tracking-[.12em]">{name}</Link><Link aria-label={`Корзина, ${count} товаров`} className="flex items-center gap-2 p-3" href={`${base}/cart`}><ShoppingBag size={20}/><span className="text-sm">{count}</span></Link></div>
+    <nav aria-label="Разделы магазина" className="container flex gap-7 overflow-x-auto pb-4 text-sm">{links.map(link => <Link key={link.href} href={link.href} aria-current={decodeURI(pathname) === decodeURI(link.href) ? "page" : undefined} className="shrink-0 border-b-2 border-transparent pb-1 opacity-60 hover:opacity-100 aria-[current=page]:border-current aria-[current=page]:opacity-100">{link.label}</Link>)}</nav>
+  </header>;
+}

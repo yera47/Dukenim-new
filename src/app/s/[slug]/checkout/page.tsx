@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCheckoutOptions } from "@/lib/queries/orders";
-import { DEMO_TENANT_ID, resolveTenant } from "@/lib/tenant";
+import { resolveTenant } from "@/lib/tenant";
+import { demoVerticalById } from "@/lib/demo-catalogs";
 import { CheckoutClient, type CheckoutZone } from "./checkout-client";
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -9,7 +10,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   const tenant = await resolveTenant(slug);
   if (!tenant) notFound();
 
-  if (tenant.id === DEMO_TENANT_ID) {
+  if (demoVerticalById(tenant.id)) {
     return <><p className="container mt-6 rounded-xl bg-[var(--store-surface)] p-4 text-sm">Демонстрационный магазин: заказ не будет отправлен продавцу.</p><CheckoutClient demo slug={slug} deliveryEnabled pickupEnabled minOrder={0} zones={[{ id: "00000000-0000-4000-8000-000000000001", name: "По городу", cost: 1500, freeFrom: 50000, etaText: "1–2 дня" }]}/></>;
   }
 

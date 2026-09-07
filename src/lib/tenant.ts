@@ -3,6 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { getPublicTenantBySlug } from "@/lib/queries/tenants";
 import { tenant as demoTenant } from "@/lib/demo-data";
 import type { BusinessVertical } from "@/types/database";
+import { demoId, demoVerticalBySlug } from "@/lib/demo-catalogs";
+import { nichePresets } from "@/lib/niche-presets";
 
 export const DEMO_TENANT_ID = "10000000-0000-0000-0000-000000000001";
 
@@ -19,7 +21,8 @@ function publicDemoTenant(): PublicTenant {
 }
 
 export const resolveTenant = cache(async (slug: string): Promise<PublicTenant | null> => {
-  if (slug === demoTenant.slug) return publicDemoTenant();
+  const vertical = demoVerticalBySlug(slug);
+  if (vertical) return { ...publicDemoTenant(), id: demoId(vertical), slug, name: nichePresets[vertical].storeName, catalog_name: nichePresets[vertical].storeName, tagline: nichePresets[vertical].headline, business_vertical: vertical };
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return null;
   const client = await createClient();
   const { data } = await getPublicTenantBySlug(client, slug);

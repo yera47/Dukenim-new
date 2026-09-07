@@ -53,11 +53,12 @@ export async function createAiStudioStructure(brief: string) {
 
 export async function createAiStudioDesign(brief: string, vertical: BusinessVertical, plan: Plan) {
   if (!getAiStudioStatus().configured) throw new AzureFoundryError("AI Studio ещё не включён: не завершена серверная настройка Azure или базы данных.");
-  const allowedTemplates = templateCatalog.filter(template => hasPlan(plan, template.minPlan as Plan)).map(template => template.key);
+  const templateOptions = templateCatalog.filter(template => hasPlan(plan, template.minPlan as Plan));
+  const allowedTemplates = templateOptions.map(template => template.key);
   const allowedPalettes = palettes.map(palette => palette.key);
   const result = await createAzureFoundryChatCompletion([
     { role: "system", content: "Ты Dukenim AI Studio — редактор оформления витрины. Верни строго JSON без markdown: {\"templateKey\":string,\"paletteKey\":string,\"heroTitle\":string,\"heroSubtitle\":string,\"heroCtaLabel\":string,\"rationale\":string}. Используй только перечисленные разрешённые ключи. Ничего не публикуй и не утверждай, что изменение применено." },
-    { role: "user", content: `${instruction.store_design}\n\nТип бизнеса: ${vertical}. Разрешённые шаблоны: ${allowedTemplates.join(", ")}. Разрешённые палитры: ${allowedPalettes.join(", ")}.\n\nПожелания владельца: ${brief}` },
+    { role: "user", content: `${instruction.store_design}\n\nТип бизнеса: ${vertical}. Шаблоны: ${JSON.stringify(templateOptions.map(({key,name,description})=>({key,name,description})))}. Палитры: ${JSON.stringify(palettes.map(({key,name,background,ink,accent})=>({key,name,background,ink,accent})))}. Если цвет не указан, предпочитай mono. Для еды и повторных заказов отдавай приоритет быстрому каталогу; для одежды и интерьера — крупным фотографиям. Объясни решение применительно к задаче владельца.\n\nПожелания владельца: ${brief}` },
   ]);
   let raw: unknown;
   try { raw = JSON.parse(result.content); } catch { throw new AzureFoundryError("AI Studio вернул некорректное предложение оформления."); }

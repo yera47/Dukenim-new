@@ -24,7 +24,7 @@ const intents: Array<{ id: Intent; title: string; text: string }> = [
   { id: "banner", title: "Фон для баннера", text: "Опишите настроение и композицию. Фотографии реального товара добавляются отдельно." },
 ];
 const templateNames: Record<string, string> = { atelier: "Обложка и коллекции", studio: "Чистая витрина", market: "Быстрый каталог", journal: "Истории и подборки", gallery: "Визуальная витрина", signature: "Фирменная витрина" };
-const paletteNames: Record<string, string> = { "ink-brass": "Графит и латунь", "paper-forest": "Бумага и лес", "clay-milk": "Глина и молоко", "ocean-sand": "Океан и песок", "plum-stone": "Слива и камень", "cobalt-cloud": "Кобальт и облако", "olive-linen": "Олива и лён", "cherry-cream": "Вишня и крем", "terra-charcoal": "Терракота и уголь", "mint-charcoal": "Мята и уголь", "rose-ink": "Роза и тушь", "sunset-navy": "Закат и тёмно-синий" };
+const paletteNames: Record<string, string> = { mono: "Чёрный и белый", "ink-brass": "Графит и латунь", "paper-forest": "Бумага и лес", "clay-milk": "Глина и молоко", "ocean-sand": "Океан и песок", "plum-stone": "Слива и камень", "cobalt-cloud": "Кобальт и облако", "olive-linen": "Олива и лён", "cherry-cream": "Вишня и крем", "terra-charcoal": "Терракота и уголь", "mint-charcoal": "Мята и уголь", "rose-ink": "Роза и тушь", "sunset-navy": "Закат и тёмно-синий" };
 type Props = {
   enabled: boolean; imageEnabled: boolean; brand: boolean;
   catalogStatus: "not_started" | "building" | "ready";

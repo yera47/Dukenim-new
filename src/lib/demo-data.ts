@@ -1,6 +1,8 @@
+import { extraDemoProducts } from "./demo-extra-products";
 export type Product = { id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; images?:string[]; variants:{id:string;size:string|null;color:string;stock:number}[] };
-export const tenant={name:"MEREY",slug:"demo-shop",tagline:"Вещи, которые остаются с вами",city:"Кызылорда",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#0E5C4A",plan:"standard" as const};
+export const tenant={name:"FORMA",slug:"demo-shop",tagline:"Вещи, которые работают вместе",city:"Казахстан",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#171717",plan:"standard" as const};
 export const products:Product[]=[
+ ...extraDemoProducts,
  {id:"p1",title:"Жакет Essential",description:"Структурный жакет свободного кроя из плотной костюмной ткани.",price:42900,oldPrice:49900,category:"Новинки",featured:true,images:["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260906_215334_14f0ebab-ac72-4af5-bcf3-dcc5c4db29a8.png"],variants:[{id:"v1",size:"S",color:"Графит",stock:4},{id:"v2",size:"M",color:"Графит",stock:2},{id:"v3",size:"L",color:"Графит",stock:0}]},
  {id:"p2",title:"Платье Line",description:"Минималистичное платье миди с мягким силуэтом.",price:35900,category:"Платья",featured:true,images:["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_103657_83d4e765-9351-4d3f-86d7-1bc346605809.png"],variants:[{id:"v4",size:"S",color:"Молочный",stock:6},{id:"v5",size:"M",color:"Молочный",stock:3}]},
  {id:"p3",title:"Брюки Wide",description:"Широкие брюки с высокой посадкой и идеальной длиной.",price:28900,category:"Брюки",images:["https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_103658_578fbb6d-131f-4d2c-9e28-284b92105ec3.png"],variants:[{id:"v6",size:"S",color:"Черный",stock:7},{id:"v7",size:"M",color:"Черный",stock:1},{id:"v8",size:"L",color:"Черный",stock:2}]},

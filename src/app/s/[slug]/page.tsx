@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicStorePolicies, getStorefrontSettings } from "@/lib/queries/owner";
 import { nichePresets } from "@/lib/niche-presets";
+import { demoVerticalById } from "@/lib/demo-catalogs";
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -14,9 +15,10 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   if (!tenant) return null;
 
   const products = await loadProducts(tenant.id);
-  const client = process.env.NEXT_PUBLIC_SUPABASE_URL ? await createClient() : null;
+  const demo = Boolean(demoVerticalById(tenant.id));
+  const client = !demo && process.env.NEXT_PUBLIC_SUPABASE_URL ? await createClient() : null;
   const settings = client ? (await getStorefrontSettings(client, tenant.id)).data : null;
-  const storePolicies = process.env.SUPABASE_SERVICE_ROLE_KEY ? (await getPublicStorePolicies(createAdminClient(), tenant.id)).data : null;
+  const storePolicies = !demo && process.env.SUPABASE_SERVICE_ROLE_KEY ? (await getPublicStorePolicies(createAdminClient(), tenant.id)).data : null;
   const campaign = client
     ? (await client.from("storefront_campaigns").select("title, eyebrow, body, cta_label, cta_href, image_url").eq("tenant_id", tenant.id).eq("status", "published").order("created_at", { ascending: false }).limit(1).maybeSingle()).data
     : null;
@@ -34,7 +36,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
         <div className="flex max-w-xl flex-col justify-center">
           <h1 className="text-5xl font-semibold leading-[.96] tracking-[-.04em] md:text-7xl">{title}</h1>
           <p className="mt-7 max-w-[52ch] text-lg leading-8 opacity-70">{subtitle}</p>
-          <Link className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--tenant-accent)] px-5 py-3.5 font-extrabold text-[var(--store-accent-ink)] transition-transform hover:-translate-y-0.5" href="#catalog">
+          <Link className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--tenant-accent)] px-5 py-3.5 font-extrabold text-[var(--store-accent-ink)] transition-transform hover:-translate-y-0.5" href={`/s/${slug}/catalog`}>
             {settings?.hero_cta_label || "Смотреть каталог"}<ArrowRight size={18} />
           </Link>
         </div>

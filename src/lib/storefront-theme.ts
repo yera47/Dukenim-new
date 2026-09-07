@@ -2,6 +2,7 @@ export type Palette = { key:string; name:string; background:string; surface:stri
 
 // Curated combinations only: a Start customer chooses a coherent system, never random independent colors.
 export const palettes: Palette[] = [
+  {key:"mono",name:"Чёрный и белый",background:"#ffffff",surface:"#fafafa",ink:"#171717",muted:"#737373",accent:"#171717",accentInk:"#ffffff"},
   {key:"ink-brass",name:"Графит и латунь",background:"#0a0f0e",surface:"#151d1a",ink:"#f4eee3",muted:"#b8b4aa",accent:"#d7b36c",accentInk:"#13110b"},
   {key:"paper-forest",name:"Бумага и лес",background:"#f6f2e9",surface:"#ffffff",ink:"#10231c",muted:"#587066",accent:"#176b4e",accentInk:"#f7f4eb"},
   {key:"clay-milk",name:"Глина и молоко",background:"#fbf4ee",surface:"#fffdf9",ink:"#2c1b18",muted:"#765f59",accent:"#ae5d42",accentInk:"#fffaf4"},
