@@ -379,6 +379,15 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 
 ## Handoff contract
 
+### 2026-09-07 AI storefront-design action (latest)
+
+- Added `store_design` to the real Azure-backed AI Studio flow. The model receives the tenant business vertical and only template/palette keys allowed by the effective tariff; its JSON response is schema-validated and journaled before use.
+- The owner sees a compact hero/layout/palette proposal and must press «Применить оформление». The protected apply route uses the user's Supabase session and RLS, filters by tenant and intent, rechecks the plan, and preserves an existing hero image and brand colour. It does not change products, prices, stock, DNS or publish content automatically.
+- Applied and verified production migration `20260907110158_ai_store_design_intent.sql` on project `gklgbesydbottkqilihb`. Existing database-advisor warnings are unchanged; leaked-password protection and exposed legacy helper functions still require a separate deliberate security pass.
+- Checks: `npx tsc --noEmit`, 50/50 tests, 58-route production build. Commit `bf65916` is pushed; Vercel deployment `dpl_5aCPC5YChSoDxXFkRe5qgkTBM8SW` is Ready and aliased to `www.dukenim.kz`. Production smoke: homepage and demo storefront 200, protected Studio 307 to login when signed out, design-apply API 401 when signed out. Authenticated visual QA shows the new «Оформление витрины» action in production.
+- Remaining: perform an authenticated generation plus explicit apply against a disposable/test storefront (not the owner's live content), add multi-turn history and reference-image attachments, then complete the pre-launch security and commerce E2E gates.
+- Changed areas: `src/lib/ai/studio*`, draft/design-apply APIs, AI Studio client/styles/tests, generated database type, Supabase migration, project state/handoff.
+
 ### 2026-09-07 guided Studio follow-up (latest)
 
 - Implemented first-run CTA, three-step catalog setup with side preview, Enter guard before review, plain-language layout choices and collapsed optional colours. Removed composer counters/costs; added settings/usage and low-balance notices. Server credit enforcement is unchanged.

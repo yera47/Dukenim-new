@@ -1,8 +1,10 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-04
+Last reviewed: 2026-09-07
 
 ## Update — 2026-09-07
+
+- AI Studio can now produce a structured storefront-design proposal (tariff-allowed layout, curated palette and hero copy) and apply it only after the owner presses an explicit button. The apply route uses the signed-in Supabase session, RLS and tenant/intent filters, preserves the owner's existing image and brand colour, and rechecks plan access. Production migration `20260907110158_ai_store_design_intent.sql` is applied and verified. Release `bf65916` is deployed as Vercel `dpl_5aCPC5YChSoDxXFkRe5qgkTBM8SW` and aliased to `www.dukenim.kz`; 50 tests and the 58-route build pass.
 
 - Release 95b38d1 is Ready on canonical domains; authenticated production UI check confirms new AI Studio. This verifies deployment/UI, not the full new-store write journey.
 
