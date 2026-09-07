@@ -4,14 +4,14 @@ const mocks = vi.hoisted(() => ({ requireRole: vi.fn(), createAdminClient: vi.fn
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requireRole: mocks.requireRole }));
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: mocks.createAdminClient }));
-import { createStore, updateStore, completeRequest, createPromotion, togglePromotion, updateCrmIntegrationStatus } from "./actions";
+import { createStore, updateStore, completeRequest, createPromotion, togglePromotion, updateCrmIntegrationStatus, updateRootProduct } from "./actions";
 
 describe("root mutations", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requireRole.mockResolvedValue({ user: null, role: "superadmin", tenantId: null });
   });
-  it.each([createStore, updateStore, completeRequest, createPromotion, togglePromotion, updateCrmIntegrationStatus])("rejects a local demo session before constructing a privileged client", async action => {
+  it.each([createStore, updateStore, completeRequest, createPromotion, togglePromotion, updateCrmIntegrationStatus, updateRootProduct])("rejects a local demo session before constructing a privileged client", async action => {
     await expect(action(new FormData())).rejects.toThrow("требуется вход");
     expect(mocks.requireRole).toHaveBeenCalledWith(["superadmin"]);
     expect(mocks.createAdminClient).not.toHaveBeenCalled();
@@ -40,5 +40,19 @@ describe("root mutations", () => {
     await expect(updateStore(form)).rejects.toThrow("Изменения не выполнены");
     expect(from).toHaveBeenCalledTimes(1);
     expect(from).toHaveBeenCalledWith("platform_audit_events");
+  });
+  it("rejects a non-integer product price before reading product data", async () => {
+    mocks.requireRole.mockResolvedValue({ user: { id: "actor" }, role: "superadmin" });
+    const from = vi.fn();
+    mocks.createAdminClient.mockReturnValue({ from });
+    const form = new FormData();
+    form.set("tenantId", "11111111-1111-4111-8111-111111111111");
+    form.set("productId", "22222222-2222-4222-8222-222222222222");
+    form.set("title", "Товар");
+    form.set("description", "Описание");
+    form.set("price", "1250.5");
+    form.set("reason", "Исправление карточки");
+    await expect(updateRootProduct(form)).rejects.toThrow("целым количеством тенге");
+    expect(from).not.toHaveBeenCalled();
   });
 });
