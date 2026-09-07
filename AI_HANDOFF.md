@@ -412,6 +412,9 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Next media continuation
+Owner clarified featureless closed mask (no facial features) and all-niche demo photographs. Generated 25 distinct product/service/event illustrations plus the corrected mask still (26 images, 52 credits; expected balance 5, no top-up). Exact image URLs in src/lib/demo-media.ts; mask in public/design/dukenim-featureless-mask.png. All demo offerings now have unique images; beauty/food five offerings, others four, fashion ten. Shared ProductCard mobile title/price stacked; redundant about/platform pitch removed from storefront. Prompt updated in docs/ASTRA_PRODUCT_REBUILD.md. Checks so far: tsc, 59 tests; build/browser/release underway. Full promo video not generated, root/AI dialogue backlog unchanged. Do not conflate illustrated service offerings with scheduling or ticketing implementation.
+
 Release confirmed READY: dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ, aliased www.dukenim.kz, source dce2749. Production browser smoke passed at 390px; desktop follow-up running at documentation time. Earlier in-progress note below is superseded by this status.
 
 Implemented `/demo`, separate catalog/category routes, return-to-Studio links, eight independent demo identities, ten fashion products with six new Higgsfield photographs, monochrome option and richer AI template context. Files: src/lib/demo*, tenant/storefront-data/storefront-theme, store header/layout/listing, marketing demo links, AI schema/prompt/setup defaults. Missing database config no longer inserts demo products into real stores. Added demo-catalogs.test.ts and scripts/check-demo-navigation.cjs.

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, MessageCircle, RefreshCw, ShieldCheck, ShoppingBag, Truck } from "lucide-react";
+import { ArrowRight, RefreshCw, Truck } from "lucide-react";
 import { ProductCard } from "@/components/store/product-card";
 import { resolveTenant } from "@/lib/tenant";
 import { loadProducts } from "@/lib/storefront-data";
@@ -58,10 +58,6 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
       {products.length ? <div className="storefront-product-grid">{products.map((product) => <ProductCard key={product.id} product={product} slug={slug} />)}</div> : <div className="rounded-2xl border border-dashed border-black/20 py-16 text-center"><h3 className="text-xl font-bold">Каталог наполняется</h3><p className="mt-2 opacity-60">Владелец магазина добавляет первые товары.</p></div>}
     </section>
 
-    <section id="about" className="bg-[var(--tenant-accent)] py-20 text-[var(--store-accent-ink)]"><div className="container grid gap-10 md:grid-cols-2">
-      <h2 className="text-4xl font-semibold tracking-[-.04em] md:text-5xl">Магазин, к которому хочется вернуться.</h2>
-      <div><p className="max-w-[50ch] text-lg leading-8 opacity-80">Товары, оформление заказа и связь с владельцем собраны в одном понятном маршруте.</p><div className="mt-10 grid grid-cols-3 gap-5 text-sm"><div><ShoppingBag /><b className="mt-3 block">Каталог</b></div><div><ShieldCheck /><b className="mt-3 block">Заказ</b></div><div><MessageCircle /><b className="mt-3 block">Связь</b></div></div></div>
-    </div></section>
     {(storePolicies?.delivery_policy || storePolicies?.return_policy) && <section className="container grid gap-5 py-16 md:grid-cols-2"><div><h2 className="text-3xl font-semibold tracking-[-.035em]">Условия магазина</h2><p className="mt-2 max-w-lg text-[var(--store-muted)]">Актуальная информация от продавца.</p></div><div className="grid gap-4">{storePolicies.delivery_policy && <article className="rounded-xl border border-black/10 bg-[var(--store-surface)] p-5"><div className="flex items-center gap-2 font-extrabold"><Truck size={18} />Доставка</div><p className="mt-3 whitespace-pre-line text-sm leading-6 opacity-75">{storePolicies.delivery_policy}</p></article>}{storePolicies.return_policy && <article className="rounded-xl border border-black/10 bg-[var(--store-surface)] p-5"><div className="flex items-center gap-2 font-extrabold"><RefreshCw size={18} />Обмен и возврат</div><p className="mt-3 whitespace-pre-line text-sm leading-6 opacity-75">{storePolicies.return_policy}</p></article>}</div></section>}
   </main>;
 }

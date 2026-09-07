@@ -1,4 +1,5 @@
 import type { BusinessVertical } from "@/types/database";
+import { demoMedia } from "@/lib/demo-media";
 
 export type NichePreset = {
   label: string;
@@ -53,12 +54,12 @@ export const nichePresets: Record<BusinessVertical, NichePreset> = {
   services: {
     label: "Услуги", storeName: "FORMA SPACE", headline: "Услуги и условия — в одной ссылке.",
     sections: ["Услуги", "Специалисты", "Цены", "Контакты"], product: "Первая консультация", price: "от 15 000 ₸",
-    imageUrl: null, guidance: "На запуске Dukenim показывает услуги и принимает заявку; календарь записи пока не обещаем.",
+    imageUrl: demoMedia["services-1"], guidance: "На запуске Dukenim показывает услуги и принимает заявку; календарь записи пока не обещаем.",
   },
   event: {
     label: "Мероприятия", storeName: "EVENT SPACE", headline: "Программа и билеты в одной ссылке.",
     sections: ["Ближайшее", "Программа", "Билеты", "Контакты"], product: "Входной билет", price: "от 8 000 ₸",
-    imageUrl: null, guidance: "Dukenim может показать варианты и принять заявку; автоматическую билетную систему пока не обещаем.",
+    imageUrl: demoMedia["event-1"], guidance: "Dukenim может показать варианты и принять заявку; автоматическую билетную систему пока не обещаем.",
   },
   home: {
     label: "Интерьер", storeName: "ÜI", headline: "Предметы для спокойного дома.",

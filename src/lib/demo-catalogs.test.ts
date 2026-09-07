@@ -24,4 +24,11 @@ describe("demo storefronts", () => {
       expect(demoProductsFor(vertical).some(p => fashionIds.has(p.id))).toBe(false);
     }
   });
+  it("covers every demo offering with a distinct illustration", () => {
+    for (const vertical of demoVerticals) {
+      const items = demoProductsFor(vertical);
+      expect(items.every(item => Boolean(item.images?.[0])), vertical).toBe(true);
+      expect(new Set(items.map(item => item.images?.[0])).size, vertical).toBe(items.length);
+    }
+  });
 });

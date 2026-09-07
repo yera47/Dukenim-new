@@ -1,0 +1,28 @@
+// Higgsfield-generated illustrations for fictional demo offerings only.
+export const demoMedia: Record<string, string> = {
+  "beauty-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122302_6a5b5b0e-619a-4665-9378-e8b49edb4715.png",
+  "beauty-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122302_edbd5309-699b-4d54-b150-dac6c1069043.png",
+  "beauty-5": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122302_c8837042-a59a-40a1-8767-f5a977a66eb4.png",
+  "food-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122302_93060a0a-9922-4dba-afb9-35246a4db4dd.png",
+  "food-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122302_a20c6c34-fd58-4f9e-9d82-5f9dfe47a00d.png",
+  "food-5": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122409_4a193e64-8642-4b99-ba0c-02e83622c661.png",
+  "flowers-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122409_bd8f8808-0570-4504-8ad0-b52f4a338274.png",
+  "flowers-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122409_32afa9f2-69c3-4f6a-825a-c89d450bd5ca.png",
+  "food-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122409_bf3aab83-540f-4e99-bf77-1f7fb1c4c7c9.png",
+  "flowers-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122409_485b0489-bdf4-449f-a65d-7ceec37be8f3.png",
+  "home-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122453_35e52047-a366-4346-88be-3404aaa28de3.png",
+  "home-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122453_27a3d2ca-a824-4d93-b62e-6d887f98c01d.png",
+  "home-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122453_3cce84b8-f380-4dc5-8f10-9a29c5609f52.png",
+  "beauty-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122555_7b0c700a-4419-48bb-bcf8-767080bb6bd8.png",
+  "other-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122555_3a0bd2a4-82a7-4731-adaa-b0fdd1632f0d.png",
+  "other-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122555_1929b76a-d0b6-4a67-a0b1-34b954b2e6df.png",
+  "other-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122556_b1a60b5c-5c2c-444d-97ee-d1b2344ce109.png",
+  "services-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122647_ea0b2cc2-faec-4002-a993-93237f09cd57.png",
+  "services-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122648_75e654cb-6663-432b-ba03-b53794d99a64.png",
+  "services-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122735_e60b3ffd-f8d9-4dc3-a946-bb60b0f44553.png",
+  "event-2": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122833_4b100afc-e171-4c7e-8da4-b03df354dcb2.png",
+  "event-3": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122833_b021280c-452c-4963-b24c-d7f35f71f8e5.png",
+  "event-4": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122833_21ef0614-c3ed-4296-8bf8-247888ac67d9.png",
+  "services-1": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122833_c8ac6d06-74df-4636-b590-2f59f5ab3314.png",
+  "event-1": "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260907_122928_fb1467fd-09d1-4d01-8a2b-4b0852a5703e.png"
+};

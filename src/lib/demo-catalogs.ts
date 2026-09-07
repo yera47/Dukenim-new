@@ -1,6 +1,7 @@
 import type { BusinessVertical } from "@/types/database";
 import { nichePresets } from "@/lib/niche-presets";
 import { products, type Product } from "@/lib/demo-data";
+import { demoMedia } from "@/lib/demo-media";
 
 export const demoVerticals: BusinessVertical[] = ["fashion", "beauty", "food", "flowers", "home", "services", "event", "other"];
 export function demoSlug(vertical: BusinessVertical) { return vertical === "fashion" ? "demo-shop" : `demo-${vertical}`; }
@@ -9,8 +10,8 @@ export function demoVerticalById(id: string) { return demoVerticals.find(vertica
 export function demoVerticalBySlug(slug: string) { return demoVerticals.find(vertical => demoSlug(vertical) === slug); }
 
 const examples: Partial<Record<BusinessVertical, Array<[string, string, number]>>> = {
-  beauty: [["Очищающий гель", "Лицо", 8500], ["Увлажняющий крем", "Лицо", 12500], ["Лосьон для тела", "Тело", 9900], ["Набор ежедневного ухода", "Наборы", 24500]],
-  food: [["Круассан-сэндвич", "Завтраки", 3200], ["Сэндвич с сыром", "Завтраки", 2900], ["Кофе с молоком", "Напитки", 1400], ["Завтрак на двоих", "Наборы", 8500]],
+  beauty: [["Базовый дуэт ухода", "Наборы", 8500], ["Увлажняющий крем", "Лицо", 12500], ["Лосьон для тела", "Тело", 9900], ["Набор ежедневного ухода", "Наборы", 24500], ["Сыворотка", "Лицо", 14500]],
+  food: [["Круассан-сэндвич", "Завтраки", 3200], ["Сэндвич с сыром", "Завтраки", 2900], ["Кофе с молоком", "Напитки", 1400], ["Завтрак на двоих", "Наборы", 8500], ["Овощной салат", "Салаты", 3400]],
   flowers: [["Белый букет", "Монобукеты", 22000], ["Сезонная композиция", "Сегодня", 28500], ["Мини-букет", "Монобукеты", 12000], ["Подарочный комплект", "Подарки", 35000]],
   home: [["Настольная лампа", "Свет", 39000], ["Льняной плед", "Текстиль", 25000], ["Керамическая ваза", "Декор", 18500], ["Наволочка", "Текстиль", 7500]],
   services: [["Первая консультация", "Консультации", 15000], ["Разбор задачи", "Консультации", 25000], ["Проектная сессия", "Сессии", 40000], ["Сопровождение", "Сопровождение", 65000]],
@@ -24,9 +25,7 @@ export function demoProductsFor(vertical: BusinessVertical): Product[] {
   return (examples[vertical] ?? []).map(([title, category, price], index) => ({
     id: `${vertical}-${index + 1}`, title, category, price,
     description: "Пример позиции для знакомства с возможностями каталога Dukenim. Данные демонстрационные.",
-    // Only the item matching the available photograph uses it; don't present
-    // the same photo as unrelated products or services.
-    images: index === 0 && preset.imageUrl ? [preset.imageUrl] : [],
+    images: demoMedia[`${vertical}-${index + 1}`] ? [demoMedia[`${vertical}-${index + 1}`]] : index === 0 && preset.imageUrl ? [preset.imageUrl] : [],
     featured: index === 0,
     variants: [{ id: `${vertical}-v${index + 1}`, size: null, color: "Стандарт", stock: 10 }],
   }));

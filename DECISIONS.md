@@ -2,6 +2,8 @@
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
+- 2026-09-07: Owner specifies a completely featureless closed mask for the promo character: no eyes, eye holes, nose, mouth or face relief. Keep the Dukenim logo. Expand photography beyond fashion to every demo business and cover their sections.
+
 - 2026-09-07: Owner explicitly makes AI Studio the main workspace immediately after registration/business details: conversational guidance, adjacent catalog preview/editor, primary mobile navigation, clear human support and explicit application of results. Wants niche-specific templates/media, useful audited root administration and domain setup guidance. This supersedes requiring catalog completion before AI tools become available; user remains in control of publishing.
 
 - 2026-09-06: Owner requested a ChatGPT-inspired black-and-white platform website/cabinet without decorative room imagery. Phone/CRM illustrations are only for explaining the product. This supersedes the cinematic gold/room website direction; preserve configurable tenant branding and commerce/security rules.

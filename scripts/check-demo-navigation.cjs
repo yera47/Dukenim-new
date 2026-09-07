@@ -11,7 +11,7 @@ const origin = process.argv[3] || 'http://localhost:3004';
       await page.locator('a[href="/s/demo-shop"]').click();
       await page.getByRole('link', { name: 'Все товары', exact: true }).click();
       await page.waitForURL('**/s/demo-shop/catalog');
-      if (!(await page.getByText('10 позиций').isVisible())) throw Error('Missing products');
+      if (!(await page.getByText('Позиций: 10').isVisible())) throw Error('Missing products');
       await page.getByRole('link', { name: 'Аксессуары', exact: true }).click();
       await page.waitForTimeout(1000);
       console.log(page.url(), (await page.locator('body').innerText()).slice(0, 900));
