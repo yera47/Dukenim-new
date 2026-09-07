@@ -358,8 +358,11 @@ section.bg-\[\#a24a34\] h2{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.02}
 .pricing-rebuild-card.is-brand li{color:#e8dfd0}
 
 .niche-preview{min-height:480px;padding:24px;overflow:hidden}
+.niche-preview{container-type:inline-size}.niche-preview-content>div{min-width:0}.niche-preview-content h3{overflow-wrap:anywhere}@container(max-width:460px){.niche-preview-content{grid-template-columns:1fr!important}.niche-preview-content h3{font-size:28px!important}.niche-preview-content article{max-width:240px;width:100%}}
 .niche-preview header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:15px;border-bottom:1px solid currentColor}
 .niche-preview header span{font-size:10px;text-transform:uppercase;opacity:.55}
+.catalog-wizard{margin-top:24px}.catalog-wizard-layout{display:grid;grid-template-columns:minmax(240px,.8fr) minmax(0,1.2fr);gap:28px;align-items:start;margin-top:24px}.catalog-wizard-preview{border:1px solid #ddd;border-radius:16px;overflow:hidden;position:sticky;top:90px}@media(max-width:900px){.catalog-wizard-layout{grid-template-columns:1fr}.catalog-wizard-preview{position:static}}
+.niche-preview[data-layout=catalog] .niche-preview-content{grid-template-columns:1fr}.niche-preview[data-layout=catalog] .niche-preview-content article{max-width:240px}.niche-preview[data-layout=catalog] .niche-preview-content h3{font-size:28px}
 .niche-preview nav{display:flex;gap:14px;overflow:auto;padding:16px 0;font-size:11px;white-space:nowrap}
 .niche-preview nav button{opacity:.5}.niche-preview nav button[aria-pressed=true]{opacity:1;font-weight:800;text-decoration:underline;text-underline-offset:5px}
 .niche-preview-content{display:grid;grid-template-columns:minmax(0,1fr) minmax(160px,.65fr);gap:24px;align-items:center}

@@ -379,4 +379,14 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 
 ## Handoff contract
 
+### 2026-09-07 guided Studio follow-up (latest)
+
+- Implemented first-run CTA, three-step catalog setup with side preview, Enter guard before review, plain-language layout choices and collapsed optional colours. Removed composer counters/costs; added settings/usage and low-balance notices. Server credit enforcement is unchanged.
+- New 12-second Higgsfield promotional clip replaces the six-second source, with the real DukenimLogo rendered in HTML and a smaller frame. Generated phone screens are intentionally blank, not claimed to be actual UI.
+- Removed abstract storefront hero shapes; a real merchant product photo is used when available and no configured hero image exists. Installation prompt now appears only when the browser offers installation, with an accessible close control.
+- Checks: TypeScript and 46 tests pass. Production build passed at 57 routes before the last explanatory-copy update; deployment build must verify that update. Desktop first-run and design-step visual QA passed; real tenant save and mobile flow are not yet reverified.
+- Exact-UI recordings were captured locally with demo data but rejected for release because the legacy storefront has no product photography. `recorded-commerce.*`, the recording script and two public WebM files remain local drafts, not wired into the homepage. Existing CommerceMotion remains in use. Do not claim the requested phone/CRM video is delivered.
+- Still outstanding: full multi-turn design chat and reference attachments; actual shared published template renderer for every business vertical; complete niche website illustrations; end-to-end save/product/order checks; root audit completion/concurrency review. Current preview is illustrative, not pixel-identical to published stores. Do not call the overall redesign complete.
+- Changed areas: admin/ai-studio, admin/settings/usage, catalog-setup-form, niche-preview, promo-film, public storefront hero/install prompt, global preview CSS. No database migration or production credential change in this slice.
+
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.

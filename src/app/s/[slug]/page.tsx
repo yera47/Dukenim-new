@@ -22,6 +22,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   const title = settings?.hero_title || tenant.name;
   const subtitle = settings?.hero_subtitle || tenant.tagline || "Собранный каталог, удобный заказ и понятная связь с магазином.";
   const heroImage = settings?.hero_image_url && /^https?:\/\//.test(settings.hero_image_url) ? settings.hero_image_url : null;
+  const featuredProduct = products.find(product => product.images?.[0]);
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const heroStyle = heroImage ? { backgroundImage: `linear-gradient(100deg, var(--store-bg) 0%, transparent 66%), url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
 
@@ -35,7 +36,12 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
             {settings?.hero_cta_label || "Смотреть каталог"}<ArrowRight size={18} />
           </Link>
         </div>
-        <div className="storefront-hero-object" aria-hidden="true"><div /><div /><div /></div>
+        {!heroImage && featuredProduct ? <Link href={`/s/${slug}/product/${featuredProduct.id}`} className="my-6 block overflow-hidden rounded-2xl">
+          {/* The hero uses the merchant's actual product, never an invented item. */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={featuredProduct.images![0]} alt={featuredProduct.title} className="max-h-[440px] w-full object-cover"/>
+          <span className="mt-3 block text-sm">{featuredProduct.title} →</span>
+        </Link> : null}
       </div>
     </section>
 

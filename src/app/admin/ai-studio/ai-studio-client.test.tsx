@@ -8,7 +8,7 @@ import { AiStudioClient } from "./ai-studio-client";
 
 describe("AI Studio first-run access", () => {
   const props = { enabled: true, imageEnabled: false, brand: false, storeName: "Магазин", slug: "shop", plan: "basic" as const, vertical: "fashion" as const };
-  it.each(["not_started", "building", "ready"] as const)("keeps the assistant available at %s", (catalogStatus) => {
+  it.each(["building", "ready"] as const)("keeps the assistant available at %s", (catalogStatus) => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus={catalogStatus}/>);
     expect(html).toContain('id="studio-message"');
     expect(html).toContain("Разделы каталога");
@@ -17,8 +17,10 @@ describe("AI Studio first-run access", () => {
   });
   it("offers in-place catalog creation before the first product", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="not_started"/>);
-    expect(html).toContain("Создать каталог здесь");
-    expect(html).toContain("Основа ещё не сохранена");
+    expect(html).toContain("Создать каталог с AI Studio");
+    expect(html).not.toContain('id="studio-message"');
+    expect(html).not.toContain("0/800");
+    expect(html).not.toContain("5 кредитов");
   });
   it("does not call a ready catalog published", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready"/>);

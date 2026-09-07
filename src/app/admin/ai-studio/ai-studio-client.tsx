@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [brief, setBrief] = useState("");
   const [submitted, setSubmitted] = useState("");
   const [pending, setPending] = useState(false);
-  const [purchasePending, setPurchasePending] = useState(false);
   const [campaignPending, setCampaignPending] = useState(false);
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [error, setError] = useState("");
@@ -47,9 +46,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [banner, setBanner] = useState<Banner | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
-  useEffect(() => {
-    if (workspaceOpen) document.getElementById("studio-setup")?.scrollIntoView({ block: "start", behavior: "instant" });
-  }, [workspaceOpen]);
   const [copied, setCopied] = useState(false);
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
   const canRun = intent === "banner" ? imageEnabled : enabled;
@@ -78,15 +74,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось получить ответ."); }
     finally { setPending(false); }
-  }
-  async function buyCredits() {
-    setPurchasePending(true); setError("");
-    try {
-      const response = await fetch("/api/polar/ai-credits", { method: "POST" });
-      const data = await response.json();
-      if (!response.ok || !data.url) throw new Error(data.error ?? "Не удалось открыть оплату.");
-      window.location.assign(data.url);
-    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось открыть оплату."); setPurchasePending(false); }
   }
   async function addBannerToCampaigns() {
     if (!banner) return;
@@ -122,6 +109,28 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     finally { setStructureSaving(false); }
   }
 
+  if (catalogStatus === "not_started") return <div className={styles.workspace}>
+    {!workspaceOpen ? <section className={styles.welcome}>
+      <Sparkles size={32}/><h2>Давайте создадим ваш магазин.</h2>
+      <p>Я помогу выбрать оформление, подготовить разделы и добавить первый товар. Пройдём каждый шаг вместе.</p>
+      <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Создать каталог с AI Studio <ArrowRight size={17}/></button>
+      <Link href={supportHref}>Написать человеку</Link>
+    </section> : <section>
+      <button type="button" onClick={()=>setWorkspaceOpen(false)} className="text-sm text-neutral-500">← В начало Studio</button>
+      <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio/>
+      <div className={styles.assistant}><Sparkles size={20}/><p>Опишите ассортимент — помогу подготовить разделы для вашего каталога.</p></div>
+      {structure&&<div className={styles.result}>{structure.sections.map(section=><p key={section.name}><b>{section.name}</b> — {section.description}</p>)}<p>Предложение сохранено. После создания каталога вы сможете добавить эти разделы в AI Studio.</p></div>}
+      {!enabled&&<p className={styles.notice}>AI сейчас недоступен. Можно продолжить создание вручную или <Link href={supportHref}>написать в поддержку</Link>.</p>}
+      {creditsRemaining !== null && creditsRemaining <= 12 && <p role="status" className={styles.notice}>Доступный объём AI заканчивается. <Link href="/admin/settings/usage">Посмотреть использование</Link></p>}
+      <form className={styles.composer} onSubmit={event=>{event.preventDefault();void createDraft();}}>
+        <label htmlFor="studio-message">Обсудить разделы с AI</label>
+        <textarea id="studio-message" value={brief} onChange={event=>setBrief(event.target.value)} maxLength={800} required minLength={8} rows={2} placeholder="Расскажите, что вы продаёте и какие разделы нужны"/>
+        <div><span role="status">{pending?"Готовлю разделы…":""}</span><button disabled={pending||!enabled||brief.trim().length<8} aria-label="Отправить запрос"><Send size={18}/></button></div>
+      </form>
+      {error&&<p role="alert" className={styles.error}>{error}</p>}
+    </section>}
+  </div>;
+
   return <div className={styles.workspace}>
     <ol className={styles.steps} aria-label="Этапы запуска магазина">
       {["Создать основу", "Добавить товары", "Проверить витрину"].map((label, index) =>
@@ -148,10 +157,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
         <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void createDraft(); }}>
           <label htmlFor="studio-message">{selected.text}</label>
           <textarea id="studio-message" value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={800} minLength={8} required rows={4} placeholder="Например: магазин базовой женской одежды. Нужны понятные разделы: верх, низ, обувь. Тон — простой, без громких обещаний."/>
-          <div><small>{brief.length}/800 · {intent === "catalog_structure" ? "5 кредитов" : intent === "banner" ? "20 кредитов" : "1 кредит"}</small><button type="submit" disabled={!canRun || brief.trim().length < 8 || pending} aria-label="Отправить запрос"><Send size={18}/></button></div>
+          <div><span/><button type="submit" disabled={!canRun || brief.trim().length < 8 || pending} aria-label="Отправить запрос"><Send size={18}/></button></div>
         </form>
         {!canRun && <p className={styles.notice}>{intent === "banner" && !brand ? "Фоны для баннеров входят в «Бренд». Разделы и тексты доступны на обоих тарифах." : "Генерация сейчас недоступна. Создание каталога вручную и поддержка остаются доступны."}</p>}
-        {creditsRemaining !== null && creditsRemaining <= 20 && <div className={styles.notice}>Осталось {creditsRemaining} кредитов. <button type="button" onClick={buyCredits} disabled={purchasePending}>{purchasePending ? "Открываем оплату…" : "Купить ещё 100"}</button></div>}
+        {creditsRemaining !== null && creditsRemaining <= 12 && <div className={styles.notice}>Лимит AI почти использован. <Link href="/admin/settings/usage">Посмотреть использование</Link></div>}
         {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
         <p className={styles.footnote}>AI помогает с разделами, текстами и фонами. Не меняет цены, остатки или DNS самостоятельно. <Link href="/admin/domains">Ссылка и свой домен →</Link></p>
       </section>

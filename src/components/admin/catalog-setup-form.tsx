@@ -1,30 +1,43 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { ArrowRight, Check, LoaderCircle } from "lucide-react";
+import { useActionState, useState } from "react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import { createCatalogAction, type CatalogActionState } from "@/app/admin/actions";
 import { launchTemplatesForPlan, palettes, paletteByKey } from "@/lib/storefront-theme";
 import { NichePreview } from "@/components/store/niche-preview";
+import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 
-const initialState: CatalogActionState = {};
-
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean }) {
-  const [state, action, pending] = useActionState(createCatalogAction, initialState);
+  const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
   const templates = launchTemplatesForPlan(plan);
+  const [step, setStep] = useState(0);
   const [templateKey, setTemplateKey] = useState<string>(templates[0].key);
   const [paletteKey, setPaletteKey] = useState("paper-forest");
   const [catalogName, setCatalogName] = useState(defaultName);
-  const selectedTemplate = useMemo(() => templates.find((item) => item.key === templateKey) ?? templates[0], [templateKey, templates]);
   const palette = paletteByKey(paletteKey);
-  const isBrand = plan !== "basic";
-
-  return <form action={action} className="mt-7 max-w-6xl space-y-8"><input type="hidden" name="fromStudio" value={fromStudio ? "true" : "false"}/><section className="card p-6 md:p-8"><h2 className="text-xl font-extrabold">Основа витрины</h2><label className="mt-5 block max-w-xl text-sm font-bold">Название каталога<input name="catalogName" required minLength={2} maxLength={80} value={catalogName} onChange={(event) => setCatalogName(event.target.value)} className="input mt-2" placeholder="Например, Aru Store" /></label><p className="mt-3 text-sm text-[var(--ink-60)]">Адрес витрины: <b className="text-[var(--ink)]">dukenim.kz/s/{slug}</b>. Его можно открыть после добавления первого товара.</p></section>
-
-    <section><div><h2 className="text-xl font-extrabold">Выберите основу дизайна</h2><p className="mt-2 text-sm text-[var(--ink-60)]">На тарифе «{isBrand ? "Бренд" : "Старт"}» доступны две разные витрины. Обе адаптированы под телефон и каталог; их можно изменить позже.</p></div><div className="mt-5 grid gap-4 md:grid-cols-2">{templates.map((option) => { const selected = option.key === templateKey; const name = option.key === "atelier" ? "Ателье" : option.key === "market" ? "Маркет" : option.key === "journal" ? "Журнал" : "Галерея"; return <label key={option.key} className={`cursor-pointer rounded-[14px] border p-5 transition ${selected ? "border-[var(--accent)] bg-[var(--accent-soft)] shadow-sm" : "border-[var(--line)] bg-[var(--surface)] hover:border-[var(--accent)]"}`}><input className="sr-only" type="radio" name="templateKey" value={option.key} checked={selected} onChange={() => setTemplateKey(option.key)} /><div className="flex items-start justify-between gap-4"><div><b className="text-lg">{name}</b><p className="mt-2 text-sm leading-6 text-[var(--ink-60)]">{option.benefit}</p></div>{selected && <span className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--accent)] text-[var(--accent-ink)]"><Check size={16} /></span>}</div><div className={`mt-5 grid h-24 grid-cols-4 gap-2 overflow-hidden rounded-xl p-3 ${option.key === "atelier" || option.key === "gallery" ? "bg-[var(--accent-dark)]" : "bg-[var(--surface-muted)]"}`}><span className="col-span-2 rounded-md bg-[var(--accent)]/70" /><span className="rounded-md bg-white/70" /><span className="rounded-md bg-white/40" /><span className="rounded-md bg-white/40" /><span className="rounded-md bg-white/70" /><span className="col-span-2 rounded-md bg-[var(--accent)]/45" /></div></label>})}</div></section>
-
-    <section className="card p-6 md:p-8"><h2 className="text-xl font-extrabold">Палитра витрины</h2><p className="mt-2 text-sm text-[var(--ink-60)]">Готовые сочетания сохраняют контраст и читаемость. Выберите то, что подходит вашему товару.</p><div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">{palettes.map((option) => <label key={option.key} className={`cursor-pointer rounded-xl border p-3 transition ${paletteKey === option.key ? "border-[var(--accent)] ring-1 ring-[var(--accent)]" : "border-[var(--line)] hover:border-[var(--accent)]"}`}><input className="sr-only" name="paletteKey" type="radio" value={option.key} checked={paletteKey === option.key} onChange={() => setPaletteKey(option.key)} /><span className="flex h-8 overflow-hidden rounded-md"><i className="flex-1" style={{ background: option.background }} /><i className="flex-1" style={{ background: option.surface }} /><i className="flex-1" style={{ background: option.accent }} /></span><b className="mt-2 block text-xs">{option.name}</b></label>)}</div>{isBrand && <label className="mt-6 flex flex-wrap items-center gap-3 text-sm font-bold">Фирменный акцент <input name="brandColor" type="color" defaultValue={palette.accent} className="h-10 w-16 cursor-pointer rounded border border-[var(--line)] bg-white p-1" /><span className="font-normal text-[var(--ink-60)]">Используем поверх выбранной палитры, если цвет остаётся читаемым.</span></label>}</section>
-
-    <section className="card overflow-hidden"><div className="grid xl:grid-cols-[.7fr_1.3fr]"><div className="p-6 md:p-8"><h2 className="text-xl font-extrabold">Живой предпросмотр</h2><p className="mt-2 text-sm leading-6 text-[var(--ink-60)]">«{selectedTemplate.key === "atelier" ? "Ателье" : selectedTemplate.key === "market" ? "Маркет" : selectedTemplate.key === "journal" ? "Журнал" : "Галерея"}» + «{palette.name}». Переключайте разделы в примере. После сохранения замените демонстрационный товар своими фотографиями и данными.</p>{state.error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-700">{state.error}</p>}<button disabled={pending} className="btn btn-cta mt-7">{pending ? <><LoaderCircle className="animate-spin" size={18} />Создаём…</> : <>Создать каталог и продолжить <ArrowRight size={18} /></>}</button></div><NichePreview vertical={vertical} templateName={selectedTemplate.key} background={palette.background} surface={palette.surface} ink={palette.ink} muted={palette.muted} accent={palette.accent}/></div></section>
+  return <form action={action} onSubmit={event => {
+    if (step < 2) {
+      event.preventDefault();
+      if (catalogName.trim().length >= 2) setStep(step + 1);
+    }
+  }} className="catalog-wizard">
+    <input type="hidden" name="fromStudio" value={String(fromStudio)}/>
+    <input type="hidden" name="catalogName" value={catalogName}/>
+    <input type="hidden" name="templateKey" value={templateKey}/>
+    <input type="hidden" name="paletteKey" value={paletteKey}/>
+    <nav aria-label="Шаги создания" className="flex gap-4 border-b pb-4 text-sm">{["Название","Оформление","Проверка"].map((label,index)=><span key={label} aria-current={step===index?"step":undefined} className={step===index?"font-bold":"text-neutral-400"}>{index+1}. {label}</span>)}</nav>
+    <div className="catalog-wizard-layout">
+      <section className="py-4">
+        <small className="text-neutral-500">{nichePresets[vertical].label}</small>
+        <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?"Выберите подачу товаров":"Теперь добавим первый товар."}</h2>
+        {step===0&&<><p className="my-4 text-sm leading-7 text-neutral-500">Это название увидят покупатели. Его можно изменить позже.</p><label className="block text-sm font-semibold">Название<input value={catalogName} maxLength={80} onChange={event=>setCatalogName(event.target.value)} className="input mt-2" placeholder="Например, Aru Store"/></label><p className="mt-4 break-all text-xs text-neutral-500">dukenim.kz/s/{slug}</p></>}
+        {step===1&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сравните варианты в предпросмотре. Ваши товары и адрес сохранятся при смене оформления.</p><div className="grid gap-3">{templates.map((option,index)=><button type="button" key={option.key} aria-pressed={option.key===templateKey} onClick={()=>setTemplateKey(option.key)} className={`rounded-xl border p-4 text-left ${option.key===templateKey?"border-black bg-neutral-100":"border-neutral-200"}`}><b>{index===0?"Крупная обложка и коллекции":"Каталог на первом экране"}</b><span className="mt-2 block text-sm text-neutral-500">{index===0?"Для выразительных фотографий и знакомства с брендом.":"Для быстрого просмотра ассортимента и выбора."}</span></button>)}</div><details className="mt-5"><summary className="cursor-pointer text-sm font-semibold">Настроить цвета</summary><div className="mt-3 grid grid-cols-3 gap-2">{palettes.map(option=><button type="button" key={option.key} aria-label={option.name} aria-pressed={option.key===paletteKey} onClick={()=>setPaletteKey(option.key)} className="rounded-lg border p-2"><span className="flex h-6"><i className="flex-1" style={{background:option.background}}/><i className="flex-1" style={{background:option.ink}}/><i className="flex-1" style={{background:option.accent}}/></span><small>{option.name}</small></button>)}</div></details></>}
+        {step===2&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">В предпросмотре показан пример товара. Он не добавляется в ваш магазин.</p></>}
+        {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
+        <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending} className="btn btn-secondary" onClick={()=>setStep(step-1)}>Назад</button>}{step<2?<button type="button" disabled={catalogName.trim().length<2} className="btn btn-primary" onClick={()=>setStep(step+1)}>Продолжить <ArrowRight size={16}/></button>:<button disabled={pending||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
+      </section>
+      <aside className="catalog-wizard-preview" aria-label="Предпросмотр каталога"><div className="border-b bg-white px-4 py-3 text-xs text-neutral-500">Предпросмотр · {catalogName}</div><NichePreview vertical={vertical} templateName={templateKey} storeName={catalogName} background={palette.background} surface={palette.surface} ink={palette.ink} muted={palette.muted} accent={palette.accent}/></aside>
+    </div>
   </form>;
 }
