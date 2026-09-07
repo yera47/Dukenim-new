@@ -412,6 +412,16 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Prelaunch audit — 2026-09-08 (latest)
+
+Source commit 4f04adb pushed main. Removed fake successful order response when Supabase configuration is absent; API fails closed with 503. Added seven order input/configuration tests. Checks: 71 tests, TypeScript, production build, diff check pass. Changed src/app/api/orders/route.ts, route.test.ts; execution prompt and evidence-backed launch gates in docs/PRELAUNCH_AUDIT.md.
+
+Deployment attempt `npx vercel deploy --prod --yes` failed with Not authorized. New production release NOT verified; previous known Ready release remains the only verified deployment. Restore Vercel access/check Git integration deployment before claiming publication.
+
+Read-only database inventory: 15 Auth accounts, 14 stores, 5 orders, two superadmin profiles. No users/stores/orders deleted or modified. Asked owner for exact retained admin email and test-only versus all-other-data deletion scope; reply pending. Never infer every order is disposable. Security advisor reports executable authorization helpers and disabled leaked-password protection; no blind grant changes applied.
+
+Next: isolated authenticated registration/catalog/product/order persistence E2E; atomic catalog setup; owner mutation error propagation/concurrent stock; order abuse/idempotency; billing/payout and backup restore verification. These are not completed by passing unit tests. Shared docs retain older historical statements; use this latest evidence rather than treating all old milestones as current readiness.
+
 ### Serik naming / pricing / recordings
 
 Release verified 55a6f37 / dpl_GXd7mTehtyNnr7gLpo5PUYB7pGqR, canonical alias. Production presentation smoke passes both widths; new WebM files available. No real DB mutation performed. Isolated authenticated first-run test remains next, not completed.
