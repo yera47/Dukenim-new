@@ -412,6 +412,8 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+Release confirmed READY: dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ, aliased www.dukenim.kz, source dce2749. Production browser smoke passed at 390px; desktop follow-up running at documentation time. Earlier in-progress note below is superseded by this status.
+
 Implemented `/demo`, separate catalog/category routes, return-to-Studio links, eight independent demo identities, ten fashion products with six new Higgsfield photographs, monochrome option and richer AI template context. Files: src/lib/demo*, tenant/storefront-data/storefront-theme, store header/layout/listing, marketing demo links, AI schema/prompt/setup defaults. Missing database config no longer inserts demo products into real stores. Added demo-catalogs.test.ts and scripts/check-demo-navigation.cjs.
 
 Checks: tsc, 58 tests, production build, real browser navigation at 390/1440 passed; Russian category route required explicit decoding. One build warning remains for img in demo chooser. Current production deployment is in progress; do not assume Ready without checking. Full outstanding scope is in docs/REQUEST_AUDIT_20260907.md; owner prompt in docs/ASTRA_PRODUCT_REBUILD.md. New promo is only a generated starting still, not finished video. No customer stores deleted; no DB migrations applied this turn.

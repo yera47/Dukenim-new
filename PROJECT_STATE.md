@@ -2,6 +2,8 @@
 
 Last reviewed: 2026-09-07
 
+Latest demo release: dce2749; Vercel dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ reached READY and alias www.dukenim.kz. `/demo` offers eight business examples; fashion has ten products, black/white styling, separate catalog/category routes and return to Studio. Tests: 58 passing, tsc/build passing; local mobile/desktop navigation passed. Outstanding work is explicitly tracked in docs/REQUEST_AUDIT_20260907.md, including unfinished promo video and conversational builder.
+
 ## Update — 2026-09-07
 
 - AI Studio can now produce a structured storefront-design proposal (tariff-allowed layout, curated palette and hero copy) and apply it only after the owner presses an explicit button. The apply route uses the signed-in Supabase session, RLS and tenant/intent filters, preserves the owner's existing image and brand colour, and rechecks plan access. Production migration `20260907110158_ai_store_design_intent.sql` is applied and verified. Release `bf65916` is deployed as Vercel `dpl_5aCPC5YChSoDxXFkRe5qgkTBM8SW` and aliased to `www.dukenim.kz`; 50 tests and the 58-route build pass.
