@@ -28,5 +28,5 @@ Confirmed direction: monochrome platform, AI Studio as the primary owner workspa
 
 ## External gates
 
-Higgsfield started this slice at 134 credits with no unlimited allowance. Owner authorized continued work; six 2K images and one six-second 720p video consumed 27 credits, leaving an expected 107 credits (dashboard should be rechecked before another paid generation).
+Higgsfield started this slice at 134 credits with no unlimited allowance. Owner authorized continued work; six 2K images and one six-second 720p video consumed 27 credits. The API balance was rechecked after completion: 107 credits remain on Starter.
 Native release still needs authenticated EAS/signing and device checks. Public paid service readiness still depends on real payout, legal and resilience verification.
