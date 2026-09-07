@@ -43,6 +43,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
+  const [resultIntent, setResultIntent] = useState<Intent | null>(initialStructure ? "catalog_structure" : null);
   const [structure, setStructure] = useState<Structure | null>(initialStructure?.structure ?? null);
   const [design, setDesign] = useState<Design | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(initialStructure?.generationId ?? null);
@@ -50,6 +51,9 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [structureSaved, setStructureSaved] = useState(false);
   const [designSaving, setDesignSaving] = useState(false);
   const [designSaved, setDesignSaved] = useState(false);
+  const [draftSaving, setDraftSaving] = useState(false);
+  const [draftSaved, setDraftSaved] = useState(false);
+  const [draftTarget, setDraftTarget] = useState<"storefront" | "campaign" | null>(null);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -62,7 +66,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   async function createDraft() {
     if (pending || !canRun || brief.trim().length < 8) return;
     setPending(true); setError(""); setCopied(false);
-    setGenerationId(null); setStructureSaved(false); setDesignSaved(false);
+    setGenerationId(null); setStructureSaved(false); setDesignSaved(false); setDraftSaved(false); setDraftTarget(null); setResultIntent(null);
     setDraft(null); setStructure(null); setDesign(null); setBanner(null); setCampaignId(null);
     setSubmitted(brief.trim());
     try {
@@ -77,6 +81,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       }
       setDraft(data.draft ?? null); setStructure(data.structure ?? null); setDesign(data.design ?? null);
       setGenerationId(data.generationId ?? null);
+      setResultIntent(intent);
       setBanner(data.imageUrl && data.generationId ? { imageUrl: data.imageUrl, generationId: data.generationId } : null);
       if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось получить ответ."); }
@@ -128,6 +133,20 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       setDesignSaved(true); router.refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось применить оформление."); }
     finally { setDesignSaving(false); }
+  }
+  async function saveDraft() {
+    if (!generationId || !draft || draftSaving || !resultIntent || !["hero", "promotion"].includes(resultIntent)) return;
+    setDraftSaving(true); setError("");
+    try {
+      const response = await fetch("/api/ai-studio/copy/apply", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.saved) throw new Error(data.error ?? "Не удалось сохранить текст.");
+      setDraftSaved(true); setDraftTarget(data.target === "campaign" ? "campaign" : "storefront"); router.refresh();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось сохранить текст."); }
+    finally { setDraftSaving(false); }
   }
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
@@ -199,7 +218,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
           {banner ? <><Image unoptimized width={1600} height={900} src={banner.imageUrl} alt="Предложенный фон для баннера"/><button className="btn btn-secondary" type="button" disabled={campaignPending || Boolean(campaignId)} onClick={addBannerToCampaigns}>{campaignPending ? "Сохраняем…" : campaignId ? "Сохранено в кампании" : "Сохранить в кампании"}</button>{campaignId && <Link href="/admin/settings#campaigns">Проверить и опубликовать кампанию →</Link>}</> :
           structure ? <>{structure.sections.map((section, index) => <div key={index} className={styles.category}><h3>{section.name}</h3><p>{section.description}</p></div>)}<p>{structureSaved ? "Разделы сохранены. Теперь при добавлении товара выберите нужный раздел." : step === 0 ? "Сохраните основу каталога ниже. Это предложение останется доступным после сохранения." : "Добавим названия разделов в ваш каталог. Существующие товары и разделы не изменятся."}</p><button type="button" className="btn btn-primary" disabled={step === 0 || !generationId || structureSaving || structureSaved || pending} onClick={saveStructure}>{structureSaving ? "Сохраняем…" : structureSaved ? "Разделы сохранены" : "Добавить разделы в каталог"}</button></> :
           design ? <><div className={styles.designMeta}><span>{templateNames[design.templateKey] ?? design.templateKey}</span><span>{paletteNames[design.paletteKey] ?? design.paletteKey}</span></div><div className={styles.designHero}><small>ГЛАВНЫЙ ЭКРАН</small><h3>{design.heroTitle}</h3><p>{design.heroSubtitle}</p><b>{design.heroCtaLabel}</b></div><p>{design.rationale}</p><p>{designSaved ? "Оформление применено. Откройте витрину и проверьте результат глазами покупателя." : "AI подготовил вариант, но ещё ничего не изменил. Текущая фотография и фирменный цвет сохранятся."}</p><button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button>{designSaved && <Link href={`/s/${slug}`} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}</> :
-          draft ? <><span>{draft.eyebrow}</span><h3>{draft.title}</h3><p>{draft.body}</p><b>{draft.ctaLabel}</b><p>Текст ещё не перенесён в настройки магазина.</p></> :
+          draft ? <><span>{draft.eyebrow}</span><h3>{draft.title}</h3><p>{draft.body}</p><b>{draft.ctaLabel}</b><p>{draftSaved ? draftTarget === "campaign" ? "Черновик кампании сохранён. Проверьте текст и условия перед публикацией." : "Текст применён к главному экрану витрины." : resultIntent === "promotion" && !brand ? "Скопируйте текст или перейдите на «Бренд», чтобы сохранить его кампанией." : resultIntent === "hero" ? "AI подготовил текст, но ещё не изменил витрину." : "Текст готов для копирования и ручного использования."}</p>{(resultIntent === "hero" || (resultIntent === "promotion" && brand)) && <button type="button" className="btn btn-primary" disabled={!generationId || draftSaving || draftSaved || pending} onClick={saveDraft}>{draftSaving ? "Сохраняем…" : draftSaved ? draftTarget === "campaign" ? "Кампания сохранена" : "Текст применён" : resultIntent === "promotion" ? "Сохранить кампанию черновиком" : "Применить к главному экрану"}</button>}{draftSaved && <Link href={draftTarget === "campaign" ? "/admin/settings#campaigns" : `/s/${slug}`} target={draftTarget === "storefront" ? "_blank" : undefined} rel={draftTarget === "storefront" ? "noopener noreferrer" : undefined}>{draftTarget === "campaign" ? "Открыть кампании →" : "Открыть обновлённую витрину →"}</Link>}</> :
           <p>Напишите помощнику слева — здесь появятся оформление, разделы, текст или фон. На телефоне результат находится сразу под чатом.</p>}
           {(draft || structure || design) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
         </div>

@@ -1,7 +1,7 @@
 import "server-only";
 import { z } from "zod";
 import { AzureFoundryError, createAzureFoundryChatCompletion, getAzureFoundryStatus } from "@/lib/ai/azure-foundry";
-import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
+import { aiStudioDesignSchema, aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
 import { hasPlan, type Plan } from "@/lib/plans";
 import { palettes, templateCatalog } from "@/lib/storefront-theme";
 import type { BusinessVertical } from "@/types/database";
@@ -10,13 +10,8 @@ export const aiStudioIntentSchema = z.enum(["hero", "promotion", "catalog_copy",
 export type AiStudioIntent = z.infer<typeof aiStudioIntentSchema>;
 export const aiStudioRequestSchema = z.object({ intent: aiStudioIntentSchema, brief: z.string().trim().min(8).max(800) });
 export const aiStudioBriefSchema = z.object({ brief: z.string().trim().min(8).max(800) });
-export const aiStudioDraftSchema = z.object({
-  eyebrow: z.string().trim().max(48).optional(),
-  title: z.string().trim().min(2).max(90),
-  body: z.string().trim().min(2).max(280),
-  ctaLabel: z.string().trim().min(2).max(36),
-});
-export type AiStudioDraft = z.infer<typeof aiStudioDraftSchema>;
+export { aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
+export type { AiStudioDraft } from "@/lib/ai/studio-schemas";
 export const aiStudioStructureSchema = z.object({ sections: z.array(z.object({ name: z.string().trim().min(2).max(40), description: z.string().trim().min(2).max(140) })).min(2).max(6) });
 export type AiStudioStructure = z.infer<typeof aiStudioStructureSchema>;
 export { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
