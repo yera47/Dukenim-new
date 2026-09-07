@@ -30,6 +30,8 @@ This is an append-only decision log. New entries must reflect an explicit owner 
 
 ## 2026-08
 
+- 2026-09-08: Preserve Dukenim logo geometry; use black/white mark and wordmark with a grey lower threshold and grey final dot across future updated brand materials. Owner requests corresponding brandbook and app/site asset updates.
+
 - 2026-09-08: Hide unsupported service booking and event ticketing from new onboarding until properly implemented and verified. Launch food scope is ready-made dishes/drinks with finite quantities, not recipe/ingredient inventory. Existing tenants and their verticals are preserved.
 
 - 2026-09-08: Owner wants platform administration without a personal store; retain the main superadmin account independently of tenant membership and remove its unused store. Business-specific workflows must reflect actual capabilities rather than treating every business as a clothing warehouse.

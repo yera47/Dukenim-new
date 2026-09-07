@@ -412,6 +412,12 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.
 ## Continuation — demo navigation, 2026-09-07
 
+### Grey-accent identity / Apple login visibility — 2026-09-08
+
+Owner requests black/white logo with grey threshold and dot everywhere including brandbook. Common web DukenimLogo changed from brightness(0) to grayscale official PNG (preserves threshold luminance), explicit black/white wordmark and #888888 dot. docs/BRAND_CURRENT.md records exact partial status. No new master raster/SVG, PDF rebuild, native-icon or video revision delivered. Read brand-asset-creation skill and runtime/handoff; full asset export workflow not executed. Do not claim global completion.
+
+User could not see EAS terminal. Stopped hidden PTY credentials prompt and launched a separate visible PowerShell in apps/mobile running `npx eas-cli@latest credentials --platform ios`; user should select production then Apple login Y and enter credentials privately. No login result observed. The old session46636 is closed. No password/OTP captured.
+
 ### EAS linked — 2026-09-08 (latest)
 
 Expo login confirmed. Created/linked @yersat47/dukenim (projectId 0d65ce93-0cbd-403c-abd1-03f2d6906da4). Expo install --fix aligned four SDK57 patches; mobile tsc/lint and 21/21 expo-doctor pass. app.json project linkage, package.json and root pnpm-lock changed. Removed incidental Android RECORD_AUDIO permission and disabled camera audio plugin setting because app only scans barcodes.

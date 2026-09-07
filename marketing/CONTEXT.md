@@ -23,6 +23,8 @@ This positioning is a testable marketing hypothesis, not an immutable fact. Meas
 
 ## Current brand
 
+2026-09-08: Owner confirms black/white Dukenim logo with neutral-grey threshold and wordmark dot; no gold/green logo. Current transition specification: docs/BRAND_CURRENT.md. Old PDF and raster/social/video masters are historical until explicitly re-exported; do not claim they have all been updated.
+
 2026-09-06 owner update: platform website/cabinet now moves to monochrome, ChatGPT-inspired simplicity with restrained explanatory phone/CRM illustrations. The previous gold/room website direction is superseded. Existing social assets and the old PDF below have not been regenerated or republished; do not describe them as the updated web design.
 
 - Use `public/brand/dukenim-flat-*` and the August 2026 brandbook.
