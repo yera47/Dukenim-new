@@ -12,7 +12,9 @@ describe("AI Studio first-run access", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus={catalogStatus}/>);
     expect(html).toContain('id="studio-message"');
     expect(html).toContain("Разделы каталога");
+    expect(html).toContain("Оформление витрины");
     expect(html).toContain("Передать вопрос команде");
+    expect(html).toContain("Изменения применяются только по вашей кнопке");
     expect(html).not.toContain("после этого AI Studio откроет");
   });
   it("offers in-place catalog creation before the first product", () => {

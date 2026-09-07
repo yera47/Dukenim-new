@@ -10,17 +10,21 @@ import { ProductForm } from "@/components/admin/product-form";
 import styles from "./studio.module.css";
 import type { BusinessVertical } from "@/types/database";
 
-type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "banner";
+type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "store_design" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
 type Banner = { imageUrl: string; generationId: string };
 type Structure = { sections: Array<{ name: string; description: string }> };
+type Design = { templateKey: string; paletteKey: string; heroTitle: string; heroSubtitle: string; heroCtaLabel: string; rationale: string };
 const intents: Array<{ id: Intent; title: string; text: string }> = [
   { id: "catalog_structure", title: "Разделы каталога", text: "Что продаёте и как покупатели выбирают товар?" },
+  { id: "store_design", title: "Оформление витрины", text: "Какое впечатление должна создавать витрина и что покупатель должен заметить первым?" },
   { id: "hero", title: "Описание магазина", text: "Расскажите, что отличает ваш магазин и кому он подходит." },
   { id: "catalog_copy", title: "Текст подборки", text: "Какие товары объединяем и что важно покупателю?" },
   { id: "promotion", title: "Объявление об акции", text: "Укажите реальные условия, сроки и товары акции." },
   { id: "banner", title: "Фон для баннера", text: "Опишите настроение и композицию. Фотографии реального товара добавляются отдельно." },
 ];
+const templateNames: Record<string, string> = { atelier: "Обложка и коллекции", studio: "Чистая витрина", market: "Быстрый каталог", journal: "Истории и подборки", gallery: "Визуальная витрина", signature: "Фирменная витрина" };
+const paletteNames: Record<string, string> = { "ink-brass": "Графит и латунь", "paper-forest": "Бумага и лес", "clay-milk": "Глина и молоко", "ocean-sand": "Океан и песок", "plum-stone": "Слива и камень", "cobalt-cloud": "Кобальт и облако", "olive-linen": "Олива и лён", "cherry-cream": "Вишня и крем", "terra-charcoal": "Терракота и уголь", "mint-charcoal": "Мята и уголь", "rose-ink": "Роза и тушь", "sunset-navy": "Закат и тёмно-синий" };
 type Props = {
   enabled: boolean; imageEnabled: boolean; brand: boolean;
   catalogStatus: "not_started" | "building" | "ready";
@@ -40,9 +44,12 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [structure, setStructure] = useState<Structure | null>(initialStructure?.structure ?? null);
+  const [design, setDesign] = useState<Design | null>(null);
   const [generationId, setGenerationId] = useState<string | null>(initialStructure?.generationId ?? null);
   const [structureSaving, setStructureSaving] = useState(false);
   const [structureSaved, setStructureSaved] = useState(false);
+  const [designSaving, setDesignSaving] = useState(false);
+  const [designSaved, setDesignSaved] = useState(false);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
@@ -55,8 +62,8 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   async function createDraft() {
     if (pending || !canRun || brief.trim().length < 8) return;
     setPending(true); setError(""); setCopied(false);
-    setGenerationId(null); setStructureSaved(false);
-    setDraft(null); setStructure(null); setBanner(null); setCampaignId(null);
+    setGenerationId(null); setStructureSaved(false); setDesignSaved(false);
+    setDraft(null); setStructure(null); setDesign(null); setBanner(null); setCampaignId(null);
     setSubmitted(brief.trim());
     try {
       const response = await fetch(intent === "banner" ? "/api/ai-studio/banner" : "/api/ai-studio/draft", {
@@ -68,7 +75,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
         if (data.needsTopup) setCreditsRemaining(0);
         throw new Error(data.error || "Не удалось получить ответ. Попробуйте ещё раз.");
       }
-      setDraft(data.draft ?? null); setStructure(data.structure ?? null);
+      setDraft(data.draft ?? null); setStructure(data.structure ?? null); setDesign(data.design ?? null);
       setGenerationId(data.generationId ?? null);
       setBanner(data.imageUrl && data.generationId ? { imageUrl: data.imageUrl, generationId: data.generationId } : null);
       if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
@@ -90,7 +97,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     finally { setCampaignPending(false); }
   }
   async function copyResult() {
-    const text = structure ? structure.sections.map((s) => `${s.name}\n${s.description}`).join("\n\n") : draft ? [draft.eyebrow, draft.title, draft.body, draft.ctaLabel].filter(Boolean).join("\n\n") : "";
+    const text = structure ? structure.sections.map((s) => `${s.name}\n${s.description}`).join("\n\n") : design ? [templateNames[design.templateKey], paletteNames[design.paletteKey], design.heroTitle, design.heroSubtitle, design.heroCtaLabel, design.rationale].filter(Boolean).join("\n\n") : draft ? [draft.eyebrow, draft.title, draft.body, draft.ctaLabel].filter(Boolean).join("\n\n") : "";
     try { await navigator.clipboard.writeText(text); setCopied(true); }
     catch { setError("Браузер не разрешил копирование. Выделите текст результата вручную."); }
   }
@@ -107,6 +114,20 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       setStructureSaved(true); router.refresh();
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось сохранить разделы."); }
     finally { setStructureSaving(false); }
+  }
+  async function saveDesign() {
+    if (!generationId || designSaving) return;
+    setDesignSaving(true); setError("");
+    try {
+      const response = await fetch("/api/ai-studio/design/apply", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ generationId }),
+      });
+      const data = await response.json();
+      if (!response.ok || !data.saved) throw new Error(data.error ?? "Не удалось применить оформление.");
+      setDesignSaved(true); router.refresh();
+    } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось применить оформление."); }
+    finally { setDesignSaving(false); }
   }
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
@@ -152,7 +173,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
         {submitted && <div className={styles.userMessage}><small>Ваш запрос</small><p>{submitted}</p></div>}
         <div aria-live="polite" role="status">
           {pending && <p className={styles.waiting}><LoaderCircle size={18} className="animate-spin"/> Готовлю предложение для вашего магазина…</p>}
-          {!pending && (draft || structure || banner) && <p className={styles.answer}>Предложение готово в блоке результата. Проверьте факты перед использованием. Ничего не опубликовано автоматически.</p>}
+          {!pending && (draft || structure || design || banner) && <p className={styles.answer}>Предложение готово в блоке результата. Проверьте его перед использованием. Ничего не опубликовано автоматически.</p>}
         </div>
         <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void createDraft(); }}>
           <label htmlFor="studio-message">{selected.text}</label>
@@ -162,7 +183,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
         {!canRun && <p className={styles.notice}>{intent === "banner" && !brand ? "Фоны для баннеров входят в «Бренд». Разделы и тексты доступны на обоих тарифах." : "Генерация сейчас недоступна. Создание каталога вручную и поддержка остаются доступны."}</p>}
         {creditsRemaining !== null && creditsRemaining <= 12 && <div className={styles.notice}>Лимит AI почти использован. <Link href="/admin/settings/usage">Посмотреть использование</Link></div>}
         {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
-        <p className={styles.footnote}>AI помогает с разделами, текстами и фонами. Не меняет цены, остатки или DNS самостоятельно. <Link href="/admin/domains">Ссылка и свой домен →</Link></p>
+        <p className={styles.footnote}>AI помогает с оформлением, разделами, текстами и фонами. Изменения применяются только по вашей кнопке; цены, остатки и DNS он не меняет. <Link href="/admin/domains">Ссылка и свой домен →</Link></p>
       </section>
       <aside className={styles.preview} aria-label="Результат и создание магазина">
         <div className={styles.previewHeading}><span>Ваш магазин</span><small>{step === 0 ? "Основа ещё не сохранена" : step === 1 ? "Ожидает первый товар" : "Каталог создан"}</small></div>
@@ -177,9 +198,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
           <small>ПРЕДЛОЖЕНИЕ AI · НЕ ОПУБЛИКОВАНО</small>
           {banner ? <><Image unoptimized width={1600} height={900} src={banner.imageUrl} alt="Предложенный фон для баннера"/><button className="btn btn-secondary" type="button" disabled={campaignPending || Boolean(campaignId)} onClick={addBannerToCampaigns}>{campaignPending ? "Сохраняем…" : campaignId ? "Сохранено в кампании" : "Сохранить в кампании"}</button>{campaignId && <Link href="/admin/settings#campaigns">Проверить и опубликовать кампанию →</Link>}</> :
           structure ? <>{structure.sections.map((section, index) => <div key={index} className={styles.category}><h3>{section.name}</h3><p>{section.description}</p></div>)}<p>{structureSaved ? "Разделы сохранены. Теперь при добавлении товара выберите нужный раздел." : step === 0 ? "Сохраните основу каталога ниже. Это предложение останется доступным после сохранения." : "Добавим названия разделов в ваш каталог. Существующие товары и разделы не изменятся."}</p><button type="button" className="btn btn-primary" disabled={step === 0 || !generationId || structureSaving || structureSaved || pending} onClick={saveStructure}>{structureSaving ? "Сохраняем…" : structureSaved ? "Разделы сохранены" : "Добавить разделы в каталог"}</button></> :
+          design ? <><div className={styles.designMeta}><span>{templateNames[design.templateKey] ?? design.templateKey}</span><span>{paletteNames[design.paletteKey] ?? design.paletteKey}</span></div><div className={styles.designHero}><small>ГЛАВНЫЙ ЭКРАН</small><h3>{design.heroTitle}</h3><p>{design.heroSubtitle}</p><b>{design.heroCtaLabel}</b></div><p>{design.rationale}</p><p>{designSaved ? "Оформление применено. Откройте витрину и проверьте результат глазами покупателя." : "AI подготовил вариант, но ещё ничего не изменил. Текущая фотография и фирменный цвет сохранятся."}</p><button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button>{designSaved && <Link href={`/s/${slug}`} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}</> :
           draft ? <><span>{draft.eyebrow}</span><h3>{draft.title}</h3><p>{draft.body}</p><b>{draft.ctaLabel}</b><p>Текст ещё не перенесён в настройки магазина.</p></> :
-          <p>Напишите помощнику слева — здесь появятся разделы, текст или фон. На телефоне результат находится сразу под чатом.</p>}
-          {(draft || structure) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
+          <p>Напишите помощнику слева — здесь появятся оформление, разделы, текст или фон. На телефоне результат находится сразу под чатом.</p>}
+          {(draft || structure || design) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
         </div>
         <Link className={styles.support} href={supportHref}>Не получается? Передать вопрос команде Dukenim →</Link>
       </aside>

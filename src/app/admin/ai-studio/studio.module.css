@@ -46,6 +46,13 @@
 .category { border:1px solid #e5e5e5; border-radius:12px; padding:14px; margin-top:10px; background:white; }
 .category h3 { margin:0; font-size:14px; }
 .category p { margin-top:4px; font-size:12px; }
+.designMeta { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; }
+.designMeta span { border:1px solid #dedede; border-radius:999px; padding:7px 10px; background:white; color:#555; font-size:11px; }
+.designHero { border-radius:16px; padding:26px 22px; background:#171717; color:white; }
+.designHero small { color:#aaa; font-size:9px; letter-spacing:.12em; }
+.designHero h3 { font-size:clamp(22px,3vw,32px); line-height:1.05; margin-top:28px; }
+.designHero p { color:#c7c7c7; margin:12px 0 18px; }
+.designHero b { display:inline-block; border-radius:999px; padding:10px 13px; background:white; color:#171717; font-size:12px; }
 .support { display:block; font-size:12px; line-height:1.7; margin-top:26px; color:#606060; }
 .error { padding:12px; border:1px solid #eccaca; border-radius:12px; color:#8c2424; font-size:13px; margin-top:16px; }
 .editor { margin-top:28px; border:1px solid #e1e1e1; border-radius:20px; padding:24px; scroll-margin-top:100px; }
