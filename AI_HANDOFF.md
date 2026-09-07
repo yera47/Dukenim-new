@@ -413,6 +413,8 @@ After material work, replace the sections above with the latest concise state. P
 ## Continuation — demo navigation, 2026-09-07
 
 ### Catalog creation audit and first fix
+
+Release confirmed: 38324c0, dpl_4zrrBjQq8TvNLt4YqKmAuNkCV14c READY and www/apex aliased. Production build passed; unauthenticated /admin/ai-studio returns 307 /login. No authenticated model/save E2E was claimed or performed. This supersedes the pending deployment note below.
 - Detailed evidence/working prompt/ordered backlog: docs/CATALOG_CREATION_AUDIT.md.
 - Removed competing structure composer beneath first-run wizard. CatalogSetupForm now offers store_design AI selection at its design step, updates the illustrative template/palette preview, validates returned keys against available choices and keeps manual fallback. No automatic save/publish; existing create action remains unchanged. Controls are disabled during request; errors preserve input.
 - Files: catalog-setup-form, ai-studio-client, catalog-recommendation + five tests. tsc, 64 tests, production build passed. No database or role changes. Authenticated first-run model/save E2E has NOT been executed for this change.

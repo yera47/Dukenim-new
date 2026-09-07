@@ -2,6 +2,8 @@
 
 Last reviewed: 2026-09-07
 
+Catalog wizard release 38324c0: dpl_4zrrBjQq8TvNLt4YqKmAuNkCV14c READY and canonical aliases confirmed. First-run design step offers validated AI template/palette recommendations; competing separate composer removed. tsc, 64 tests and production build pass. Anonymous AI Studio redirects to login. Authenticated first-run generation/save E2E remains unverified. Detailed audit and execution prompt: docs/CATALOG_CREATION_AUDIT.md.
+
 Media release confirmed: dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx READY, www.dukenim.kz and apex aliased. All seven niche media smoke checks passed on production at 390/1440; mask PNG returns 200. Source 62b9c10. This supersedes the in-progress media note below.
 
 Media continuation source 62b9c10: every demo offering has an image; beauty/food five positions, other non-fashion demos four each. Generated 25 niche illustrations and one corrected featureless-mask still. No new video is complete. Higgsfield balance verified 5 credits, no top-up. Browser media/loading/overflow checks passed for all seven niches at 390 and 1440; tsc and 59 tests pass. Final Vercel release is being checked before reporting publication.
