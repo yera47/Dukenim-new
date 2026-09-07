@@ -2,6 +2,8 @@
 
 Last reviewed: 2026-09-07
 
+Serik presentation release 55a6f37: dpl_GXd7mTehtyNnr7gLpo5PUYB7pGqR Ready/aliased. Demo names and person/business placeholders now Серик / Серик Шоп. Fresh phone and CRM recordings with new URLs; Brand card has restrained neon emphasis, pricing unchanged. Presentation smoke passes on canonical domain at 390/1440; both WebM assets serve successfully. 64 tests, tsc/build pass. Real first-run persistence E2E still requires isolated authenticated test account; existing owner store was not reset or renamed.
+
 Catalog wizard release 38324c0: dpl_4zrrBjQq8TvNLt4YqKmAuNkCV14c READY and canonical aliases confirmed. First-run design step offers validated AI template/palette recommendations; competing separate composer removed. tsc, 64 tests and production build pass. Anonymous AI Studio redirects to login. Authenticated first-run generation/save E2E remains unverified. Detailed audit and execution prompt: docs/CATALOG_CREATION_AUDIT.md.
 
 Media release confirmed: dpl_9fjZ6JaNRy1NG2VkpXxNZ4Axrksx READY, www.dukenim.kz and apex aliased. All seven niche media smoke checks passed on production at 390/1440; mask PNG returns 200. Source 62b9c10. This supersedes the in-progress media note below.

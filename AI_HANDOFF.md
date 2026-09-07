@@ -413,6 +413,8 @@ After material work, replace the sections above with the latest concise state. P
 ## Continuation — demo navigation, 2026-09-07
 
 ### Serik naming / pricing / recordings
+
+Release verified 55a6f37 / dpl_GXd7mTehtyNnr7gLpo5PUYB7pGqR, canonical alias. Production presentation smoke passes both widths; new WebM files available. No real DB mutation performed. Isolated authenticated first-run test remains next, not completed.
 Replaced demo tenant/niche names, demo customer names and person/company placeholders with Серик / Серик Шоп. Actual DB tenants untouched. Re-recorded local storefront and owner UI as public/design/serik-{storefront,workspace}-recording.webm; RecordedCommerce references new filenames to invalidate old video cache. Inspected owner screenshot confirms Серик Шоп. Brand pricing gets restrained mint neon on dark card, same prices/features, no animation. Updated docs/CATALOG_CREATION_AUDIT.md with current execution prompt.
 Checks: tsc, 64 tests, build; local presentation smoke 390/1440 passed (name placeholders, storefront name, page width); pricing and recording end screenshots inspected. Release in progress.
 Real first-run persistence E2E is NOT complete: current authenticated browser account is existing Dukenim storefront /s/dukenim-6d4bb, catalog already building. Read-only production check finds no tenant slug test%, qa-% or serik-%. Need an isolated authenticated test account to exercise registration/create/read-back, not an administrative SQL write or resetting this owner's store. No test users or DB rows created this turn.
