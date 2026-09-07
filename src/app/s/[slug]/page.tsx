@@ -6,6 +6,7 @@ import { loadProducts } from "@/lib/storefront-data";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicStorePolicies, getStorefrontSettings } from "@/lib/queries/owner";
+import { nichePresets } from "@/lib/niche-presets";
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -19,14 +20,15 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   const campaign = client
     ? (await client.from("storefront_campaigns").select("title, eyebrow, body, cta_label, cta_href, image_url").eq("tenant_id", tenant.id).eq("status", "published").order("created_at", { ascending: false }).limit(1).maybeSingle()).data
     : null;
-  const title = settings?.hero_title || tenant.name;
-  const subtitle = settings?.hero_subtitle || tenant.tagline || "Собранный каталог, удобный заказ и понятная связь с магазином.";
+  const preset = nichePresets[tenant.business_vertical ?? "other"];
+  const title = settings?.hero_title || tenant.catalog_name || tenant.name;
+  const subtitle = settings?.hero_subtitle || tenant.tagline || preset.headline;
   const heroImage = settings?.hero_image_url && /^https?:\/\//.test(settings.hero_image_url) ? settings.hero_image_url : null;
   const featuredProduct = products.find(product => product.images?.[0]);
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const heroStyle = heroImage ? { backgroundImage: `linear-gradient(100deg, var(--store-bg) 0%, transparent 66%), url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
 
-  return <main className="storefront-theme">
+  return <main className="storefront-theme" data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
     <section className="container mt-6 overflow-hidden rounded-[28px] border border-black/10 bg-[var(--store-surface)]" style={heroStyle}>
       <div className="storefront-hero-grid min-h-[580px] p-8 md:p-14">
         <div className="flex max-w-xl flex-col justify-center">
@@ -51,7 +53,7 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
 
     <section id="catalog" className="container py-20">
       <div className="mb-10 flex items-end justify-between gap-6"><h2 className="text-4xl font-semibold tracking-[-.035em]">Каталог</h2><span className="hidden text-sm font-bold opacity-60 md:block">{products.length} товаров</span></div>
-      {products.length ? <div className="grid grid-cols-2 gap-x-4 gap-y-10 md:grid-cols-4 md:gap-6">{products.map((product) => <ProductCard key={product.id} product={product} slug={slug} />)}</div> : <div className="rounded-2xl border border-dashed border-black/20 py-16 text-center"><h3 className="text-xl font-bold">Каталог наполняется</h3><p className="mt-2 opacity-60">Владелец магазина добавляет первые товары.</p></div>}
+      {products.length ? <div className="storefront-product-grid">{products.map((product) => <ProductCard key={product.id} product={product} slug={slug} />)}</div> : <div className="rounded-2xl border border-dashed border-black/20 py-16 text-center"><h3 className="text-xl font-bold">Каталог наполняется</h3><p className="mt-2 opacity-60">Владелец магазина добавляет первые товары.</p></div>}
     </section>
 
     <section id="about" className="bg-[var(--tenant-accent)] py-20 text-[var(--store-accent-ink)]"><div className="container grid gap-10 md:grid-cols-2">

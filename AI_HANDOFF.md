@@ -389,4 +389,13 @@ On the owner's phone, open Instagram → Edit profile and apply the approved nam
 - Still outstanding: full multi-turn design chat and reference attachments; actual shared published template renderer for every business vertical; complete niche website illustrations; end-to-end save/product/order checks; root audit completion/concurrency review. Current preview is illustrative, not pixel-identical to published stores. Do not call the overall redesign complete.
 - Changed areas: admin/ai-studio, admin/settings/usage, catalog-setup-form, niche-preview, promo-film, public storefront hero/install prompt, global preview CSS. No database migration or production credential change in this slice.
 
+### 2026-09-07 storefront parity and real-UI film (latest)
+
+- Fixed the saved-template gap: the public storefront now consumes `template_key` and visibly changes hero/product composition for fast catalog, visual, story and signature directions. First-run template choices use business-specific names instead of internal labels such as Journal/Gallery.
+- Public tenant resolution now includes `business_vertical`; fallback storefront copy is vertical-aware. A real merchant product image replaces abstract hero geometry when no hero image is configured. Product detail and cart no longer invent empty gallery images and preserve uploaded product photography.
+- Added three visually checked 2K demonstration fashion packshots. Six Higgsfield credits were used; Starter balance is 71. These are demo-only and do not represent a customer catalog.
+- Re-recorded the exact local Dukenim UI with demo data: phone path catalog → product → cart → checkout, and safe desktop navigation orders → catalog → analytics → orders. The homepage now uses these two WebM recordings with pause control. No order or production data was mutated during recording.
+- Checks before this note: `npx tsc --noEmit`, 46/46 tests and production build (57 routes) pass. Desktop visual QA passed for the public storefront and homepage recording block. Production deployment and production smoke remain next.
+- Remaining: template preview and public renderer share template semantics but are still separate components; custom-reference design chat, every-vertical complete storefront examples, mobile AI wizard recheck and end-to-end authenticated save remain open.
+
 After material work, replace the sections above with the latest concise state. Preserve important unresolved risks. Do not paste raw chat transcripts, secrets, tokens, passwords, or personal data.

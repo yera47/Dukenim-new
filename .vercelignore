@@ -1,6 +1,2 @@
 output/
-public/design/dukenim-storefront-recording.webm
-public/design/dukenim-workspace-recording.webm
 scripts/record-product-demo.cjs
-src/components/marketing/recorded-commerce.tsx
-src/components/marketing/recorded-commerce.module.css

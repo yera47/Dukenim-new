@@ -6,8 +6,7 @@ import { PricingSection } from "@/components/marketing/pricing-section";
 import { MarketingFaq } from "@/components/marketing/marketing-faq";
 import { StructuredData } from "@/components/marketing/structured-data";
 import { siteTitle, siteDescription, openGraph } from "@/lib/site";
-// Exact-UI recordings remain a local draft until the storefront visuals are updated.
-import { CommerceMotion as RecordedCommerce } from "@/components/marketing/commerce-motion";
+import { RecordedCommerce } from "@/components/marketing/recorded-commerce";
 import { NicheShowcase } from "@/components/marketing/niche-showcase";
 import { PromoFilm } from "@/components/marketing/promo-film";
 import styles from "./home.module.css";

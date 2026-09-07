@@ -17,12 +17,12 @@ export const palettes: Palette[] = [
 ];
 
 export const templateCatalog = [
-  {key:"atelier",name:"Ателье",minPlan:"basic",description:"Редакционная подача для одежды, декора и авторских товаров."},
-  {key:"studio",name:"Студия",minPlan:"basic",description:"Чистый каталог с упором на товар и быстрый заказ."},
-  {key:"market",name:"Маркет",minPlan:"basic",description:"Практичная витрина для ассортимента и категорий."},
-  {key:"journal",name:"Журнал",minPlan:"standard",description:"Истории, подборки и коллекции для бренда."},
-  {key:"gallery",name:"Галерея",minPlan:"standard",description:"Премиальная подача коллекций, акций и кампаний."},
-  {key:"signature",name:"Сигнатура",minPlan:"standard",description:"Гибкая витрина для фирменных кампаний."},
+  {key:"atelier",name:"Обложка и коллекции",minPlan:"basic",description:"Крупная первая история и переход к подборкам товаров."},
+  {key:"studio",name:"Чистая витрина",minPlan:"basic",description:"Спокойная подача товара без лишних декоративных блоков."},
+  {key:"market",name:"Быстрый каталог",minPlan:"basic",description:"Категории и ассортимент сразу на первом экране."},
+  {key:"journal",name:"Истории и подборки",minPlan:"standard",description:"Коллекции, история бренда и расширенная товарная подача."},
+  {key:"gallery",name:"Визуальная витрина",minPlan:"standard",description:"Крупные изображения, акции и фирменные блоки."},
+  {key:"signature",name:"Фирменная витрина",minPlan:"standard",description:"Просторная подача для собственной айдентики и кампаний."},
 ] as const;
 
 // The first-run choice is deliberately compact: two distinct, curated directions per public plan.

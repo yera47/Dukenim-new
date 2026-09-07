@@ -10,7 +10,7 @@ export function NichePreview({ vertical, templateName, background, surface, ink,
 }) {
   const preset = nichePresets[vertical];
   const [section, setSection] = useState(preset.sections[0]);
-  return <div className="niche-preview" data-layout={templateName==="market"||templateName==="gallery"?"catalog":"editorial"} style={{ background, color: ink }}>
+  return <div className="niche-preview" data-template={templateName} data-layout={templateName==="market"||templateName==="studio"?"catalog":"editorial"} style={{ background, color: ink }}>
     <header><b>{storeName||preset.storeName}</b><span>Каталог · Корзина</span></header>
     <nav aria-label="Пример разделов">{preset.sections.map((item) => <button type="button" key={item} onClick={() => setSection(item)} aria-pressed={section === item}>{item}</button>)}</nav>
     <div className="niche-preview-content">
