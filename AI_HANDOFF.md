@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## Domain support threads — 2026-09-09, code checked, publication pending
+
+Domain help is now a POST server action creating/reusing an active domain_connection request and redirecting to its thread. Store URL/domain comes from session-scoped DB, not caller. RPC serializes repeat clicks with tenant advisory lock, creates request + linked first message atomically. Shared thread UI at /admin/requests/[id] and /root/requests/[id], history links on both queues, replies with stable message UUID retry dedupe and visible-tab refresh every 15s. Normal new support requests also redirect into their thread. Old general messages are retained, not guessed/backfilled into old requests. No external email/native notification implied; request appears in platform queue.
+
+Migration 20260908205135 applied: messages.request_id with composite tenant FK. Replaced broad messages ALL policy with read/insert policies denying owner impersonation of support and owner editing/deleting history. Real rolled-back test creates/reuses request, owner message, root reply, rejects spoof and outsider; scripts/test-support-threads.sql. 168 suite tests + 4 new action tests pass, tsc/build pass; security advisors unchanged. Authenticated browser click/reply/relogin still unverified. Outstanding builder/PDF/payment/reservation/push and Azure failure diagnosis remain open.
+
 ## Unified Studio + design undo — 2026-09-08, published
 
 da66579 Ready dpl_2ti9eqyhyD4714gKhwBZF5jLtTQ9 on canonical domain. Fresh authenticated browser tab29 confirms a single studio-conversation input with inline current step/brand/history (not full interactive E2E). Original tab28 retained unsent input and old UI; do not close it or mistake stale UI for current deployment. d303b02 follow-up restores banner action in the SAME composer, build/tsc/Studio tests passed; deployment pending verification. The fresh browser is now an owner Serik shop, so earlier tenantless-root-only browser blocker is stale. CUA currently exposes read/open operations only; interaction/relogin not verified. Original conversation showed generic generation failure: diagnose provider/validation before declaring AI journey reliable.

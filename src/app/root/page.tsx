@@ -279,6 +279,7 @@ export default async function Root({
               requests.map((r) => (
                 <div key={r.id} className="mt-4 border-t border-white/10 pt-4">
                   <p>{r.text}</p>
+                  <Link href={`/root/requests/${r.id}`} className="mt-2 inline-block underline">Открыть диалог · {r.subject}</Link>
                   <div className="mt-3 flex justify-between text-xs text-white/42">
                     <span>
                       {tenants.find((t) => t.id === r.tenant_id)?.name}

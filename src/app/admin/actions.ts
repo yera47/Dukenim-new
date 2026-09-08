@@ -69,9 +69,11 @@ export async function sendRequest(form:FormData){
   if(subject.length<2||subject.length>120)throw new Error("Тема должна содержать от 2 до 120 символов.");
   const requestContext:Json={page_path:pagePath.startsWith("/admin")?pagePath:"/admin/requests",...(source==="ai-studio"&&aiIntent?{ai_intent:aiIntent}:{})};
   const{context,client}=await owner();
-  const{error}=await createSupportRequest(client,{tenantId:context.tenantId!,text,subject,source,context:requestContext});
-  if(error)throw new Error("Не удалось отправить обращение. Обновите страницу и попробуйте ещё раз.");
+  const{data,error}=await createSupportRequest(client,{tenantId:context.tenantId!,text,subject,source,context:requestContext});
+  if(error||!data)throw new Error("Не удалось отправить обращение. Обновите страницу и попробуйте ещё раз.");
   revalidatePath("/admin/requests");
+  revalidatePath("/root");
+  redirect(`/admin/requests/${data}`);
 }
 export async function saveStoreSettings(form:FormData){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return;const{context,client}=await owner();await updateTenantBranding(client,context.tenantId!,{name:String(form.get("name")),tagline:String(form.get("tagline")??""),city:String(form.get("city")??""),phone:String(form.get("phone")??""),accent_color:String(form.get("accentColor")??"#0E5C4A")});revalidatePath("/admin");revalidatePath("/s/[slug]","layout")}
 export async function saveStorePolicies(form:FormData){if(!process.env.NEXT_PUBLIC_SUPABASE_URL)return;const{context,client}=await owner();const delivery=String(form.get("deliveryPolicy")??"").trim(),returns=String(form.get("returnPolicy")??"").trim();if(delivery.length>2000||returns.length>2000)throw new Error("Каждое условие должно быть не длиннее 2000 символов");const{error}=await updateTenantPolicies(client,context.tenantId!,{delivery_policy:delivery||null,return_policy:returns||null});if(error)throw error;revalidatePath("/admin/settings");revalidatePath("/s/[slug]","page")}

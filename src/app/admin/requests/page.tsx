@@ -68,7 +68,7 @@ export default async function Requests({ searchParams }: { searchParams: Promise
       </section>
       <aside className="card p-5"><h2 className="font-bold">Мои заявки</h2>{requests.length ? requests.map((request) => {
         const detail = contextLabel(request.context);
-        return <article key={request.id} className="mt-4 border-t pt-4"><div className="flex flex-wrap items-center gap-2"><span className="badge">{sourceLabels[request.source]}</span><span className="badge">{request.status}</span></div><h3 className="mt-3 font-extrabold">{request.subject}</h3><p className="mt-1 text-sm text-[var(--ink-60)]">{request.text}</p>{detail && <small className="mt-2 block text-[var(--ink-40)]">{detail}</small>}</article>;
+        return <article key={request.id} className="mt-4 border-t pt-4"><div className="flex flex-wrap items-center gap-2"><span className="badge">{sourceLabels[request.source]}</span><span className="badge">{request.status}</span></div><h3 className="mt-3 font-extrabold"><Link className="underline" href={`/admin/requests/${request.id}`}>{request.subject}</Link></h3><p className="mt-1 text-sm text-[var(--ink-60)]">{request.text}</p>{detail && <small className="mt-2 block text-[var(--ink-40)]">{detail}</small>}</article>;
       }) : <p className="muted mt-4 text-sm">Заявок пока нет.</p>}</aside>
     </div>
   </>;

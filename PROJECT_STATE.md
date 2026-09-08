@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09: Domain-support thread implementation checked, publication pending: automatic request on deliberate help-button POST, active-thread reuse, linked message history/replies for owner and platform admin. Migration applied and DB transaction tests passed; full browser flow not verified. Does not connect DNS automatically or deliver email/push.
+
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
 - Studio da66579 Ready: single conversational workspace confirmed in fresh authenticated browser, inline wizard and preview, persisted draft reload fix. Design undo DB/RPC implemented and transaction-tested (latest-state CAS/replay rejection); browser undo unverified. Live corrupted CTA default and exact bad labels repaired. Full personalized builder/payment/reservation/push acceptance remains open.
