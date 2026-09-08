@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## Published d70f7fd / mobile queue follow-up — 2026-09-08
+
+d70f7fd Ready on canonical www/apex: deployment dpl_EhLSarKo9knaPV47BPWoBsb9Lcch, https://dukenim-ppng76fzl-yersat47-s-projects.vercel.app. 145 tests, tsc and build passed before publication. Fresh owner browser tab 26 /admin/ai-studio redirects to /root correctly: principal is tenantless superadmin. Old tab 1 had stale deleted-tenant UI; do not use stale tabs as proof. No personal shop recreated or auth bypass for testing.
+
+Mobile audit found neither mobile_device_tokens nor mobile_notification_outbox deployed. Old queued trigger references undefined p.id, and leaks customer name in lockscreen. Applied corrected scoped migration 20260908145618: owner-only notification, order/method/payment context, no customer name, private token RLS, service-role transport access. Real rolled-back order RPC now verifies notification creation too. Worker source rejects empty/partial Expo acknowledgements, no-device is NOT success, rechecks current owner membership, bounded 5 messages/8s request timeout, redacts provider error details. Two transport tests/tsc passed, build running. No native device registered/tested; no scheduler in vercel.json. Receipt polling, processing lease recovery, native login/deep link/device E2E remain unimplemented. DO NOT describe transport acknowledgement as phone delivery. This source follow-up not yet pushed.
+
 ## Brand input and Azure opt-out verified — 2026-09-08
 
 Added private tenant_brand_materials + private raster bucket (migration 20260908144553 applied), owner GET/POST with revision CAS, bounded 4 MB streamed body, 3 MB image cap, raster magic/16M pixel guard, Sharp re-encoding/metadata stripping and dominant colours, optional 6000-char rules field. Studio exposes materials; consultation context includes these facts, not file vision. API auth/CAS and real raster tests pass. DB rolled-back note save/read/outsider test passed; actual Storage upload/browser still unverified. PDF/visual-reference analysis and automatic publication of logo/design NOT implemented. Old uploaded objects deliberately retained, no automatic deletion; failed-write orphan cleanup not implemented. Build passes after these additions.
