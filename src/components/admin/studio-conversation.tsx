@@ -4,7 +4,7 @@ import Link from "next/link";
 import { consultationSchema, type Consultation, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
-export function StudioConversation({enabled,onTask}:{enabled:boolean;onTask:(task:NonNullable<Consultation["task"]>)=>void}) {
+export function StudioConversation({enabled,onTask,children}:{enabled:boolean;onTask:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
   const [loading,setLoading]=useState(true);
@@ -44,7 +44,8 @@ export function StudioConversation({enabled,onTask}:{enabled:boolean;onTask:(tas
       </article>)}
       {pending&&<p>Обдумываю ваш ответ…</p>}
     </div>
-    <form onSubmit={event=>{event.preventDefault();void send();}} className="rounded-2xl border p-4">
+    {children && <div className="space-y-4" aria-label="Текущий шаг создания магазина">{children}</div>}
+    <form onSubmit={event=>{event.preventDefault();void send();}} className="sticky bottom-3 z-10 rounded-2xl border bg-white p-4 shadow-sm">
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>
       <textarea id="studio-conversation" className="w-full resize-y bg-transparent outline-none" rows={3} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} placeholder="Например: Серик Шоп, одежда для города. Хочу спокойный светлый магазин."/>
       <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать человеку</Link><button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>

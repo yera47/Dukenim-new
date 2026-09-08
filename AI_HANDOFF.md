@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## Unified Studio + design undo — 2026-09-08, publication pending
+
+User screenshot correctly showed duplicated chat + legacy wizard. StudioConversation now owns inline creation/results/brand/history before its single message composer; removed second editor composer. First-run wizard uses one column with collapsible actual preview. Memoized templates prevents repeated draft loading on renders; new AI brief no longer reloads persisted name/step. This is UI consolidation, NOT full automated personalized assembly. Existing draft endpoints retained. Banner shortcut needs explicit integration into the dialogue (old intent selector removed); do not silently lose this capability in final acceptance.
+
+Fixed live DB corrupted default hero_cta_label and 12 exact corrupted values, leaving custom text alone; 15 correct/0 corrupt verified. Migration 20260908154829 applied. Migration 20260908154958 adds private history trigger and owner-only invoker read/undo RPC, latest-state comparison, replay rejection, active entitlement/plan checks. UI/API history added. History starts now, cannot reconstruct older versions. Real rolled-back SQL restore/replay test passed; scripts/test-design-undo.sql. 164 suite tests + 4 new history API tests, tsc/build pass. Supabase advisors unchanged (intentional predicates/password warning), no new history definer exposure. Browser interactions/relogin and visual QA still unverified.
+
+Changed Studio client/page/test, StudioConversation, CatalogSetupForm, BrandMaterials, DesignHistory, design/history API/tests, database types and migrations. Remaining full scope: PDF/vision, personalized design schema/complete generation, prepaid merchant integration, reservation lifecycle, native push delivery, authenticated full E2E. No new Azure model/billing settings. Continue these internal items; this is not completion of parent task.
+
 ## Security hardening — 2026-09-08, published and smoke verified
 
 Source c8b66fa Ready, dpl_ByxHemY2WobGsLsbf9xFzvxDPMX4, canonical www.dukenim.kz/apex. scripts/test-public-auth.mjs passed eight production checks: /admin, /root, /admin/ai-studio, /store-preview with/without middleware spoof header all require login and return no-store. Repeatable rolled-back DB assertion saved in scripts/test-role-isolation.sql. No owner credentials or private customer data in test artifacts.

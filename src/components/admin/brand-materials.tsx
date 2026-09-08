@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { brandColorsSchema } from "@/lib/brand-materials";
 export function BrandMaterials() {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);

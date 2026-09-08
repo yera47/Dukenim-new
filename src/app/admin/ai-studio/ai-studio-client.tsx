@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight, Check, LoaderCircle, Send, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { CatalogSetupForm } from "@/components/admin/catalog-setup-form";
 import { ProductForm } from "@/components/admin/product-form";
 import { StudioConversation } from "@/components/admin/studio-conversation";
+import { BrandMaterials } from "@/components/admin/brand-materials";
+import { DesignHistory } from "@/components/admin/design-history";
 import styles from "./studio.module.css";
 import type { BusinessVertical } from "@/types/database";
 
@@ -16,14 +18,6 @@ type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string }
 type Banner = { imageUrl: string; generationId: string };
 type Structure = { sections: Array<{ name: string; description: string }> };
 type Design = { templateKey: string; paletteKey: string; heroTitle: string; heroSubtitle: string; heroCtaLabel: string; rationale: string };
-const intents: Array<{ id: Intent; title: string; text: string }> = [
-  { id: "catalog_structure", title: "Разделы каталога", text: "Что продаёте и как покупатели выбирают товар?" },
-  { id: "store_design", title: "Оформление витрины", text: "Какое впечатление должна создавать витрина и что покупатель должен заметить первым?" },
-  { id: "hero", title: "Описание магазина", text: "Расскажите, что отличает ваш магазин и кому он подходит." },
-  { id: "catalog_copy", title: "Текст подборки", text: "Какие товары объединяем и что важно покупателю?" },
-  { id: "promotion", title: "Объявление об акции", text: "Укажите реальные условия, сроки и товары акции." },
-  { id: "banner", title: "Фон для баннера", text: "Опишите настроение и композицию. Фотографии реального товара добавляются отдельно." },
-];
 const templateNames: Record<string, string> = { atelier: "Обложка и коллекции", studio: "Чистая витрина", market: "Быстрый каталог", journal: "Истории и подборки", gallery: "Визуальная витрина", signature: "Фирменная витрина" };
 const paletteNames: Record<string, string> = { mono: "Чёрный и белый", "ink-brass": "Графит и латунь", "paper-forest": "Бумага и лес", "clay-milk": "Глина и молоко", "ocean-sand": "Океан и песок", "plum-stone": "Слива и камень", "cobalt-cloud": "Кобальт и облако", "olive-linen": "Олива и лён", "cherry-cream": "Вишня и крем", "terra-charcoal": "Терракота и уголь", "mint-charcoal": "Мята и уголь", "rose-ink": "Роза и тушь", "sunset-navy": "Закат и тёмно-синий" };
 type Props = {
@@ -61,8 +55,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [copied, setCopied] = useState(false);
   const [suggestedBrief,setSuggestedBrief]=useState("");
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
-  const canRun = intent === "banner" ? imageEnabled : enabled;
-  const selected = intents.find((item) => item.id === intent)!;
   const supportHref = `/admin/requests?source=ai-studio&intent=${intent}`;
 
   async function createDraft(task?:{intent:Intent;brief:string}) {
@@ -154,7 +146,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   }
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
-    <StudioConversation enabled={enabled} onTask={task=>{setSuggestedBrief(task.brief);setWorkspaceOpen(true);requestAnimationFrame(()=>document.getElementById("catalog-setup-workspace")?.scrollIntoView({block:"start"}));}}/>
+    <StudioConversation enabled={enabled} onTask={task=>{setSuggestedBrief(task.brief);setWorkspaceOpen(true);}}>
     {!workspaceOpen ? <section className={styles.welcome}>
       <p>Когда определимся с вводными, сохраните основу магазина. Можно также начать вручную.</p>
       <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Создать каталог с AI Studio <ArrowRight size={17}/></button>
@@ -164,42 +156,16 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
 
     </section>}
+    <BrandMaterials/><DesignHistory/>
+    </StudioConversation>
   </div>;
 
   return <div className={styles.workspace}>
-    <StudioConversation enabled={enabled&&!pending} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);document.getElementById("studio-message")?.focus();}}/>
-    <ol className={styles.steps} aria-label="Этапы запуска магазина">
-      {["Создать основу", "Добавить товары", "Проверить витрину"].map((label, index) =>
-        <li key={label} aria-current={index === step ? "step" : undefined}>
-          <span>{index < step ? <Check size={15}/> : index + 1}</span>{label}
-        </li>)}
-    </ol>
-    <div className={styles.columns}>
-      <section className={styles.chat} aria-label="Помощник AI Studio">
-        <div className={styles.assistant}>
-          <Sparkles size={22} aria-hidden="true"/>
-          <div><h2>{step === 0 ? "Начнём с вашего магазина." : step === 1 ? "Основа есть. Теперь — первый товар." : "Что улучшим в магазине?"}</h2>
-            <p>{step === 0 ? "Расскажите, что продаёте. AI предложит разделы и текст, а рядом вы сможете создать настоящую витрину. Сначала предложение — затем ваше решение." : step === 1 ? "Добавьте свои фотографии, цену и остаток. AI доступен уже сейчас: поможет сформулировать описание и организовать ассортимент." : "Подготовим текст, подборку или фон для акции. Товары, заказы и настройки всегда доступны в меню."}</p>
-          </div>
-        </div>
-        <div className={styles.choices} aria-label="Задача для помощника">
-          {intents.map((item) => <button key={item.id} type="button" aria-pressed={intent === item.id} disabled={pending} onClick={() => setIntent(item.id)}>{item.title}</button>)}
-        </div>
-        {submitted && <div className={styles.userMessage}><small>Ваш запрос</small><p>{submitted}</p></div>}
-        <div aria-live="polite" role="status">
-          {pending && <p className={styles.waiting}><LoaderCircle size={18} className="animate-spin"/> Готовлю предложение для вашего магазина…</p>}
-          {!pending && (draft || structure || design || banner) && <p className={styles.answer}>Предложение готово в блоке результата. Проверьте его перед использованием. Ничего не опубликовано автоматически.</p>}
-        </div>
-        <form className={styles.composer} onSubmit={(event) => { event.preventDefault(); void createDraft(); }}>
-          <label htmlFor="studio-message">{selected.text}</label>
-          <textarea id="studio-message" value={brief} onChange={(event) => setBrief(event.target.value)} maxLength={800} minLength={8} required rows={4} placeholder="Например: магазин базовой женской одежды. Нужны понятные разделы: верх, низ, обувь. Тон — простой, без громких обещаний."/>
-          <div><span/><button type="submit" disabled={!canRun || brief.trim().length < 8 || pending} aria-label="Отправить запрос"><Send size={18}/></button></div>
-        </form>
-        {!canRun && <p className={styles.notice}>{intent === "banner" && !brand ? "Фоны для баннеров входят в «Бренд». Разделы и тексты доступны на обоих тарифах." : "Генерация сейчас недоступна. Создание каталога вручную и поддержка остаются доступны."}</p>}
-        {creditsRemaining !== null && creditsRemaining <= 12 && <div className={styles.notice}>Лимит AI почти использован. <Link href="/admin/settings/usage">Посмотреть использование</Link></div>}
-        {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
-        <p className={styles.footnote}>AI помогает с оформлением, разделами, текстами и фонами. Изменения применяются только по вашей кнопке; цены, остатки и DNS он не меняет. <Link href="/admin/domains">Ссылка и свой домен →</Link></p>
-      </section>
+    <StudioConversation enabled={enabled&&!pending} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+      {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
+      {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}
+      {pending && <p role="status">Готовлю предложение…</p>}
+      {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
       <aside className={styles.preview} aria-label="Результат и создание магазина">
         <div className={styles.previewHeading}><span>Ваш магазин</span><small>{step === 0 ? "Основа ещё не сохранена" : step === 1 ? "Ожидает первый товар" : "Каталог создан"}</small></div>
         <h2>{storeName}</h2>
@@ -220,11 +186,12 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
         </div>
         <Link className={styles.support} href={supportHref}>Не получается? Передать вопрос команде Dukenim →</Link>
       </aside>
-    </div>
     {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
       <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
       {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
+    <BrandMaterials/><DesignHistory/>
+    </StudioConversation>
   </div>;
 }

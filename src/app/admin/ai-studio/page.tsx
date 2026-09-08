@@ -7,7 +7,6 @@ import { aiStudioStructureSchema, getAiStudioStatus } from "@/lib/ai/studio";
 import { AiStudioClient } from "./ai-studio-client";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/queries/owner";
-import { BrandMaterials } from "@/components/admin/brand-materials";
 
 export default async function AiStudioPage() {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
@@ -30,6 +29,5 @@ export default async function AiStudioPage() {
       <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать человеку</Link>
     </div>
     <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialStructure={initialStructure} categories={categories} />
-    {tenant && <BrandMaterials/>}
   </section>;
 }
