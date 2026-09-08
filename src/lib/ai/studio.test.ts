@@ -27,3 +27,9 @@ it('passes brand context to sections',async()=>{
   await createAiStudioStructure('Создай разделы',{brand:{notes:'Лаконичные названия'}});
   expect(chat.mock.calls[0][0][1].content).toContain('Лаконичные названия');
 });
+it('restricts a first catalog suggestion to templates accepted by atomic creation',async()=>{
+ chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'gallery'})});
+ await createAiStudioDesign('Создать магазин','fashion','pro',{catalog_status:'not_started'});
+ expect(chat.mock.calls[0][0][1].content).not.toContain('"key":"atelier"');
+ expect(chat.mock.calls[0][0][1].content).toContain('"key":"gallery"');
+});

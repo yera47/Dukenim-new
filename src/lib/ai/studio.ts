@@ -3,7 +3,7 @@ import { z } from "zod";
 import { AzureFoundryError, createAzureFoundryChatCompletion, getAzureFoundryStatus } from "@/lib/ai/azure-foundry";
 import { aiStudioDesignSchema, aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
 import { hasPlan, type Plan } from "@/lib/plans";
-import { palettes, templateCatalog } from "@/lib/storefront-theme";
+import { palettes, templateCatalog, launchTemplatesForPlan } from "@/lib/storefront-theme";
 import type { BusinessVertical } from "@/types/database";
 import { compactShopContext, parseModelJson } from "./shop-context";
 
@@ -55,7 +55,8 @@ export async function createAiStudioStructure(brief: string, context: unknown = 
 
 export async function createAiStudioDesign(brief: string, vertical: BusinessVertical, plan: Plan, context: unknown = {}) {
   if (!getAiStudioStatus().configured) throw new AzureFoundryError("AI Studio ещё не включён: не завершена серверная настройка Azure или базы данных.");
-  const templateOptions = templateCatalog.filter(template => hasPlan(plan, template.minPlan as Plan));
+  const creating=Boolean(context&&typeof context==="object"&&"catalog_status" in context&&context.catalog_status==="not_started");
+  const templateOptions = templateCatalog.filter(template => hasPlan(plan, template.minPlan as Plan) && (!creating || launchTemplatesForPlan(plan).some(option=>option.key===template.key)));
   const allowedTemplates = templateOptions.map(template => template.key);
   const allowedPalettes = palettes.map(palette => palette.key);
   const result = await createAzureFoundryChatCompletion([

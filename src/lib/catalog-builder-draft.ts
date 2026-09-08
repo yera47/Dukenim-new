@@ -7,6 +7,7 @@ export const catalogBuilderStateSchema = z.object({
   templateKey: z.string().refine(key => templateCatalog.some(t => t.key === key)),
   paletteKey: z.string().refine(key => palettes.some(p => p.key === key)),
   brief: z.string().max(650),
+  generationId: z.string().uuid().optional(),
 }).strict();
 export const catalogBuilderSaveSchema = z.object({
   revision: z.number().int().min(0).max(2147483646),
