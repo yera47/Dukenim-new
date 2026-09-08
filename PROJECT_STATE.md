@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-- 2026-09-09: Domain-support thread implementation checked, publication pending: automatic request on deliberate help-button POST, active-thread reuse, linked message history/replies for owner and platform admin. Migration applied and DB transaction tests passed; full browser flow not verified. Does not connect DNS automatically or deliver email/push.
+- 2026-09-09: Domain-support a4500ab published Ready (dpl_Dy1B8kucswwHFptKQhsTwc2ayW7i): automatic request on deliberate help-button POST, active-thread reuse, linked message history/replies for owner and platform admin. Migration applied and DB transaction tests passed; full browser flow not verified. Does not connect DNS automatically or deliver email/push. Existing Azure Kimi consultation passed a fresh live test in 8.1s; prior UI failure cause still unknown.
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 

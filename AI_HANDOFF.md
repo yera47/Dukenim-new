@@ -1,6 +1,8 @@
 # Dukenim — AI handoff
 
-## Domain support threads — 2026-09-09, code checked, publication pending
+## Domain support threads — 2026-09-09, published Ready
+
+a4500ab Ready dpl_Dy1B8kucswwHFptKQhsTwc2ayW7i, canonical www/apex. Eight anonymous auth smoke checks pass. 168 suite tests plus four new action tests pass. Separate real Azure consultation test on existing Kimi-K2.6 passed in 8.1s; no billing/config change. Vercel production 5xx draft-log search last12h returned no entries; this does NOT establish the earlier UI error cause or resolve it. Browser support click/reply/relogin remains unverified.
 
 Domain help is now a POST server action creating/reusing an active domain_connection request and redirecting to its thread. Store URL/domain comes from session-scoped DB, not caller. RPC serializes repeat clicks with tenant advisory lock, creates request + linked first message atomically. Shared thread UI at /admin/requests/[id] and /root/requests/[id], history links on both queues, replies with stable message UUID retry dedupe and visible-tab refresh every 15s. Normal new support requests also redirect into their thread. Old general messages are retained, not guessed/backfilled into old requests. No external email/native notification implied; request appears in platform queue.
 
