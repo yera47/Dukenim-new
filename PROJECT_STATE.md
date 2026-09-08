@@ -2,7 +2,7 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
-- Studio consolidation/history code ready for publication: single conversational workspace, inline wizard and preview, persisted draft reload fix. Design undo DB/RPC implemented and transaction-tested (latest-state CAS/replay rejection); browser undo unverified. Live corrupted CTA default and exact bad labels repaired. Full personalized builder/payment/reservation/push acceptance remains open.
+- Studio da66579 Ready: single conversational workspace confirmed in fresh authenticated browser, inline wizard and preview, persisted draft reload fix. Design undo DB/RPC implemented and transaction-tested (latest-state CAS/replay rejection); browser undo unverified. Live corrupted CTA default and exact bad labels repaired. Full personalized builder/payment/reservation/push acceptance remains open.
 
 - Security c8b66fa published Ready (dpl_ByxHemY2WobGsLsbf9xFzvxDPMX4): removed config-missing demo privilege fallback and non-Vercel middleware bypass; private route no-store, dynamic cabinets and preview protection. 164 tests, tsc/build passed; production dependency audit zero known advisories. Eight live anonymous/spoof-header requests require login with no-store; rolled-back DB owner role-escalation negative test passed. Not a full security certification; no change to outstanding builder/payment/reservation scope.
 
