@@ -1,5 +1,21 @@
 # Dukenim — AI handoff
 
+## Documentation reconciliation / mobile notifications — 2026-09-08
+
+Updated README, PROJECT_STATE, DESIGN, marketing/CONTEXT, mobile README and DECISIONS: removed production-ready MVP claim, corrected public plans/monochrome identity, separated historical release/design notes, distinguished source-only and live mobile capability. Added notification acceptance cases for delivery/paid pickup/reservation; no push implementation or deployment this pass. Full repository Markdown inventory is broader than these files; remaining strategy/spec files must be treated as historical unless revalidated.
+
+Azure portal login confirmed, but visible directory differs from resource's known directory. Opened exact existing resource URL in its directory; initial result Microsoft Authentication. No quota PATCH, spending or deployment change performed. Do not tell owner opt-out is complete. Existing target subscription and NoAutoUpgrade documented in previous entry; management authentication still required.
+
+## Active request — conversational commerce, 2026-09-08
+
+Latest addendum: merchant independently chooses delivery / prepaid pickup / unpaid in-store reservation via AI setup. Persisted spec and owner decision updated; implementation still pending. Buyer terms remain truthful, primary purchase/secondary reservation. No paid pickup until verified tenant payment, no reservations until atomic stock holds/expiry exist. Azure opt-out link resolves to docs (not an action); requires authenticated management PATCH NoAutoUpgrade + GET verification. No Azure CLI/Az command available; opened portal, Microsoft Authentication shown. No policy/billing changes made. Owner wants no-cost option; must not equate Free Tier quota with free inference. Next external action requires Microsoft login/management access, not keys pasted into chat.
+
+Owner supplied detailed brief for personalized AI dialogue builder, optional logo/brandbook, permanent manual/AI editing, delivery/pickup/maps, real preview and commerce. Work is NOT complete. Scope/audit/evidence/research/ordered implementation in docs/CONVERSATIONAL_COMMERCE_20260908.md; preserve current tariffs and goods/ready-food launch scope. Do not resume mobile release before web product issues per latest owner direction.
+
+First local fixes: checkout-submit.ts validates successful confirmation, handles network/invalid JSON without clearing cart, warns on ambiguous status rather than auto-retrying; checkout-client finally clears pending and omits courier address for pickup. Checkout page fails closed without backend instead of inventing delivery zones. 95 tests pass, tsc pass, production build pass (60 routes), diff check pass. No authenticated E2E or visual QA this pass; no commit/push/deploy/migration. Existing mobile signing edits preserved.
+
+Azure email read in owner-opened Gmail: automatic quota tier upgrade eligibility with 3-day opt-out, not failure notification. No changes to upgrade policy/billing/resources. Current Azure runtime/deployment/costs not verified (CLI not on PATH). Need quota/budget check; do not promise free usage. Next: implement persisted delivery/pickup settings + snapshot, then shared versioned draft/rendering and conversation tools. Do not claim any of these from the checkout error-handling fix.
+
 ## Active continuation — 2026-09-07: AI-first catalog workflow
 
 - Release 95b38d1 confirmed Ready at https://dukenim-hyavld9d7-yersat47-s-projects.vercel.app with canonical dukenim.kz/www aliases. Authenticated owner/superadmin browser reload shows the new Studio, primary navigation and domain link. No owner catalog data was overwritten for E2E; full new-store persistence journey remains unverified.
@@ -483,3 +499,8 @@ Release confirmed READY: dpl_FrkMhX1eK2kFGpNVva5oJoi2JddJ, aliased www.dukenim.k
 Implemented `/demo`, separate catalog/category routes, return-to-Studio links, eight independent demo identities, ten fashion products with six new Higgsfield photographs, monochrome option and richer AI template context. Files: src/lib/demo*, tenant/storefront-data/storefront-theme, store header/layout/listing, marketing demo links, AI schema/prompt/setup defaults. Missing database config no longer inserts demo products into real stores. Added demo-catalogs.test.ts and scripts/check-demo-navigation.cjs.
 
 Checks: tsc, 58 tests, production build, real browser navigation at 390/1440 passed; Russian category route required explicit decoding. One build warning remains for img in demo chooser. Current production deployment is in progress; do not assume Ready without checking. Full outstanding scope is in docs/REQUEST_AUDIT_20260907.md; owner prompt in docs/ASTRA_PRODUCT_REBUILD.md. New promo is only a generated starting still, not finished video. No customer stores deleted; no DB migrations applied this turn.
+### Apple signing fixed — 2026-09-08
+
+Fixed apps/mobile/app.json: preserve existing Sign in with Apple using usesAppleSignIn and explicit Default entitlement. EAS previously attempted APPLE_ID_AUTH OFF, which Apple rejected. Expo SDK57 documentation and config introspection verified. Mobile tsc and lint pass.
+
+Used existing authenticated Apple session via EAS production credentials workflow. Capabilities sync succeeded, Push Notifications enabled, existing Apple sign-in retained; new distribution certificate and active App Store provisioning profile created and stored by EAS. CLI confirms all build credentials ready. No app/identifier/certificate deleted. This config does not implement native Apple login or APNs server delivery. No IPA built or TestFlight upload performed. Next: production public environment configuration, native functionality/device QA, production build and TestFlight; do not claim App Store readiness.

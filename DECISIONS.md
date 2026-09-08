@@ -2,6 +2,12 @@
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
+- 2026-09-08: Owner requests native mobile notifications for incoming delivery orders, prepaid pickup and reservations, identifying the type and linking to the item. This is required work, not a claim that push or all fulfilment modes are already live. Keep customer-sensitive information out of default lock-screen text and recheck permissions on open.
+
+- 2026-09-08: Owner requests three independently configurable customer options during AI-led setup and later editing: delivery, prepaid pickup, and unpaid in-store reservation. Prefer purchase in presentation; explain reservation tradeoffs to merchant. Buyer must still see truthful payment/hold-expiry terms before confirmation. Prepaid pickup requires a verified tenant payment integration; never mark unpaid orders paid. Reservation needs actual inventory holds, expiry/release and cancellation, not merely a renamed delivery method. Owner requests no-cost Azure option and no paid upgrade.
+
+- 2026-09-08: Owner requests personalized conversational AI catalog building with optional logo/brandbook and editable delivery/pickup/maps, and continuing manual/AI design editing after launch. Fixed palette selection must not be the mandatory starting point; platform monochrome does not constrain tenant brands. Supersedes the fixed-palette-first UX decision, not existing pricing/entitlements. Commercial claims must match implemented behavior; improvements in sales remain measured hypotheses.
+
 - 2026-09-07: Demonstration people and name placeholders use «Серик»; demonstration businesses use «Серик Шоп», in honour of the owner's grandfather. Do not rename actual tenants. Owner permits a restrained neon accent for the Brand pricing card.
 
 - 2026-09-07: Owner specifies a completely featureless closed mask for the promo character: no eyes, eye holes, nose, mouth or face relief. Keep the Dukenim logo. Expand photography beyond fashion to every demo business and cover their sections.

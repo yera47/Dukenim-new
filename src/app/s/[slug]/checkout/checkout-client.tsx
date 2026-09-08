@@ -5,6 +5,7 @@ import Link from "next/link";
 import { CheckCircle2, ChevronLeft, MapPin, Store, Truck } from "lucide-react";
 import { money } from "@/lib/demo-data";
 import { useCart } from "@/components/store/cart-provider";
+import { submitCheckout } from "@/lib/checkout-submit";
 
 export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: number | null; etaText: string | null };
 type Result = { orderNumber: number; total: number };
@@ -29,6 +30,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, minOrder,
   const deliveryReady = delivery === "pickup" ? pickupEnabled : deliveryEnabled && Boolean(zoneId) && address.trim().length >= 4;
 
   async function submit() {
+    if (pending || !contactsReady || !deliveryReady || !items.length || total < minOrder) return;
     setPending(true);
     setError(null);
     if (demo) {
@@ -37,16 +39,13 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, minOrder,
       clear();
       return;
     }
-    const response = await fetch("/api/orders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: address, zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) }),
-    });
-    const data = await response.json() as Result & { error?: string };
-    setPending(false);
-    if (!response.ok) { setError(data.error ?? "Не удалось оформить заказ"); return; }
-    clear();
-    setResult(data);
+    try {
+      const data = await submitCheckout({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) });
+      clear();
+      setResult(data);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Не удалось оформить заказ. Корзина сохранена.");
+    } finally { setPending(false); }
   }
 
   if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58}/><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">Итог: {money(result.total)}. Магазин свяжется с вами для подтверждения.</p><Link href={`/s/${slug}`} className="btn btn-cta mt-7">Вернуться в магазин</Link></div></main>;

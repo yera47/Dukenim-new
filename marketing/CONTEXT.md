@@ -1,6 +1,6 @@
 # Dukenim marketing context
 
-Last reviewed: 2026-08-14
+Last reviewed: 2026-09-08
 
 ## Audience
 
@@ -8,7 +8,7 @@ Owners and sellers of small Kazakhstan retail businesses who currently sell thro
 
 ## Positioning hypothesis
 
-Primary working idea: **«Instagram — это лента. Dukenim — это каталог, который продаёт сам.»**
+Current target message: «Создайте сайт-каталог с ИИ — без разработчика». Publish the full claim only after the supported creation/editing journey passes E2E. Do not imply arbitrary integrations or guaranteed sales. The older «каталог продаёт сам» is a historical hypothesis, not evidence.
 
 Explain value through a clear catalog, customer self-selection/order, and one owner workflow. Do not use “website” as the main differentiator. It may be used factually when technically or legally necessary.
 
@@ -27,7 +27,9 @@ This positioning is a testable marketing hypothesis, not an immutable fact. Meas
 
 2026-09-06 owner update: platform website/cabinet now moves to monochrome, ChatGPT-inspired simplicity with restrained explanatory phone/CRM illustrations. The previous gold/room website direction is superseded. Existing social assets and the old PDF below have not been regenerated or republished; do not describe them as the updated web design.
 
-- Use `public/brand/dukenim-flat-*` and the August 2026 brandbook.
+### Historical August palette — not the current platform identity
+
+- Existing `public/brand/dukenim-flat-*` and August PDF are source geometry/historical assets; current colour rules above supersede their gold palette.
 - Black Jade `#071B17`, Aged Gold `#B08A50`, Pale Stone `#F4F0E8`, Graphite `#101713`, Warm Sand `#E8DFD0`.
 - Manrope typography.
 - Do not recolor, stretch, rotate, add effects to, or remove the dot from the wordmark.

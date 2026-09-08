@@ -9,6 +9,10 @@
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "kz.dukenim.app",
+      "usesAppleSignIn": true,
+      "entitlements": {
+        "com.apple.developer.applesignin": ["Default"]
+      },
       "supportsTablet": true
     },
     "android": {

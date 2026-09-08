@@ -15,7 +15,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return <CheckoutClient slug={slug} deliveryEnabled pickupEnabled minOrder={0} zones={[{ id: "00000000-0000-4000-8000-000000000001", name: "По городу", cost: 1500, freeFrom: null, etaText: "1–2 дня" }]}/>;
+    return <CheckoutClient slug={slug} deliveryEnabled={false} pickupEnabled={false} minOrder={0} zones={[]}/>;
   }
 
   const options = await getCheckoutOptions(createAdminClient(), tenant.id);

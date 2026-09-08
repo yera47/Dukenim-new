@@ -1,6 +1,23 @@
 # Dukenim — current project state
 
-Last reviewed: 2026-09-07
+## Current summary — 2026-09-08 (authoritative over historical entries below)
+
+- Direction: AI-led personalized catalog creation and ongoing editing, optional logo/brandbook, shared draft/public renderer. This complete flow is NOT implemented; current AI proposes bounded text/structure/theme drafts.
+- Platform identity: monochrome D/wordmark, grey threshold/dot. Tenant brands remain individual. See docs/BRAND_CURRENT.md; old gold PDF/icons/video are not updated masters.
+- Public plans: Start and Brand, AI in both within entitlements. No pricing change in current work.
+- Launch scope: goods and ready-made food. No service booking, event tickets or ingredient warehouse.
+- Fulfilment target: delivery, prepaid pickup, in-store reservation, each merchant-configurable. Current checkout supports courier/pickup with payment on receipt; prepaid pickup and reservation stock holds are NOT live.
+- Mobile: EAS linked and App Store signing ready. No IPA/TestFlight release. Push infrastructure exists in source, but production delivery/device E2E is unverified. Notifications must distinguish fulfilment types and payment state; tapping opens the permitted order/reservation.
+- Superadmin remains independent of a personal store. Main owner's unused store was deleted; account retained.
+- Local-only checkout reliability fixes passed 95 tests, TypeScript and build. Not deployed. Current production must not be inferred from a local build.
+- Azure automatic quota upgrade opt-out not applied. Browser login visible in a different directory; target resource login still requires verification. Free quota tier does not guarantee free inference.
+- Release gates: persisted builder/real preview, fulfilment and payment/hold transactions, authenticated commerce E2E, tenant negative tests, backups/restore, legal/payout checks, mobile device QA.
+
+## Historical release notes (not a current readiness checklist)
+
+2026-09-08 local only: checkout error handling preserves cart and releases pending on network/invalid responses; missing backend no longer invents shipping options. 95 tests, tsc and production build pass. Not deployed. Personalized conversational builder remains incomplete; audit and implementation sequence: docs/CONVERSATIONAL_COMMERCE_20260908.md.
+
+History last consolidated: 2026-09-08
 
 2026-09-08 launch scope: onboarding now offers only goods/ready-made food, excluding service booking and event ticketing in UI and application API. Source 55283f9, deployment dpl_Cg6ZdC4uawBDeFNmUJP8eEjdP9Zq READY/aliased; 87 tests, TypeScript and build pass. Existing tenants and historical demo routes unchanged. Ingredient inventory remains unsupported and explained for food.
 
@@ -99,3 +116,6 @@ Production Supabase now enforces category/tenant ownership inside `create_produc
 Production commits `9048fc3` and `72b3847` add `/root/stores/[id]`: audited superadmin product corrections and reversible visibility controls, plus store-scoped orders/categories/audit context. It does not expose permanent deletion, credential access, arbitrary SQL or direct stock mutation. Vercel deployment `dpl_DjwNMU3yNgmQTPEqQYYYRLaTC1p5` is Ready and aliased; authenticated production visual QA passed. TypeScript, 47 tests and the 56-route build pass.
 Production commits `9200072` and `61d5640` align saved storefront templates with public rendering, add vertical-specific setup language, restore the public `/s/demo-shop` route under production Supabase, and place exact Dukenim phone/owner recordings on the homepage. Demo checkout is explicitly non-persistent. Vercel deployment `dpl_D4RUetx1BczS37mPFUiYbEr7CRiM` is Ready and aliased to `dukenim.kz`/`www.dukenim.kz`; smoke checks pass for homepage, demo catalog/product/checkout, AI Studio redirect and both media assets. TypeScript, 46 tests and the 57-route build pass.
 Design references (local, 2026-09-04): hero now uses `public/design/dukenim-home-hero-reference-v6.png` with separate catalog, CRM and phone objects in one warm room. Blocks 02 and 03 were regenerated to continue the same room and palette; no deployment yet.
+## Apple signing update — 2026-09-08
+
+EAS production signing credentials now ready: distribution certificate and active App Store provisioning profile created. Capability sync succeeds after preserving Sign in with Apple in mobile config; Push Notifications enabled. No signed build or TestFlight upload yet. Native functional/device QA and production public environment remain release gates.
