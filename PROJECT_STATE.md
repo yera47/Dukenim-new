@@ -2,6 +2,10 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Publication verified: 2fd6815 Git deployment dpl_Brgey53BXZfTxZpCDK1KESyn1ppE Ready, canonical www/apex aliases. Delivery-zone editor and prior checkout fixes now deployed; authenticated save E2E remains unverified. Supersedes pending deployment statement below.
+
+- New source 2fd6815 pushed: owner delivery-zone editor and checkout reliability fixes. 106 tests, tsc, build pass. Direct Vercel deploy denied; canonical publication unconfirmed. Real authenticated zone save/reload still requires verification.
+
 - Direction: AI-led personalized catalog creation and ongoing editing, optional logo/brandbook, shared draft/public renderer. This complete flow is NOT implemented; current AI proposes bounded text/structure/theme drafts.
 - Platform identity: monochrome D/wordmark, grey threshold/dot. Tenant brands remain individual. See docs/BRAND_CURRENT.md; old gold PDF/icons/video are not updated masters.
 - Public plans: Start and Brand, AI in both within entitlements. No pricing change in current work.

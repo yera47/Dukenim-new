@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## Delivery editor implementation — 2026-09-08
+
+Release supersedes pending state below: Git-triggered dpl_Brgey53BXZfTxZpCDK1KESyn1ppE reached Ready with www.dukenim.kz and apex aliases. Source 2fd6815. Production delivery_zones schema and RLS policies read-only verified; no authenticated save E2E or claim of full fulfilment readiness.
+
+Source 2fd6815 pushed to origin/main, including accumulated checkout fixes, mobile signing config and documentation. Added /admin/settings/delivery + link in settings: owner-session scoped zone create/update, integer KZT validation, optional free threshold/ETA and reversible active flag. Uses existing delivery_zones (production columns verified read-only), no migrations/customer mutation. Tenant determined from session, rejects demo user, active entitlement required, no success on zero affected rows. 106 tests and tsc pass; production build passes (61 routes). Authenticated save/reload/device visual E2E not yet run. This is only zone editing: master delivery toggle, pickup address/maps, reservations, versioned builder and pushes remain incomplete.
+
+Direct Vercel deploy rejected Not authorized despite CLI whoami succeeding. Git push succeeded; automatic domain release not confirmed. No Azure quota change. Next: verify Git-triggered deployment and authenticated zone E2E, then complete persisted fulfilment settings/snapshots. Do not claim full task complete or claim this editor enables delivery automatically.
+
 ## Documentation reconciliation / mobile notifications — 2026-09-08
 
 Updated README, PROJECT_STATE, DESIGN, marketing/CONTEXT, mobile README and DECISIONS: removed production-ready MVP claim, corrected public plans/monochrome identity, separated historical release/design notes, distinguished source-only and live mobile capability. Added notification acceptance cases for delivery/paid pickup/reservation; no push implementation or deployment this pass. Full repository Markdown inventory is broader than these files; remaining strategy/spec files must be treated as historical unless revalidated.
