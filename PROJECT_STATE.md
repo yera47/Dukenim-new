@@ -2,7 +2,7 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
-- Current code verification: 123 tests, tsc, build (62 routes) pass. Private builder-draft schema applied; API and form add explicit save/resume with revision conflict checks. DB persistence/isolation checked in rolled-back transaction; authenticated browser E2E unverified. Delivery enable/min_order controls also added. Release status is recorded in AI_HANDOFF; this is not full conversational builder completion.
+- Current release e62ad83: Vercel dpl_7B7V4QUN3fK6k9fb6yAtHLb3Efhs Ready on www/apex. 123 tests, tsc, build (62 routes) pass. Private builder-draft schema applied; API and form add explicit save/resume with revision conflict checks. DB persistence/isolation checked in rolled-back transaction; authenticated browser E2E unverified. Delivery enable/min_order controls also added. This is not full conversational builder completion.
 
 - Publication verified: 2fd6815 Git deployment dpl_Brgey53BXZfTxZpCDK1KESyn1ppE Ready, canonical www/apex aliases. Delivery-zone editor and prior checkout fixes now deployed; authenticated save E2E remains unverified. Supersedes pending deployment statement below.
 
