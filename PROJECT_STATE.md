@@ -2,6 +2,8 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Latest release 41af99a: persisted consultation in owner AI Studio, eight-pair model context, thirty-pair UI restore, typed task handoff into editors. Vercel dpl_DdNY7agEfS7W2K4Lk6FccgpB2MVN Ready on www/apex. 128 tests/tsc/build passed; explicit live Kimi conversation test passed. Database history read/isolation verified, full browser relogin and shop-building E2E not verified. Personalized brandbook builder still incomplete.
+
 - Current release e62ad83: Vercel dpl_7B7V4QUN3fK6k9fb6yAtHLb3Efhs Ready on www/apex. 123 tests, tsc, build (62 routes) pass. Private builder-draft schema applied; API and form add explicit save/resume with revision conflict checks. DB persistence/isolation checked in rolled-back transaction; authenticated browser E2E unverified. Delivery enable/min_order controls also added. This is not full conversational builder completion.
 
 - Publication verified: 2fd6815 Git deployment dpl_Brgey53BXZfTxZpCDK1KESyn1ppE Ready, canonical www/apex aliases. Delivery-zone editor and prior checkout fixes now deployed; authenticated save E2E remains unverified. Supersedes pending deployment statement below.
