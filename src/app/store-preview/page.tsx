@@ -8,6 +8,10 @@ import { CartProvider } from "@/components/store/cart-provider";
 import { storefrontStyle } from "@/lib/storefront-style";
 import { launchTemplatesForPlan, palettes } from "@/lib/storefront-theme";
 import { computeEntitlement } from "@/lib/entitlement";
+import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
+import { proposedDesignSettings } from "@/lib/ai/design-settings";
+import { hasPlan, type Plan } from "@/lib/plans";
+import { templateCatalog } from "@/lib/storefront-theme";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
@@ -24,10 +28,18 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
   if(theme.error||policies.error||campaignResult.error) return <p role="alert">Предпросмотр не загрузился. Сохранённый магазин не изменён.</p>;
   const query=await searchParams;
   const plan=computeEntitlement(tenant).plan;
-  const settings=theme.data??{tenant_id:tenant.id,template_key:"atelier",palette_key:"mono",brand_color:null,hero_title:null,hero_subtitle:null,hero_image_url:null,hero_cta_label:"Смотреть каталог",updated_at:""};
+  let settings=theme.data??{tenant_id:tenant.id,template_key:"atelier",palette_key:"mono",brand_color:null,hero_title:null,hero_subtitle:null,hero_image_url:null,hero_cta_label:"Смотреть каталог",updated_at:""};
   if(typeof query.template==="string"&&launchTemplatesForPlan(plan).some(t=>t.key===query.template)) settings.template_key=query.template;
   if(typeof query.palette==="string"&&palettes.some(p=>p.key===query.palette)) settings.palette_key=query.palette;
   if(typeof query.name==="string") tenant.catalog_name=query.name.slice(0,80);
+  if(typeof query.generation==="string") {
+    if(!/^[0-9a-f-]{36}$/i.test(query.generation))return <p role="alert">Некорректное предложение.</p>;
+    const generation=await client.from("ai_studio_generations").select("output").eq("id",query.generation).eq("tenant_id",tenant.id).eq("intent","store_design").maybeSingle();
+    const design=aiStudioDesignSchema.safeParse(generation.data?.output);
+    const template=design.success?templateCatalog.find(t=>t.key===design.data.templateKey):null;
+    if(generation.error||!design.success||!template||!hasPlan(plan,template.minPlan as Plan))return <p role="alert">Предложение недоступно в вашем магазине.</p>;
+    settings={...settings,...proposedDesignSettings(design.data,theme.data)};
+  }
   return <div style={storefrontStyle(settings,plan,tenant.accent_color)} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]">
     <p className="border-b p-3 text-sm">Настоящий предпросмотр · изменения здесь не публикуются. Покупка отключена.</p>
     <div inert><CartProvider><StoreHeader slug={tenant.slug} name={tenant.name} categories={Array.from(new Set(products.map(p=>p.category).filter(Boolean)))}/>

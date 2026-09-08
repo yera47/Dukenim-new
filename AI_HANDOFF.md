@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## AI proposal preview — 2026-09-08
+
+Current local follow-up: private /store-preview accepts only owner-scoped store_design generation, validates plan/schema, applies shared proposedDesignSettings mapping. AI result now embeds actual shared storefront before apply, preserving merchant hero image/colour. Same mapping reused by design/apply; nine focused tests + tsc pass. Build running. Important: this does not add personalized arbitrary composition or revision/undo; existing design/apply still upsert without conflict history. Do not label those complete. Parent acceptance requirements remain open.
+
 ## Published d70f7fd / mobile queue follow-up — 2026-09-08
 
 d70f7fd Ready on canonical www/apex: deployment dpl_EhLSarKo9knaPV47BPWoBsb9Lcch, https://dukenim-ppng76fzl-yersat47-s-projects.vercel.app. 145 tests, tsc and build passed before publication. Fresh owner browser tab 26 /admin/ai-studio redirects to /root correctly: principal is tenantless superadmin. Old tab 1 had stale deleted-tenant UI; do not use stale tabs as proof. No personal shop recreated or auth bypass for testing.

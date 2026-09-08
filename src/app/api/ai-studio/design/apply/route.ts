@@ -8,6 +8,7 @@ import { hasPlan, type Plan } from "@/lib/plans";
 import { getStorefrontSettings, saveStorefrontSettings } from "@/lib/queries/owner";
 import { templateCatalog } from "@/lib/storefront-theme";
 import { createClient } from "@/lib/supabase/server";
+import { proposedDesignSettings } from "@/lib/ai/design-settings";
 
 const requestSchema = z.object({ generationId: z.string().uuid() });
 
@@ -39,15 +40,7 @@ export async function POST(request: Request) {
 
   const current = await getStorefrontSettings(client, context.tenantId);
   if (current.error) return NextResponse.json({ error: "Не удалось прочитать текущее оформление." }, { status: 500 });
-  const saved = await saveStorefrontSettings(client, context.tenantId, {
-    template_key: design.data.templateKey,
-    palette_key: design.data.paletteKey,
-    brand_color: current.data?.brand_color ?? null,
-    hero_title: design.data.heroTitle,
-    hero_subtitle: design.data.heroSubtitle,
-    hero_image_url: current.data?.hero_image_url ?? null,
-    hero_cta_label: design.data.heroCtaLabel,
-  });
+  const saved = await saveStorefrontSettings(client, context.tenantId, proposedDesignSettings(design.data,current.data));
   if (saved.error) return NextResponse.json({ error: "Не удалось применить оформление. Повторите попытку." }, { status: 500 });
 
   revalidatePath("/admin/ai-studio");
