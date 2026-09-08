@@ -28,7 +28,7 @@ export async function createStorefrontOrder(client: SupabaseClient<Database>, in
 
 export async function getCheckoutOptions(client: SupabaseClient<Database>, tenantId: string) {
   const [settings, zones] = await Promise.all([
-    client.from("tenant_settings").select("delivery_enabled,pickup_enabled,payment_online,min_order").eq("tenant_id", tenantId).maybeSingle(),
+    client.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,payment_online,min_order").eq("tenant_id", tenantId).maybeSingle(),
     client.from("delivery_zones").select("id,name,cost,free_from,eta_text").eq("tenant_id", tenantId).eq("is_active", true).order("cost"),
   ]);
   return { settings: settings.data, zones: zones.data ?? [], error: settings.error ?? zones.error };

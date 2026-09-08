@@ -33,7 +33,8 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   return <CheckoutClient
     slug={slug}
     deliveryEnabled={Boolean(options.settings?.delivery_enabled && zones.length)}
-    pickupEnabled={options.settings?.pickup_enabled ?? true}
+    pickupEnabled={options.settings?.pickup_enabled ?? false}
+    pickupLocation={options.settings?.pickup_location}
     minOrder={options.settings?.min_order ?? 0}
     zones={zones}
   />;

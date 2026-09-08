@@ -2,6 +2,8 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Local next release: editable pickup location/maps, immutable order fulfilment snapshots, shared StoreHome preview, atomic catalog creation. Three scoped migrations applied; transactional persistence/isolation tests and 138 tests/build pass. Not yet published or authenticated-browser verified. No new prepaid/reservation capability.
+
 - Latest release 41af99a: persisted consultation in owner AI Studio, eight-pair model context, thirty-pair UI restore, typed task handoff into editors. Vercel dpl_DdNY7agEfS7W2K4Lk6FccgpB2MVN Ready on www/apex. 128 tests/tsc/build passed; explicit live Kimi conversation test passed. Database history read/isolation verified, full browser relogin and shop-building E2E not verified. Personalized brandbook builder still incomplete.
 
 - Current release e62ad83: Vercel dpl_7B7V4QUN3fK6k9fb6yAtHLb3Efhs Ready on www/apex. 123 tests, tsc, build (62 routes) pass. Private builder-draft schema applied; API and form add explicit save/resume with revision conflict checks. DB persistence/isolation checked in rolled-back transaction; authenticated browser E2E unverified. Delivery enable/min_order controls also added. This is not full conversational builder completion.
@@ -18,7 +20,7 @@
 - Mobile: EAS linked and App Store signing ready. No IPA/TestFlight release. Push infrastructure exists in source, but production delivery/device E2E is unverified. Notifications must distinguish fulfilment types and payment state; tapping opens the permitted order/reservation.
 - Superadmin remains independent of a personal store. Main owner's unused store was deleted; account retained.
 - Acceptance ledger: docs/ACCEPTANCE_CHECKLIST.md. Remaining builder and fulfilment requirements are in progress, not completed by the zone release.
-- Azure management login completed in subscription directory fc24c2a2…; resource/deployment Kimi-K2.6 Succeeded. Live inference unverified. Opt-out PATCH returns NoAutoUpgrade, but repeated GET still returns OnceUpgradeIsAvailable (Free Tier): disabling is NOT verified, Microsoft-side consistency investigation needed. No further owner login required. Free quota tier does not guarantee free inference.
+- Azure management works; Kimi-K2.6 live consultation test passed. Later GET now verifies NoAutoUpgrade, current Free Tier; prior inconsistency resolved. No further owner login required. Free quota tier does not guarantee free inference or cap bills.
 - Release gates: persisted builder/real preview, fulfilment and payment/hold transactions, authenticated commerce E2E, tenant negative tests, backups/restore, legal/payout checks, mobile device QA.
 
 ## Historical release notes (not a current readiness checklist)

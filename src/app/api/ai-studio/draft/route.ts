@@ -7,6 +7,7 @@ import { AzureFoundryError } from "@/lib/ai/azure-foundry";
 import { createConsultation } from "@/lib/ai/consultation";
 import { consultationSchema, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 import { createClient } from "@/lib/supabase/server";
+import { brandColorsSchema } from "@/lib/brand-materials";
 
 export async function GET() {
   const context = await getSessionContext();
@@ -34,7 +35,14 @@ export async function POST(request: Request) {
     const tenant = await admin.from("tenants").select("business_vertical,name,catalog_name,catalog_status").eq("id", context.tenantId).maybeSingle();
     if (tenant.error || !tenant.data) return NextResponse.json({ error: "Не удалось определить профиль магазина." }, { status: 404 });
     const history:ConsultationTurn[]=[];
+    let shopContext:unknown=tenant.data;
     if(input.data.intent==="consultation") {
+      const fulfilment=await admin.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,min_order").eq("tenant_id",context.tenantId).maybeSingle();
+      if(fulfilment.error) return NextResponse.json({error:"Не удалось прочитать условия магазина. Попробуйте позже."},{status:503});
+      shopContext={...tenant.data,fulfilment:fulfilment.data};
+      const brand=await admin.from("tenant_brand_materials").select("notes,colors").eq("tenant_id",context.tenantId).maybeSingle();
+      if(brand.error)return NextResponse.json({error:"Не удалось прочитать правила бренда."},{status:503});
+      shopContext={...tenant.data,fulfilment:fulfilment.data,brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
       const previous = await admin.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(8);
       if(previous.error) return NextResponse.json({error:"Не удалось восстановить контекст разговора. Попробуйте позже."},{status:503});
       for(const row of (previous.data??[]).reverse()) { const response=consultationSchema.safeParse(row.output); if(response.success)history.push({id:row.id,message:row.input_summary,response:response.data}); }
@@ -60,11 +68,11 @@ export async function POST(request: Request) {
     }
     const creditsRemaining = typeof reservation.data === "number" ? reservation.data : null;
     let result;
-    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,tenant.data,history) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan) : await createAiStudioDraft(input.data.intent, input.data.brief); }
+    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,shopContext,history) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan) : await createAiStudioDraft(input.data.intent, input.data.brief); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); throw error; }
     const output = "consultation" in result ? result.consultation : "structure" in result ? result.structure : "design" in result ? result.design : result.draft;
     const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost }).select("id").single();
-    if (saved.error || !saved.data) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); return NextResponse.json({ error: "Черновик создан, но не удалось сохранить журнал. Кредит возвращён." }, { status: 500 }); }
+    if (saved.error || !saved.data) { const refund=await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); return NextResponse.json({ error: refund.error ? "Ответ не сохранён. Возврат лимита не подтверждён — обратитесь в поддержку." : "Ответ не сохранён. Использованный лимит возвращён." }, { status: 500 }); }
     return NextResponse.json("consultation" in result ? {consultation:result.consultation,generationId:saved.data.id} : "structure" in result ? { structure: result.structure, creditsRemaining, generationId: saved.data.id } : "design" in result ? { design: result.design, creditsRemaining, generationId: saved.data.id } : { draft: result.draft, creditsRemaining, generationId: saved.data.id });
   } catch (error) {
     const status = error instanceof AzureFoundryError && error.status && error.status < 500 ? error.status : 502;

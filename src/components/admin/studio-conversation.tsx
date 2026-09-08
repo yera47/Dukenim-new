@@ -50,6 +50,7 @@ export function StudioConversation({enabled,onTask}:{enabled:boolean;onTask:(tas
       <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать человеку</Link><button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>
     </form>
     {!enabled&&<p className="text-sm text-neutral-500">AI сейчас недоступен. Можно продолжить настройку вручную.</p>}
+    <nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
   </section>;
 }

@@ -5,8 +5,33 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { computeEntitlement } from "@/lib/entitlement";
 import { parseDeliveryZone } from "@/lib/delivery-zone";
+import { pickupLocationSchema } from "@/lib/pickup-location";
 
 export type DeliveryState = { error?: string; success?: string };
+
+export async function savePickupSettings(_: DeliveryState, form: FormData): Promise<DeliveryState> {
+  const enabled = form.get("enabled") === "on";
+  const fields = ["address", "hours", "preparation", "instructions", "gisUrl", "yandexUrl", "embedUrl"] as const;
+  const values = Object.fromEntries(fields.map(key => [key, String(form.get(key) ?? "")]));
+  const hasLocation = Object.values(values).some(value => value.trim());
+  const parsed = pickupLocationSchema.safeParse(values);
+  if ((enabled || hasLocation) && (!parsed.success || form.get("confirmed") !== "on")) {
+    return { error: "Заполните адрес, часы и готовность, проверьте ссылки на карты и подтвердите сведения. Для отключения можно оставить все поля пустыми." };
+  }
+  const context = await requireRole(["owner", "superadmin"]);
+  if (!context.user || !context.tenantId) return { error: "Войдите в аккаунт владельца магазина." };
+  try {
+    const client = await createClient();
+    const tenant = await client.from("tenants").select("plan,next_plan,status,trial_ends_at").eq("id", context.tenantId).single();
+    if (tenant.error || !tenant.data || !computeEntitlement(tenant.data).active) return { error: "Нет доступа к настройкам активного магазина." };
+    const result = await client.from("tenant_settings").update({ pickup_enabled: enabled, pickup_location: parsed.success ? parsed.data : null })
+      .eq("tenant_id", context.tenantId).select("tenant_id").maybeSingle();
+    if (result.error || !result.data) return { error: "Самовывоз не сохранён. Введённые сведения остаются на экране." };
+    revalidatePath("/admin/settings/delivery");
+    revalidatePath("/s/[slug]/checkout", "page");
+    return { success: "Условия самовывоза сохранены для новых заказов." };
+  } catch { return { error: "Сервер недоступен. Сохранение не подтверждено." }; }
+}
 
 export async function saveDeliverySettings(_: DeliveryState, form: FormData): Promise<DeliveryState> {
   const value = String(form.get("minOrder") ?? "").trim();

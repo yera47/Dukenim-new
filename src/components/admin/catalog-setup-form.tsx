@@ -4,8 +4,7 @@ import { useActionState, useEffect, useState } from "react";
 import { catalogBuilderStateSchema } from "@/lib/catalog-builder-draft";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { createCatalogAction, type CatalogActionState } from "@/app/admin/actions";
-import { launchTemplatesForPlan, palettes, paletteByKey } from "@/lib/storefront-theme";
-import { NichePreview } from "@/components/store/niche-preview";
+import { launchTemplatesForPlan, palettes } from "@/lib/storefront-theme";
 import { launchCopyForVertical, nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 import { catalogRecommendation } from "@/lib/catalog-recommendation";
@@ -72,7 +71,6 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     } catch (error) { setAiError(error instanceof Error ? error.message : "AI временно недоступен. Можно выбрать оформление вручную."); }
     finally { setAiPending(false); }
   }
-  const palette = paletteByKey(paletteKey);
   return <form action={action} onSubmit={event => {
     if (aiPending || pending || draftLoading || draftSaving) { event.preventDefault(); return; }
     if (step < 2) {
@@ -108,7 +106,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
         <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending} className="btn btn-secondary" onClick={()=>setStep(step-1)}>Назад</button>}{step<2?<button type="button" disabled={catalogName.trim().length<2} className="btn btn-primary" onClick={()=>setStep(step+1)}>Продолжить <ArrowRight size={16}/></button>:<button disabled={pending||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
       </fieldset>
-      <aside className="catalog-wizard-preview" aria-label="Предпросмотр каталога"><div className="border-b bg-white px-4 py-3 text-xs text-neutral-500">Предпросмотр · {catalogName}</div><NichePreview vertical={vertical} templateName={templateKey} storeName={catalogName} background={palette.background} surface={palette.surface} ink={palette.ink} muted={palette.muted} accent={palette.accent}/></aside>
+      <aside className="catalog-wizard-preview" aria-label="Предпросмотр каталога"><div className="border-b bg-white px-4 py-3 text-xs text-neutral-500">Ваш каталог · реальные товары магазина, не демонстрационные</div><iframe title="Настоящий предпросмотр каталога" className="h-[680px] w-full border-0 bg-white" src={`/store-preview?${new URLSearchParams({name:catalogName,template:templateKey,palette:paletteKey})}`}/></aside>
     </div>
   </form>;
 }
