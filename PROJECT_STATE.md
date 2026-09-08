@@ -2,6 +2,8 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Latest code 55c2c0e Ready (dpl_H6RXdHSv3UCTdN65V2zxmuZC6KR8), including owner-scoped AI proposal preview through shared renderer and corrected mobile queue. Still not full brief acceptance. No authenticated merchant E2E/native device confirmation; root has no personal tenant as requested.
+
 - Release d70f7fd Ready on canonical domain (dpl_EhLSarKo9knaPV47BPWoBsb9Lcch): private brand logo/notes, pickup location/maps, immutable fulfilment snapshots, shared StoreHome preview, atomic catalog creation. 145 tests/tsc/build and rolled-back order/tenant checks pass; full authenticated-browser flow unverified. No new prepaid/reservation capability.
 
 - Latest release 41af99a: persisted consultation in owner AI Studio, eight-pair model context, thirty-pair UI restore, typed task handoff into editors. Vercel dpl_DdNY7agEfS7W2K4Lk6FccgpB2MVN Ready on www/apex. 128 tests/tsc/build passed; explicit live Kimi conversation test passed. Database history read/isolation verified, full browser relogin and shop-building E2E not verified. Personalized brandbook builder still incomplete.

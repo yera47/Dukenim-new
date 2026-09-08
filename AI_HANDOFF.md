@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## Latest publication verified — 2026-09-08
+
+Source 55c2c0e is Ready, dpl_H6RXdHSv3UCTdN65V2zxmuZC6KR8, canonical www.dukenim.kz/apex. Includes d70f7fd brand/pickup/atomic creation, 836fe20 mobile queue follow-up and actual AI generation preview. tsc and production build passed; 147 full-suite tests passed before the one extra shared-mapping test (which passed with eight related tests). Anonymous production home 200, brand/history APIs 401. Private browser full journey remains unverified: fresh existing owner session is tenantless root; asked for separate authenticated test-owner login without credentials in chat. Not a blocker to other internal implementation; do not treat the parent task as complete. Pending PDF/vision, personal composition, full automatic builder, design revision/undo, prepaid merchant payment, reservations, notification scheduling/receipts/lease recovery/native device/auth, full acceptance ledger. No new paid resources, no real customer/test-order data persisted.
+
 ## AI proposal preview — 2026-09-08
 
 Current local follow-up: private /store-preview accepts only owner-scoped store_design generation, validates plan/schema, applies shared proposedDesignSettings mapping. AI result now embeds actual shared storefront before apply, preserving merchant hero image/colour. Same mapping reused by design/apply; nine focused tests + tsc pass. Build running. Important: this does not add personalized arbitrary composition or revision/undo; existing design/apply still upsert without conflict history. Do not label those complete. Parent acceptance requirements remain open.
