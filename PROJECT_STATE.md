@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09: bf3f8fc Ready dpl_AMdNXTGJLordZgbEQ7tJLqXL31f2. Supabase minutely push wake activated after signed live200/anonymous401. Queue-aware idle check avoids needless HTTP calls; short-lived HMAC keeps persistent key out of managed net tables. Native route code passes iOS JS export, no IPA/registered device/delivery proof. Category mapping follow-up fixes flattened real catalog sections; tsc/build and214 tests pass.
+
 - 2026-09-09: 319a57e Ready dpl_9KYMHwtnB6jwqHKcVdpxyhj4vvdW: atomic AI proposal creation and cancellation stock return published. Mobile push deep-link/read/login-return source implemented; mobile tsc/lint/iOS JS export pass, no IPA/device test. Supabase queue-aware scheduler installed but inactive pending endpoint smoke; production/Vault secret configured. Full PDF, personalized assembly, merchant prepayment and reservations remain open.
 
 - 2026-09-09: 37305d0 published Ready, dpl_BJjfgCTCWZUiH6ztcMCKCaAfSkDy. Kimi JSON/non-thinking request controls pass live text+PNG tests; private saved-logo analysis, brand context in generators, proposed custom accent/contrast, support wording confirmed in fresh owner browser. Push receipt/lease migration applied and transaction-tested; no production CRON_SECRET/scheduler/device delivery. Vercel Hobby verified. Follow-up atomic AI-design creation and cancellation stock-return migrations applied/tested; code release pending. Full PDF/personal assembly/prepayment/reservations remain open.

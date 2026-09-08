@@ -1,6 +1,8 @@
 # Dukenim — AI handoff
 
-## Native notification navigation + scheduled worker — 2026-09-09 (activation pending)
+## Native notification navigation + scheduled worker — 2026-09-09 (server activated)
+
+bf3f8fc Ready dpl_AMdNXTGJLordZgbEQ7tJLqXL31f2 on canonical domain. Signed pg_net live request returned200 {acceptedByExpo:0,receiptsChecked:0,failed:0}; anonymous request401. Minutely queue-aware cron activated after that smoke, first recorded run verified separately below. No devices registered: this is verified server scheduling/authentication, NOT delivered push. Production quota/paid plans unchanged. Follow-up storefront query now maps real active tenant category names instead of hardcoded "Каталог", avoiding quadratic variant mapping; two regression tests pass. Final full suite214 passed/two opt-in live tests skipped; root tsc/build pass. PDF.js authorization unanswered, merchant acquiring provider/account not selected, reservations and full automatic custom layout/products remain internal unfinished work; do not reclassify them as completed.
 
 Native code adds strict UUID-only push navigation to /order (ignores payload URL), session-scoped RLS order read, account-change clearing and return after login. Android creates its notification channel before permissions; registration checks login first; settings catches network errors; logout disables this installation's token before removing session. Password login already existed: earlier statement "no native login" was too broad; Google/Apple OAuth, production public environment and device E2E remain unverified. Six pure target validation tests pass. Mobile tsc and Expo lint clean; iOS Metro/Hermes export successful (not IPA/signing/TestFlight/device proof). New files order.tsx, notification-target.ts, target tests; modified mobile layout/index/settings/notifications.
 
