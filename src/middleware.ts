@@ -9,9 +9,7 @@ export async function middleware(request: NextRequest) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    // Local UI previews may use fixtures; hosted cabinets must never fail open.
-    if (process.env.VERCEL) return new NextResponse("Сервис временно недоступен", { status: 503 });
-    return NextResponse.next();
+    return new NextResponse("Сервис временно недоступен", { status: 503, headers: { "Cache-Control": "private, no-store" } });
   }
 
   let response = NextResponse.next({ request });
@@ -28,12 +26,13 @@ export async function middleware(request: NextRequest) {
 
   const redirect = (target: URL) => {
     const redirected = NextResponse.redirect(target);
+    redirected.headers.set("Cache-Control", "private, no-store");
     response.cookies.getAll().forEach(cookie => redirected.cookies.set(cookie));
     return redirected;
   };
 
-  const { data: { user } } = await client.auth.getUser();
-  if (!user) return redirect(new URL("/login", request.url));
+  const { data: { user }, error } = await client.auth.getUser();
+  if (error || !user) return redirect(new URL("/login", request.url));
 
   const { data: profile } = await getProfileRole(client, user.id);
   if (request.nextUrl.pathname.startsWith("/root") && profile?.role !== "superadmin") return redirect(new URL("/admin", request.url));
@@ -66,7 +65,8 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  response.headers.set("Cache-Control", "private, no-store");
   return response;
 }
 
-export const config = { matcher: ["/admin/:path*", "/root/:path*", "/onboarding/:path*"] };
+export const config = { matcher: ["/admin/:path*", "/root/:path*", "/onboarding/:path*", "/store-preview/:path*"] };

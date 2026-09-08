@@ -7,6 +7,7 @@ import { computeEntitlement } from "@/lib/entitlement";
 import { redirect } from "next/navigation";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const { role, tenantId } = await requireRole(["owner", "superadmin"]);

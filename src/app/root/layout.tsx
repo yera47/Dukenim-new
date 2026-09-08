@@ -4,6 +4,7 @@ import { Store } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 
 export const metadata: Metadata = { robots: { index: false, follow: false } };
+export const dynamic = "force-dynamic";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { tenantId } = await requireRole(["superadmin"]);

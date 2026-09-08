@@ -2,6 +2,8 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Security follow-up locally verified, not yet published: removed config-missing demo privilege fallback and non-Vercel middleware bypass; private route no-store and preview protection. 164 tests passed, tsc passed, production dependency audit zero known advisories. Anonymous production /admin and /root require login; rolled-back DB owner role-escalation negative test passed. Not a full security certification; no change to outstanding builder/payment/reservation scope.
+
 - Latest code 55c2c0e Ready (dpl_H6RXdHSv3UCTdN65V2zxmuZC6KR8), including owner-scoped AI proposal preview through shared renderer and corrected mobile queue. Still not full brief acceptance. No authenticated merchant E2E/native device confirmation; root has no personal tenant as requested.
 
 - Release d70f7fd Ready on canonical domain (dpl_EhLSarKo9knaPV47BPWoBsb9Lcch): private brand logo/notes, pickup location/maps, immutable fulfilment snapshots, shared StoreHome preview, atomic catalog creation. 145 tests/tsc/build and rolled-back order/tenant checks pass; full authenticated-browser flow unverified. No new prepaid/reservation capability.
