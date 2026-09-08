@@ -1,6 +1,8 @@
 import "server-only";
 import { z } from "zod";
 import { describeAzureFoundryResponse, parseAzureFoundryResponse } from "./azure-response";
+import {azureMessageSchema,type AzureFoundryMessage} from "./message-input";
+export type {AzureFoundryMessage} from "./message-input";
 
 const configSchema = z.object({
   endpoint: z.string().url(),
@@ -8,13 +10,8 @@ const configSchema = z.object({
   deployment: z.string().min(1),
 });
 
-export type AzureFoundryMessage = {
-  role: "system" | "user" | "assistant";
-  content: string;
-};
-
 export class AzureFoundryError extends Error {
-  constructor(message: string, readonly status?: number) {
+  constructor(message: string, readonly status?: number, readonly code:string="provider_error") {
     super(message);
     this.name = "AzureFoundryError";
   }
@@ -48,7 +45,7 @@ export function getAzureFoundryStatus() {
 
 export async function createAzureFoundryChatCompletion(messages: AzureFoundryMessage[]) {
   const config = getConfig();
-  if (!messages.length || messages.some((message) => !message.content.trim() || message.content.length > 12_000)) {
+  if (!messages.length || messages.length>20 || messages.some((message) => !azureMessageSchema.safeParse(message).success)) {
     throw new AzureFoundryError("Некорректный или слишком длинный запрос.");
   }
 
@@ -61,7 +58,9 @@ export async function createAzureFoundryChatCompletion(messages: AzureFoundryMes
     body: JSON.stringify({
       model: config.deployment,
       messages,
-      temperature: 0.2,
+      response_format: { type: "json_object" },
+      // Azure's OpenAI-compatible gateway uses reasoning_effort, not Moonshot's thinking field.
+      ...(/^kimi-k2\.6$/i.test(config.deployment) ? { reasoning_effort: "none" } : { temperature: 0.2 }),
       max_tokens: 1_600,
     }),
     cache: "no-store",
@@ -76,8 +75,9 @@ export async function createAzureFoundryChatCompletion(messages: AzureFoundryMes
   try {
     return parseAzureFoundryResponse(payload);
   } catch {
-    console.error("[azure-ai] Unexpected response shape", describeAzureFoundryResponse(payload));
-    throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.");
+    const diagnostic=describeAzureFoundryResponse(payload);
+    console.error("[azure-ai] Unexpected response shape", diagnostic);
+    throw new AzureFoundryError("Azure AI вернул ответ неизвестного формата.",502,diagnostic.finishReason==="length"?"output_limit":"invalid_schema");
   }
 }
 

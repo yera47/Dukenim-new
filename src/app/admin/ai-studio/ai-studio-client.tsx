@@ -150,7 +150,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
     {!workspaceOpen ? <section className={styles.welcome}>
       <p>Когда определимся с вводными, сохраните основу магазина. Можно также начать вручную.</p>
       <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Создать каталог с AI Studio <ArrowRight size={17}/></button>
-      <Link href={supportHref}>Написать человеку</Link>
+      <Link href={supportHref}>Написать в поддержку</Link>
     </section> : <section id="catalog-setup-workspace">
       <button type="button" onClick={()=>setWorkspaceOpen(false)} className="text-sm text-neutral-500">← В начало Studio</button>
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>

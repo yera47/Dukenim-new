@@ -44,5 +44,4 @@ export function launchTemplatesForPlan(plan: "basic" | "standard" | "pro") {
 }
 
 export function paletteByKey(key:string|null|undefined){return palettes.find((item)=>item.key===key)??palettes[0]}
-function luminance(hex:string){const value=hex.replace("#","");const rgb=[0,2,4].map((offset)=>parseInt(value.slice(offset,offset+2),16)/255).map((v)=>v<=.03928?v/12.92:Math.pow((v+.055)/1.055,2.4));return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2]}
-export function safeBrandColor(value:string|null|undefined, fallback:string){if(!value||!/^#[0-9a-fA-F]{6}$/.test(value))return fallback;return luminance(value)>.8||luminance(value)<.06?fallback:value}
+export function safeBrandColor(value:string|null|undefined, fallback:string){if(!value||!/^#[0-9a-fA-F]{6}$/.test(value))return fallback;return value}

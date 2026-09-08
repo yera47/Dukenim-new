@@ -10,6 +10,7 @@ export const aiStudioDraftSchema = z.object({
 export type AiStudioDraft = z.infer<typeof aiStudioDraftSchema>;
 
 export const aiStudioDesignSchema = z.object({
+  brandColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),
   templateKey: z.enum(["atelier", "studio", "market", "journal", "gallery", "signature"]),
   paletteKey: z.enum(["mono", "ink-brass", "paper-forest", "clay-milk", "ocean-sand", "plum-stone", "cobalt-cloud", "olive-linen", "cherry-cream", "terra-charcoal", "mint-charcoal", "rose-ink", "sunset-navy"]),
   heroTitle: z.string().trim().min(2).max(90),

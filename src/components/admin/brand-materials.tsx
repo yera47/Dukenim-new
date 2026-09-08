@@ -35,7 +35,7 @@ export function BrandMaterials() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {logoUrl&&<img src={logoUrl} alt="Сохранённый логотип бренда" className="max-h-24 max-w-48 object-contain"/>}
         <label className="block text-sm">Правила из брендбука или ваши пожелания<textarea value={notes} onChange={e=>setNotes(e.target.value)} maxLength={6000} rows={6} className="input mt-2 w-full" placeholder="Цвета, шрифты, характер магазина, чего избегать. Можно вставить текст из брендбука."/></label>
-        <p className="text-xs text-neutral-500">PDF и визуальные референсы пока не анализируются. Для логотипа извлекаются преобладающие цвета, а не распознаётся смысл изображения.</p>
+        <p className="text-xs text-neutral-500">После сохранения включите «Проанализировать сохранённый логотип» в чате — изображение будет отправлено модели Azure. Без этой опции используются только текст и приблизительные цвета. PDF пока не загружается.</p>
         {colors.length>0&&<div className="flex flex-wrap gap-3" aria-label="Извлечённые цвета">{colors.map(color=><span key={color} className="inline-flex items-center gap-1 text-xs"><i aria-hidden className="inline-block size-5 rounded-full border" style={{backgroundColor:color}}/>{color}</span>)}</div>}
         <button className="btn btn-secondary">{busy?"Сохраняем…":"Сохранить материалы для AI"}</button>
       </fieldset>

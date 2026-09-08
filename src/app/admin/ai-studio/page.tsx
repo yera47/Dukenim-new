@@ -26,7 +26,7 @@ export default async function AiStudioPage() {
     {lowUsage&&<p role="status" className="mb-4 rounded-xl border bg-white p-3 text-sm">Доступный объём AI заканчивается. <Link className="underline" href="/admin/settings/usage">Посмотреть использование</Link></p>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div><p className="muted text-sm">Ваш помощник в магазине</p><h1 className="mt-1 text-2xl font-bold">AI Studio</h1></div>
-      <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать человеку</Link>
+      <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать в поддержку</Link>
     </div>
     <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialStructure={initialStructure} categories={categories} />
   </section>;

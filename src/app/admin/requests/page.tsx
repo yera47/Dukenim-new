@@ -63,7 +63,7 @@ export default async function Requests({ searchParams }: { searchParams: Promise
           <input type="hidden" name="aiIntent" value={aiIntent}/>
           <label className="text-sm font-extrabold">Тема<input name="subject" required minLength={2} maxLength={120} defaultValue={subject} className="input mt-2"/></label>
           <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
-          <button className="btn btn-primary justify-self-start"><Send size={17}/> Отправить человеку</button>
+          <button className="btn btn-primary justify-self-start"><Send size={17}/> Отправить в поддержку</button>
         </form>
       </section>
       <aside className="card p-5"><h2 className="font-bold">Мои заявки</h2>{requests.length ? requests.map((request) => {

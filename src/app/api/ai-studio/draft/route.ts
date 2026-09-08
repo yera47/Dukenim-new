@@ -8,6 +8,7 @@ import { createConsultation } from "@/lib/ai/consultation";
 import { consultationSchema, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 import { createClient } from "@/lib/supabase/server";
 import { brandColorsSchema } from "@/lib/brand-materials";
+import { prepareBrandLogo } from "@/lib/brand-image";
 
 export async function GET() {
   const context = await getSessionContext();
@@ -35,17 +36,31 @@ export async function POST(request: Request) {
     const tenant = await admin.from("tenants").select("business_vertical,name,catalog_name,catalog_status").eq("id", context.tenantId).maybeSingle();
     if (tenant.error || !tenant.data) return NextResponse.json({ error: "Не удалось определить профиль магазина." }, { status: 404 });
     const history:ConsultationTurn[]=[];
+    let logoPng:Buffer|undefined;
+    if(input.data.includeBrandLogo) {
+      if(input.data.intent!=="consultation")return NextResponse.json({error:"Логотип можно обсудить в диалоге."},{status:400});
+      const ownerClient=await createClient();
+      const materials=await ownerClient.from("tenant_brand_materials").select("logo_path").eq("tenant_id",context.tenantId).maybeSingle();
+      const path=materials.data?.logo_path;
+      if(materials.error||!path||!path.startsWith(`${context.tenantId}/`)||path.includes(".."))return NextResponse.json({error:"Сначала сохраните логотип в материалах бренда."},{status:400});
+      const image=await ownerClient.storage.from("brand-materials").download(path);
+      if(image.error||!image.data||image.data.size>3*1024*1024)return NextResponse.json({error:"Не удалось прочитать логотип. Загрузите его заново."},{status:422});
+      try {logoPng=(await prepareBrandLogo(Buffer.from(await image.data.arrayBuffer()))).png;}
+      catch{return NextResponse.json({error:"Логотип не прошёл проверку изображения."},{status:422});}
+    }
     let shopContext:unknown=tenant.data;
-    if(input.data.intent==="consultation") {
+    {
       const fulfilment=await admin.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,min_order").eq("tenant_id",context.tenantId).maybeSingle();
       if(fulfilment.error) return NextResponse.json({error:"Не удалось прочитать условия магазина. Попробуйте позже."},{status:503});
       shopContext={...tenant.data,fulfilment:fulfilment.data};
       const brand=await admin.from("tenant_brand_materials").select("notes,colors").eq("tenant_id",context.tenantId).maybeSingle();
       if(brand.error)return NextResponse.json({error:"Не удалось прочитать правила бренда."},{status:503});
       shopContext={...tenant.data,fulfilment:fulfilment.data,brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
+      if(input.data.intent==="consultation") {
       const previous = await admin.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(8);
       if(previous.error) return NextResponse.json({error:"Не удалось восстановить контекст разговора. Попробуйте позже."},{status:503});
       for(const row of (previous.data??[]).reverse()) { const response=consultationSchema.safeParse(row.output); if(response.success)history.push({id:row.id,message:row.input_summary,response:response.data}); }
+    }
     }
     const since = new Date(Date.now() - 86_400_000).toISOString();
     const [tenantUsage, platformUsage] = await Promise.all([
@@ -68,7 +83,7 @@ export async function POST(request: Request) {
     }
     const creditsRemaining = typeof reservation.data === "number" ? reservation.data : null;
     let result;
-    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,shopContext,history) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan) : await createAiStudioDraft(input.data.intent, input.data.brief); }
+    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,shopContext,history,logoPng) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief,shopContext) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan,shopContext) : await createAiStudioDraft(input.data.intent, input.data.brief,shopContext); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); throw error; }
     const output = "consultation" in result ? result.consultation : "structure" in result ? result.structure : "design" in result ? result.design : result.draft;
     const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost }).select("id").single();
@@ -76,6 +91,11 @@ export async function POST(request: Request) {
     return NextResponse.json("consultation" in result ? {consultation:result.consultation,generationId:saved.data.id} : "structure" in result ? { structure: result.structure, creditsRemaining, generationId: saved.data.id } : "design" in result ? { design: result.design, creditsRemaining, generationId: saved.data.id } : { draft: result.draft, creditsRemaining, generationId: saved.data.id });
   } catch (error) {
     const status = error instanceof AzureFoundryError && error.status && error.status < 500 ? error.status : 502;
-    return NextResponse.json({ error: status === 429 ? "AI Studio достиг временного лимита. Попробуйте немного позже." : "Не удалось создать черновик AI Studio. Попробуйте ещё раз." }, { status });
+    const diagnosticId=crypto.randomUUID();
+    const code=error instanceof AzureFoundryError?error.code:error instanceof Error&&["TimeoutError","AbortError"].includes(error.name)?"timeout":"internal_error";
+    // No prompts, response text, keys or customer facts in diagnostic logs.
+    console.error("[ai-studio] request failed",{diagnosticId,code,status});
+    const message=status===429?"AI Studio достиг временного лимита. Попробуйте немного позже.":code==="invalid_json"||code==="invalid_schema"?"Ответ модели не прошёл проверку. Изменения магазина не применены.":code==="timeout"?"Модель не успела ответить. Ваш текст остался в поле.":"Не удалось получить ответ AI Studio.";
+    return NextResponse.json({error:`${message} Код для поддержки: ${diagnosticId}`,diagnosticId},{status});
   }
 }

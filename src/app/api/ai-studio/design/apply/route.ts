@@ -35,6 +35,7 @@ export async function POST(request: Request) {
 
   const design = aiStudioDesignSchema.safeParse(generation.data.output);
   if (!design.success) return NextResponse.json({ error: "Оформление нужно сгенерировать заново." }, { status: 422 });
+  if (entitlement.plan === "basic" && design.data.brandColor) return NextResponse.json({ error: "Индивидуальный цвет недоступен на текущем тарифе. Запросите новое предложение." }, { status: 403 });
   const template = templateCatalog.find((item) => item.key === design.data.templateKey);
   if (!template || !hasPlan(entitlement.plan, template.minPlan as Plan)) return NextResponse.json({ error: "Этот шаблон недоступен на текущем тарифе." }, { status: 403 });
 
