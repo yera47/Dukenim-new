@@ -8,6 +8,31 @@ import { parseDeliveryZone } from "@/lib/delivery-zone";
 
 export type DeliveryState = { error?: string; success?: string };
 
+export async function saveDeliverySettings(_: DeliveryState, form: FormData): Promise<DeliveryState> {
+  const value = String(form.get("minOrder") ?? "").trim();
+  const minimum = value === "" ? NaN : Number(value);
+  if (!Number.isSafeInteger(minimum) || minimum < 0 || minimum > 2000000000) return { error: "Укажите минимальный заказ целым числом тенге от 0." };
+  const context = await requireRole(["owner", "superadmin"]);
+  if (!context.user || !context.tenantId) return { error: "Войдите в аккаунт владельца магазина." };
+  try {
+    const client = await createClient();
+    const tenant = await client.from("tenants").select("plan,next_plan,status,trial_ends_at").eq("id", context.tenantId).single();
+    if (tenant.error || !tenant.data || !computeEntitlement(tenant.data).active) return { error: "Нет доступа к настройкам активного магазина." };
+    const deliveryEnabled = form.get("deliveryEnabled") === "on";
+    if (deliveryEnabled) {
+      const zones = await client.from("delivery_zones").select("id").eq("tenant_id", context.tenantId).eq("is_active", true).limit(1);
+      if (zones.error || !zones.data?.length) return { error: "Сначала сохраните хотя бы одну доступную зону доставки." };
+    }
+    // Only these two fields may change; payment credentials and pickup remain untouched.
+    const result = await client.from("tenant_settings").update({ delivery_enabled: deliveryEnabled, min_order: minimum })
+      .eq("tenant_id", context.tenantId).select("tenant_id").maybeSingle();
+    if (result.error || !result.data) return { error: "Настройки не сохранены. Обновите страницу и повторите." };
+    revalidatePath("/admin/settings/delivery");
+    revalidatePath("/s/[slug]/checkout", "page");
+    return { success: "Условия сохранены. Они применяются при оформлении новых заказов." };
+  } catch { return { error: "Сервер недоступен. Настройки не подтверждены." }; }
+}
+
 export async function saveDeliveryZone(_: DeliveryState, form: FormData): Promise<DeliveryState> {
   const parsed = parseDeliveryZone(form);
   if (!parsed.success) return { error: "Укажите название зоны, целую неотрицательную стоимость в тенге и срок до 200 символов." };

@@ -2,9 +2,11 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
+- Current code verification: 123 tests, tsc, build (62 routes) pass. Private builder-draft schema applied; API and form add explicit save/resume with revision conflict checks. DB persistence/isolation checked in rolled-back transaction; authenticated browser E2E unverified. Delivery enable/min_order controls also added. Release status is recorded in AI_HANDOFF; this is not full conversational builder completion.
+
 - Publication verified: 2fd6815 Git deployment dpl_Brgey53BXZfTxZpCDK1KESyn1ppE Ready, canonical www/apex aliases. Delivery-zone editor and prior checkout fixes now deployed; authenticated save E2E remains unverified. Supersedes pending deployment statement below.
 
-- New source 2fd6815 pushed: owner delivery-zone editor and checkout reliability fixes. 106 tests, tsc, build pass. Direct Vercel deploy denied; canonical publication unconfirmed. Real authenticated zone save/reload still requires verification.
+- Source 2fd6815: owner delivery-zone editor and checkout reliability fixes published through Git integration. 106 tests, tsc, build pass. Real authenticated zone save/reload still requires verification.
 
 - Direction: AI-led personalized catalog creation and ongoing editing, optional logo/brandbook, shared draft/public renderer. This complete flow is NOT implemented; current AI proposes bounded text/structure/theme drafts.
 - Platform identity: monochrome D/wordmark, grey threshold/dot. Tenant brands remain individual. See docs/BRAND_CURRENT.md; old gold PDF/icons/video are not updated masters.
@@ -13,8 +15,8 @@
 - Fulfilment target: delivery, prepaid pickup, in-store reservation, each merchant-configurable. Current checkout supports courier/pickup with payment on receipt; prepaid pickup and reservation stock holds are NOT live.
 - Mobile: EAS linked and App Store signing ready. No IPA/TestFlight release. Push infrastructure exists in source, but production delivery/device E2E is unverified. Notifications must distinguish fulfilment types and payment state; tapping opens the permitted order/reservation.
 - Superadmin remains independent of a personal store. Main owner's unused store was deleted; account retained.
-- Local-only checkout reliability fixes passed 95 tests, TypeScript and build. Not deployed. Current production must not be inferred from a local build.
-- Azure automatic quota upgrade opt-out not applied. Browser login visible in a different directory; target resource login still requires verification. Free quota tier does not guarantee free inference.
+- Acceptance ledger: docs/ACCEPTANCE_CHECKLIST.md. Remaining builder and fulfilment requirements are in progress, not completed by the zone release.
+- Azure resource access restored by using the subscription directory fc24c2a2… (ersatikgmail.onmicrosoft.com), status Succeeded. Production deployment config Kimi-K2.6 confirmed; live request unverified. Automatic quota upgrade opt-out NOT applied: CLI setup awaits Windows consent, scoped verification script prepared. Free quota tier does not guarantee free inference.
 - Release gates: persisted builder/real preview, fulfilment and payment/hold transactions, authenticated commerce E2E, tenant negative tests, backups/restore, legal/payout checks, mobile device QA.
 
 ## Historical release notes (not a current readiness checklist)

@@ -30,6 +30,10 @@ You may receive work delegated by Claude Code. Treat the delegation as the sourc
 
 ## Verification
 
+- Перед завершением задачи сопоставить результат со всеми требованиями владельца. Для каждого требования указать доказательство выполнения либо конкретный внешний блокер. Нельзя молча исключать требования, подменять работающую функцию демонстрацией или заявлять завершение без проверки сохранения и пользовательского сценария.
+- Maintain one acceptance checklist for multi-part requests. Use statuses: not started, in progress, verified, externally blocked. A passing build, deployment, schema inspection or unit test does not alone verify an authenticated end-to-end journey. Internal unfinished work is not an external blocker. Continue independent in-scope work when authentication blocks another item.
+- Reports must separate: Result; Implemented and verified (requirement → evidence); Azure; Not completed (precise reason); Required owner action; Where to verify (local/test/production). A partial release is an intermediate milestone, not closure of the parent request. Never replace implementation with repeated documentation updates.
+
 - Prefer the narrowest relevant check during iteration.
 - Before handing back material TypeScript changes, run `npx tsc --noEmit`.
 - Run `npm run build` for release-facing, routing, rendering, or configuration changes when proportionate.

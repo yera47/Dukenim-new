@@ -1,5 +1,17 @@
 # Dukenim — AI handoff
 
+## Persisted builder groundwork and Azure diagnosis — 2026-09-08
+
+Added private catalog_builder_drafts migration (applied to production using MCP), strict state schema, authenticated owner GET/PUT, revision compare-and-swap, explicit save/resume in CatalogSetupForm. This persists name/step/theme/palette/brief, NOT a full AI conversation or a personalized published renderer. DB transaction using authenticated role verified insert/read/revision conflict/outsider invisibility, then rolled back all fixture changes. Added delivery master switch + min_order (only allowlisted columns), enabling requires active zone; order API fails closed on missing settings. Tests 123 pass; tsc and production build 62 routes pass. Browser authenticated save/relogin E2E remains unverified. Files: builder draft API/schema/migration/types/form, delivery actions/form/page/tests, order API/test, AGENTS and acceptance ledger. No customer records deleted.
+
+Azure actual fault: portal was in Microsoft-account directory f8cdef31…; subscription belongs to fc24c2a2-ee64-4c1e-a78b-71916ca9b4d7 (ersatikgmail.onmicrosoft.com). Opened correct directory resource, authenticated successfully, status Succeeded. Vercel env inspection confirms Kimi-K2.6 endpoint /openai/v1; API key and Supabase values are redacted by Vercel, never printed. Downloaded env is ignored .vercel/production-inspection.env (NOT loaded by Next). Live inference still unverified. Winget official Azure CLI 2.90 installer awaits Windows consent; async owner question sent, window observed via sky list_windows. Do not click consent. scripts/azure-quota-policy.ps1 defaults read-only and with -DisableAutoUpgrade does scoped GET/PATCH/GET; not executed. It preserves existing tier, does NOT make inference free/cap bills. No new Azure resources or billing changes.
+
+Next substantive work: finish persisted dialogue/brand materials/shared real preview and fulfilment snapshots/holds per acceptance ledger. Do not close overall task due to this partial release. Remaining browser E2E needs real authorized test session; SQL verification is not UI verification. Supabase advisors show only existing predicate SECURITY DEFINER warnings and leaked-password protection disabled; no new draft RLS warnings. Remediation reference: https://supabase.com/docs/guides/database/database-linter?lint=0029_authenticated_security_definer_function_executable .
+
+## Owner correction — 2026-09-08
+
+Read owner's continuation attachment. Confirmed execution error: repeated turn endings after narrow checkout/zone milestones while required builder, brand inputs, preview, fulfilment and Azure work remained internally unfinished. Recent replies did disclose incompleteness; do not fabricate a claim that the entire builder was called finished. Added persistent acceptance/reporting rule to AGENTS.md and full requirement ledger docs/ACCEPTANCE_CHECKLIST.md (21 items). Process correction is NOT feature completion. Required continuation: implement missing paths, verify persistence/reload/tenant isolation, and mark concrete external blockers only when diagnosed. Do not substitute more planning for implementation.
+
 ## Delivery editor implementation — 2026-09-08
 
 Release supersedes pending state below: Git-triggered dpl_Brgey53BXZfTxZpCDK1KESyn1ppE reached Ready with www.dukenim.kz and apex aliases. Source 2fd6815. Production delivery_zones schema and RLS policies read-only verified; no authenticated save E2E or claim of full fulfilment readiness.

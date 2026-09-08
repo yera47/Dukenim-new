@@ -7,6 +7,7 @@ export type VariantRow={id:string;product_id:string;tenant_id:string;size:string
 export type OrderRow={id:string;tenant_id:string;customer_id:string|null;order_number:number|null;source:"online"|"offline";status:"new"|"confirmed"|"assembled"|"delivering"|"done"|"cancelled";delivery_method:string|null;delivery_address:string|null;delivery_cost:number;subtotal:number;total:number;payment_method:string|null;payment_status:"pending"|"paid"|"failed"|"refunded";staff_id:string|null;created_at:string};
 export type Database={public:{Tables:{
 tenants:Table<TenantRow>;
+catalog_builder_drafts:Table<{tenant_id:string;revision:number;state:Json;updated_at:string}>;
 profiles:Table<{user_id:string;role:"customer"|"owner"|"superadmin";created_at:string}>;
 tenant_users:Table<{id:string;tenant_id:string;user_id:string;role:"owner"|"admin"|"staff"}>;
 categories:Table<{id:string;tenant_id:string;name:string;slug:string;sort_order:number;is_active:boolean}>;

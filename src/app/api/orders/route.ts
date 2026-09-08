@@ -70,8 +70,8 @@ export async function POST(request: Request) {
     const { data: tenant } = await getPublicTenantBySlug(client, slug);
     if (!tenant) return NextResponse.json({ error: "Магазин недоступен" }, { status: 404 });
     const options = await getCheckoutOptions(client, tenant.id);
-    if (options.error) return NextResponse.json({ error: "Не удалось загрузить способы получения" }, { status: 503 });
-    if (deliveryMethod === "pickup" && options.settings?.pickup_enabled === false) return NextResponse.json({ error: "Самовывоз временно недоступен" }, { status: 400 });
+    if (options.error || !options.settings) return NextResponse.json({ error: "Не удалось загрузить способы получения" }, { status: 503 });
+    if (deliveryMethod === "pickup" && !options.settings.pickup_enabled) return NextResponse.json({ error: "Самовывоз временно недоступен" }, { status: 400 });
     if (deliveryMethod === "courier") {
       if (!options.settings?.delivery_enabled) return NextResponse.json({ error: "Доставка временно недоступна" }, { status: 400 });
       if (!zoneId || !options.zones.some((zone) => zone.id === zoneId)) return NextResponse.json({ error: "Выберите доступную зону доставки" }, { status: 400 });

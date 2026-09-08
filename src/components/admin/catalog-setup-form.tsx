@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { catalogBuilderStateSchema } from "@/lib/catalog-builder-draft";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { createCatalogAction, type CatalogActionState } from "@/app/admin/actions";
 import { launchTemplatesForPlan, palettes, paletteByKey } from "@/lib/storefront-theme";
@@ -20,6 +21,44 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const [aiPending, setAiPending] = useState(false);
   const [aiError, setAiError] = useState("");
   const [aiReason, setAiReason] = useState("");
+  const [draftLoading, setDraftLoading] = useState(true);
+  const [draftSaving, setDraftSaving] = useState(false);
+  const [draftRevision, setDraftRevision] = useState<number | null>(null);
+  const [draftMessage, setDraftMessage] = useState("");
+  useEffect(() => {
+    const controller = new AbortController();
+    void (async () => {
+      try {
+        const response = await fetch("/api/catalog-builder/draft", {cache:"no-store",signal:controller.signal});
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || "Не удалось прочитать черновик.");
+        if (result.draft) {
+          const parsed = catalogBuilderStateSchema.safeParse(result.draft.state);
+          if (!parsed.success || !Number.isSafeInteger(result.draft.revision) || result.draft.revision < 1) throw new Error("Сохранённый черновик требует проверки. Новые изменения его не перезапишут.");
+          const saved = parsed.data;
+          setCatalogName(saved.catalogName); setBrief(saved.brief); setPaletteKey(saved.paletteKey); setStep(saved.step);
+          if (templates.some(t=>t.key===saved.templateKey)) setTemplateKey(saved.templateKey);
+          else setStep(1);
+          setDraftRevision(result.draft.revision);
+          setDraftMessage("Продолжаем сохранённый черновик. Он ещё не опубликован.");
+        } else setDraftRevision(0);
+      } catch (error) {
+        if (!controller.signal.aborted) setDraftMessage(error instanceof Error ? error.message : "Не удалось загрузить черновик.");
+      } finally { if (!controller.signal.aborted) setDraftLoading(false); }
+    })();
+    return () => controller.abort();
+  }, [templates]);
+  async function saveDraft() {
+    if (draftRevision === null || draftSaving || draftLoading) return;
+    setDraftSaving(true); setDraftMessage("");
+    try {
+      const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step,catalogName,templateKey,paletteKey,brief}})});
+      const result = await response.json();
+      if (!response.ok || !Number.isSafeInteger(result.revision)) throw new Error(result.error || "Сохранение не подтверждено.");
+      setDraftRevision(result.revision); setDraftMessage("Черновик сохранён. Можно закрыть страницу и продолжить позже.");
+    } catch (error) { setDraftMessage(error instanceof Error ? error.message : "Сохранение не подтверждено. Не закрывайте страницу."); }
+    finally { setDraftSaving(false); }
+  }
   async function recommend() {
     if (aiPending || !aiEnabled || brief.trim().length < 8) return;
     setAiPending(true); setAiError(""); setAiReason("");
@@ -35,7 +74,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   }
   const palette = paletteByKey(paletteKey);
   return <form action={action} onSubmit={event => {
-    if (aiPending || pending) { event.preventDefault(); return; }
+    if (aiPending || pending || draftLoading || draftSaving) { event.preventDefault(); return; }
     if (step < 2) {
       event.preventDefault();
       if (catalogName.trim().length >= 2) setStep(step + 1);
@@ -46,8 +85,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     <input type="hidden" name="templateKey" value={templateKey}/>
     <input type="hidden" name="paletteKey" value={paletteKey}/>
     <nav aria-label="Шаги создания" className="flex gap-4 border-b pb-4 text-sm">{["Название","Оформление","Проверка"].map((label,index)=><span key={label} aria-current={step===index?"step":undefined} className={step===index?"font-bold":"text-neutral-400"}>{index+1}. {label}</span>)}</nav>
+    <div className="flex flex-wrap items-center gap-3 py-3">
+      <button type="button" className="btn btn-secondary" disabled={draftLoading||draftSaving||aiPending||pending||draftRevision===null} onClick={()=>void saveDraft()}>{draftLoading?"Загружаем черновик…":draftSaving?"Сохраняем…":"Сохранить и продолжить позже"}</button>
+      <p role="status" className="text-sm text-neutral-500">{draftMessage || "Сохраните черновик перед выходом. Покупатели его не видят."}</p>
+    </div>
     <div className="catalog-wizard-layout">
-      <fieldset disabled={pending || aiPending} className="min-w-0 py-4">
+      <fieldset disabled={pending || aiPending || draftLoading || draftSaving} className="min-w-0 py-4">
         <small className="text-neutral-500">{nichePresets[vertical].label}</small>
         {step===1&&fromStudio&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
           <label htmlFor="catalog-design-brief" className="block font-semibold">Что продаёте и каким хотите видеть магазин?</label>
