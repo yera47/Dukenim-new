@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09: 319a57e Ready dpl_9KYMHwtnB6jwqHKcVdpxyhj4vvdW: atomic AI proposal creation and cancellation stock return published. Mobile push deep-link/read/login-return source implemented; mobile tsc/lint/iOS JS export pass, no IPA/device test. Supabase queue-aware scheduler installed but inactive pending endpoint smoke; production/Vault secret configured. Full PDF, personalized assembly, merchant prepayment and reservations remain open.
+
 - 2026-09-09: 37305d0 published Ready, dpl_BJjfgCTCWZUiH6ztcMCKCaAfSkDy. Kimi JSON/non-thinking request controls pass live text+PNG tests; private saved-logo analysis, brand context in generators, proposed custom accent/contrast, support wording confirmed in fresh owner browser. Push receipt/lease migration applied and transaction-tested; no production CRON_SECRET/scheduler/device delivery. Vercel Hobby verified. Follow-up atomic AI-design creation and cancellation stock-return migrations applied/tested; code release pending. Full PDF/personal assembly/prepayment/reservations remain open.
 
 - 2026-09-09: Domain-support a4500ab published Ready (dpl_Dy1B8kucswwHFptKQhsTwc2ayW7i): automatic request on deliberate help-button POST, active-thread reuse, linked message history/replies for owner and platform admin. Migration applied and DB transaction tests passed; full browser flow not verified. Does not connect DNS automatically or deliver email/push. Existing Azure Kimi consultation passed a fresh live test in 8.1s; prior UI failure cause still unknown.

@@ -23,7 +23,7 @@
 | 17 | «Без разработчика» на главной | в работе | Не расширять обещание до неработающего конструктора |
 | 18 | Мобильная адаптация, доступность | в работе | Старые responsive проверки не покрывают новые сценарии |
 | 19 | Tenant security и полная приёмка | в работе | Узкие тесты/проверка RLS есть; 12-шаговый сценарий из задания отсутствует |
-| 20 | Native notifications/order deep link | в работе | Исправлена и применена отсутствовавшая очередь/токены; order RPC transaction проверяет создание обезличенного уведомления. Worker проверяет ответ Expo/права. Добавлены ticket persistence, receipt polling, invalid-device disable и stale processing→unknown; SQL save/read/isolation и unit tests пройдены. В production отсутствует CRON_SECRET; Vercel Hobby cron раз в сутки. Нет scheduler и native login/deep link/device E2E |
+| 20 | Native notifications/order deep link | в работе | Исправлена и применена отсутствовавшая очередь/токены; order RPC transaction проверяет создание обезличенного уведомления. Worker проверяет ответ Expo/права. Добавлены ticket persistence, receipt polling, invalid-device disable и stale processing→unknown; SQL save/read/isolation и unit tests пройдены. CRON_SECRET/Vault настроены, Supabase minutely job установлен (активация после live smoke). Native UUID deep link, RLS read и возврат после password login добавлены, mobile tsc/lint/iOS JS export пройдены. OAuth/device E2E и IPA ещё нет |
 | 21 | Актуальность документации | в работе | Основные файлы уточнены; исторические документы не все сверены |
 
 ## Подтверждённая ошибка выполнения

@@ -1,6 +1,14 @@
 # Dukenim — AI handoff
 
-## Catalog proposal persistence + cancellation — 2026-09-09 (release pending)
+## Native notification navigation + scheduled worker — 2026-09-09 (activation pending)
+
+Native code adds strict UUID-only push navigation to /order (ignores payload URL), session-scoped RLS order read, account-change clearing and return after login. Android creates its notification channel before permissions; registration checks login first; settings catches network errors; logout disables this installation's token before removing session. Password login already existed: earlier statement "no native login" was too broad; Google/Apple OAuth, production public environment and device E2E remain unverified. Six pure target validation tests pass. Mobile tsc and Expo lint clean; iOS Metro/Hermes export successful (not IPA/signing/TestFlight/device proof). New files order.tsx, notification-target.ts, target tests; modified mobile layout/index/settings/notifications.
+
+Migration20260908215311 enables Supabase pg_cron/pg_net, private invoker queue-aware wake function and initially inactive minutely job. Anonymous/authenticated cannot execute wake/net functions. Matching generated secret installed in Vercel production and Vault only, never shared files. Zero pending notifications and zero enabled devices verified before setup. Job must stay inactive until newly deployed endpoint accepts authorization. No paid plan upgrade. Next: publish with new environment, authorized empty-queue smoke, activate cron and verify recorded run; actual device/APNs delivery remains open.
+
+## Catalog proposal persistence + cancellation — 2026-09-09 (published 319a57e)
+
+319a57e verified Ready dpl_9KYMHwtnB6jwqHKcVdpxyhj4vvdW, canonical www.dukenim.kz. 202 tests, tsc and production build passed before publication.
 
 First-creation wizard now keeps generationId in its resumable private draft and uses that same generation for the real preview. Saving calls owner-only invoker create_catalog_from_ai_design: one transaction applies the validated stored proposal's template, palette, brand accent, hero copy and catalog name/state. Previous wizard silently discarded hero/color. Changing a template/palette manually clears proposal selection. New catalog without custom color no longer silently stores legacy green. Model options for first creation now match launchTemplatesForPlan/atomic RPC; previously a valid general design could be impossible to create on that plan. This is atomic design-based creation, not generation of products/prices/full sections/fonts/layout.
 

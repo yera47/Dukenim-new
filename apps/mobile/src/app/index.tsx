@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { Link } from "expo-router";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { User } from "@supabase/supabase-js";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
+import { notificationTarget } from "@/lib/notification-target";
+import { disableCurrentDevicePush } from "@/lib/notifications";
 
 type Role = "customer" | "owner" | "superadmin";
 const jade = "#071B17", gold = "#B08A50", stone = "#F4F0E8";
@@ -13,11 +15,17 @@ function Button({ label, onPress, muted = false }: { label: string; onPress: () 
 }
 
 export default function HomeScreen() {
+  const params = useLocalSearchParams<{ orderId?: string; tenantId?: string }>();
+  const { orderId, tenantId } = params;
   const [user, setUser] = useState<User | null>(null);
   const [role, setRole] = useState<Role>("customer");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const target = notificationTarget({ orderId, tenantId });
+    if (user && target) router.replace({ pathname: "/order", params: target });
+  }, [user, orderId, tenantId]);
 
   useEffect(() => {
     const client = supabase;
@@ -54,7 +62,16 @@ export default function HomeScreen() {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (error) Alert.alert("Не удалось войти", error.message); else setPassword("");
   };
-  const signOut = async () => { await supabase?.auth.signOut(); setUser(null); setRole("customer"); };
+  const signOut = async () => {
+    try {
+      await disableCurrentDevicePush();
+      const result = await supabase?.auth.signOut();
+      if (result?.error) throw result.error;
+      setUser(null); setRole("customer");
+    } catch {
+      Alert.alert("Не удалось завершить выход", "Нужно отключить уведомления этого аккаунта на устройстве. Проверьте интернет и повторите выход.");
+    }
+  };
 
   if (loading) return <View style={styles.loader}><ActivityIndicator color={gold} /></View>;
   return <SafeAreaView style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
