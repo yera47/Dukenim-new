@@ -1,6 +1,8 @@
 # Dukenim — AI handoff
 
-## Security hardening — 2026-09-08, pending publication
+## Security hardening — 2026-09-08, published and smoke verified
+
+Source c8b66fa Ready, dpl_ByxHemY2WobGsLsbf9xFzvxDPMX4, canonical www.dukenim.kz/apex. scripts/test-public-auth.mjs passed eight production checks: /admin, /root, /admin/ai-studio, /store-preview with/without middleware spoof header all require login and return no-store. Repeatable rolled-back DB assertion saved in scripts/test-role-isolation.sql. No owner credentials or private customer data in test artifacts.
 
 Owner reported direct /admin access. Anonymous production GET /admin and /root both returned 307 /login; x-middleware-subrequest spoof also returned /login. Existing authenticated tenantless superadmin is expected to reach /root. Found and removed real fail-open fixture role in requireRole when Supabase configuration was absent; middleware now returns 503 on ALL hosts without configuration, not just Vercel. Auth errors/unknown DB roles denied. Private middleware responses and redirects no-store; store-preview included. No demo admin login remains through requireRole.
 

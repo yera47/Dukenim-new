@@ -2,7 +2,7 @@
 
 ## Current summary — 2026-09-08 (authoritative over historical entries below)
 
-- Security follow-up locally verified, not yet published: removed config-missing demo privilege fallback and non-Vercel middleware bypass; private route no-store and preview protection. 164 tests passed, tsc passed, production dependency audit zero known advisories. Anonymous production /admin and /root require login; rolled-back DB owner role-escalation negative test passed. Not a full security certification; no change to outstanding builder/payment/reservation scope.
+- Security c8b66fa published Ready (dpl_ByxHemY2WobGsLsbf9xFzvxDPMX4): removed config-missing demo privilege fallback and non-Vercel middleware bypass; private route no-store, dynamic cabinets and preview protection. 164 tests, tsc/build passed; production dependency audit zero known advisories. Eight live anonymous/spoof-header requests require login with no-store; rolled-back DB owner role-escalation negative test passed. Not a full security certification; no change to outstanding builder/payment/reservation scope.
 
 - Latest code 55c2c0e Ready (dpl_H6RXdHSv3UCTdN65V2zxmuZC6KR8), including owner-scoped AI proposal preview through shared renderer and corrected mobile queue. Still not full brief acceptance. No authenticated merchant E2E/native device confirmation; root has no personal tenant as requested.
 
