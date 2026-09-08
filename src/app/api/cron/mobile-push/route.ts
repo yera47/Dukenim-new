@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { readPushTickets, readPushReceipts, savedTicketsSchema } from "@/lib/expo-push-receipts";
+import { authorizePushWorker } from "@/lib/push-worker-auth";
 
 export const maxDuration = 60;
 const headers=()=>({"content-type":"application/json",accept:"application/json",...(process.env.EXPO_ACCESS_TOKEN?{Authorization:`Bearer ${process.env.EXPO_ACCESS_TOKEN}`}:{})});
 
 export async function GET(request: NextRequest) {
-  if (!process.env.CRON_SECRET || request.headers.get("authorization") !== `Bearer ${process.env.CRON_SECRET}`) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!authorizePushWorker(request.headers, process.env.CRON_SECRET)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const client=createAdminClient(),now=Date.now();
   // A crashed sender may already have sent a notification. Do not blindly resend it.
   const recovery=await client.from('mobile_notification_outbox').update({status:'failed',receipt_state:'unknown',last_error:'Sender interrupted; delivery outcome unknown'})
