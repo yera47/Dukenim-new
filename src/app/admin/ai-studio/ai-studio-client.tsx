@@ -161,7 +161,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   </div>;
 
   return <div className={styles.workspace}>
-    <StudioConversation enabled={enabled&&!pending} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+    <StudioConversation enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}
       {pending && <p role="status">Готовлю предложение…</p>}

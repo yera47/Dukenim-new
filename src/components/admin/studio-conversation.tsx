@@ -4,7 +4,7 @@ import Link from "next/link";
 import { consultationSchema, type Consultation, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
-export function StudioConversation({enabled,onTask,children}:{enabled:boolean;onTask:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode}) {
+export function StudioConversation({enabled,onTask,children,onBanner}:{enabled:boolean;onTask:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
   const [loading,setLoading]=useState(true);
@@ -49,6 +49,7 @@ export function StudioConversation({enabled,onTask,children}:{enabled:boolean;on
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>
       <textarea id="studio-conversation" className="w-full resize-y bg-transparent outline-none" rows={3} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} placeholder="Например: Серик Шоп, одежда для города. Хочу спокойный светлый магазин."/>
       <div className="flex flex-wrap items-center justify-between gap-3"><Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать человеку</Link><button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>
+      {onBanner&&<button type="button" className="mt-3 text-sm underline" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать фон баннера по этому сообщению</button>}
     </form>
     {!enabled&&<p className="text-sm text-neutral-500">AI сейчас недоступен. Можно продолжить настройку вручную.</p>}
     <nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>
