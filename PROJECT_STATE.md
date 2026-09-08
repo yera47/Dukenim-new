@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09 03:06: b309465 Ready dpl_5Hp25xKWtG9RJXNV76rzZguPMupu; real category names published. Minutely queue-aware push cron recorded successful execution; signed endpoint200/anonymous401. Native delivery not tested (zero registered devices). Final214 tests/tsc/build pass; no new advisor findings. Full acceptance remains open, see checklist.
+
 - 2026-09-09: bf3f8fc Ready dpl_AMdNXTGJLordZgbEQ7tJLqXL31f2. Supabase minutely push wake activated after signed live200/anonymous401. Queue-aware idle check avoids needless HTTP calls; short-lived HMAC keeps persistent key out of managed net tables. Native route code passes iOS JS export, no IPA/registered device/delivery proof. Category mapping follow-up fixes flattened real catalog sections; tsc/build and214 tests pass.
 
 - 2026-09-09: 319a57e Ready dpl_9KYMHwtnB6jwqHKcVdpxyhj4vvdW: atomic AI proposal creation and cancellation stock return published. Mobile push deep-link/read/login-return source implemented; mobile tsc/lint/iOS JS export pass, no IPA/device test. Supabase queue-aware scheduler installed but inactive pending endpoint smoke; production/Vault secret configured. Full PDF, personalized assembly, merchant prepayment and reservations remain open.

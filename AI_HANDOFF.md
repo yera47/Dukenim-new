@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## Verified checkpoint — 2026-09-09 03:06 local
+
+b309465 Ready dpl_5Hp25xKWtG9RJXNV76rzZguPMupu on www.dukenim.kz. Category mapping follow-up published. Cron du kenim-mobile-push (actual name dukenim-mobile-push) recorded succeeded at2026-09-08T22:04Z after activation. Security advisors unchanged: intentional public/auth RLS helper warnings plus leaked-password protection disabled. 214 tests, root tsc/build, mobile tsc/lint and iOS JS export pass; live Azure text+PNG passed earlier in same task. Native app is not submitted or installed; zero registered push devices. No actual notification delivered, no full authenticated browser journey.
+
+Required external choices still unanswered: approval to install PDF.js production parser; merchant goods-acquiring provider/account (Polar currently SaaS billing only). Internal remaining work is not an external blocker: complete personalized autoassembly, reservation lifecycle/expiry/UI, PDF integration after approval, complete native OAuth/device delivery and commerce browser acceptance. Preserve this list; do not declare the whole product ready. No secret persisted in files. output/mobile-ios-check is generated local verification output, not an IPA; unrelated images/recordings untouched. Temporary Expo8091 check server stopped.
+
 ## Native notification navigation + scheduled worker — 2026-09-09 (server activated)
 
 bf3f8fc Ready dpl_AMdNXTGJLordZgbEQ7tJLqXL31f2 on canonical domain. Signed pg_net live request returned200 {acceptedByExpo:0,receiptsChecked:0,failed:0}; anonymous request401. Minutely queue-aware cron activated after that smoke, first recorded run verified separately below. No devices registered: this is verified server scheduling/authentication, NOT delivered push. Production quota/paid plans unchanged. Follow-up storefront query now maps real active tenant category names instead of hardcoded "Каталог", avoiding quadratic variant mapping; two regression tests pass. Final full suite214 passed/two opt-in live tests skipped; root tsc/build pass. PDF.js authorization unanswered, merchant acquiring provider/account not selected, reservations and full automatic custom layout/products remain internal unfinished work; do not reclassify them as completed.
