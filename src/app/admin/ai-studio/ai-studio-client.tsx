@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Check, LoaderCircle, Send, Sparkles } from "lucide-react";
 import { CatalogSetupForm } from "@/components/admin/catalog-setup-form";
 import { ProductForm } from "@/components/admin/product-form";
+import { StudioConversation } from "@/components/admin/studio-conversation";
 import styles from "./studio.module.css";
 import type { BusinessVertical } from "@/types/database";
 
@@ -58,21 +59,24 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [suggestedBrief,setSuggestedBrief]=useState("");
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
   const canRun = intent === "banner" ? imageEnabled : enabled;
   const selected = intents.find((item) => item.id === intent)!;
   const supportHref = `/admin/requests?source=ai-studio&intent=${intent}`;
 
-  async function createDraft() {
-    if (pending || !canRun || brief.trim().length < 8) return;
+  async function createDraft(task?:{intent:Intent;brief:string}) {
+    const requestedIntent=task?.intent??intent;
+    const requestedBrief=task?.brief??brief;
+    if (pending || !(requestedIntent==="banner"?imageEnabled:enabled) || requestedBrief.trim().length < 8) return;
     setPending(true); setError(""); setCopied(false);
     setGenerationId(null); setStructureSaved(false); setDesignSaved(false); setDraftSaved(false); setDraftTarget(null); setResultIntent(null);
     setDraft(null); setStructure(null); setDesign(null); setBanner(null); setCampaignId(null);
-    setSubmitted(brief.trim());
+    setSubmitted(requestedBrief.trim());
     try {
-      const response = await fetch(intent === "banner" ? "/api/ai-studio/banner" : "/api/ai-studio/draft", {
+      const response = await fetch(requestedIntent === "banner" ? "/api/ai-studio/banner" : "/api/ai-studio/draft", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(intent === "banner" ? { brief } : { intent, brief }),
+        body: JSON.stringify(requestedIntent === "banner" ? { brief:requestedBrief } : { intent:requestedIntent, brief:requestedBrief }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -81,7 +85,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
       }
       setDraft(data.draft ?? null); setStructure(data.structure ?? null); setDesign(data.design ?? null);
       setGenerationId(data.generationId ?? null);
-      setResultIntent(intent);
+      setResultIntent(requestedIntent);
       setBanner(data.imageUrl && data.generationId ? { imageUrl: data.imageUrl, generationId: data.generationId } : null);
       if (typeof data.creditsRemaining === "number") setCreditsRemaining(data.creditsRemaining);
     } catch (cause) { setError(cause instanceof Error ? cause.message : "Не удалось получить ответ."); }
@@ -150,19 +154,20 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   }
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
+    <StudioConversation enabled={enabled} onTask={task=>{setSuggestedBrief(task.brief);setWorkspaceOpen(true);requestAnimationFrame(()=>document.getElementById("catalog-setup-workspace")?.scrollIntoView({block:"start"}));}}/>
     {!workspaceOpen ? <section className={styles.welcome}>
-      <Sparkles size={32}/><h2>Давайте создадим ваш магазин.</h2>
-      <p>Я помогу выбрать оформление, подготовить разделы и добавить первый товар. Пройдём каждый шаг вместе.</p>
+      <p>Когда определимся с вводными, сохраните основу магазина. Можно также начать вручную.</p>
       <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Создать каталог с AI Studio <ArrowRight size={17}/></button>
       <Link href={supportHref}>Написать человеку</Link>
-    </section> : <section>
+    </section> : <section id="catalog-setup-workspace">
       <button type="button" onClick={()=>setWorkspaceOpen(false)} className="text-sm text-neutral-500">← В начало Studio</button>
-      <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/>
+      <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
 
     </section>}
   </div>;
 
   return <div className={styles.workspace}>
+    <StudioConversation enabled={enabled&&!pending} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);document.getElementById("studio-message")?.focus();}}/>
     <ol className={styles.steps} aria-label="Этапы запуска магазина">
       {["Создать основу", "Добавить товары", "Проверить витрину"].map((label, index) =>
         <li key={label} aria-current={index === step ? "step" : undefined}>

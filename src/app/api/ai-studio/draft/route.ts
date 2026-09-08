@@ -4,6 +4,20 @@ import { tenantEntitlement } from "@/lib/plan-access";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { aiStudioRequestSchema, createAiStudioDesign, createAiStudioDraft, createAiStudioStructure, getAiStudioStatus } from "@/lib/ai/studio";
 import { AzureFoundryError } from "@/lib/ai/azure-foundry";
+import { createConsultation } from "@/lib/ai/consultation";
+import { consultationSchema, type ConsultationTurn } from "@/lib/ai/consultation-schema";
+import { createClient } from "@/lib/supabase/server";
+
+export async function GET() {
+  const context = await getSessionContext();
+  if (!context?.user || !context.tenantId || !["owner","superadmin"].includes(context.role)) return NextResponse.json({error:"Войдите в аккаунт владельца."},{status:401});
+  const client = await createClient();
+  const result = await client.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(30);
+  if (result.error) return NextResponse.json({error:"Не удалось загрузить разговор."},{status:503});
+  const turns:ConsultationTurn[]=[];
+  for(const row of (result.data??[]).reverse()) { const response=consultationSchema.safeParse(row.output); if(response.success)turns.push({id:row.id,message:row.input_summary,response:response.data}); }
+  return NextResponse.json({turns},{headers:{"Cache-Control":"private, no-store"}});
+}
 
 export async function POST(request: Request) {
   try {
@@ -14,11 +28,17 @@ export async function POST(request: Request) {
     const entitlement = await tenantEntitlement(context.tenantId);
     if (!entitlement.active) return NextResponse.json({ error: "Бесплатный период или подписка завершены. Выберите тариф, чтобы продолжить." }, { status: 403 });
     const input = aiStudioRequestSchema.safeParse(await request.json().catch(() => null));
-    if (!input.success) return NextResponse.json({ error: "Опишите задачу от 8 до 800 символов и выберите разрешённый сценарий." }, { status: 400 });
+    if (!input.success) return NextResponse.json({ error: "Сообщение должно содержать от 2 до 800 символов; задание редактору — не менее 8." }, { status: 400 });
     if (!getAiStudioStatus().configured) return NextResponse.json({ error: "AI Studio готов в интерфейсе, но серверная Azure-настройка ещё не завершена." }, { status: 503 });
     const admin = createAdminClient();
-    const tenant = await admin.from("tenants").select("business_vertical").eq("id", context.tenantId).maybeSingle();
+    const tenant = await admin.from("tenants").select("business_vertical,name,catalog_name,catalog_status").eq("id", context.tenantId).maybeSingle();
     if (tenant.error || !tenant.data) return NextResponse.json({ error: "Не удалось определить профиль магазина." }, { status: 404 });
+    const history:ConsultationTurn[]=[];
+    if(input.data.intent==="consultation") {
+      const previous = await admin.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(8);
+      if(previous.error) return NextResponse.json({error:"Не удалось восстановить контекст разговора. Попробуйте позже."},{status:503});
+      for(const row of (previous.data??[]).reverse()) { const response=consultationSchema.safeParse(row.output); if(response.success)history.push({id:row.id,message:row.input_summary,response:response.data}); }
+    }
     const since = new Date(Date.now() - 86_400_000).toISOString();
     const [tenantUsage, platformUsage] = await Promise.all([
       admin.from("ai_studio_generations").select("id", { count: "exact", head: true }).eq("tenant_id", context.tenantId).gte("created_at", since),
@@ -40,12 +60,12 @@ export async function POST(request: Request) {
     }
     const creditsRemaining = typeof reservation.data === "number" ? reservation.data : null;
     let result;
-    try { result = input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan) : await createAiStudioDraft(input.data.intent, input.data.brief); }
+    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,tenant.data,history) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan) : await createAiStudioDraft(input.data.intent, input.data.brief); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); throw error; }
-    const output = "structure" in result ? result.structure : "design" in result ? result.design : result.draft;
+    const output = "consultation" in result ? result.consultation : "structure" in result ? result.structure : "design" in result ? result.design : result.draft;
     const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost }).select("id").single();
     if (saved.error || !saved.data) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); return NextResponse.json({ error: "Черновик создан, но не удалось сохранить журнал. Кредит возвращён." }, { status: 500 }); }
-    return NextResponse.json("structure" in result ? { structure: result.structure, creditsRemaining, generationId: saved.data.id } : "design" in result ? { design: result.design, creditsRemaining, generationId: saved.data.id } : { draft: result.draft, creditsRemaining, generationId: saved.data.id });
+    return NextResponse.json("consultation" in result ? {consultation:result.consultation,generationId:saved.data.id} : "structure" in result ? { structure: result.structure, creditsRemaining, generationId: saved.data.id } : "design" in result ? { design: result.design, creditsRemaining, generationId: saved.data.id } : { draft: result.draft, creditsRemaining, generationId: saved.data.id });
   } catch (error) {
     const status = error instanceof AzureFoundryError && error.status && error.status < 500 ? error.status : 502;
     return NextResponse.json({ error: status === 429 ? "AI Studio достиг временного лимита. Попробуйте немного позже." : "Не удалось создать черновик AI Studio. Попробуйте ещё раз." }, { status });

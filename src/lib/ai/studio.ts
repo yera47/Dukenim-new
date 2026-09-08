@@ -6,9 +6,9 @@ import { hasPlan, type Plan } from "@/lib/plans";
 import { palettes, templateCatalog } from "@/lib/storefront-theme";
 import type { BusinessVertical } from "@/types/database";
 
-export const aiStudioIntentSchema = z.enum(["hero", "promotion", "catalog_copy", "catalog_structure", "store_design"]);
+export const aiStudioIntentSchema = z.enum(["hero", "promotion", "catalog_copy", "catalog_structure", "store_design", "consultation"]);
 export type AiStudioIntent = z.infer<typeof aiStudioIntentSchema>;
-export const aiStudioRequestSchema = z.object({ intent: aiStudioIntentSchema, brief: z.string().trim().min(8).max(800) });
+export const aiStudioRequestSchema = z.object({ intent: aiStudioIntentSchema, brief: z.string().trim().min(2).max(800) }).refine(v=>v.intent==="consultation"||v.brief.length>=8);
 export const aiStudioBriefSchema = z.object({ brief: z.string().trim().min(8).max(800) });
 export { aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
 export type { AiStudioDraft } from "@/lib/ai/studio-schemas";
@@ -18,6 +18,7 @@ export { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
 export type { AiStudioDesign } from "@/lib/ai/studio-schemas";
 
 const instruction: Record<AiStudioIntent, string> = {
+  consultation: "Обсуди создание магазина с владельцем.",
   hero: "Создай текст главного блока витрины: короткая надстрока, заголовок, описание и CTA. Не обещай скидку, доставку или оплату, если их нет во вводных.",
   promotion: "Создай черновик промо-блока витрины: надстрока, заголовок, описание и CTA. Не придумывай срок, размер скидки, остатки или юридические условия.",
   catalog_copy: "Создай текст для каталога или подборки: надстрока, заголовок, описание и CTA. Не придумывай характеристики, цену, наличие или медицинские обещания.",

@@ -16,7 +16,7 @@
 - Mobile: EAS linked and App Store signing ready. No IPA/TestFlight release. Push infrastructure exists in source, but production delivery/device E2E is unverified. Notifications must distinguish fulfilment types and payment state; tapping opens the permitted order/reservation.
 - Superadmin remains independent of a personal store. Main owner's unused store was deleted; account retained.
 - Acceptance ledger: docs/ACCEPTANCE_CHECKLIST.md. Remaining builder and fulfilment requirements are in progress, not completed by the zone release.
-- Azure resource access restored by using the subscription directory fc24c2a2… (ersatikgmail.onmicrosoft.com), status Succeeded. Production deployment config Kimi-K2.6 confirmed; live request unverified. Automatic quota upgrade opt-out NOT applied: CLI setup awaits Windows consent, scoped verification script prepared. Free quota tier does not guarantee free inference.
+- Azure management login completed in subscription directory fc24c2a2…; resource/deployment Kimi-K2.6 Succeeded. Live inference unverified. Opt-out PATCH returns NoAutoUpgrade, but repeated GET still returns OnceUpgradeIsAvailable (Free Tier): disabling is NOT verified, Microsoft-side consistency investigation needed. No further owner login required. Free quota tier does not guarantee free inference.
 - Release gates: persisted builder/real preview, fulfilment and payment/hold transactions, authenticated commerce E2E, tenant negative tests, backups/restore, legal/payout checks, mobile device QA.
 
 ## Historical release notes (not a current readiness checklist)

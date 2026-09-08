@@ -1,5 +1,17 @@
 # Dukenim — AI handoff
 
+## Real conversational AI increment — 2026-09-08
+
+Owner correctly objected to stopping after Azure access checks. Implemented consultation intent, bounded typed reply/task protocol, persisted tenant conversation read/write using existing generation ledger, eight-turn model history and thirty-turn UI restore. Main Studio now exposes conversation before catalog creation and afterwards; confirmed task briefs pass into setup or execute existing draft generation, then existing apply buttons. Existing daily/credit limits remain; no arbitrary model commands, new expenses or billing changes. Migration 20260908141218 applied. Real createConsultation → existing Kimi-K2.6 request PASSED (8.6s, synthetic Serik shop, actual history, strict JSON validation), key only in process environment fetched via authorized Azure CLI, never printed/saved. 128 regular tests passed; opt-in live test separately passed. DB rolled-back test verified conversation save/read and stranger invisibility. NOT a complete UI relogin E2E, NOT full automatic personalized shop, NOT brandbook/vision support. History window bounded, no long-history summarizer or concurrent conversation serialization yet. Default per-tenant five daily AI requests remains a launch usability constraint; do not silently increase budget. Files: consultation schema/function/tests, StudioConversation component, studio request route and tests, types/migration, setup brief transfer. Final build/release verification follows current UI adjustment.
+
+## Azure management login completed — 2026-09-08
+
+Owner completed CLI selection; login session 46381 exited 0. account show verified expected subscription and directory. Deployment list confirms Kimi-K2.6 version 2026-04-20, GlobalStandard, Succeeded. Owner needs no further installation/login for management now. Opt-out remains UNVERIFIED: PATCH returns NoAutoUpgrade but subsequent GET (default and collection, including no-cache) returns OnceUpgradeIsAvailable, Free Tier, eligibility date 2026-09-11. Checked registered API versions 2025-10-01-preview, 2026-05-01, 2026-03-15-preview; same mismatch. Do not repeat rapid PATCH attempts or call it disabled. Requires later consistency verification or Microsoft service investigation, not another owner login. No billing/resource creation changes. Management success does not verify inference or conversational builder E2E.
+
+## Azure CLI installation verified — 2026-09-08
+
+CLI 2.90.0 now installed at C:/Program Files/Microsoft SDKs/Azure/CLI2/wbin/az.cmd (version command passed). account show reports login required. Started az login for subscription tenant fc24c2a2-ee64-4c1e-a78b-71916ca9b4d7; CLI requests owner account selection (session 46381). Installation is no longer the blocker; management authentication is pending. No quota/billing change made. Clarified to owner: CLI is for Azure administration, not a prerequisite for independent builder/design/fulfilment implementation. Owner requests full relogin UI scenario after the complete flow; retain incremental safety tests.
+
 ## Persisted builder groundwork and Azure diagnosis — 2026-09-08
 
 Publication confirmed: source e62ad83, Vercel dpl_7B7V4QUN3fK6k9fb6yAtHLb3Efhs Ready and aliased to www.dukenim.kz/apex. Reproducible scripts/test-catalog-builder-rls.sql also passed in production transaction with ROLLBACK (including outsider UPDATE denial). No UI E2E claim.

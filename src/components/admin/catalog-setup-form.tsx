@@ -10,14 +10,14 @@ import { launchCopyForVertical, nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 import { catalogRecommendation } from "@/lib/catalog-recommendation";
 
-export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean }) {
+export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
   const templates = launchTemplatesForPlan(plan);
   const [step, setStep] = useState(0);
   const [templateKey, setTemplateKey] = useState<string>(templates[0].key);
   const [paletteKey, setPaletteKey] = useState("mono");
   const [catalogName, setCatalogName] = useState(defaultName);
-  const [brief, setBrief] = useState("");
+  const [brief, setBrief] = useState(suggestedBrief.slice(0,650));
   const [aiPending, setAiPending] = useState(false);
   const [aiError, setAiError] = useState("");
   const [aiReason, setAiReason] = useState("");
@@ -36,7 +36,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           const parsed = catalogBuilderStateSchema.safeParse(result.draft.state);
           if (!parsed.success || !Number.isSafeInteger(result.draft.revision) || result.draft.revision < 1) throw new Error("Сохранённый черновик требует проверки. Новые изменения его не перезапишут.");
           const saved = parsed.data;
-          setCatalogName(saved.catalogName); setBrief(saved.brief); setPaletteKey(saved.paletteKey); setStep(saved.step);
+          setCatalogName(saved.catalogName); setBrief(suggestedBrief?suggestedBrief.slice(0,650):saved.brief); setPaletteKey(saved.paletteKey); setStep(saved.step);
           if (templates.some(t=>t.key===saved.templateKey)) setTemplateKey(saved.templateKey);
           else setStep(1);
           setDraftRevision(result.draft.revision);
@@ -47,7 +47,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
       } finally { if (!controller.signal.aborted) setDraftLoading(false); }
     })();
     return () => controller.abort();
-  }, [templates]);
+  }, [templates, suggestedBrief]);
   async function saveDraft() {
     if (draftRevision === null || draftSaving || draftLoading) return;
     setDraftSaving(true); setDraftMessage("");
