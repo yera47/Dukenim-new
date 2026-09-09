@@ -13,6 +13,7 @@ import { customStoreThemeSchema, themeVariations, type CustomStoreTheme } from "
 import { contrastInk } from "@/lib/color-contrast";
 import { emptyFulfilment, fulfilmentCommitSchema, type FulfilmentDraft, type paymentPreferenceSchema } from "@/lib/catalog-fulfilment";
 import type { z } from "zod";
+import {BrandMaterials} from "./brand-materials";
 
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
@@ -29,6 +30,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const [catalogName, setCatalogName] = useState(defaultName);
   const [brief, setBrief] = useState(suggestedBrief.slice(0,650));
   const [aiPending, setAiPending] = useState(false);
+  const [brandBusy,setBrandBusy]=useState(false);
   const [aiError, setAiError] = useState("");
   const [aiReason, setAiReason] = useState("");
   const [generationId,setGenerationId]=useState<string|undefined>();
@@ -68,7 +70,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   }, [templates]);
   useEffect(() => { if(suggestedBrief) { setBrief(suggestedBrief.slice(0,650)); setGenerationId(undefined); setAiReason(""); } }, [suggestedBrief]);
   async function saveDraft(nextStep = step, nextStage = designStage) {
-    if (draftRevision === null || draftSaving || draftLoading) return;
+    if (draftRevision === null || draftSaving || draftLoading || brandBusy) return;
     setDraftSaving(true); setDraftMessage("");
     try {
       const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step:nextStep,designStage:nextStage,fulfilment,paymentPreference,colorBrief,colorTheme,catalogName,templateKey,paletteKey,brief,generationId}})});
@@ -80,7 +82,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     finally { setDraftSaving(false); }
   }
   async function recommend() {
-    if (aiPending || !aiEnabled || brief.trim().length < 8) return;
+    if (aiPending || brandBusy || !aiEnabled || brief.trim().length < 8) return;
     setAiPending(true); setAiError(""); setAiReason("");
     try {
       const response = await fetch("/api/ai-studio/draft", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ intent: "store_design", brief: `${catalogName.trim()}. Цвета: ${colorBrief.trim()}. О магазине: ${brief.trim()}`.slice(0, 800) }) });
@@ -96,6 +98,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     finally { setAiPending(false); }
   }
   async function advance() {
+    if(brandBusy)return;
     setAiError("");
     if(step===2){const parsed=fulfilmentCommitSchema.safeParse(fulfilment);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}}
     if (step===1 && designStage==="brief") {
@@ -111,7 +114,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     await saveDraft(step+1);
   }
   return <form action={action} onSubmit={event => {
-    if (aiPending || pending || draftLoading || draftSaving || draftRevision===null) { event.preventDefault(); return; }
+    if (aiPending || pending || draftLoading || draftSaving || brandBusy || draftRevision===null) { event.preventDefault(); return; }
     if (step < 4) {
       event.preventDefault();
       if (catalogName.trim().length >= 2) void advance();
@@ -125,10 +128,10 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     <input type="hidden" name="catalogName" value={catalogName}/>
     <input type="hidden" name="templateKey" value={templateKey}/>
     <input type="hidden" name="paletteKey" value={paletteKey}/>
-    <nav aria-label="Шаги создания" className="flex flex-wrap gap-3 border-b pb-4 text-sm">{["Название","Оформление","Получение","Оплата","Проверка"].slice(0,step+1).map((label,index)=>index<step?<button type="button" key={label} disabled={draftSaving||draftLoading||pending||aiPending} onClick={()=>void saveDraft(index)} className="text-neutral-500">✓ {index===0?catalogName:label}</button>:<span key={label} aria-current="step" className="font-bold">{index+1}. {label}</span>)}</nav>
+    <nav aria-label="Шаги создания" className="flex flex-wrap gap-3 border-b pb-4 text-sm">{["Название","Оформление","Получение","Оплата","Проверка"].slice(0,step+1).map((label,index)=>index<step?<button type="button" key={label} disabled={draftSaving||draftLoading||pending||aiPending||brandBusy} onClick={()=>void saveDraft(index)} className="text-neutral-500">✓ {index===0?catalogName:label}</button>:<span key={label} aria-current="step" className="font-bold">{index+1}. {label}</span>)}</nav>
     <p role="status" className="py-3 text-xs text-neutral-500">{draftLoading?"Загружаем сохранённые ответы…":draftSaving?"Сохраняем ответ…":draftMessage || "Ответ сохраняется при переходе к следующему шагу."}</p>
     <div className={fromStudio ? "space-y-4" : "catalog-wizard-layout"}>
-      <fieldset key={step} disabled={pending || aiPending || draftLoading || draftSaving} className="catalog-active-step min-w-0 py-4">
+      <fieldset key={step} disabled={pending || aiPending || draftLoading || draftSaving || brandBusy} className="catalog-active-step min-w-0 py-4">
         <small className="text-neutral-500">{nichePresets[vertical].label}</small>
         <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":"Проверьте магазин перед добавлением товаров"}</h2>
         {step===1&&designStage==="brief"&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
@@ -141,6 +144,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           <button type="button" onClick={()=>void saveDraft(1,"brief")} className="text-sm text-neutral-500">✓ О магазине · Изменить</button>
           <label className="block text-sm font-semibold">Опишите сочетание своими словами<textarea value={colorBrief} maxLength={300} rows={3} onChange={event=>{setColorBrief(event.target.value);setGenerationId(undefined);setAiReason("");setAiError("");}} className="input mt-2" placeholder="Например: нежно-розовый фон и тёмно-зелёные кнопки. Или: подберите на ваш вкус."/></label>
           <p className="text-sm text-neutral-500">AI учитывает пожелания и сохранённые правила бренда. Выберите оттенки на живых карточках ниже или задайте свои цвета вручную.</p>
+          <BrandMaterials embedded onBusyChange={setBrandBusy}/>
           <div className="grid gap-3 sm:grid-cols-3">{themeChoices.map(choice=><button key={choice.name} type="button" aria-pressed={JSON.stringify(colorTheme)===JSON.stringify(choice.theme)} onClick={()=>setColorTheme(choice.theme)} className="rounded-2xl border-2 p-4 text-left" style={{background:choice.theme.background,color:contrastInk(choice.theme.background),borderColor:JSON.stringify(colorTheme)===JSON.stringify(choice.theme)?choice.theme.accent:"transparent"}}><span className="block text-xs">{choice.name}</span><strong className="my-4 block">{catalogName}</strong><span className="block rounded-xl p-3 text-sm" style={{background:choice.theme.surface}}>Ваш каталог</span><span className="mt-3 block rounded-lg p-2 text-center text-xs" style={{background:choice.theme.accent,color:contrastInk(choice.theme.accent)}}>Смотреть товары →</span></button>)}</div>
           <details><summary className="cursor-pointer text-sm">Указать цвета вручную</summary><div className="mt-3 flex flex-wrap gap-4">{([['background','Фон'],['surface','Карточки'],['accent','Кнопки']] as const).map(([key,label])=><label key={key} className="text-sm">{label}<input aria-label={label} type="color" className="mt-2 block h-10 w-20" value={colorTheme?.[key]??(key==='accent'?'#171717':'#ffffff')} onChange={event=>{const next={background:'#ffffff',surface:'#ffffff',accent:'#171717',...colorTheme,[key]:event.target.value};if(key==='background'&&contrastInk(next.background)!==contrastInk(next.surface))next.surface=next.background;if(customStoreThemeSchema.safeParse(next).success){setColorTheme(next);setAiError('');}else setAiError('Сделайте фон и карточки одинаково светлыми или тёмными — так текст останется читаемым.');}}/></label>)}</div></details>
           <button type="button" disabled={!aiEnabled||aiPending||colorBrief.trim().length<3} onClick={()=>void recommend()} className="btn btn-secondary">{aiPending?"Подбираю оформление…":"Предложить оформление с AI"}</button>
@@ -187,6 +191,6 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         <iframe title={previewContent==="example"?"Пример выбранного оформления с демонстрационными товарами":"Ваш каталог с реальными товарами"} className="h-[640px] w-full border-0" src={`/store-preview?${new URLSearchParams({name:catalogName,template:templateKey,palette:paletteKey,...(colorTheme?{colors:JSON.stringify(colorTheme)}:{}),content:previewContent,...(generationId?{generation:generationId}:{})})}`}/>
       </section>}
     </div>
-    <button type="button" className="mt-4 text-xs text-neutral-500 underline underline-offset-4" disabled={draftLoading||draftSaving||aiPending||pending||draftRevision===null} onClick={()=>void saveDraft()}>Сохранить текущий ответ и продолжить позже</button>
+    <button type="button" className="mt-4 text-xs text-neutral-500 underline underline-offset-4" disabled={draftLoading||draftSaving||aiPending||pending||brandBusy||draftRevision===null} onClick={()=>void saveDraft()}>Сохранить текущий ответ и продолжить позже</button>
   </form>;
 }

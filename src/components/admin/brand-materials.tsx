@@ -2,12 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { brandColorsSchema } from "@/lib/brand-materials";
 import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
-export function BrandMaterials() {
+export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;onBusyChange?:(busy:boolean)=>void}={}) {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
   const [file,setFile]=useState<File|null>(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
   const [pdfBusy,setPdfBusy]=useState(false);
   const [pdfText,setPdfText]=useState("");
+  useEffect(()=>{onBusyChange?.(busy||pdfBusy);return()=>onBusyChange?.(false);},[busy,pdfBusy,onBusyChange]);
   async function readPdf(file:File|undefined) {
     if(!file||pdfBusy)return;
     setPdfBusy(true);setMessage("");setPdfText("");
@@ -42,7 +43,7 @@ export function BrandMaterials() {
   return <details className="mx-auto my-4 max-w-3xl rounded-2xl border p-4">
     <summary className="cursor-pointer font-semibold">Логотип и правила бренда · необязательно</summary>
     <p className="my-3 text-sm text-neutral-500">Без брендбука тоже можно. Загрузите логотип и опишите пожелания.</p>
-    <form onSubmit={event=>{event.preventDefault();void save();}} className="space-y-4">
+    <div role="group" aria-label="Материалы бренда" onKeyDown={event=>{if(embedded){event.stopPropagation();if(event.key==="Enter"&&event.target instanceof HTMLInputElement)event.preventDefault();}}} className="space-y-4">
       <fieldset disabled={busy||pdfBusy||revision===null} className="space-y-4">
         <label className="block text-sm">Брендбук PDF · необязательно<input type="file" accept="application/pdf,.pdf" className="mt-2 block w-full" onChange={event=>void readPdf(event.target.files?.[0])}/></label>
         <p className="text-xs text-neutral-500">До 10 МБ и 40 страниц. Чтение происходит в браузере; исходный PDF не загружается. Сканы без текстового слоя пока не распознаются.</p>
@@ -51,11 +52,11 @@ export function BrandMaterials() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {logoUrl&&<img src={logoUrl} alt="Сохранённый логотип бренда" className="max-h-24 max-w-48 object-contain"/>}
         <label className="block text-sm">Правила из брендбука или ваши пожелания<textarea value={notes} onChange={e=>setNotes(e.target.value)} maxLength={6000} rows={6} className="input mt-2 w-full" placeholder="Цвета, шрифты, характер магазина, чего избегать. Можно вставить текст из брендбука."/></label>
-        <p className="text-xs text-neutral-500">После сохранения включите «Проанализировать сохранённый логотип» в чате — изображение будет отправлено модели Azure. PDF здесь добавляет только проверенный вами текст: это не визуальный анализ брендбука.</p>
+        <p className="text-xs text-neutral-500">{embedded?"После сохранения нажмите «Предложить оформление с AI»: помощник учтёт извлечённые цвета и правила.":"После сохранения включите «Проанализировать сохранённый логотип» в чате — изображение будет отправлено модели Azure."} PDF здесь добавляет только проверенный вами текст: это не визуальный анализ брендбука.</p>
         {colors.length>0&&<div className="flex flex-wrap gap-3" aria-label="Извлечённые цвета">{colors.map(color=><span key={color} className="inline-flex items-center gap-1 text-xs"><i aria-hidden className="inline-block size-5 rounded-full border" style={{backgroundColor:color}}/>{color}</span>)}</div>}
-        <button className="btn btn-secondary">{busy?"Сохраняем…":"Сохранить материалы для AI"}</button>
+        <button type="button" onClick={()=>void save()} className="btn btn-secondary">{busy?"Сохраняем…":"Сохранить материалы для AI"}</button>
       </fieldset>
       {message&&<p role="status" className="text-sm">{message}</p>}
-    </form>
+    </div>
   </details>;
 }

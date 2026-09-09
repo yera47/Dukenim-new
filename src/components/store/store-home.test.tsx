@@ -22,7 +22,15 @@ it.each(launchVerticals)("renders real shared example imagery and readable CTA f
   expect(html).toContain("Смотреть каталог");
   expect(html).toContain('style="color:var(--store-accent-ink)"');
   expect(html).toContain("<img");
+  expect(html).toContain(`data-cover="${id}"`);
   expect(html).not.toContain("Каталог наполняется");
+});
+it.each(commerceConfigurations.filter(config=>config.approach==="assortment"))("offers real category shortcuts for $id",config=>{
+ vi.stubGlobal("React",React);
+ const products=demoProductsFor(config.vertical);
+ const html=renderToStaticMarkup(<StoreHome slug="own" tenant={{name:"Серик Шоп",catalog_name:null,tagline:null,business_vertical:config.vertical}} products={products} settings={null} campaign={null} storePolicies={null} approach="assortment"/>);
+ expect(html).toContain('aria-label="Быстрый выбор раздела"');
+ for(const category of new Set(products.map(product=>product.category)))expect(html).toContain(`/s/own/category/${encodeURIComponent(category)}`);
 });
 it("does not inject sample products into an empty real store",()=>{
   vi.stubGlobal("React",React);

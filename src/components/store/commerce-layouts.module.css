@@ -13,3 +13,81 @@
  .root[data-approach="guided"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important}
  .root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px 36px}
 }
+.intro{padding-top:3rem;padding-bottom:2rem;display:grid;gap:2rem}
+.intro h1{font-size:clamp(2.4rem,5vw,4.5rem);font-weight:600;letter-spacing:-.05em;line-height:1.08;margin-top:1rem;overflow-wrap:anywhere}
+.intro p{max-width:52ch;opacity:.7;line-height:1.8;margin-top:1rem}
+.sectionCount{font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;opacity:.6}
+.quickSections{display:flex;gap:.6rem;flex-wrap:wrap;align-content:start}
+.quickSections a{display:flex;gap:1.4rem;align-items:center;justify-content:space-between;padding:.85rem 1rem;border:1px solid color-mix(in srgb,currentColor 18%,transparent);font-size:.85rem;border-radius:6px;min-height:48px}
+.root[data-approach="assortment"][data-vertical="fashion"] .intro{border-bottom:1px solid currentColor}
+.root[data-approach="assortment"][data-vertical="beauty"] .intro h1{font-family:Georgia,serif;font-weight:400}
+.root[data-approach="assortment"][data-vertical="beauty"] .quickSections a{border-radius:999px;background:var(--store-surface)}
+.root[data-approach="assortment"][data-vertical="food"] .intro h1{font-weight:800}
+.root[data-approach="assortment"][data-vertical="food"] .quickSections a{border-radius:999px;border:0;background:var(--store-surface)}
+.root[data-approach="assortment"][data-vertical="flowers"] .intro h1{font-family:Georgia,serif;font-style:italic;font-weight:400}
+.root[data-approach="assortment"][data-vertical="flowers"] .quickSections a{border-radius:24px 24px 3px 3px}
+.root[data-approach="assortment"][data-vertical="home"] .intro{grid-template-columns:1fr;border-bottom:1px solid currentColor}
+.root[data-approach="assortment"][data-vertical="home"] .quickSections a{border-radius:0;border-width:0 0 1px;padding-left:0;margin-right:1rem}
+.root[data-approach="assortment"][data-vertical="other"] .quickSections a{background:var(--store-surface);border-radius:12px}
+.root[data-approach="assortment"] :global(#catalog){padding-top:2rem}
+.root[data-approach="assortment"][data-vertical="fashion"] :global(.product-image){border-radius:0;aspect-ratio:3/4!important}
+.root[data-approach="assortment"][data-vertical="beauty"] :global(.product-image){aspect-ratio:1!important;border-radius:24px}
+.root[data-approach="assortment"][data-vertical="flowers"] :global(.product-image){aspect-ratio:4/5!important;border-radius:45% 45% 3px 3px}
+.root[data-approach="assortment"][data-vertical="home"] :global(.product-image){aspect-ratio:4/3!important;border-radius:2px}
+.root[data-approach="assortment"][data-vertical="other"] :global(.product-image){aspect-ratio:1!important;border-radius:12px}
+.root[data-approach="guided"] .intro{max-width:900px;text-align:center;padding-top:3rem}
+.root[data-approach="guided"] .intro p{margin-left:auto;margin-right:auto}
+.root[data-approach="guided"] section[aria-label="Выбор раздела"]>div>a{transition:transform .2s ease}
+.root[data-approach="guided"] section[aria-label="Выбор раздела"]>div>a:hover{transform:translateY(-3px)}
+.root[data-approach="guided"][data-vertical="fashion"] section[aria-label="Выбор раздела"]>div>a{border-radius:0;border:0}
+.root[data-approach="guided"][data-vertical="fashion"] section[aria-label="Выбор раздела"] img{aspect-ratio:3/4}
+.root[data-approach="guided"][data-vertical="beauty"] .intro h1{font-family:Georgia,serif;font-weight:400}
+.root[data-approach="guided"][data-vertical="beauty"] section[aria-label="Выбор раздела"]>div>a{border-radius:999px 999px 20px 20px;text-align:center}
+.root[data-approach="guided"][data-vertical="beauty"] section[aria-label="Выбор раздела"] img{aspect-ratio:1}
+.root[data-approach="guided"][data-vertical="food"] section[aria-label="Выбор раздела"]>div{grid-template-columns:repeat(2,minmax(0,1fr))}
+.root[data-approach="guided"][data-vertical="food"] section[aria-label="Выбор раздела"]>div>a{border:0;background:transparent}
+.root[data-approach="guided"][data-vertical="food"] section[aria-label="Выбор раздела"] img{aspect-ratio:1;border-radius:50%}
+.root[data-approach="guided"][data-vertical="flowers"] .intro h1{font-family:Georgia,serif;font-weight:400;font-style:italic}
+.root[data-approach="guided"][data-vertical="flowers"] section[aria-label="Выбор раздела"]>div>a{border-radius:10px;box-shadow:0 8px 24px #00000008;padding:8px}
+.root[data-approach="guided"][data-vertical="flowers"] section[aria-label="Выбор раздела"] img{aspect-ratio:4/5}
+.root[data-approach="guided"][data-vertical="home"] section[aria-label="Выбор раздела"]>div{grid-template-columns:1fr}
+.root[data-approach="guided"][data-vertical="home"] section[aria-label="Выбор раздела"] img{aspect-ratio:16/9}
+.root[data-approach="guided"][data-vertical="home"] section[aria-label="Выбор раздела"]>div>a{border-radius:0;border:0}
+.root[data-approach="guided"][data-vertical="other"] section[aria-label="Выбор раздела"]>div>a{display:grid;grid-template-columns:80px minmax(0,1fr);align-items:center;border-radius:12px}
+.root[data-approach="guided"][data-vertical="other"] section[aria-label="Выбор раздела"] img{aspect-ratio:1}
+.root[data-approach="guided"][data-vertical="other"] section[aria-label="Выбор раздела"]>div{grid-template-columns:1fr}
+@media(min-width:768px){
+ .root[data-approach="assortment"] .intro{grid-template-columns:1fr 1fr;align-items:center}
+ .root[data-approach="assortment"][data-vertical="home"] .intro{grid-template-columns:1fr}
+ .root[data-approach="assortment"][data-vertical="fashion"] :global(.storefront-product-grid){grid-template-columns:repeat(4,minmax(0,1fr))!important}
+ .root[data-approach="assortment"][data-vertical="beauty"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .root[data-approach="assortment"][data-vertical="home"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .root[data-approach="guided"][data-vertical="food"] section[aria-label="Выбор раздела"]>div{grid-template-columns:repeat(4,minmax(0,1fr))}
+ .root[data-approach="guided"][data-vertical="home"] section[aria-label="Выбор раздела"]>div,.root[data-approach="guided"][data-vertical="other"] section[aria-label="Выбор раздела"]>div{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(prefers-reduced-motion:reduce){.root[data-approach="guided"] section[aria-label="Выбор раздела"]>div>a{transition:none;transform:none!important}}
+.root[data-vertical="fashion"] [data-product-gallery] :global(.product-image){aspect-ratio:3/4;border-radius:0}
+.root[data-vertical="beauty"] [data-product-information] h1{font-family:Georgia,serif;font-weight:400}
+.root[data-vertical="beauty"] [data-product-gallery] :global(.product-image){aspect-ratio:1;border-radius:40% 40% 8px 8px}
+.root[data-vertical="food"] [data-product-gallery] :global(.product-image){aspect-ratio:1;border-radius:50%}
+.root[data-vertical="food"] [data-product-information] h1{font-weight:800}
+.root[data-vertical="flowers"] [data-product-gallery] :global(.product-image){aspect-ratio:3/4;border-radius:45% 45% 4px 4px}
+.root[data-vertical="flowers"] [data-product-information] h1{font-family:Georgia,serif;font-weight:400}
+.root[data-vertical="home"] [data-product-gallery] :global(.product-image){aspect-ratio:4/3;border-radius:0}
+.root[data-vertical="other"] [data-product-gallery] :global(.product-image){aspect-ratio:1;border-radius:14px}
+.root[data-approach="assortment"] [data-product-information]{border:1px solid color-mix(in srgb,currentColor 15%,transparent);border-radius:12px;padding:1.5rem}
+.root[data-approach="guided"] [data-product-information]{border-top:3px solid var(--tenant-accent);padding-top:1.5rem}
+@media(min-width:768px){
+ .root[data-approach="collection"] [data-product-information]{position:sticky;top:2rem;align-self:start}
+ .root[data-approach="assortment"] [data-product-layout]{grid-template-columns:1fr 1.1fr;gap:2rem;align-items:start}
+ .root[data-approach="guided"] [data-product-layout]{grid-template-columns:1fr 1fr;gap:4rem}
+ .root[data-approach="collection"][data-vertical="home"] [data-product-layout]{grid-template-columns:1.5fr 1fr}
+ .root[data-approach="collection"][data-vertical="fashion"] [data-product-layout]{grid-template-columns:1.25fr .75fr}
+ .root[data-approach="collection"][data-vertical="food"] [data-product-layout]{max-width:1100px;margin-left:auto;margin-right:auto}
+}
+@media(max-width:767px){
+ .root[data-approach="assortment"] .quickSections{display:none}
+ .root[data-approach="assortment"] .intro{padding-top:1.5rem;padding-bottom:1rem}
+ .root[data-approach="assortment"] .intro h1{font-size:2rem}
+ .root[data-approach="assortment"] :global(#catalog)>div:first-child{margin-bottom:1.5rem}
+}

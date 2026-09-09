@@ -27,14 +27,14 @@ export function ProductDetail({ product, slug, deliveryPolicy, returnPolicy }: {
   }
   const images = product.images ?? [];
   const variationLabel = product.variants.some(variant => variant.size) ? "Выберите размер" : "Выберите вариант";
-  return <main className="container py-8">
+  return <main data-product-detail className="container py-8">
     <Link href={`${base}/catalog`} className="muted inline-flex items-center gap-1 text-sm"><ChevronLeft size={17}/> Назад в каталог</Link>
-    <div className="mt-7 grid gap-10 md:grid-cols-[1.1fr_.9fr]">
-      <div className="grid grid-cols-2 gap-3">
+    <div data-product-layout className="mt-7 grid gap-10 md:grid-cols-[1.1fr_.9fr]">
+      <div data-product-gallery className="grid grid-cols-2 gap-3">
         <div style={images[0] ? { backgroundImage: `url(${images[0]})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} className="product-image col-span-2 aspect-[5/4] rounded-[28px]"/>
         {images.slice(1).map(image => <div key={image} style={{ backgroundImage: `url(${image})`, backgroundSize: "cover", backgroundPosition: "center" }} className="product-image aspect-square rounded-[20px]"/>)}
       </div>
-      <div className="md:p-5">
+      <div data-product-information className="md:p-5">
         <h1 className="text-4xl font-semibold">{product.title}</h1>
         <div className="mt-4 flex items-center gap-3"><b className="text-2xl">{money(product.price)}</b>{product.oldPrice && <s className="muted">{money(product.oldPrice)}</s>}</div>
         {product.description && <p className="muted mt-6 leading-7">{product.description}</p>}

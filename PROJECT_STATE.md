@@ -1,5 +1,21 @@
 # Dukenim — current project state
 
+## Current acceptance — 2026-09-10
+
+- Production ea0b670: independent reservation settings, stock holds, confirmation/collection/cancellation and expiry cron; database isolation/idempotency/stock checks passed. Authenticated owner settings read verified; full reservation browser transaction not yet verified.
+- Local follow-up: 18 sphere/approach compositions, six distinct editorial covers and coordinated product-page layouts; all36 desktop/mobile purchase journeys pass, including compact mobile filters. Logo/PDF text materials are available inside the initial design stage.317 full tests plus one brand-form regression pass; tsc/build passed before final small keyboard/busy guard, final build running.
+- Kimi-K2.6 real conversation, PNG vision and requested pink/green design/sections tests all pass. Resource, quota and billing unchanged.
+- Higgsfield preflight:5credits available,2 per2K image. New bulk product photography not submitted; no purchase or generation charge. Existing demo images retained. Full additional-media set needs a sufficient balance.
+- Full authenticated merchant creation/save/relogin, visual PDF interpretation, unrestricted individual layouts/fonts, merchant acquiring and native-device acceptance are not complete. Amira remains unchanged until the owner's full-product gate. Native app/TestFlight paused by owner.
+
+## Dated release history (not current acceptance)
+
+- 2026-09-10 04:15: ea0b670 reservation+Planfix source published, Vercel success ECmC1mhcubQPvxTUWWR9TVHNyz5C and authenticated reservation settings read confirmed. Local composition follow-up implements6editorialcovers plus18sphere/approach layouts and mobile compact filters;317tests/tsc/build pass and3explicit real Kimi tests pass. Final browser regression running. No Azure/quota/billing change; no Amira seed. Full owner E2E/acquiring/native acceptance remain open.
+
+- 2026-09-10 04:02 LOCAL SOURCE + applied DB: real opt-in reservation holds, expiry/cancel/collection and notification classification implemented. Five migrations applied; transactional isolation/replay/stock tests and existing colour/cost/fulfilment regressions pass, minutely expiry cron succeeded.310tests+additional API test,tsc/build and36localdemojourneys pass. No reservation source deployment yet; owner reservation UI E2E/device delivery unverified. Amira unmodified; full builder/18bespoke/acquiring still open.
+
+- 2026-09-09 18:57: follow-up a4faf56 deployment Ready (dpl_3VdEYL3tEuQysAi1oXST3xh1ztjz); unpublished-store navigation uses protected preview.287tests/3skip,tsc/local+hosted build pass. This does not close reservations, full bespoke18compositions or acquiring; Amira unmodified.
+
 - 2026-09-09 18:55: 85bf78e verified Ready (dpl_58ZTVyhhEpsdZk4PYU3kjBjrvsKD), canonical www/apex aliases. Custom shades, actual AI categories, receiving/payment-preference steps and explicit new-store publication released. 285tests/3skip, tsc/build, live Kimi exact-colours/sections and rollback isolation/creation tests pass;36production demo purchase journeys pass. Fresh authenticated Amira Studio opens single start CTA; full owner save/relogin remains untested. Follow-up private-preview navigation fix under verification. No Amira seed. Reservation/full18bespoke compositions/acquiring are not complete.
 
 - 2026-09-09 18:38 IN PROGRESS: custom-theme, receiving/payment setup and explicit new-store publication migrations applied; rollback DB tests pass. Local UI/prompt not deployed. Kimi colour test passed before final prompt cleanup; browser flow unverified. Acquiring research reopened, FreedomPay candidate only. Amira not seeded; reservations/full18bespoke compositions remain open.
@@ -34,7 +50,7 @@
 
 - 2026-09-09: Domain-support a4500ab published Ready (dpl_Dy1B8kucswwHFptKQhsTwc2ayW7i): automatic request on deliberate help-button POST, active-thread reuse, linked message history/replies for owner and platform admin. Migration applied and DB transaction tests passed; full browser flow not verified. Does not connect DNS automatically or deliver email/push. Existing Azure Kimi consultation passed a fresh live test in 8.1s; prior UI failure cause still unknown.
 
-## Current summary — 2026-09-08 (authoritative over historical entries below)
+## Product direction and verified capabilities
 
 - Studio da66579 Ready: single conversational workspace confirmed in fresh authenticated browser, inline wizard and preview, persisted draft reload fix. Design undo DB/RPC implemented and transaction-tested (latest-state CAS/replay rejection); browser undo unverified. Live corrupted CTA default and exact bad labels repaired. Full personalized builder/payment/reservation/push acceptance remains open.
 
@@ -56,7 +72,7 @@
 - Platform identity: monochrome D/wordmark, grey threshold/dot. Tenant brands remain individual. See docs/BRAND_CURRENT.md; old gold PDF/icons/video are not updated masters.
 - Public plans: Start and Brand, AI in both within entitlements. No pricing change in current work.
 - Launch scope: goods and ready-made food. No service booking, event tickets or ingredient warehouse.
-- Fulfilment target: delivery, prepaid pickup, in-store reservation, each merchant-configurable. Current checkout supports courier/pickup with payment on receipt; prepaid pickup and reservation stock holds are NOT live.
+- Fulfilment: courier/pickup with payment on receipt and opt-in unpaid reservation stock holds are live. Reservation expiry/cancel/collection database checks pass; full owner browser roundtrip remains unverified. Prepaid pickup is not active without a verified goods-payment provider.
 - Mobile: EAS linked and App Store signing ready. No IPA/TestFlight release. Push infrastructure exists in source, but production delivery/device E2E is unverified. Notifications must distinguish fulfilment types and payment state; tapping opens the permitted order/reservation.
 - Superadmin remains independent of a personal store. Main owner's unused store was deleted; account retained.
 - Acceptance ledger: docs/ACCEPTANCE_CHECKLIST.md. Remaining builder and fulfilment requirements are in progress, not completed by the zone release.
@@ -117,7 +133,7 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Google sign-in is live: the Google Cloud OAuth client has one fresh persistent secret stored only in Supabase Auth, the audience is in production, and a full production E2E completed from `/login` through Google consent to both `/root` and `/admin`. The old Google secret was disabled and permanently deleted in Google Cloud on 2026-09-04. Apple Developer membership, the Dukenim App ID and web Service ID are active and configured for the Supabase callback; Apple login remains disabled in production until the downloaded private key is securely supplied to Supabase/Vercel and the live E2E succeeds.
 - Trial entitlement is enforced server-side: every trial has an explicit seven-day end, paid-tier actions use the effective `next_plan` during that window, public storefront RLS and server lookup reject expired trials, and AI API access uses the same entitlement decision.
 - Public tariff source is now «Старт» 24 900 ₸/month or 239 000 ₸/year and «Бренд» 34 900 ₸/month or 335 000 ₸/year. The public selector is implemented locally; deployment still needs its normal release check.
-- CRM integration requests are prepared in source only. Azure Foundry is live in production through the server-only OpenAI-compatible client and the `Kimi-K2.6` deployment. The rotated key and endpoint/deployment configuration are stored only in Vercel Production; `/root/ai` and the tenant `/admin/ai-studio` generation flow were both verified end to end on 2026-09-03.
+- CRM request/queue infrastructure exists in production. A Central Asia Planfix test account and an account-scoped confidential OAuth pilot application now exist. The two reviewed connector migrations are applied to production, and the client credentials plus a dedicated AES-256-GCM encryption key are stored only as non-revealable Vercel Production secrets. PKCE connect/callback routes and server-only encrypted token storage are committed locally in `1101b90`; deployment and the live owner authorization grant are still pending. No customer order has been sent to Planfix. Azure Foundry is live in production through the server-only OpenAI-compatible client and the `Kimi-K2.6` deployment. The rotated key and endpoint/deployment configuration are stored only in Vercel Production; `/root/ai` and the tenant `/admin/ai-studio` generation flow were both verified end to end on 2026-09-03.
 
 ## Resilience infrastructure
 

@@ -18,6 +18,13 @@ const origin=process.argv[3]||'http://localhost:3001';
     await page.getByRole('link',{name:'Продолжить покупки',exact:true}).click();
     await page.waitForURL(origin+base+'/catalog');
     if(!page.url().endsWith(base+'/catalog'))throw Error('Wrong catalog');
+    if(width===390){
+     const filters=page.getByRole('button',{name:/^Фильтры/});
+     await filters.click();await page.getByLabel('Порядок',{exact:true}).selectOption('price-asc');
+     await page.getByRole('button',{name:'Сбросить фильтры',exact:true}).click();
+     await filters.click();
+     if(await page.getByLabel('Порядок',{exact:true}).isVisible())throw Error('Mobile filters did not collapse');
+    }
     await page.locator(`main a[href="${href}"]`).click();
     await page.getByRole('button',{name:'Купить сейчас',exact:true}).click();
     await page.getByRole('heading',{name:'Проверка заказа',exact:true}).waitFor();

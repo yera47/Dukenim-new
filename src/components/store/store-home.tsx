@@ -7,6 +7,7 @@ import type { Database, BusinessVertical } from "@/types/database";
 import { approachForTemplate, configurationFor, type CommerceApproach } from "@/lib/commerce-configurations";
 import styles from "./commerce-layouts.module.css";
 import { storefrontPath } from "@/lib/storefront-path";
+import { EditorialCover } from "./editorial-cover";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -28,28 +29,10 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
   const title = settings?.hero_title || tenant.catalog_name || tenant.name;
   const subtitle = settings?.hero_subtitle || tenant.tagline || preset.headline;
   const heroImage = settings?.hero_image_url && /^https?:\/\//.test(settings.hero_image_url) ? settings.hero_image_url : null;
-  const featuredProduct = products.find(product => product.images?.[0]);
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
-  const heroStyle = heroImage ? { backgroundImage: `linear-gradient(100deg, var(--store-bg) 0%, transparent 66%), url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
 
   return <main className={`storefront-theme ${styles.root}`} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
-    {approach==="collection"?<section className="container mt-6 overflow-hidden rounded-[28px] border border-black/10 bg-[var(--store-surface)]" style={heroStyle}>
-      <div className="storefront-hero-grid min-h-[580px] p-8 md:p-14">
-        <div className="flex max-w-xl flex-col justify-center">
-          <h1 className="text-5xl font-semibold leading-[.96] tracking-[-.04em] md:text-7xl">{title}</h1>
-          <p className="mt-7 max-w-[52ch] text-lg leading-8 opacity-70">{subtitle}</p>
-          <Link style={{color:"var(--store-accent-ink)"}} className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--tenant-accent)] px-5 py-3.5 font-extrabold transition-transform hover:-translate-y-0.5" href={`${storefrontPath(slug)}/catalog`}>
-            {settings?.hero_cta_label || "Смотреть каталог"}<ArrowRight size={18} />
-          </Link>
-        </div>
-        {!heroImage && featuredProduct ? <Link href={`${storefrontPath(slug)}/product/${featuredProduct.id}`} className="my-6 block overflow-hidden rounded-2xl">
-          {/* The hero uses the merchant's actual product, never an invented item. */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={featuredProduct.images![0]} alt={featuredProduct.title} className="max-h-[440px] w-full object-cover"/>
-          <span className="mt-3 block text-sm">{featuredProduct.title} →</span>
-        </Link> : null}
-      </div>
-    </section>:<header className="container py-10 md:py-16"><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{title}</h1><p className="mt-4 max-w-2xl text-lg opacity-70">{subtitle}</p></header>}
+    {approach==="collection"?<EditorialCover vertical={tenant.business_vertical??"other"} title={title} subtitle={subtitle} cta={settings?.hero_cta_label||"Смотреть каталог"} heroImage={heroImage} products={products} slug={slug}/>:<header className={`container ${styles.intro}`}><div><span className={styles.sectionCount}>{categories.length>0?`${categories.length} разделов · ${products.length} товаров`:"Каталог магазина"}</span><h1>{title}</h1><p>{subtitle}</p></div>{approach==="assortment"&&categories.length>0&&<nav className={styles.quickSections} aria-label="Быстрый выбор раздела">{categories.map(category=><Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`}>{category}<ArrowRight size={16}/></Link>)}</nav>}</header>}
 
     {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
