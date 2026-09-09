@@ -11,7 +11,7 @@ import { compactShopContext, parseModelJson } from "./shop-context";
 
 export const aiStudioIntentSchema = z.enum(["hero", "promotion", "catalog_copy", "catalog_structure", "store_design", "consultation"]);
 export type AiStudioIntent = z.infer<typeof aiStudioIntentSchema>;
-export const aiStudioRequestSchema = z.object({ intent: aiStudioIntentSchema, brief: z.string().trim().min(2).max(800), includeBrandLogo:z.boolean().optional() }).refine(v=>v.intent==="consultation"||v.brief.length>=8);
+export const aiStudioRequestSchema = z.object({ intent: aiStudioIntentSchema, brief: z.string().trim().min(2).max(800), includeBrandLogo:z.boolean().optional(),brandPage:z.string().max(900000).regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/).optional() }).refine(v=>v.intent==="consultation"||v.brief.length>=8).refine(v=>!v.brandPage||(v.intent==="consultation"&&!v.includeBrandLogo));
 export const aiStudioBriefSchema = z.object({ brief: z.string().trim().min(8).max(800) });
 export { aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
 export type { AiStudioDraft } from "@/lib/ai/studio-schemas";

@@ -7,11 +7,14 @@ import { createProductAction, type ProductActionState } from "@/app/admin/action
 
 import { businessWorkflow } from "@/lib/business-workflow";
 import type { BusinessVertical } from "@/types/database";
+import {ProductSetupForm} from "./product-setup-form";
 
 const initialState: ProductActionState = {};
 type PhotoPreview = { name: string; url: string };
 
-export function ProductForm({ fromStudio = false, categories = [], vertical = "other" }: { vertical?: BusinessVertical; fromStudio?: boolean; categories?: Array<{ id: string; name: string }> }) {
+type ProductFormProps={vertical?:BusinessVertical;fromStudio?:boolean;categories?:Array<{id:string;name:string}>};
+export function ProductForm(props:ProductFormProps){return props.fromStudio?<ProductSetupForm categories={props.categories} vertical={props.vertical}/>:<ProductEditor {...props}/>;}
+function ProductEditor({ fromStudio = false, categories = [], vertical = "other" }: ProductFormProps) {
   const workflow = businessWorkflow(vertical);
   const [state, action, pending] = useActionState(createProductAction, initialState);
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);

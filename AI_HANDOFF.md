@@ -1,5 +1,15 @@
 # Dukenim — AI handoff
 
+## Selected PDF page analysis + first-product wizard — 2026-09-10 04:46
+
+Production composition release6d07d41 Ready33AdrUPENuSf1caWXToPRxeqJ9Z2; all36 production buyer journeys pass390/1440, including mobile filter interactions. No Amira writes.
+
+New source: private browser PDF page renderer (10MB/40pages, explicit single-page selection,1100px bounded JPEG,30s cleanup), visible preview and explicit Azure-send button; bounded draft API accepts only inline JPEG for consultation, re-encodes to PNG with pixel/byte limits, no remote fetch. Images/PDF not stored in history, only the checked response/summary. Existing entitlement/credits/refund applies. Selected-page prompt cannot return executable task or claim other pages/saved changes. Owner reviews and explicitly saves recommendations into brand rules. This is real selected-page visual analysis, NOT automatic whole-document/font identification.
+
+First-product Studio form now four active steps: name/category→photos→price/variants→review. Existing createProductAction retained. Local browser interaction test caught Continue→Submit DOM reuse auto-submit and fixed it with separate keys; manual action dispatch preserves uncontrolled values/photos on returned server error. Test confirms one visible step, field validation, back navigation, no premature save, correct final FormData and retry preservation. This test uses LOCAL mock action, NOT production database persistence. Full authenticated merchant save/relogin still not verified.
+
+Evidence:330full tests pass before added API boundary test; focused3route tests pass including origin/body limits; tsc and final build70routes pass. Real existing10page PDF page1 rendered in browser and visually inspected (historical brandbook, not current brand master). Separate live Kimi selected-page two-colour test passes6.1s; no Azure configuration/quota/billing change. Scripts check-brandbook-render.cjs and check-product-wizard.cjs are reproducible, no private credentials/data writes. Source pending commit/deploy at this checkpoint. Additional photos blocked by5Higgsfield credits versus2/image; no jobs/charges. Acquiring requires provider/sandbox; native paused; Amira seeding deferred until full gate.
+
 ## Composition / initial brand step — 2026-09-10 04:27
 
 Final build after keyboard/busy guard passed (70 routes/pages); tsc clean. Releasing the selected source below. No new images generated.

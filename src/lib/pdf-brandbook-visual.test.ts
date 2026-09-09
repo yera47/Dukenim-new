@@ -1,0 +1,12 @@
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+import {renderBrandbookPage} from "./pdf-brandbook-visual";
+const m=vi.hoisted(()=>({getDocument:vi.fn(),terminate:vi.fn(),destroy:vi.fn(),render:vi.fn(),canvas:{width:0,height:0,getContext:vi.fn(),toDataURL:vi.fn()}}));
+vi.mock("pdfjs-dist",()=>({getDocument:m.getDocument,PDFWorker:{create:()=>({})}}));
+const file=()=>new File(["%PDF-1.7 test"],"brand.pdf");
+beforeEach(()=>{vi.clearAllMocks();vi.stubGlobal("Worker",class{terminate=m.terminate;});vi.stubGlobal("document",{createElement:()=>m.canvas});m.canvas.getContext.mockReturnValue({});m.canvas.toDataURL.mockReturnValue("data:image/jpeg;base64,/9j/aaaa");m.destroy.mockResolvedValue(undefined);m.render.mockReturnValue({promise:Promise.resolve()});m.getDocument.mockReturnValue({promise:Promise.resolve({numPages:2,getPage:async()=>({getViewport:({scale}:{scale:number})=>({width:600*scale,height:800*scale}),render:m.render,cleanup:vi.fn()})}),destroy:m.destroy});});
+afterEach(()=>vi.unstubAllGlobals());
+it("renders only the selected page and frees the canvas/worker",async()=>{const result=await renderBrandbookPage(file(),2);expect(result.pages).toBe(2);expect(result.image).toMatch(/^data:image\/jpeg/);expect(m.render).toHaveBeenCalledOnce();expect(m.destroy).toHaveBeenCalledOnce();expect(m.terminate).toHaveBeenCalledOnce();expect(m.canvas.width).toBe(0);});
+it.each([0,41,1.5,NaN])("rejects invalid page %s before parsing",async page=>{await expect(renderBrandbookPage(file(),page)).rejects.toThrow();expect(m.getDocument).not.toHaveBeenCalled();});
+it("rejects missing pages and frees the worker",async()=>{await expect(renderBrandbookPage(file(),3)).rejects.toThrow();expect(m.terminate).toHaveBeenCalledOnce();});
+it("rejects oversized image payloads",async()=>{m.canvas.toDataURL.mockReturnValue("data:image/jpeg;base64,"+"a".repeat(900000));await expect(renderBrandbookPage(file(),1)).rejects.toThrow("сложная");expect(m.terminate).toHaveBeenCalledOnce();});
+it("rejects non-PDF content",async()=>{await expect(renderBrandbookPage(new File(["html"],"brand.pdf"),1)).rejects.toThrow("не похож");});

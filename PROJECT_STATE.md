@@ -2,6 +2,8 @@
 
 ## Current acceptance — 2026-09-10
 
+- Composition6d07d41 is published/Ready33AdrUPENuSf1caWXToPRxeqJ9Z2;36production purchase journeys pass. New selected-page PDF visual analysis and four-step first-product form pass local tests/browser checks and live Kimi page test; final build clean, release pending. Full owner persistence acceptance is not replaced by mock-action UI tests. See newest AI_HANDOFF checkpoint.
+
 - Production ea0b670: independent reservation settings, stock holds, confirmation/collection/cancellation and expiry cron; database isolation/idempotency/stock checks passed. Authenticated owner settings read verified; full reservation browser transaction not yet verified.
 - Local follow-up: 18 sphere/approach compositions, six distinct editorial covers and coordinated product-page layouts; all36 desktop/mobile purchase journeys pass, including compact mobile filters. Logo/PDF text materials are available inside the initial design stage.317 full tests plus one brand-form regression pass; tsc/build passed before final small keyboard/busy guard, final build running.
 - Kimi-K2.6 real conversation, PNG vision and requested pink/green design/sections tests all pass. Resource, quota and billing unchanged.

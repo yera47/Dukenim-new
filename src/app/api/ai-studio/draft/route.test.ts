@@ -1,11 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks=vi.hoisted(()=>({session:vi.fn(),client:vi.fn()}));
+const mocks=vi.hoisted(()=>({session:vi.fn(),client:vi.fn(),entitlement:vi.fn()}));
 vi.mock("server-only",()=>({}));
 vi.mock("@/lib/auth",()=>({getSessionContext:mocks.session}));
 vi.mock("@/lib/supabase/server",()=>({createClient:mocks.client}));
+vi.mock("@/lib/plan-access",()=>({tenantEntitlement:mocks.entitlement}));
 import {GET,POST} from "./route";
 describe("conversation history access",()=>{
   beforeEach(()=>vi.clearAllMocks());
+  it("rejects cross-origin and oversized authenticated image requests",async()=>{
+    mocks.session.mockResolvedValue({user:{id:"owner"},role:"owner",tenantId:"mine"});mocks.entitlement.mockResolvedValue({active:true});
+    const foreign=await POST(new Request("https://example.test/api",{method:"POST",headers:{origin:"https://other.test"},body:"{}"}));expect(foreign.status).toBe(403);
+    const large=await POST(new Request("https://example.test/api",{method:"POST",body:"x".repeat(1000001)}));expect(large.status).toBe(413);
+    expect(mocks.client).not.toHaveBeenCalled();
+  });
   it("rejects anonymous requests",async()=>{
     mocks.session.mockResolvedValue(null);
     expect((await GET()).status).toBe(401);

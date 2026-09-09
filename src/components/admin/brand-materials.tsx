@@ -2,15 +2,18 @@
 import React, { useEffect, useState } from "react";
 import { brandColorsSchema } from "@/lib/brand-materials";
 import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
+import {BrandPdfVisual} from "./brand-pdf-visual";
 export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;onBusyChange?:(busy:boolean)=>void}={}) {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
   const [file,setFile]=useState<File|null>(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
   const [pdfBusy,setPdfBusy]=useState(false);
+  const [pdfFile,setPdfFile]=useState<File|null>(null);const[visualBusy,setVisualBusy]=useState(false);
   const [pdfText,setPdfText]=useState("");
-  useEffect(()=>{onBusyChange?.(busy||pdfBusy);return()=>onBusyChange?.(false);},[busy,pdfBusy,onBusyChange]);
+  useEffect(()=>{onBusyChange?.(busy||pdfBusy||visualBusy);return()=>onBusyChange?.(false);},[busy,pdfBusy,visualBusy,onBusyChange]);
   async function readPdf(file:File|undefined) {
     if(!file||pdfBusy)return;
+    setPdfFile(file);
     setPdfBusy(true);setMessage("");setPdfText("");
     try {
       const result=await readBrandbookPdf(file);
@@ -28,7 +31,7 @@ export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;
     return()=>controller.abort();
   },[]);
   async function save() {
-    if(revision===null||busy)return;setBusy(true);setMessage("");
+    if(revision===null||busy||pdfBusy||visualBusy)return;setBusy(true);setMessage("");
     try {
       const form=new FormData();form.set("revision",String(revision));form.set("notes",notes);if(file)form.set("logo",file);
       const response=await fetch("/api/brand-materials",{method:"POST",body:form});const data=await response.json();
@@ -44,9 +47,10 @@ export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;
     <summary className="cursor-pointer font-semibold">Логотип и правила бренда · необязательно</summary>
     <p className="my-3 text-sm text-neutral-500">Без брендбука тоже можно. Загрузите логотип и опишите пожелания.</p>
     <div role="group" aria-label="Материалы бренда" onKeyDown={event=>{if(embedded){event.stopPropagation();if(event.key==="Enter"&&event.target instanceof HTMLInputElement)event.preventDefault();}}} className="space-y-4">
-      <fieldset disabled={busy||pdfBusy||revision===null} className="space-y-4">
+      <fieldset disabled={busy||pdfBusy||visualBusy||revision===null} className="space-y-4">
         <label className="block text-sm">Брендбук PDF · необязательно<input type="file" accept="application/pdf,.pdf" className="mt-2 block w-full" onChange={event=>void readPdf(event.target.files?.[0])}/></label>
-        <p className="text-xs text-neutral-500">До 10 МБ и 40 страниц. Чтение происходит в браузере; исходный PDF не загружается. Сканы без текстового слоя пока не распознаются.</p>
+        <p className="text-xs text-neutral-500">До 10 МБ и 40 страниц. Чтение происходит в браузере; исходный PDF не загружается. Для сканов и оформления можно отдельно отправить выбранную страницу AI.</p>
+        {pdfFile&&<BrandPdfVisual key={`${pdfFile.name}:${pdfFile.size}:${pdfFile.lastModified}`} file={pdfFile} onBusyChange={setVisualBusy} onRules={rules=>{const combined=[notes,rules].filter(Boolean).join("\n\n");if(combined.length>6000){setMessage("Сократите правила: общий лимит 6000 символов.");return;}setNotes(combined);setMessage("Рекомендации добавлены. Проверьте и сохраните материалы для AI.");}}/>}
         {pdfText&&<div className="space-y-2"><textarea aria-label="Извлечённые правила PDF" value={pdfText} onChange={event=>setPdfText(event.target.value)} maxLength={5800} rows={5} className="input w-full"/><button type="button" className="btn btn-secondary" onClick={()=>{const combined=[notes,pdfText].filter(Boolean).join("\n\n");if(combined.length>6000){setMessage("В правилах получится больше 6000 символов. Сократите текст перед добавлением.");return;}setNotes(combined);setPdfText("");setMessage("Текст добавлен в правила. Нажмите «Сохранить материалы для AI», чтобы сохранить его.");}}>Добавить проверенный текст в правила</button></div>}
         <label className="block text-sm">Логотип (PNG, JPEG, WebP, до 3 МБ)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>setFile(event.target.files?.[0]??null)} className="mt-2 block w-full"/></label>
         {/* eslint-disable-next-line @next/next/no-img-element */}

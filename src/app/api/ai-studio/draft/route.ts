@@ -8,7 +8,7 @@ import { createConsultation } from "@/lib/ai/consultation";
 import { consultationSchema, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 import { createClient } from "@/lib/supabase/server";
 import { brandColorsSchema } from "@/lib/brand-materials";
-import { prepareBrandLogo } from "@/lib/brand-image";
+import { prepareBrandLogo,prepareBrandPage } from "@/lib/brand-image";
 import { reservationsClient } from "@/lib/reservations";
 
 export async function GET() {
@@ -30,7 +30,13 @@ export async function POST(request: Request) {
     if (!context.tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту." }, { status: 400 });
     const entitlement = await tenantEntitlement(context.tenantId);
     if (!entitlement.active) return NextResponse.json({ error: "Бесплатный период или подписка завершены. Выберите тариф, чтобы продолжить." }, { status: 403 });
-    const input = aiStudioRequestSchema.safeParse(await request.json().catch(() => null));
+    const origin=request.headers.get("origin");
+    if(origin&&origin!==new URL(request.url).origin)return NextResponse.json({error:"Недопустимый источник запроса."},{status:403});
+    const reader=request.body?.getReader();if(!reader)return NextResponse.json({error:"Пустой запрос."},{status:400});
+    const chunks:Uint8Array[]=[];let bytes=0;
+    while(true){const {done,value}=await reader.read();if(done)break;bytes+=value.length;if(bytes>1000000){await reader.cancel();return NextResponse.json({error:"Запрос слишком большой."},{status:413});}chunks.push(value);}
+    let raw:unknown;try{raw=JSON.parse(Buffer.concat(chunks).toString("utf8"));}catch{return NextResponse.json({error:"Некорректный запрос."},{status:400});}
+    const input = aiStudioRequestSchema.safeParse(raw);
     if (!input.success) return NextResponse.json({ error: "Сообщение должно содержать от 2 до 800 символов; задание редактору — не менее 8." }, { status: 400 });
     if (!getAiStudioStatus().configured) return NextResponse.json({ error: "AI Studio готов в интерфейсе, но серверная Azure-настройка ещё не завершена." }, { status: 503 });
     const admin = createAdminClient();
@@ -38,6 +44,7 @@ export async function POST(request: Request) {
     if (tenant.error || !tenant.data) return NextResponse.json({ error: "Не удалось определить профиль магазина." }, { status: 404 });
     const history:ConsultationTurn[]=[];
     let logoPng:Buffer|undefined;
+    if(input.data.brandPage){try{logoPng=await prepareBrandPage(Buffer.from(input.data.brandPage.split(",")[1],"base64"));}catch{return NextResponse.json({error:"Не удалось проверить изображение страницы."},{status:422});}}
     if(input.data.includeBrandLogo) {
       if(input.data.intent!=="consultation")return NextResponse.json({error:"Логотип можно обсудить в диалоге."},{status:400});
       const ownerClient=await createClient();
@@ -86,7 +93,7 @@ export async function POST(request: Request) {
     }
     const creditsRemaining = typeof reservation.data === "number" ? reservation.data : null;
     let result;
-    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,shopContext,history,logoPng) : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief,shopContext) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan,shopContext) : await createAiStudioDraft(input.data.intent, input.data.brief,shopContext); }
+    try { result = input.data.intent === "consultation" ? await createConsultation(input.data.brief,shopContext,history,logoPng,input.data.brandPage?"brandbook_page":"logo") : input.data.intent === "catalog_structure" ? await createAiStudioStructure(input.data.brief,shopContext) : input.data.intent === "store_design" ? await createAiStudioDesign(input.data.brief, tenant.data.business_vertical ?? "other", entitlement.plan,shopContext) : await createAiStudioDraft(input.data.intent, input.data.brief,shopContext); }
     catch (error) { await rpc.rpc("refund_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost }); throw error; }
     const output = "consultation" in result ? result.consultation : "structure" in result ? result.structure : "design" in result ? result.design : result.draft;
     const saved = await admin.from("ai_studio_generations").insert({ tenant_id: context.tenantId, requested_by: context.user?.id ?? null, intent: input.data.intent, input_summary: input.data.brief, output, model: getAiStudioStatus().deployment, usage: result.usage ?? {}, credit_cost: creditCost }).select("id").single();

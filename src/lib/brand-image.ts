@@ -1,4 +1,14 @@
 import sharp from "sharp";
+export async function prepareBrandPage(input:Buffer){
+  if(input.length>700000||input[0]!==255||input[1]!==216||input[2]!==255)throw new Error("Invalid page image");
+  const source=sharp(input,{limitInputPixels:16000000,animated:false}).rotate();
+  const meta=await source.metadata();if(meta.format!=="jpeg")throw new Error("Invalid page format");
+  for(const size of [1100,850,600]){
+    const png=await source.clone().resize(size,size,{fit:"inside",withoutEnlargement:true}).png().toBuffer();
+    if(png.length<=1000000)return png;
+  }
+  throw new Error("Page image too complex");
+}
 export async function prepareBrandLogo(input:Buffer) {
   const raster=input.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])) ||
     (input[0]===255&&input[1]===216&&input[2]===255) ||
