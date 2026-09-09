@@ -36,4 +36,10 @@ describe("AI Studio first-run access", () => {
     expect(html).toContain("Посмотрите глазами покупателя");
     expect(html).toContain("НЕ ОПУБЛИКОВАНО");
   });
+  it("keeps unpublished catalog navigation inside private preview", () => {
+    const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready" catalogPublished={false}/>);
+    expect(html).toContain("Опубликовать магазин");
+    expect(html).toContain('href="/store-preview"');
+    expect(html).not.toContain('href="/s/shop"');
+  });
 });

@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## Publication and follow-up — 2026-09-09 18:55
+
+85bf78e verified Vercel Ready dpl_58ZTVyhhEpsdZk4PYU3kjBjrvsKD with www/apex aliases.36 production demo journeys pass at390/1440. Fresh authenticated CUA tab50 opens Amira Studio with only initial start CTA, no old crowded editor. This is read-only UI verification, not full merchant creation/save/relogin. No Amira data changed. Correcting admin desktop/mobile and Studio public links to private preview while catalog_published=false; legacy published links retained. Added regression tests. This follow-up is not deployed yet.
+
+Current open implementation is still substantive: reservation stock hold/expiry/conversion, fully distinct18storefront compositions, whole personal assembly including products, PDF visual analysis, merchant acquiring adapter/onboarding and full authenticated acceptance. Do not say these are only login blockers. Amira simulated sales may be added only after full-product gate per owner request. App/TestFlight paused. Research recommends FreedomPay as first technical candidate, not a signed/connected provider; ordinary Kaspi link has no verified fixed-sum shortcut.
+
+Reservation next design work: separate opt-in settings and explicit unpaid terms, transactional stock_movements, expiry/cancel exact-once stock restoration, idempotent public requests, tenant isolation and anti-abuse. Review existing create_storefront_order_v2 price snapshots/lock order before reuse: product price is reread without locking products; deterministic locking and immutable per-request prices needed. No reservation migration or endpoint has been created at this checkpoint.
+
 ## Checked source checkpoint — 2026-09-09 18:45
 
 285 unit tests pass/3 opt-in skipped, tsc and production build pass. Final live Kimi colour+sections test passes (4.8s); earlier verbose rationale schema failure fixed by bounding only explanatory rationale, not commercial fields or entitlements. 20260909133823_atomic_ai_catalog_sections applied: catalog saves AI sections/copy plus chosen composition/theme atomically. Updated rollback fixture verifies categories created and manual composition preserved; custom undo/isolation, fulfilment/private publication, and historical costs all pass. Cost fixture now explicitly active to obey new online-order gate.

@@ -21,6 +21,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         status: "trial" as const,
         trial_ends_at: new Date(Date.now() + 7 * 86400000).toISOString(),
         business_vertical: "fashion" as const,
+        catalog_published: true,
       }
     : (await getTenant(await createClient(), tenantId!)).data;
 
@@ -37,6 +38,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         status: tenant.status,
         trialEndsAt: tenant.trial_ends_at,
         vertical: tenant.business_vertical ?? "other",
+        catalogPublished: tenant.catalog_published,
       }}
     >
       {children}

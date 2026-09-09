@@ -8,6 +8,13 @@ import { AdminShell } from "./admin-shell";
 afterEach(() => vi.unstubAllGlobals());
 
 describe("owner navigation", () => {
+  it("opens private preview instead of a public 404 before publication", () => {
+    vi.stubGlobal("React", React);
+    const html = renderToStaticMarkup(<AdminShell role="owner" tenant={{name:"Серик Шоп",slug:"serik",plan:"standard",status:"active",trialEndsAt:null,catalogPublished:false}}>Content</AdminShell>);
+    expect(html).toContain('href="/store-preview"');
+    expect(html).toContain('Предпросмотр магазина');
+    expect(html).not.toContain('href="/s/serik"');
+  });
   it("preserves secondary routes while keeping four mobile controls", () => {
     vi.stubGlobal("React", React);
     const html = renderToStaticMarkup(<AdminShell role="owner" tenant={{name:"Серик Шоп",slug:"serik",plan:"standard",status:"active",trialEndsAt:null}}>Content</AdminShell>);

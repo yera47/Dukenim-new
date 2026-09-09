@@ -56,6 +56,7 @@ type AdminShellProps = {
     status: string;
     trialEndsAt: string | null;
     vertical?: BusinessVertical;
+    catalogPublished?: boolean;
   };
 };
 
@@ -64,6 +65,8 @@ function isCurrent(pathname: string, href: string) {
 }
 
 export function AdminShell({ children, role, tenant }: AdminShellProps) {
+  const storefrontHref = tenant.catalogPublished === false ? "/store-preview" : `/s/${tenant.slug}`;
+  const storefrontLabel = tenant.catalogPublished === false ? "Предпросмотр магазина" : "Открыть витрину";
   const workflow = businessWorkflow(tenant.vertical);
   const nav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
   const mobilePrimary = nav.slice(0, 3);
@@ -127,8 +130,8 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             Управление платформой
           </Link>
         )}
-        <Link href={`/s/${tenant.slug}`} className="admin-store-link">
-          <span>Открыть витрину</span>
+        <Link href={storefrontHref} className="admin-store-link">
+          <span>{storefrontLabel}</span>
           <ExternalLink size={16} />
         </Link>
         <form action={logout} className="mt-2">
@@ -190,7 +193,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             </nav>
             <div className="admin-sheet-actions">
               {role === "superadmin" && <Link href="/root"><ShieldCheck size={17} />Управление платформой</Link>}
-              <Link href={`/s/${tenant.slug}`}><ExternalLink size={17} />Открыть витрину</Link>
+              <Link href={storefrontHref}><ExternalLink size={17} />{storefrontLabel}</Link>
             </div>
           </section>
         </div>

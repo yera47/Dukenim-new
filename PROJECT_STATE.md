@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09 18:55: 85bf78e verified Ready (dpl_58ZTVyhhEpsdZk4PYU3kjBjrvsKD), canonical www/apex aliases. Custom shades, actual AI categories, receiving/payment-preference steps and explicit new-store publication released. 285tests/3skip, tsc/build, live Kimi exact-colours/sections and rollback isolation/creation tests pass;36production demo purchase journeys pass. Fresh authenticated Amira Studio opens single start CTA; full owner save/relogin remains untested. Follow-up private-preview navigation fix under verification. No Amira seed. Reservation/full18bespoke compositions/acquiring are not complete.
+
 - 2026-09-09 18:38 IN PROGRESS: custom-theme, receiving/payment setup and explicit new-store publication migrations applied; rollback DB tests pass. Local UI/prompt not deployed. Kimi colour test passed before final prompt cleanup; browser flow unverified. Acquiring research reopened, FreedomPay candidate only. Amira not seeded; reservations/full18bespoke compositions remain open.
 
 - 2026-09-09 17:51: 5085ec4 Ready on canonical domain (dpl_7RB8ehDGxJGZ7nxYYEUZvZ4pYF4R). Separate18demo route spaces with retained cart/layout; private cost snapshot migration applied, stock cost entry and gross profit released.272tests/2skip,tsc/build,36local journeys,transaction owner/outsider/immutability tests passed. Owner browser analytics empty-state verified; stock UI save not verified (current shop has no products). Acquiring paused. Individual shades/full builder/reservations remain unfinished.
