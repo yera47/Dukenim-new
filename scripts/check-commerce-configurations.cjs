@@ -10,7 +10,7 @@ const origin=process.argv[3]||'http://localhost:3001';
    for(const vertical of ['fashion','beauty','food','flowers','home','other'])for(const approach of ['collection','assortment','guided']){
     const response=await page.goto(`${origin}/demo/${vertical}/${approach}`);
     if(response.status()!==200)throw Error('HTTP '+response.status());
-    await page.locator(`[data-approach="${approach}"]`).waitFor();
+    await page.locator(`main[data-approach="${approach}"]`).waitFor();
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error(`Overflow ${vertical}/${approach}/${width}`);
     await page.getByRole('heading',{name:'Каталог',exact:true}).waitFor();
     if(await page.locator('main a[href*="/product/"]').count()<3)throw Error('Missing populated product grid');

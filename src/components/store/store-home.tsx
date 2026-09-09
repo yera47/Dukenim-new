@@ -6,6 +6,7 @@ import type { Product } from "@/lib/demo-data";
 import type { Database, BusinessVertical } from "@/types/database";
 import { approachForTemplate, configurationFor, type CommerceApproach } from "@/lib/commerce-configurations";
 import styles from "./commerce-layouts.module.css";
+import { storefrontPath } from "@/lib/storefront-path";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -37,11 +38,11 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
         <div className="flex max-w-xl flex-col justify-center">
           <h1 className="text-5xl font-semibold leading-[.96] tracking-[-.04em] md:text-7xl">{title}</h1>
           <p className="mt-7 max-w-[52ch] text-lg leading-8 opacity-70">{subtitle}</p>
-          <Link style={{color:"var(--store-accent-ink)"}} className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--tenant-accent)] px-5 py-3.5 font-extrabold transition-transform hover:-translate-y-0.5" href={`/s/${slug}/catalog`}>
+          <Link style={{color:"var(--store-accent-ink)"}} className="mt-8 inline-flex w-fit items-center gap-2 rounded-xl bg-[var(--tenant-accent)] px-5 py-3.5 font-extrabold transition-transform hover:-translate-y-0.5" href={`${storefrontPath(slug)}/catalog`}>
             {settings?.hero_cta_label || "Смотреть каталог"}<ArrowRight size={18} />
           </Link>
         </div>
-        {!heroImage && featuredProduct ? <Link href={`/s/${slug}/product/${featuredProduct.id}`} className="my-6 block overflow-hidden rounded-2xl">
+        {!heroImage && featuredProduct ? <Link href={`${storefrontPath(slug)}/product/${featuredProduct.id}`} className="my-6 block overflow-hidden rounded-2xl">
           {/* The hero uses the merchant's actual product, never an invented item. */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={featuredProduct.images![0]} alt={featuredProduct.title} className="max-h-[440px] w-full object-cover"/>
@@ -50,7 +51,7 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
       </div>
     </section>:<header className="container py-10 md:py-16"><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{title}</h1><p className="mt-4 max-w-2xl text-lg opacity-70">{subtitle}</p></header>}
 
-    {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`/s/${slug}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
+    {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       {product&&<img src={product.images![0]} alt={category} className="aspect-[4/3] w-full object-cover" loading="lazy"/>}<span className="flex items-center justify-between p-5 font-semibold">{category}<ArrowRight size={18}/></span>
     </Link>})}</div></section>}

@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-09 17:27: 1637906 published Ready (dpl_41vQDGad3pUXzAevPtH5BAoQ81PG), canonical domain verified. Segment-first demo chooser, add/buy-now dialog and distinct approach grids. Production purchase navigation passes at 390/1440 with cart quantity preserved. 267 tests pass/2 skip, tsc/build and 36 local layout checks pass. No live payment or authenticated AI-save acceptance; broader unfinished requirements remain open.
+
 - 2026-09-09 16:53: bd30165 Ready dpl_7P8cRBaBFtv6sSsk8PShPUeMqaGr on canonical domain;18composed landing examples/3approaches and matching AI context published.267tests,36local viewport checks, demo navigation passed. Full merchant generation/save and remaining colour/commerce requirements not verified complete.
 
 - 2026-09-09 16:50 source:18 composed landing examples and3 selectable approaches per sphere/plan, shared renderer and AI configuration context. Atomic creation migration applied with role/entitlement guards retained.267tests and36browser checks passed; full saved creation/live AI not yet verified. Not a claim of18complete independent storefront journeys or remaining commerce acceptance.

@@ -1,9 +1,10 @@
 import Link from "next/link";
+import { storefrontPath } from "@/lib/storefront-path";
 import { money, type Product } from "@/lib/demo-data";
 
 export function ProductCard({ product, slug }: { product: Product; slug: string }) {
   const style = product.images?.[0] ? { backgroundImage: `url(${product.images[0]})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
-  return <Link href={`/s/${slug}/product/${product.id}`} className="group block">
+  return <Link href={`${storefrontPath(slug)}/product/${product.id}`} className="group block">
     <div style={style} className="product-image aspect-[4/5] rounded-[var(--r-card)] bg-[var(--store-surface)] transition-transform duration-300 group-hover:-translate-y-1">
       {product.featured && <span className="absolute left-3 top-3 z-10 rounded-full bg-[var(--store-surface)] px-3 py-1 text-xs font-bold">Выбор магазина</span>}
     </div>

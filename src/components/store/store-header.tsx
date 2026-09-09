@@ -3,11 +3,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ShoppingBag } from "lucide-react";
 import { useCart } from "./cart-provider";
+import { storefrontPath } from "@/lib/storefront-path";
 
 export function StoreHeader({ slug, name, categories = [], demo = false }: { slug: string; name: string; categories?: string[]; demo?: boolean }) {
   const { count } = useCart();
   const pathname = usePathname();
-  const base = `/s/${slug}`;
+  const base = storefrontPath(slug);
   const links = [{ label: "Все товары", href: `${base}/catalog` }, ...categories.map(label => ({ label, href: `${base}/category/${encodeURIComponent(label)}` }))];
   return <header className="sticky top-0 z-30 border-b border-black/10 bg-[var(--store-surface)]">
     {demo && <div className="border-b border-black/10"><div className="container flex flex-wrap justify-between gap-3 py-3 text-xs"><Link href="/demo">← Другие примеры</Link><span className="hidden opacity-50 sm:inline">Демонстрационный каталог</span><Link href="/admin/ai-studio" className="font-semibold">К созданию каталога →</Link></div></div>}

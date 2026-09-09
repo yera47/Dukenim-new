@@ -14,6 +14,8 @@ tenant_users:Table<{id:string;tenant_id:string;user_id:string;role:"owner"|"admi
 categories:Table<{id:string;tenant_id:string;name:string;slug:string;sort_order:number;is_active:boolean}>;
 products:Table<ProductRow>;
 product_variants:Table<VariantRow>;
+variant_costs:Table<{variant_id:string;tenant_id:string;unit_cost:number|null;updated_at:string}>;
+order_item_costs:Table<{order_item_id:string;tenant_id:string;order_id:string;unit_cost:number|null;qty:number;unit_price:number;captured_at:string}>;
 customers:Table<{id:string;tenant_id:string;phone:string;name:string|null;first_order:string|null;last_order:string|null;orders_count:number;total_spent:number}>;
 orders:Table<OrderRow>;
 order_items:Table<{id:string;order_id:string;tenant_id:string;variant_id:string|null;title_snapshot:string;price_snapshot:number;qty:number}>;

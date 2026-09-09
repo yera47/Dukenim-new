@@ -6,9 +6,11 @@ import Link from "next/link";
 import { Check, ChevronLeft, ShoppingBag } from "lucide-react";
 import { money, type Product } from "@/lib/demo-data";
 import { useCart } from "./cart-provider";
+import { storefrontPath } from "@/lib/storefront-path";
 
 export function ProductDetail({ product, slug, deliveryPolicy, returnPolicy }: { product: Product; slug: string; deliveryPolicy: string | null; returnPolicy: string | null }) {
   const available = product.variants.find(variant => variant.stock > 0);
+  const base = storefrontPath(slug);
   const [selected, setSelected] = useState(available?.id ?? "");
   const [added, setAdded] = useState(false);
   const { add, items, total } = useCart();
@@ -21,12 +23,12 @@ export function ProductDetail({ product, slug, deliveryPolicy, returnPolicy }: {
   function addSelected(buyNow=false){
     if(!canAdd)return;
     add(product,selected);
-    if(buyNow)router.push(`/s/${slug}/checkout`);else setAdded(true);
+    if(buyNow)router.push(`${base}/checkout`);else setAdded(true);
   }
   const images = product.images ?? [];
   const variationLabel = product.variants.some(variant => variant.size) ? "Выберите размер" : "Выберите вариант";
   return <main className="container py-8">
-    <Link href={`/s/${slug}/catalog`} className="muted inline-flex items-center gap-1 text-sm"><ChevronLeft size={17}/> Назад в каталог</Link>
+    <Link href={`${base}/catalog`} className="muted inline-flex items-center gap-1 text-sm"><ChevronLeft size={17}/> Назад в каталог</Link>
     <div className="mt-7 grid gap-10 md:grid-cols-[1.1fr_.9fr]">
       <div className="grid grid-cols-2 gap-3">
         <div style={images[0] ? { backgroundImage: `url(${images[0]})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined} className="product-image col-span-2 aspect-[5/4] rounded-[28px]"/>
@@ -45,7 +47,7 @@ export function ProductDetail({ product, slug, deliveryPolicy, returnPolicy }: {
     </div>
     <dialog ref={dialog} onClose={()=>setAdded(false)} aria-labelledby="cart-added-title" className="m-auto w-[calc(100%_-_32px)] max-w-md rounded-3xl border border-neutral-200 bg-white p-6 shadow-xl backdrop:bg-black/40">
       <h2 id="cart-added-title" className="flex items-center gap-2 text-xl font-semibold"><Check size={22}/>Товар в корзине</h2><p className="mt-3">{product.title}</p><p className="mt-2 text-sm text-neutral-500">Всего в корзине: {money(total)}</p>
-      <div className="mt-6 grid gap-3"><Link href={`/s/${slug}/catalog`} onClick={()=>dialog.current?.close()} className="btn btn-secondary">Продолжить покупки</Link><Link href={`/s/${slug}/cart`} onClick={()=>dialog.current?.close()} className="btn btn-primary">Перейти в корзину</Link><button type="button" onClick={()=>dialog.current?.close()} className="py-2 text-sm text-neutral-500">Остаться на товаре</button></div>
+      <div className="mt-6 grid gap-3"><Link href={`${base}/catalog`} onClick={()=>dialog.current?.close()} className="btn btn-secondary">Продолжить покупки</Link><Link href={`${base}/cart`} onClick={()=>dialog.current?.close()} className="btn btn-primary">Перейти в корзину</Link><button type="button" onClick={()=>dialog.current?.close()} className="py-2 text-sm text-neutral-500">Остаться на товаре</button></div>
     </dialog>
   </main>;
 }

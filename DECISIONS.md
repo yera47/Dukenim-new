@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-09 17: owner pauses goods acquiring pending provider decision; continue remaining website work, including separately navigable18storefront configurations, personalized builder, shades, historical costs and reservations. Native app pause remains in force.
+
 - 2026-09-09 owner: demo entry selects a business segment first, then3explained design alternatives. Product page offers add-to-cart and buy-now; after add, a clear path to continue shopping or checkout. No authority to fake successful payment or claim unsupported recommendations.
 
 - 2026-09-09 16:40 owner: replace preset palette selection with conversational colour preferences, optional logo/brandbook and multiple matching shade proposals; populated examples precede products. Explicitly authorizes publishing verified website changes to dukenim.kz, superseding the earlier no-deploy instruction. No paid acquiring contract or claim of full completion implied.
