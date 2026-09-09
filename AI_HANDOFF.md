@@ -1,5 +1,15 @@
 # Dukenim — AI handoff
 
+## Segment chooser and purchase navigation — 2026-09-09 17:23
+
+`/demo` now selects only sphere; six `/demo/[vertical]` pages then explain and preview3approaches. ProductDetail has separate add/buy-now actions, native accessible dialog after add with continue/catalog/cart/close choices; buy-now adds selected variant to existing cart and routes checkout (not payment). UI prevents adding beyond current displayed stock; server remains authoritative. Distinct collection2column editorial, guided square cards, food assortment compact rows via scoped CSS. Not18fully bespoke journeys.
+
+267tests pass/2live skip,tsc/finalbuild pass. Browser purchase-navigation passes390/1440: segment chooser, modal, continue shopping, buy-now checkout and existing cart retained; mobile dialog screenshot inspected. First test incorrectly expected line items on checkout contacts step; corrected to inspect cart after checkout navigation. No order submitted/payment/customer mutation.36layout regression checks running. Unfinished shades,AI save E2E,costs,reservation/acquiring unchanged; Azure not modified. Local server3001 session60280. Publication authorized, not yet confirmed for this slice.
+
+## Publication confirmed — 2026-09-09 16:53
+
+bd30165 published: Vercel dpl_7P8cRBaBFtv6sSsk8PShPUeMqaGr Ready, www/apex aliases. Final build267tests/2skip passed;36example browser checks and updated demo navigation both widths passed locally. Production chooser and beauty/guided return200. Local3001 session44918. AI prompt now uses configuration registry, not a new model or fresh live Azure validation. Three choices are allowed by deployed RPC; complete authenticated generation→save→relogin still pending. Broader unfinished acceptance unchanged.
+
 ## Three approaches / eighteen examples — 2026-09-09 16:50
 
 Implemented commerce-configurations registry (six launch goods verticals × collection/assortment/guided),18 static demo landing routes and `/demo` chooser; unsupported services/event removed from chooser, historical routes preserved. StoreHome renders actual structural differences: collection hero, compact assortment header, illustrated category entry cards. Wizard now displays three shared-renderer iframe previews per plan, full example links, matching registry copy. AI design prompt receives only tariff-allowed configuration descriptions; not model training. gallery now maps to assortment, studio/signature to guided, atelier/journal to collection. Existing gallery stores therefore adopt the compact entry layout.
@@ -706,3 +716,11 @@ Checks: tsc, 58 tests, production build, real browser navigation at 390/1440 pas
 Fixed apps/mobile/app.json: preserve existing Sign in with Apple using usesAppleSignIn and explicit Default entitlement. EAS previously attempted APPLE_ID_AUTH OFF, which Apple rejected. Expo SDK57 documentation and config introspection verified. Mobile tsc and lint pass.
 
 Used existing authenticated Apple session via EAS production credentials workflow. Capabilities sync succeeded, Push Notifications enabled, existing Apple sign-in retained; new distribution certificate and active App Store provisioning profile created and stored by EAS. CLI confirms all build credentials ready. No app/identifier/certificate deleted. This config does not implement native Apple login or APNs server delivery. No IPA built or TestFlight upload performed. Next: production public environment configuration, native functionality/device QA, production build and TestFlight; do not claim App Store readiness.
+
+### CRM / ERP / POS partnership outreach preparation — 2026-09-09
+
+Expanded `docs/CRM_PARTNERSHIP_PLAN_20260909.md` into an evidence-backed outreach registry covering the requested CRM, retail/accounting and restaurant POS systems plus Kazakhstan-first candidates. Added a non-competitive positioning rule: Dukenim is the public storefront/order channel; the connected CRM/ERP/POS remains the operational source of truth. Defined per-merchant OAuth or a merchant-generated least-privilege key as the only acceptable access model; no platform partnership can replace each merchant's authorization.
+
+Confirmed official routes and requirements for the first wave, including Kommo technology partnership, Bitrix24 technology partner, MойСклад developer marketplace, Planfix partner OAuth, keyCRM site chat, inSales partner/developer account, iiko application integration form, r_keeper integrator email, Poster developer marketplace, Paloma365 integrator network, Business.Ru Developers, JOWI and others. Added separate Russian outreach copy for CRM/OMS, trade/accounting and restaurant POS. Recommended excluding central 1C outreach for now and later partnering with one Kazakhstan 1C integrator around explicitly supported configurations.
+
+No messages, applications, registrations, contracts or API-key requests were submitted. External representation is blocked pending factual sender data (full name/role, monitored business email, phone/Telegram; legal details only where required) and owner confirmation immediately before the named batch is sent. No code, Azure resource, production data or deployment changed. Verification: source links and required form fields were reviewed; Markdown file read back successfully. Next: owner supplies sender identity; prepare the exact batch preview, obtain one action-time confirmation, then submit all channels that do not require OTP/login and report receipts per company. Registrations, agreement acceptance, CAPTCHA, password and OTP steps remain owner actions.

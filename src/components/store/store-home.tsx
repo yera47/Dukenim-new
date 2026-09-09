@@ -5,6 +5,7 @@ import { nichePresets } from "@/lib/niche-presets";
 import type { Product } from "@/lib/demo-data";
 import type { Database, BusinessVertical } from "@/types/database";
 import { approachForTemplate, configurationFor, type CommerceApproach } from "@/lib/commerce-configurations";
+import styles from "./commerce-layouts.module.css";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -30,7 +31,7 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const heroStyle = heroImage ? { backgroundImage: `linear-gradient(100deg, var(--store-bg) 0%, transparent 66%), url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
 
-  return <main className="storefront-theme" data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
+  return <main className={`storefront-theme ${styles.root}`} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
     {approach==="collection"?<section className="container mt-6 overflow-hidden rounded-[28px] border border-black/10 bg-[var(--store-surface)]" style={heroStyle}>
       <div className="storefront-hero-grid min-h-[580px] p-8 md:p-14">
         <div className="flex max-w-xl flex-col justify-center">

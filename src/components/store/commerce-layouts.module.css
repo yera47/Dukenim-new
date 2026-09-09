@@ -1,0 +1,15 @@
+.root[data-approach="collection"] :global(.storefront-product-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:2.5rem 1rem}
+.root[data-approach="collection"] :global(.storefront-product-grid)>a{grid-column:auto!important;grid-row:auto!important}
+.root[data-approach="collection"] :global(.product-image){border-radius:0;aspect-ratio:3/4!important}
+.root[data-approach="guided"] :global(.storefront-product-grid)>a{border:1px solid #e5e5e5;border-radius:18px;overflow:hidden;background:var(--store-surface);padding:10px}
+.root[data-approach="guided"] :global(.product-image){aspect-ratio:1!important;border-radius:12px}
+.root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:1fr!important;gap:12px}
+.root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid)>a{display:grid;grid-template-columns:110px minmax(0,1fr);gap:16px;border-bottom:1px solid #e5e5e5;padding:12px 0}
+.root[data-approach="assortment"][data-vertical="food"] :global(.product-image){aspect-ratio:1!important;border-radius:16px}
+.root[data-approach="assortment"][data-vertical="food"] :global(.product-image)>span{display:none}
+@media(min-width:768px){
+ .root[data-approach="collection"] :global(.storefront-product-grid){gap:4rem 2rem}
+ .root[data-approach="collection"] :global(.storefront-product-grid) h3{font-size:1.25rem}
+ .root[data-approach="guided"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important}
+ .root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px 36px}
+}

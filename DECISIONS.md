@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-09 owner: demo entry selects a business segment first, then3explained design alternatives. Product page offers add-to-cart and buy-now; after add, a clear path to continue shopping or checkout. No authority to fake successful payment or claim unsupported recommendations.
+
 - 2026-09-09 16:40 owner: replace preset palette selection with conversational colour preferences, optional logo/brandbook and multiple matching shade proposals; populated examples precede products. Explicitly authorizes publishing verified website changes to dukenim.kz, superseding the earlier no-deploy instruction. No paid acquiring contract or claim of full completion implied.
 
 - 2026-09-09 afternoon: Owner approves PDF.js dependency; pauses app/iOS/TestFlight until website improvement. Initial Studio: one CTA, one active step, compact editable completed answers; no initial history/brand/preview panels. Remove Overview; mobile3–4 items including Studio. Three researched sales approaches per actual launch vertical. New brief does not authorize production deployment or paid acquiring contracts.

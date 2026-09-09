@@ -8,6 +8,7 @@ const origin = process.argv[3] || 'http://localhost:3004';
     for (const width of [390, 1440]) {
       const page = await browser.newPage({ viewport: { width, height: 900 } });
       await page.goto(origin + '/demo');
+      await page.locator('a[href="/demo/fashion"]').click();
       await page.locator('a[href="/demo/fashion/collection"]').click();
       await page.getByRole('link', { name: 'Все товары', exact: true }).click();
       await page.waitForURL('**/s/demo-shop/catalog');
