@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## Published checkpoint — 2026-09-10 04:51
+
+47da9d8 is Vercel Ready PbAFHL5HzBx2LEGDGESScJooER2K.331full tests pass/4opt-in skips; all4live model cases were separately run successfully this turn. Tsc/build clean. Production buyer36journeys passed on6d07d41;47da9d8 changes private Studio/PDF/product-step code, no public storefront composition changes. Final anonymous access smoke running. No Amira seed, no new Higgsfield images or acquisition charges. Full merchant browser creation/relogin remains unverified: existing owner session can be read through CUA, but no documented interaction API is exposed; do not bypass the earlier denied production-credential export to run synthetic auth. Product UI mock and SQL rollback fixtures are distinct evidence, not full owner E2E.
+
+Next gate: owner authenticated creation→AI→save→product→publish→reservation transaction, or a supported authenticated testing environment. Additional imagery needs sufficient Higgsfield balance (5available,2/image); payment provider still needs actual merchant onboarding/sandbox. Keep remaining unrestricted composition/fonts and automatic whole-document interpretation marked incomplete rather than claiming arbitrary website generation. Native paused by owner. Research/applicable source and tests are preserved; no secrets in files.
+
 ## Selected PDF page analysis + first-product wizard — 2026-09-10 04:46
 
 Production composition release6d07d41 Ready33AdrUPENuSf1caWXToPRxeqJ9Z2; all36 production buyer journeys pass390/1440, including mobile filter interactions. No Amira writes.
