@@ -1,5 +1,17 @@
 # Dukenim — AI handoff
 
+## Three approaches / eighteen examples — 2026-09-09 16:50
+
+Implemented commerce-configurations registry (six launch goods verticals × collection/assortment/guided),18 static demo landing routes and `/demo` chooser; unsupported services/event removed from chooser, historical routes preserved. StoreHome renders actual structural differences: collection hero, compact assortment header, illustrated category entry cards. Wizard now displays three shared-renderer iframe previews per plan, full example links, matching registry copy. AI design prompt receives only tariff-allowed configuration descriptions; not model training. gallery now maps to assortment, studio/signature to guided, atelier/journal to collection. Existing gallery stores therefore adopt the compact entry layout.
+
+Supabase migration20260909114519 adds studio/signature to atomic first-catalog allowlists, otherwise preserves exact live function/ownership/entitlement/row-lock logic. Applied successfully; invoker, anon-denied, both3-key allowlists and no-owner rejection checked. No customer rows changed by diagnostic. Authenticated save of all choices not yet E2E verified.
+
+267tests pass/2live skip.36browser checks pass (18routes at390/1440): HTTP200, expected layout, populated product links, no horizontal overflow. Beauty guided mobile screenshot inspected; other screenshot artifacts saved in output, not committed. These are18 composed example landing pages, NOT18 fully independent completed sales journeys: links enter existing shared demo product/cart/category routes. Full creation, arbitrary shade generation, historic costs/reservations/acquiring remain unfinished. Final release build running at checkpoint. Azure deployment/keys unchanged; live model test not run. Publishing follows explicit owner authorization.
+
+## Production publication verified — 2026-09-09 16:40
+
+Source d61b595 pushed; Vercel dpl_64uAAWZXftjx1UWoGfJM8kbF9bPc is Ready with www.dukenim.kz and apex aliases. Includes accumulated local improvements and colour-preference substage.248tests pass/2live skip,tsc/build pass. Anonymous Studio307 requires login. Full authenticated creation/save/relogin journey still unverified; arbitrary multi-colour shade proposals,18templates, full builder,cost snapshots,reservations,goods acquiring remain internal unfinished work (provider credentials additionally needed for acquiring). No Azure management changes. Local server3001 session52355. This publication supersedes LOCAL ONLY statements for files in d61b595, not their unfinished acceptance status.
+
 ## Release preparation — 2026-09-09 16:40
 
 Added persisted free-text colour preferences as a separate brief → colours → examples substage; sent with store_design requests before general brief, invalidates stale proposal on edit. Back navigation follows substages. Does NOT implement arbitrary multi-colour themes: current AI/storage still constrain palette + one accent. UI explicitly states that limitation. Owner now authorizes production publication. All248tests pass,2live opt-in tests skipped; tsc and final build pass. Preparing accumulated local website source for Git/Vercel publication; do not claim Ready until checked. No Azure or payment-account change. Other untracked CRM partnership document and output artifacts belong to separate work and are excluded.

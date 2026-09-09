@@ -4,6 +4,7 @@ import { CatalogBrowser } from "@/components/store/catalog-browser";
 import { nichePresets } from "@/lib/niche-presets";
 import type { Product } from "@/lib/demo-data";
 import type { Database, BusinessVertical } from "@/types/database";
+import { approachForTemplate, configurationFor, type CommerceApproach } from "@/lib/commerce-configurations";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -14,9 +15,13 @@ export type StoreHomeProps = {
   settings:Settings|null;
   campaign:Campaign|null;
   storePolicies:{delivery_policy:string|null;return_policy:string|null}|null;
+  approach?:CommerceApproach;
 };
 // Same render tree for authenticated draft preview and the published homepage.
-export function StoreHome({slug,tenant,products,settings,campaign,storePolicies}:StoreHomeProps) {
+export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach}:StoreHomeProps) {
+  const approach=requestedApproach??approachForTemplate(settings?.template_key??"atelier");
+  const configuration=configurationFor(tenant.business_vertical??"other",approach);
+  const categories=Array.from(new Set(products.map(p=>p.category).filter(Boolean)));
   const preset = nichePresets[tenant.business_vertical ?? "other"];
   const title = settings?.hero_title || tenant.catalog_name || tenant.name;
   const subtitle = settings?.hero_subtitle || tenant.tagline || preset.headline;
@@ -25,8 +30,8 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies}
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const heroStyle = heroImage ? { backgroundImage: `linear-gradient(100deg, var(--store-bg) 0%, transparent 66%), url(${heroImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined;
 
-  return <main className="storefront-theme" data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
-    <section className="container mt-6 overflow-hidden rounded-[28px] border border-black/10 bg-[var(--store-surface)]" style={heroStyle}>
+  return <main className="storefront-theme" data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
+    {approach==="collection"?<section className="container mt-6 overflow-hidden rounded-[28px] border border-black/10 bg-[var(--store-surface)]" style={heroStyle}>
       <div className="storefront-hero-grid min-h-[580px] p-8 md:p-14">
         <div className="flex max-w-xl flex-col justify-center">
           <h1 className="text-5xl font-semibold leading-[.96] tracking-[-.04em] md:text-7xl">{title}</h1>
@@ -42,7 +47,12 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies}
           <span className="mt-3 block text-sm">{featuredProduct.title} →</span>
         </Link> : null}
       </div>
-    </section>
+    </section>:<header className="container py-10 md:py-16"><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{title}</h1><p className="mt-4 max-w-2xl text-lg opacity-70">{subtitle}</p></header>}
+
+    {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`/s/${slug}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      {product&&<img src={product.images![0]} alt={category} className="aspect-[4/3] w-full object-cover" loading="lazy"/>}<span className="flex items-center justify-between p-5 font-semibold">{category}<ArrowRight size={18}/></span>
+    </Link>})}</div></section>}
 
     {campaign && <section className="container pt-6"><div className={`storefront-campaign ${campaignImage ? "has-image" : ""}`} style={campaignImage ? { backgroundImage: `linear-gradient(90deg, rgba(2, 19, 15, .94) 0%, rgba(2, 19, 15, .76) 55%, rgba(2, 19, 15, .2) 100%), url(${campaignImage})`, backgroundSize: "cover", backgroundPosition: "center" } : undefined}><div>
       {campaign.eyebrow && <span>{campaign.eyebrow}</span>}<h2>{campaign.title}</h2>{campaign.body && <p>{campaign.body}</p>}

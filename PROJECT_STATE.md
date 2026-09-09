@@ -1,5 +1,9 @@
 # Dukenim — current project state
 
+- 2026-09-09 16:50 source:18 composed landing examples and3 selectable approaches per sphere/plan, shared renderer and AI configuration context. Atomic creation migration applied with role/entitlement guards retained.267tests and36browser checks passed; full saved creation/live AI not yet verified. Not a claim of18complete independent storefront journeys or remaining commerce acceptance.
+
+- 2026-09-09 16:40: d61b595 published, Vercel dpl_64uAAWZXftjx1UWoGfJM8kbF9bPc Ready on www/apex. Includes accumulated local navigation, PDF text, catalog filters, analytics, preview fixes and separate free-text colour-preference substage.248tests pass/2skip,tsc/build pass. This is not full individual colour generation,18templates,full builder,cost/reservation/acquiring completion.
+
 - 2026-09-09 16:25 LOCAL: final setup preview separates demo products from real merchant products using the shared storefront renderer; CTA color override corrected. No sample data writes or production deployment. 13 focused tests passed; broader open acceptance items unchanged.
 
 - 2026-09-09 16:08 LOCAL: separate brief/examples substage persisted in existing draft; initial palette grid removed,2illustrated existing choices per sphere using labelled demo assets. Six-field business guidance added to AI prompt; no Azure live verification.241tests pass/2skip,tsc clean; not18templates or full creation path. No deploy.

@@ -5,9 +5,9 @@ import { catalogBuilderStateSchema } from "@/lib/catalog-builder-draft";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { createCatalogAction, type CatalogActionState } from "@/app/admin/actions";
 import { launchTemplatesForPlan } from "@/lib/storefront-theme";
-import { launchCopyForVertical, nichePresets } from "@/lib/niche-presets";
+import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
-import { TemplateIllustration } from "./template-illustration";
+import { approachForTemplate, configurationFor } from "@/lib/commerce-configurations";
 import { catalogRecommendation } from "@/lib/catalog-recommendation";
 
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
@@ -131,10 +131,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         {step===1&&designStage==="examples"&&<>
           <p className="my-4 text-sm leading-7 text-neutral-500">Это наполненные иллюстрации. Ваши товары добавим позже. Выберите подходящую подачу — цвета можно изменить после.</p>
           <button type="button" onClick={()=>void saveDraft(1,"brief")} className="mb-5 text-sm underline underline-offset-4">✓ О магазине: {brief.slice(0,70)} · Изменить</button>
-          <div className="grid gap-5 lg:grid-cols-2">{templates.map((option,index)=>{const [title,text]=launchCopyForVertical(vertical,index);return <button type="button" key={option.key} aria-pressed={option.key===templateKey} onClick={()=>{setGenerationId(undefined);setTemplateKey(option.key);}} className={`overflow-hidden rounded-2xl border-2 p-3 text-left ${option.key===templateKey?"border-neutral-900":"border-transparent bg-white"}`}>
-            <div className="px-1 pb-4"><b className="text-base">{title}</b><p className="mt-2 text-sm leading-6 text-neutral-500">{text}</p><span className="mt-2 block text-xs">{index===0?"Подходит для небольшой выразительной коллекции":"Подходит, когда важно быстро найти нужный товар"}</span></div>
-            <TemplateIllustration vertical={vertical} compact={index===1}/><span className="mt-3 block text-center text-sm font-semibold">{option.key===templateKey?"✓ Выбрано":"Выбрать этот вариант"}</span>
-          </button>})}</div>
+          <div className="grid gap-5 lg:grid-cols-3">{templates.map(option=>{const config=configurationFor(vertical,approachForTemplate(option.key));return <article key={option.key} className={`overflow-hidden rounded-2xl border-2 bg-white p-3 text-left ${option.key===templateKey?"border-neutral-900":"border-neutral-200"}`}>
+            <div className="px-1 pb-4"><h3 className="text-base font-semibold">{config?.title??option.benefit}</h3><p className="mt-2 text-sm leading-6 text-neutral-500">{config?.description??option.benefit}</p></div>
+            <iframe loading="lazy" title={`Пример: ${config?.title??option.key}`} className="h-[420px] w-full rounded-lg border border-neutral-100" src={`/store-preview?${new URLSearchParams({name:catalogName,template:option.key,palette:paletteKey,content:"example"})}`}/>
+            {config&&<a href={config.href} target="_blank" rel="noopener noreferrer" className="my-3 block text-center text-sm underline">Открыть полный пример ↗</a>}
+            <button type="button" aria-pressed={option.key===templateKey} onClick={()=>{setGenerationId(undefined);setTemplateKey(option.key);}} className="btn btn-secondary mt-2 w-full">{option.key===templateKey?"✓ Выбрано":"Выбрать"}</button>
+          </article>})}</div>
         </>}
         {step===2&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">Ниже — выбранное оформление с примерами товаров. Они не добавятся в ваш магазин. Вкладка «Мои товары» показывает только ваши данные.</p></>}
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}

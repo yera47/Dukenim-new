@@ -26,16 +26,18 @@ export const templateCatalog = [
   {key:"signature",name:"Фирменная витрина",minPlan:"standard",description:"Просторная подача для собственной айдентики и кампаний."},
 ] as const;
 
-// The first-run choice is deliberately compact: two distinct, curated directions per public plan.
+// Three sales approaches per supported business; database creation RPC enforces the same keys.
 // The full builder remains available later in settings for eligible plans.
 export const catalogLaunchTemplates = {
   basic: [
     { key: "atelier", benefit: "Выразительная обложка и крупные карточки — лучше для одежды, косметики и авторских вещей." },
     { key: "market", benefit: "Быстрый просмотр ассортимента и категорий — лучше для широкого каталога и повторных заказов." },
+    { key: "studio", benefit: "Выбор через иллюстрированные разделы каталога." },
   ],
   standard: [
     { key: "journal", benefit: "Подборки, история бренда и коллекции — подходит магазинам с сильной визуальной подачей." },
     { key: "gallery", benefit: "Премиальная витрина с акциями и бренд-блоками — для собственной айдентики и кампаний." },
+    { key: "signature", benefit: "Выбор через иллюстрированные разделы с фирменным оформлением." },
   ],
 } as const;
 
