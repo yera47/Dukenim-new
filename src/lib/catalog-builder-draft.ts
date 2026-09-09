@@ -3,6 +3,8 @@ import { palettes, templateCatalog } from "./storefront-theme";
 
 export const catalogBuilderStateSchema = z.object({
   step: z.number().int().min(0).max(2),
+  designStage: z.enum(["brief", "colors", "examples"]).optional(),
+  colorBrief: z.string().max(300).optional(),
   catalogName: z.string().max(80),
   templateKey: z.string().refine(key => templateCatalog.some(t => t.key === key)),
   paletteKey: z.string().refine(key => palettes.some(p => p.key === key)),

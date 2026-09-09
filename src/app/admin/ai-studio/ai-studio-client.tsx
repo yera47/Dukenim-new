@@ -53,7 +53,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [suggestedBrief,setSuggestedBrief]=useState("");
+  const suggestedBrief = "";
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
   const supportHref = `/admin/requests?source=ai-studio&intent=${intent}`;
 
@@ -146,18 +146,13 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   }
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
-    <StudioConversation enabled={enabled} onTask={task=>{setSuggestedBrief(task.brief);setWorkspaceOpen(true);}}>
-    {!workspaceOpen ? <section className={styles.welcome}>
-      <p>Когда определимся с вводными, сохраните основу магазина. Можно также начать вручную.</p>
-      <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Создать каталог с AI Studio <ArrowRight size={17}/></button>
-      <Link href={supportHref}>Написать в поддержку</Link>
-    </section> : <section id="catalog-setup-workspace">
-      <button type="button" onClick={()=>setWorkspaceOpen(false)} className="text-sm text-neutral-500">← В начало Studio</button>
+    {!workspaceOpen ? <section className={styles.welcome} aria-label="Начало создания магазина">
+      <h2>Ваш магазин начинается здесь</h2>
+      <p>Назовите магазин и расскажите, что продаёте. Вместе с AI подберём оформление, затем добавим товары и условия заказа.</p>
+      <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Начать создание каталога <ArrowRight size={17}/></button>
+    </section> : <section id="catalog-setup-workspace" className={styles.setupFlow}>
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
-
     </section>}
-    <BrandMaterials/><DesignHistory/>
-    </StudioConversation>
   </div>;
 
   return <div className={styles.workspace}>

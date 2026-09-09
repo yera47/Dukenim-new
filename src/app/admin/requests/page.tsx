@@ -32,7 +32,8 @@ export default async function Requests({ searchParams }: { searchParams: Promise
     ? query.source as RequestRow["source"]
     : "support";
   const aiIntent = source === "ai-studio" ? String(query.intent ?? "").slice(0, 50) : "";
-  const subject = source === "ai-studio" ? `Вопрос по AI Studio${aiIntent ? ` · ${aiIntent}` : ""}` : "Обращение в поддержку";
+  const paymentIntent = source === "integrations" && (query.intent === "card-payments" || query.intent === "kaspi-payments") ? query.intent : null;
+  const subject = paymentIntent ? `Подключение ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплаты картой"}` : source === "ai-studio" ? `Вопрос по AI Studio${aiIntent ? ` · ${aiIntent}` : ""}` : "Обращение в поддержку";
   let messages: Message[] = [];
   let requests: RequestRow[] = [];
 
@@ -62,7 +63,8 @@ export default async function Requests({ searchParams }: { searchParams: Promise
           <input type="hidden" name="pagePath" value={source === "ai-studio" ? "/admin/ai-studio" : "/admin/requests"}/>
           <input type="hidden" name="aiIntent" value={aiIntent}/>
           <label className="text-sm font-extrabold">Тема<input name="subject" required minLength={2} maxLength={120} defaultValue={subject} className="input mt-2"/></label>
-          <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
+          <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" defaultValue={paymentIntent ? `Хочу подключить ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплату картой"} для своего магазина.\nПровайдер и статус заявки: \nНужна помощь со следующим шагом.` : ""} placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
+          {paymentIntent && <p className="text-xs leading-5 text-neutral-500">Укажите только название провайдера и статус заявки. Не отправляйте API-ключи, банковские реквизиты, пароли или коды подтверждения.</p>}
           <button className="btn btn-primary justify-self-start"><Send size={17}/> Отправить в поддержку</button>
         </form>
       </section>

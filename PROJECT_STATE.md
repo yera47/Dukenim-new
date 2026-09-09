@@ -1,5 +1,15 @@
 # Dukenim — current project state
 
+- 2026-09-09 16:25 LOCAL: final setup preview separates demo products from real merchant products using the shared storefront renderer; CTA color override corrected. No sample data writes or production deployment. 13 focused tests passed; broader open acceptance items unchanged.
+
+- 2026-09-09 16:08 LOCAL: separate brief/examples substage persisted in existing draft; initial palette grid removed,2illustrated existing choices per sphere using labelled demo assets. Six-field business guidance added to AI prompt; no Azure live verification.241tests pass/2skip,tsc clean; not18templates or full creation path. No deploy.
+
+- 2026-09-09 15:07 LOCAL: shared public/preview catalog search/category/size/availability/price sorting, accurate same-variant stock match; removed invented Hit/New badges, real old-price/availability display.8focused tests,tsc/build passed; no browser interaction proof or deploy. Research expanded to exact PDP/category sources;18configurations and full site acceptance still open.
+
+- 2026-09-09 afternoon LOCAL ONLY: initial Studio one CTA, collapsed steps saved before navigation; monochrome mobile4-item nav/More with secondary routes and official D mark; approved PDF.js6.3.289 text import/worker cleanup. Analytics corrected from last100/all-status misleading total to paid-order1/7/30-day cohort, paginated with tenant predicate. Payment guide/support intake added, no goods acquiring connected.226tests pass/2skip, tsc/build clean. Public Supabase local config recovered; private UI now correctly redirects to login, owner browser login requested; no visual/E2E proof. No deploy; published remains df287b7. App/TestFlight paused. Research18references preliminary;18working configurations, historical costs/profit, full builder/booking/prepayment still not complete. Polar SaaS eligibility unresolved.
+
+- 2026-09-09 13:18: df287b7 Ready dpl_AZYugoNJySA4vWoQjSViKPWuzub6: unified light-grey Studio chat surface, white cards/composer and responsive spacing. Four Studio tests, tsc/build pass; visual owner review pending. EAS authenticated listing has no iOS builds. PDF/autobuilder/reservations/payment/native acceptance unchanged.
+
 - 2026-09-09 03:06: b309465 Ready dpl_5Hp25xKWtG9RJXNV76rzZguPMupu; real category names published. Minutely queue-aware push cron recorded successful execution; signed endpoint200/anonymous401. Native delivery not tested (zero registered devices). Final214 tests/tsc/build pass; no new advisor findings. Full acceptance remains open, see checklist.
 
 - 2026-09-09: bf3f8fc Ready dpl_AMdNXTGJLordZgbEQ7tJLqXL31f2. Supabase minutely push wake activated after signed live200/anonymous401. Queue-aware idle check avoids needless HTTP calls; short-lived HMAC keeps persistent key out of managed net tables. Native route code passes iOS JS export, no IPA/registered device/delivery proof. Category mapping follow-up fixes flattened real catalog sections; tsc/build and214 tests pass.

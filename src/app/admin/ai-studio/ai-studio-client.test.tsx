@@ -22,7 +22,11 @@ describe("AI Studio first-run access", () => {
   });
   it("offers in-place catalog creation before the first product", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="not_started"/>);
-    expect(html).toContain("Создать каталог с AI Studio");
+    expect(html).toContain("Начать создание каталога");
+    expect(html).not.toContain("Логотип и правила бренда");
+    expect(html).not.toContain("История оформления");
+    expect(html).not.toContain("Посмотреть мой каталог");
+    expect(html).not.toContain("textarea");
     expect(html).not.toContain('id="studio-message"');
     expect(html).not.toContain("0/800");
     expect(html).not.toContain("5 кредитов");

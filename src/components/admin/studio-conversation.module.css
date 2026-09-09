@@ -7,7 +7,7 @@
   min-width: 0;
 }
 .userMessage { background: #e2e2e2; color: #202020; }
-.steps > * { background-color: #fff; border-color: #dedede; }
+.steps > * { background-color: transparent; border-color: #dedede; }
 .composer { border-color: #d4d4d4; box-shadow: 0 4px 20px rgb(0 0 0 / 5%); }
 .composer:focus-within { border-color: #8a8a8a; box-shadow: 0 0 0 3px rgb(0 0 0 / 5%); }
 .workspace textarea { min-width: 0; font-size: 16px; }

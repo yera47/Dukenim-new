@@ -1,10 +1,23 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { brandColorsSchema } from "@/lib/brand-materials";
+import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
 export function BrandMaterials() {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
   const [file,setFile]=useState<File|null>(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
+  const [pdfBusy,setPdfBusy]=useState(false);
+  const [pdfText,setPdfText]=useState("");
+  async function readPdf(file:File|undefined) {
+    if(!file||pdfBusy)return;
+    setPdfBusy(true);setMessage("");setPdfText("");
+    try {
+      const result=await readBrandbookPdf(file);
+      setPdfText(result.text);
+      setMessage(`Прочитан текст PDF (${result.pages} стр.). ${result.truncated?"Текст сокращён до лимита: проверьте важные правила. ":""}Изображения и шрифты пока не анализировались. Проверьте текст перед добавлением.`);
+    } catch(error) { setMessage(error instanceof Error?error.message:"Не удалось прочитать PDF."); }
+    finally { setPdfBusy(false); }
+  }
   useEffect(()=>{
     const controller=new AbortController();
     void fetch("/api/brand-materials",{cache:"no-store",signal:controller.signal}).then(async response=>{
@@ -30,12 +43,15 @@ export function BrandMaterials() {
     <summary className="cursor-pointer font-semibold">Логотип и правила бренда · необязательно</summary>
     <p className="my-3 text-sm text-neutral-500">Без брендбука тоже можно. Загрузите логотип и опишите пожелания.</p>
     <form onSubmit={event=>{event.preventDefault();void save();}} className="space-y-4">
-      <fieldset disabled={busy||revision===null} className="space-y-4">
+      <fieldset disabled={busy||pdfBusy||revision===null} className="space-y-4">
+        <label className="block text-sm">Брендбук PDF · необязательно<input type="file" accept="application/pdf,.pdf" className="mt-2 block w-full" onChange={event=>void readPdf(event.target.files?.[0])}/></label>
+        <p className="text-xs text-neutral-500">До 10 МБ и 40 страниц. Чтение происходит в браузере; исходный PDF не загружается. Сканы без текстового слоя пока не распознаются.</p>
+        {pdfText&&<div className="space-y-2"><textarea aria-label="Извлечённые правила PDF" value={pdfText} onChange={event=>setPdfText(event.target.value)} maxLength={5800} rows={5} className="input w-full"/><button type="button" className="btn btn-secondary" onClick={()=>{const combined=[notes,pdfText].filter(Boolean).join("\n\n");if(combined.length>6000){setMessage("В правилах получится больше 6000 символов. Сократите текст перед добавлением.");return;}setNotes(combined);setPdfText("");setMessage("Текст добавлен в правила. Нажмите «Сохранить материалы для AI», чтобы сохранить его.");}}>Добавить проверенный текст в правила</button></div>}
         <label className="block text-sm">Логотип (PNG, JPEG, WebP, до 3 МБ)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>setFile(event.target.files?.[0]??null)} className="mt-2 block w-full"/></label>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {logoUrl&&<img src={logoUrl} alt="Сохранённый логотип бренда" className="max-h-24 max-w-48 object-contain"/>}
         <label className="block text-sm">Правила из брендбука или ваши пожелания<textarea value={notes} onChange={e=>setNotes(e.target.value)} maxLength={6000} rows={6} className="input mt-2 w-full" placeholder="Цвета, шрифты, характер магазина, чего избегать. Можно вставить текст из брендбука."/></label>
-        <p className="text-xs text-neutral-500">После сохранения включите «Проанализировать сохранённый логотип» в чате — изображение будет отправлено модели Azure. Без этой опции используются только текст и приблизительные цвета. PDF пока не загружается.</p>
+        <p className="text-xs text-neutral-500">После сохранения включите «Проанализировать сохранённый логотип» в чате — изображение будет отправлено модели Azure. PDF здесь добавляет только проверенный вами текст: это не визуальный анализ брендбука.</p>
         {colors.length>0&&<div className="flex flex-wrap gap-3" aria-label="Извлечённые цвета">{colors.map(color=><span key={color} className="inline-flex items-center gap-1 text-xs"><i aria-hidden className="inline-block size-5 rounded-full border" style={{backgroundColor:color}}/>{color}</span>)}</div>}
         <button className="btn btn-secondary">{busy?"Сохраняем…":"Сохранить материалы для AI"}</button>
       </fieldset>

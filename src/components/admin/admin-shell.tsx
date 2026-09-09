@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import styles from "./admin-navigation.module.css";
 import Link from "next/link";
 import { DukenimLogo } from "@/components/dukenim-logo";
 import { usePathname } from "next/navigation";
@@ -9,7 +10,6 @@ import {
   Boxes,
   ChevronRight,
   ExternalLink,
-  LayoutDashboard,
   Link2,
   LockKeyhole,
   LogOut,
@@ -32,7 +32,6 @@ import type { BusinessVertical } from "@/types/database";
 
 const baseNav = [
   ["/admin/ai-studio", "AI Studio", Sparkles],
-  ["/admin", "Обзор", LayoutDashboard],
   ["/admin/catalog", "Каталог", Package],
   ["/admin/orders", "Заказы", ReceiptText],
   ["/admin/stock", "Склад", Boxes],
@@ -67,18 +66,32 @@ function isCurrent(pathname: string, href: string) {
 export function AdminShell({ children, role, tenant }: AdminShellProps) {
   const workflow = businessWorkflow(tenant.vertical);
   const nav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
-  const mobilePrimary = nav.slice(0, 4);
+  const mobilePrimary = nav.slice(0, 3);
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const sheetRef = useRef<HTMLElement>(null);
 
   useEffect(() => setMenuOpen(false), [pathname]);
   useEffect(() => {
-    document.body.style.overflow = menuOpen ? "hidden" : "";
-    const closeOnEscape = (event: KeyboardEvent) => event.key === "Escape" && setMenuOpen(false);
+    if (!menuOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    document.body.style.overflow = "hidden";
+    sheetRef.current?.focus();
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") { event.preventDefault(); setMenuOpen(false); }
+      if (event.key !== "Tab") return;
+      const elements = sheetRef.current?.querySelectorAll<HTMLElement>('a[href],button:not([disabled])');
+      if (!elements?.length) { event.preventDefault(); return; }
+      const first = elements[0], last = elements[elements.length - 1];
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === sheetRef.current)) { event.preventDefault(); last.focus(); }
+      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+    };
     document.addEventListener("keydown", closeOnEscape);
     return () => {
-      document.body.style.overflow = "";
+      document.body.style.overflow = previousOverflow;
       document.removeEventListener("keydown", closeOnEscape);
+      previousFocus?.focus();
     };
   }, [menuOpen]);
 
@@ -86,7 +99,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   const isLocked = (href: string) => role === "owner" && tenant.plan === "basic" && standardOnly.has(href);
 
   return (
-    <div className="admin-frame min-h-[100dvh]">
+    <div className={`${styles.shell} admin-frame min-h-[100dvh]`}>
       <aside className="admin-sidebar panel-dark fixed inset-y-0 left-0 z-30 hidden w-72 p-5 md:flex md:flex-col">
         <Link href="/admin" className="admin-brand flex items-center gap-3 text-xl font-extrabold">
           <DukenimLogo inverse compact/>
@@ -125,12 +138,15 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
 
       <div className="pb-24 md:pl-72 md:pb-0">
         <header className="admin-topbar sticky top-0 z-20 flex h-18 items-center justify-between border-b border-[var(--line)] px-5 md:px-8">
-          <div className="min-w-0">
+          <div className={styles.heading}>
+            <span className={styles.mark} aria-hidden="true"><DukenimLogo compact/></span>
+            <div className="min-w-0">
             <small>{section?.[1] ?? "Кабинет"}</small>
             <div className="flex min-w-0 items-center gap-2.5">
               <b className="truncate">{tenant.name}</b>
               <span className="badge hidden sm:inline-flex">{planName[tenant.plan]}</span>
               {tenant.status === "trial" && tenant.trialEndsAt && <TrialTimer endsAt={tenant.trialEndsAt} />}
+            </div>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -141,7 +157,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
         <main className="p-5 md:p-8">{children}</main>
       </div>
 
-      <nav aria-label="Основная навигация" className="admin-mobile-nav md:hidden">
+      <nav aria-label="Основная навигация" className="admin-mobile-nav md:hidden" style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>
         {mobilePrimary.map(([href, label, Icon]) => {
           const active = isCurrent(pathname, href);
           const locked = isLocked(href);
@@ -152,7 +168,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             </Link>
           );
         })}
-        <button type="button" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen} aria-controls="admin-mobile-sheet" className={nav.slice(4).some(([href]) => isCurrent(pathname, href)) ? "is-active" : undefined}>
+        <button type="button" onClick={() => setMenuOpen(true)} aria-expanded={menuOpen} aria-controls="admin-mobile-sheet" className={nav.slice(3).some(([href]) => isCurrent(pathname, href)) ? "is-active" : undefined}>
           <Menu size={19} />
           <span>Ещё</span>
         </button>
@@ -160,13 +176,13 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
 
       {menuOpen && (
         <div className="admin-sheet-layer md:hidden" role="presentation" onMouseDown={(event) => event.target === event.currentTarget && setMenuOpen(false)}>
-          <section id="admin-mobile-sheet" className="admin-sheet" role="dialog" aria-modal="true" aria-label="Все разделы кабинета">
+          <section ref={sheetRef} tabIndex={-1} id="admin-mobile-sheet" className="admin-sheet" role="dialog" aria-modal="true" aria-label="Все разделы кабинета">
             <div className="admin-sheet-head">
               <div><small>Все инструменты</small><b>{tenant.name}</b></div>
               <button type="button" onClick={() => setMenuOpen(false)} aria-label="Закрыть меню"><X size={20} /></button>
             </div>
             <nav>
-              {nav.slice(4).map(([href, label, Icon]) => {
+              {nav.slice(3).map(([href, label, Icon]) => {
                 const active = isCurrent(pathname, href);
                 const locked = isLocked(href);
                 return <Link key={href} href={href} className={active ? "is-active" : undefined}><Icon size={19} /><span>{label}{locked && <small>Тариф Бренд</small>}</span>{locked ? <LockKeyhole size={15} aria-label="Требуется тариф Бренд" /> : <ChevronRight size={16} />}</Link>;

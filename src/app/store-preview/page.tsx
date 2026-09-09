@@ -12,6 +12,7 @@ import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
 import { proposedDesignSettings } from "@/lib/ai/design-settings";
 import { hasPlan, type Plan } from "@/lib/plans";
 import { templateCatalog } from "@/lib/storefront-theme";
+import { demoProductsFor } from "@/lib/demo-catalogs";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
@@ -40,10 +41,13 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
     if(generation.error||!design.success||!template||!hasPlan(plan,template.minPlan as Plan)||(plan==="basic"&&design.data.brandColor))return <p role="alert">Предложение недоступно в вашем магазине.</p>;
     settings={...settings,...proposedDesignSettings(design.data,theme.data)};
   }
+  // Sample data is read-only and never written to the merchant's catalogue.
+  const sample = query.content === "example";
+  const previewProducts = sample ? demoProductsFor(tenant.business_vertical ?? "other") : products;
   return <div style={storefrontStyle(settings,plan,tenant.accent_color)} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]">
-    <p className="border-b p-3 text-sm">Настоящий предпросмотр · изменения здесь не публикуются. Покупка отключена.</p>
-    <div inert><CartProvider><StoreHeader slug={tenant.slug} name={tenant.name} categories={Array.from(new Set(products.map(p=>p.category).filter(Boolean)))}/>
-      <StoreHome slug={tenant.slug} tenant={tenant} settings={settings} products={products} campaign={campaignResult.data} storePolicies={policies.data}/>
+    <p className="border-b p-3 text-sm">{sample ? "Пример с демонстрационными товарами · они не сохраняются в ваш магазин." : "Ваш магазин · только реальные товары."} Покупка отключена.</p>
+    <div inert><CartProvider><StoreHeader slug={tenant.slug} name={tenant.catalog_name || tenant.name} categories={Array.from(new Set(previewProducts.map(p=>p.category).filter(Boolean)))}/>
+      <StoreHome slug={tenant.slug} tenant={tenant} settings={settings} products={previewProducts} campaign={sample ? null : campaignResult.data} storePolicies={sample ? null : policies.data}/>
     </CartProvider></div>
   </div>;
 }

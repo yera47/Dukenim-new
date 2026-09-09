@@ -1,5 +1,9 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-09 16:40 owner: replace preset palette selection with conversational colour preferences, optional logo/brandbook and multiple matching shade proposals; populated examples precede products. Explicitly authorizes publishing verified website changes to dukenim.kz, superseding the earlier no-deploy instruction. No paid acquiring contract or claim of full completion implied.
+
+- 2026-09-09 afternoon: Owner approves PDF.js dependency; pauses app/iOS/TestFlight until website improvement. Initial Studio: one CTA, one active step, compact editable completed answers; no initial history/brand/preview panels. Remove Overview; mobile3–4 items including Studio. Three researched sales approaches per actual launch vertical. New brief does not authorize production deployment or paid acquiring contracts.
+
 - 2026-09-09: Owner requests a subtly grey unified AI Studio conversation surface, distinct from page background; retain monochrome identity, white input/cards and a single conversation.
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
