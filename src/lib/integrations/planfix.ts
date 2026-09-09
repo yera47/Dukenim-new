@@ -1,0 +1,224 @@
+import { createHash, randomBytes } from "node:crypto";
+
+export const PLANFIX_AUTHORIZATION_ENDPOINT = "https://auth.planfix.com/oauth/authorize";
+export const PLANFIX_TOKEN_ENDPOINT = "https://auth.planfix.com/oauth/token";
+export const PLANFIX_REVOCATION_ENDPOINT = "https://auth.planfix.com/oauth/revoke";
+
+export const PLANFIX_PILOT_SCOPES = [
+  "openid",
+  "email",
+  "contact_readonly",
+  "contact_add",
+  "task_readonly",
+  "task_add",
+  "task_update",
+] as const;
+
+export type PlanfixPkcePair = {
+  verifier: string;
+  challenge: string;
+};
+
+export type PlanfixOAuthTokens = {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  scope: string;
+  accountName: string;
+  accountDomain: string;
+  accountUrl: string;
+};
+
+export type CanonicalIntegrationOrder = {
+  id: string;
+  version: string;
+  orderNumber: number | null;
+  customerId: string | null;
+  customerName: string;
+  customerPhone: string;
+  deliveryMethod: string | null;
+  deliveryAddress: string | null;
+  paymentMethod: string | null;
+  paymentStatus: "pending" | "paid" | "failed" | "refunded";
+  subtotal: number;
+  deliveryCost: number;
+  total: number;
+  currency: "KZT";
+  items: Array<{
+    title: string;
+    sku: string | null;
+    quantity: number;
+    unitPrice: number;
+  }>;
+};
+
+type FetchLike = typeof fetch;
+
+export function createPlanfixPkcePair(verifier = randomBytes(32).toString("base64url")): PlanfixPkcePair {
+  if (!/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) throw new Error("Invalid PKCE verifier");
+  return {
+    verifier,
+    challenge: createHash("sha256").update(verifier).digest("base64url"),
+  };
+}
+
+export function buildPlanfixAuthorizationUrl(input: {
+  clientId: string;
+  redirectUri: string;
+  state: string;
+  challenge: string;
+  scopes?: readonly string[];
+}): string {
+  const redirect = new URL(input.redirectUri);
+  if (redirect.protocol !== "https:" && !["localhost", "127.0.0.1"].includes(redirect.hostname)) {
+    throw new Error("Planfix redirect URI must use HTTPS");
+  }
+  if (!input.clientId.trim() || input.state.length < 32) throw new Error("Incomplete Planfix OAuth request");
+  const url = new URL(PLANFIX_AUTHORIZATION_ENDPOINT);
+  url.search = new URLSearchParams({
+    client_id: input.clientId,
+    redirect_uri: redirect.toString(),
+    response_type: "code",
+    scope: (input.scopes ?? PLANFIX_PILOT_SCOPES).join(" "),
+    state: input.state,
+    code_challenge: input.challenge,
+    code_challenge_method: "S256",
+  }).toString();
+  return url.toString();
+}
+
+export async function exchangePlanfixAuthorizationCode(input: {
+  clientId: string;
+  clientSecret?: string;
+  code: string;
+  redirectUri: string;
+  verifier: string;
+  fetcher?: FetchLike;
+}): Promise<PlanfixOAuthTokens> {
+  const response = await (input.fetcher ?? fetch)(PLANFIX_TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "authorization_code",
+      client_id: input.clientId,
+      ...(input.clientSecret ? { client_secret: input.clientSecret } : {}),
+      code: input.code,
+      redirect_uri: input.redirectUri,
+      code_verifier: input.verifier,
+    }),
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Planfix token exchange failed (${response.status})`);
+  return parsePlanfixTokenResponse(await response.json());
+}
+
+export async function refreshPlanfixAccessToken(input: {
+  clientId: string;
+  clientSecret?: string;
+  refreshToken: string;
+  fetcher?: FetchLike;
+}): Promise<PlanfixOAuthTokens> {
+  const response = await (input.fetcher ?? fetch)(PLANFIX_TOKEN_ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams({
+      grant_type: "refresh_token",
+      client_id: input.clientId,
+      ...(input.clientSecret ? { client_secret: input.clientSecret } : {}),
+      refresh_token: input.refreshToken,
+    }),
+    cache: "no-store",
+  });
+  if (!response.ok) throw new Error(`Planfix token refresh failed (${response.status})`);
+  return parsePlanfixTokenResponse(await response.json());
+}
+
+function parsePlanfixTokenResponse(value: unknown): PlanfixOAuthTokens {
+  if (!value || typeof value !== "object") throw new Error("Invalid Planfix token response");
+  const data = value as Record<string, unknown>;
+  const result = {
+    accessToken: String(data.access_token ?? ""),
+    refreshToken: String(data.refresh_token ?? ""),
+    expiresIn: Number(data.expires_in),
+    scope: String(data.scope ?? ""),
+    accountName: String(data.account_name ?? ""),
+    accountDomain: String(data.account_domain ?? ""),
+    accountUrl: String(data.account_url ?? ""),
+  };
+  if (!result.accessToken || !result.refreshToken || !Number.isFinite(result.expiresIn) || result.expiresIn < 1) {
+    throw new Error("Incomplete Planfix token response");
+  }
+  planfixApiBaseUrl(result.accountDomain);
+  return result;
+}
+
+export function planfixApiBaseUrl(accountDomain: string): string {
+  const normalized = accountDomain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+  if (!/^[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.planfix\.(?:com|ru)$/.test(normalized)) {
+    throw new Error("Unexpected Planfix account domain");
+  }
+  return `https://${normalized}/rest`;
+}
+
+export function buildPlanfixContactPayload(order: CanonicalIntegrationOrder) {
+  if (!order.customerId) return null;
+  return {
+    sourceObjectId: order.customerId,
+    sourceDataVersion: order.version,
+    name: order.customerName,
+    phones: [{ number: order.customerPhone, type: 1 }],
+    description: "Покупатель интернет-магазина Dukenim",
+  };
+}
+
+export function buildPlanfixTaskPayload(order: CanonicalIntegrationOrder, counterpartyId?: number) {
+  const lines = order.items.map((item) => {
+    const sku = item.sku ? ` · SKU ${item.sku}` : "";
+    return `• ${item.title}${sku} — ${item.quantity} × ${formatKzt(item.unitPrice)}`;
+  });
+  return {
+    sourceObjectId: order.id,
+    sourceDataVersion: order.version,
+    name: `Заказ ${order.orderNumber ? `№${order.orderNumber}` : order.id.slice(0, 8)} · ${formatKzt(order.total)}`,
+    description: [
+      `Источник: Dukenim`,
+      `Покупатель: ${order.customerName}`,
+      `Телефон: ${order.customerPhone}`,
+      `Получение: ${order.deliveryMethod ?? "не указано"}`,
+      ...(order.deliveryAddress ? [`Адрес: ${order.deliveryAddress}`] : []),
+      `Оплата: ${order.paymentMethod ?? "не указано"} (${order.paymentStatus})`,
+      "",
+      ...lines,
+      "",
+      `Товары: ${formatKzt(order.subtotal)}`,
+      `Доставка: ${formatKzt(order.deliveryCost)}`,
+      `Итого: ${formatKzt(order.total)}`,
+    ].join("\n"),
+    ...(counterpartyId ? { counterparty: { id: counterpartyId } } : {}),
+  };
+}
+
+export async function createPlanfixTask(input: {
+  accountDomain: string;
+  accessToken: string;
+  order: CanonicalIntegrationOrder;
+  counterpartyId?: number;
+  fetcher?: FetchLike;
+}) {
+  const response = await (input.fetcher ?? fetch)(`${planfixApiBaseUrl(input.accountDomain)}/task/`, {
+    method: "POST",
+    headers: {
+      authorization: `Bearer ${input.accessToken}`,
+      "content-type": "application/json",
+    },
+    body: JSON.stringify(buildPlanfixTaskPayload(input.order, input.counterpartyId)),
+    cache: "no-store",
+  });
+  if (!response.ok && response.status !== 202) throw new Error(`Planfix task creation failed (${response.status})`);
+  return response.json() as Promise<unknown>;
+}
+
+function formatKzt(value: number): string {
+  if (!Number.isInteger(value) || value < 0) throw new Error("Integration amounts must be non-negative integer KZT");
+  return `${new Intl.NumberFormat("ru-KZ").format(value)} ₸`;
+}

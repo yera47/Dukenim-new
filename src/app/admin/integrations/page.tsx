@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import { requireRole } from "@/lib/auth";
+import { integrationProviderGroups } from "@/lib/integrations/providers";
 import { createClient } from "@/lib/supabase/server";
 import { saveCrmIntegrationRequest } from "./actions";
 import { PaymentConnectionGuide } from "@/components/admin/payment-connection-guide";
@@ -17,8 +18,10 @@ const statuses: Record<string, { title: string; description: string }> = {
   revoked: { title: "Подключение отключено", description: "Каталог и Dukenim CRM продолжают работать самостоятельно." },
 };
 
-export default async function IntegrationsPage() {
+export default async function IntegrationsPage({ searchParams }: { searchParams: Promise<{ planfix?: string }> }) {
   const { tenantId } = await requireRole(["owner"]);
+  const planfixResult = (await searchParams).planfix;
+  const planfixConfigured = Boolean(process.env.PLANFIX_CLIENT_ID && process.env.PLANFIX_CLIENT_SECRET && process.env.PLANFIX_REDIRECT_URI && process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY);
   let paymentPreference="later";
   let request: { provider: string; account_url: string | null; admin_contact: string | null; sync_direction: string; notes: string | null; status: string } | null = null;
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
@@ -31,14 +34,17 @@ export default async function IntegrationsPage() {
   return <div className="mx-auto max-w-5xl">
     <div className="flex flex-wrap items-end justify-between gap-5"><div><p className="data-label">ИНТЕГРАЦИИ</p><h1 className="mt-2 text-4xl font-extrabold">Подключения магазина</h1><p className="mt-3 max-w-2xl text-[var(--ink-60)]">Оплата товаров и внешняя CRM. Здесь видно, что уже работает, а что требует подключения.</p></div><Link href="/admin/ai-studio" className="btn btn-secondary">В AI Studio <ArrowRight size={17}/></Link></div>
 
+    {planfixResult === "connected" && <div className="mt-6 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-900">Planfix подключён. Передача реальных заказов остаётся выключенной до теста.</div>}
+    {planfixResult && planfixResult !== "connected" && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось завершить подключение Planfix. Повторите вход или обратитесь в поддержку Dukenim.</div>}
     <PaymentConnectionGuide preference={paymentPreference}/>
     <section className="mt-8 grid gap-6 lg:grid-cols-[.88fr_1.12fr]"><aside className="panel-dark rounded-[var(--r-card)] p-6"><div className="flex items-center gap-3 text-[var(--accent-bright)]"><Clock3 size={21}/><span className="data-label text-[var(--accent-bright)]">СТАТУС</span></div><h2 className="mt-6 text-2xl font-extrabold">{current.title}</h2><p className="mt-3 text-sm leading-6 text-white/65">{current.description}</p><div className="mt-8 space-y-4 border-t border-white/12 pt-5 text-sm"><p className="flex gap-3"><ShieldCheck size={18} className="shrink-0 text-[var(--accent-bright)]"/>Не просим пароль от Bitrix24, Kommo, МойСклад или другой CRM.</p><p className="flex gap-3"><CheckCircle2 size={18} className="shrink-0 text-[var(--accent-bright)]"/>70 000 ₸ → 0 ₸ на запуске, после технического preflight.</p></div></aside>
       <form action={saveCrmIntegrationRequest} className="card p-6"><div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно заполнить частично. Поля с доступом будут запрошены только после проверки.</p></div><span className="badge">0 ₸ НА ЗАПУСКЕ</span></div>
-        <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-sm font-bold">CRM<select name="provider" className="input" defaultValue={request?.provider === "not_selected" ? "" : request?.provider ?? ""} required><option value="" disabled>Выберите систему</option><option value="bitrix24">Bitrix24</option><option value="kommo">Kommo</option><option value="moysklad">МойСклад</option><option value="retailcrm">retailCRM</option><option value="one_c">1С</option><option value="other">Другая CRM</option></select></label><label className="grid gap-2 text-sm font-bold">Что синхронизировать<select name="syncDirection" className="input" defaultValue={request?.sync_direction ?? "orders_and_customers"}><option value="orders_and_customers">Заказы и клиенты</option><option value="orders_only">Только заказы</option><option value="stock_and_products">Товары и остатки</option><option value="consultation">Нужна консультация</option></select></label></div>
+        <div className="mt-6 grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-sm font-bold">CRM, учёт или POS<select name="provider" className="input" defaultValue={request?.provider === "not_selected" ? "" : request?.provider ?? ""} required><option value="" disabled>Выберите систему</option>{integrationProviderGroups.map((group)=><optgroup key={group.key} label={group.label}>{group.providers.map((provider)=><option key={provider.key} value={provider.key}>{provider.label}</option>)}</optgroup>)}</select></label><label className="grid gap-2 text-sm font-bold">Что синхронизировать<select name="syncDirection" className="input" defaultValue={request?.sync_direction ?? "orders_and_customers"}><option value="orders_and_customers">Заказы и клиенты</option><option value="orders_only">Только заказы</option><option value="stock_and_products">Товары и остатки</option><option value="consultation">Нужна консультация</option></select></label></div>
         <div className="mt-4 grid gap-4 sm:grid-cols-2"><label className="grid gap-2 text-sm font-bold">Ссылка на аккаунт CRM <input name="accountUrl" className="input" type="url" defaultValue={request?.account_url ?? ""} placeholder="https://company.bitrix24.ru"/></label><label className="grid gap-2 text-sm font-bold">Контакт администратора <input name="adminContact" className="input" defaultValue={request?.admin_contact ?? ""} placeholder="Имя и рабочий email"/></label></div>
         <label className="mt-4 grid gap-2 text-sm font-bold">Комментарий <textarea name="notes" className="input min-h-28 resize-y" defaultValue={request?.notes ?? ""} placeholder="Например: переносим заказы из Bitrix24, доступ к API добавим после согласования."/></label>
         <p className="mt-4 text-xs leading-5 text-[var(--ink-60)]">Не вставляйте пароль, секретный ключ или webhook в эту форму. Если понадобится доступ, вы увидите отдельный защищённый следующий шаг.</p>
         <div className="mt-6 flex flex-wrap gap-3"><button className="btn btn-cta" type="submit" name="intent" value="submit">Отправить на проверку <ArrowRight size={17}/></button><button className="btn btn-secondary" type="submit" name="intent" value="later">Добавить позже</button></div>
       </form></section>
+    {request?.provider === "planfix" && <section className="card mt-6 p-6"><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="data-label">PLANFIX PILOT</p><h2 className="mt-2 text-xl font-extrabold">Подключить аккаунт безопасно</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-60)]">Вы входите на стороне Planfix и подтверждаете только контакты и задачи. Пароль Planfix в Dukenim не передаётся.</p></div>{request.status === "connected" ? <span className="badge">ПОДКЛЮЧЕНО</span> : planfixConfigured ? <Link href="/api/integrations/planfix/connect" className="btn btn-cta">Подключить Planfix <ArrowRight size={17}/></Link> : <span className="badge">НАСТРОЙКА ПИЛОТА</span>}</div></section>}
   </div>;
 }

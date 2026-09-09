@@ -3,9 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { isIntegrationProvider } from "@/lib/integrations/providers";
 import type { Database } from "@/types/database";
 
-const providers = new Set(["bitrix24", "kommo", "moysklad", "retailcrm", "one_c", "other"]);
 const directions = new Set(["orders_and_customers", "orders_only", "stock_and_products", "consultation"]);
 
 export async function saveCrmIntegrationRequest(formData: FormData) {
@@ -17,7 +17,7 @@ export async function saveCrmIntegrationRequest(formData: FormData) {
   const syncDirection = String(formData.get("syncDirection") ?? "orders_and_customers");
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (intent !== "later" && !providers.has(provider)) throw new Error("Выберите CRM из списка.");
+  if (intent !== "later" && !isIntegrationProvider(provider)) throw new Error("Выберите систему из списка.");
   if (!directions.has(syncDirection)) throw new Error("Выберите корректное направление синхронизации.");
   if (accountUrl.length > 300 || adminContact.length > 160 || notes.length > 1200) throw new Error("Сократите данные заявки и попробуйте снова.");
 
