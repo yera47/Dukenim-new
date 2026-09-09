@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## Chat surface — 2026-09-09
+
+Owner requests one light-grey visual container for the entire conversation. StudioConversation now has scoped #f0f0f0 workspace, darker user bubbles, white step cards/composer, responsive padding, focus ring and mobile safe-area inset. No second chat or token counter. Studio render tests, tsc and production build passed; added workspace/support regression assertions. Visual browser QA pending. Authenticated EAS build:list returned no iOS builds: no TestFlight artifact exists. No build/purchase/submission started. Parent acceptance items remain open. PDF parser authorization and merchant acquiring details remain unanswered; no new dependency or financial account chosen.
+
 ## Verified checkpoint — 2026-09-09 03:06 local
 
 b309465 Ready dpl_5Hp25xKWtG9RJXNV76rzZguPMupu on www.dukenim.kz. Category mapping follow-up published. Cron du kenim-mobile-push (actual name dukenim-mobile-push) recorded succeeded at2026-09-08T22:04Z after activation. Security advisors unchanged: intentional public/auth RLS helper warnings plus leaked-password protection disabled. 214 tests, root tsc/build, mobile tsc/lint and iOS JS export pass; live Azure text+PNG passed earlier in same task. Native app is not submitted or installed; zero registered push devices. No actual notification delivered, no full authenticated browser journey.

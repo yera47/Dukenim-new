@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-09: Owner requests a subtly grey unified AI Studio conversation surface, distinct from page background; retain monochrome identity, white input/cards and a single conversation.
+
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
 - 2026-09-08: Owner requests native mobile notifications for incoming delivery orders, prepaid pickup and reservations, identifying the type and linking to the item. This is required work, not a claim that push or all fulfilment modes are already live. Keep customer-sensitive information out of default lock-screen text and recheck permissions on open.

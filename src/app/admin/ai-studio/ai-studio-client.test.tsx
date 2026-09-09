@@ -11,6 +11,9 @@ describe("AI Studio first-run access", () => {
   it.each(["building", "ready"] as const)("keeps the assistant available at %s", (catalogStatus) => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus={catalogStatus}/>);
     expect(html).toContain('id="studio-conversation"');
+    expect(html).toContain('Написать в поддержку');
+    expect(html).not.toContain('Написать человеку');
+    expect(html).toMatch(/class="[^"]*workspace[^"]*" aria-label="Диалог с AI Studio"/);
     expect(html).not.toContain('id="studio-message"');
     expect((html.match(/id="studio-conversation"/g) ?? []).length).toBe(1);
     expect(html).toContain("Передать вопрос команде");
