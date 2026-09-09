@@ -4,6 +4,8 @@ import { getCheckoutOptions } from "@/lib/queries/orders";
 import { resolveTenant } from "@/lib/tenant";
 import { demoVerticalById } from "@/lib/demo-catalogs";
 import { CheckoutClient, type CheckoutZone } from "./checkout-client";
+import Link from "next/link";
+import { reservationsClient } from "@/lib/reservations";
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -30,12 +32,16 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     etaText: zone.eta_text,
   }));
 
-  return <CheckoutClient
+  const reservation=await reservationsClient(createAdminClient()).from("reservation_settings").select("enabled").eq("tenant_id",tenant.id).maybeSingle();
+  if(reservation.data?.enabled&&!options.settings?.pickup_enabled&&!(options.settings?.delivery_enabled&&zones.length)) {
+    return <section className="container max-w-2xl py-12"><h1 className="text-3xl font-semibold">Заберите товар в магазине</h1><p className="my-5">Здесь доступна бронь: магазин удержит выбранные товары на указанное время. Онлайн-оплата не требуется. Адрес и условия — на следующем шаге.</p><Link style={{background:"var(--tenant-accent)",color:"var(--store-accent-ink)"}} className="inline-flex rounded-xl px-5 py-3" href={`/s/${slug}/reserve`}>Перейти к бронированию →</Link></section>;
+  }
+  return <>{reservation.data?.enabled&&<aside className="container pt-5 text-sm"><Link href={`/s/${slug}/reserve`} className="underline">Хотите сначала прийти в магазин? Забронировать товар →</Link></aside>}<CheckoutClient
     slug={slug}
     deliveryEnabled={Boolean(options.settings?.delivery_enabled && zones.length)}
     pickupEnabled={options.settings?.pickup_enabled ?? false}
     pickupLocation={options.settings?.pickup_location}
     minOrder={options.settings?.min_order ?? 0}
     zones={zones}
-  />;
+  /></>;
 }

@@ -1,2 +1,14 @@
-import{requireRole}from"@/lib/auth";import{loadOwnerOrders}from"@/lib/owner-data";import{money}from"@/lib/demo-data";import{OrderStatusForm}from"./status-form";
-export default async function Orders(){const{tenantId}=await requireRole(["owner","superadmin"]);const orders=await loadOwnerOrders(tenantId!);return <><h1 className="text-3xl font-semibold">Заказы</h1><p className="muted mt-2">Единая лента онлайн- и офлайн-продаж.</p><div className="mt-6 grid gap-4">{orders.map(o=><article key={o.id} className="card flex flex-wrap items-center justify-between gap-4 p-5"><div><b>Заказ #{o.order_number}</b><p className="muted mt-1 text-sm">{new Date(o.created_at).toLocaleString("ru-KZ")}</p></div><span className="badge">{o.source==="online"?"Онлайн":"В зале"}</span><strong>{money(o.total)}</strong><OrderStatusForm key={`${o.id}-${o.status}`} id={o.id} status={o.status}/></article>)}</div></>}
+import {requireRole} from "@/lib/auth";
+import {loadOwnerOrders} from "@/lib/owner-data";
+import {money} from "@/lib/demo-data";
+import {OrderStatusForm} from "./status-form";
+import {ReservationControls} from "./reservation-controls";
+import {reservationsClient} from "@/lib/reservations";
+import {createClient} from "@/lib/supabase/server";
+export default async function Orders(){
+ const {tenantId}=await requireRole(["owner","superadmin"]);
+ const orders=await loadOwnerOrders(tenantId!);
+ const holds=await reservationsClient(await createClient()).from("merchandise_reservations").select("*").eq("tenant_id",tenantId!).order("created_at",{ascending:false}).limit(100);
+ const byId=new Map((holds.data??[]).map(hold=>[hold.order_id,hold]));
+ return <><h1 className="text-3xl font-semibold">Заказы и бронирования</h1><p className="muted mt-2">Бронь становится продажей только после выдачи и получения оплаты.</p>{holds.error&&<p role="alert">Состояния брони не загрузились. Управление заказами временно скрыто.</p>}<div className="mt-6 grid gap-4">{orders.map(o=>{const hold=byId.get(o.id);return <article key={o.id} className="card flex flex-wrap items-center justify-between gap-4 p-5"><div><b>{hold?'Бронь':'Заказ'} #{o.order_number}</b><p className="muted mt-1 text-sm">{new Date(o.created_at).toLocaleString("ru-KZ")}</p></div><span className="badge">{hold?'В магазине':o.source==="online"?"Онлайн":"В зале"}</span><strong>{money(o.total)}</strong>{!holds.error&&(hold?<ReservationControls key={hold.status} reservation={hold}/>:<OrderStatusForm key={`${o.id}-${o.status}`} id={o.id} status={o.status}/>)}</article>})}</div></>;
+}

@@ -9,6 +9,7 @@ import { consultationSchema, type ConsultationTurn } from "@/lib/ai/consultation
 import { createClient } from "@/lib/supabase/server";
 import { brandColorsSchema } from "@/lib/brand-materials";
 import { prepareBrandLogo } from "@/lib/brand-image";
+import { reservationsClient } from "@/lib/reservations";
 
 export async function GET() {
   const context = await getSessionContext();
@@ -55,7 +56,9 @@ export async function POST(request: Request) {
       shopContext={...tenant.data,fulfilment:fulfilment.data};
       const brand=await admin.from("tenant_brand_materials").select("notes,colors").eq("tenant_id",context.tenantId).maybeSingle();
       if(brand.error)return NextResponse.json({error:"Не удалось прочитать правила бренда."},{status:503});
-      shopContext={...tenant.data,fulfilment:fulfilment.data,brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
+      const reservationSettings=await reservationsClient(admin).from("reservation_settings").select("enabled,hold_hours,location").eq("tenant_id",context.tenantId).maybeSingle();
+      if(reservationSettings.error)return NextResponse.json({error:"Не удалось прочитать условия бронирования."},{status:503});
+      shopContext={...tenant.data,fulfilment:fulfilment.data,reservation:reservationSettings.data??{enabled:false},brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
       if(input.data.intent==="consultation") {
       const previous = await admin.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(8);
       if(previous.error) return NextResponse.json({error:"Не удалось восстановить контекст разговора. Попробуйте позже."},{status:503});
