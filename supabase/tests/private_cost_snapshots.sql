@@ -1,7 +1,7 @@
 -- Run in one transaction. All fixtures, orders and push events are rolled back.
 begin;
 insert into auth.users(id) values ('cc090909-0000-4000-8000-000000000001');
-insert into public.tenants(id,slug,name,phone) values ('cc090909-0000-4000-8000-000000000002','cost-test-rollback','Cost test','00000000000');
+insert into public.tenants(id,slug,name,phone,status) values ('cc090909-0000-4000-8000-000000000002','cost-test-rollback','Cost test','00000000000','active');
 insert into public.tenant_users(tenant_id,user_id,role) values ('cc090909-0000-4000-8000-000000000002','cc090909-0000-4000-8000-000000000001','owner');
 insert into public.products(id,tenant_id,title,price) values ('cc090909-0000-4000-8000-000000000003','cc090909-0000-4000-8000-000000000002','Test',1000);
 insert into public.product_variants(id,tenant_id,product_id) values ('cc090909-0000-4000-8000-000000000004','cc090909-0000-4000-8000-000000000002','cc090909-0000-4000-8000-000000000003');

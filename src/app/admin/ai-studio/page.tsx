@@ -28,6 +28,6 @@ export default async function AiStudioPage() {
       <div><p className="muted text-sm">Ваш помощник в магазине</p><h1 className="mt-1 text-2xl font-bold">AI Studio</h1></div>
       <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать в поддержку</Link>
     </div>
-    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialStructure={initialStructure} categories={categories} />
+    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} catalogPublished={tenant?.catalog_published??true} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialStructure={initialStructure} categories={categories} />
   </section>;
 }

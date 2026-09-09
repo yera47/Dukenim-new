@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-09 18: Owner reopens research and implementation of easy merchant goods payments (Kaspi/card), with receiving and payment setup during initial catalog creation and an explicit connect-later option. Do not seed Amira with test products/sales until the full requested product is ready. Custom colours must follow owner wishes rather than mandatory preset palettes. No provider contract or tariff was selected by the owner through this request.
+
 - 2026-09-09 17: owner pauses goods acquiring pending provider decision; continue remaining website work, including separately navigable18storefront configurations, personalized builder, shades, historical costs and reservations. Native app pause remains in force.
 
 - 2026-09-09 owner: demo entry selects a business segment first, then3explained design alternatives. Product page offers add-to-cart and buy-now; after add, a clear path to continue shopping or checkout. No authority to fake successful payment or claim unsupported recommendations.

@@ -1,5 +1,31 @@
 # Dukenim — AI handoff
 
+## Checked source checkpoint — 2026-09-09 18:45
+
+285 unit tests pass/3 opt-in skipped, tsc and production build pass. Final live Kimi colour+sections test passes (4.8s); earlier verbose rationale schema failure fixed by bounding only explanatory rationale, not commercial fields or entitlements. 20260909133823_atomic_ai_catalog_sections applied: catalog saves AI sections/copy plus chosen composition/theme atomically. Updated rollback fixture verifies categories created and manual composition preserved; custom undo/isolation, fulfilment/private publication, and historical costs all pass. Cost fixture now explicitly active to obey new online-order gate.
+
+Browser regression running on3002 (session82565, public-only local env). Authenticated synthetic E2E was not run: attempt to start local server with retrieved production service credentials was rejected by execution policy; no test users created and no retry around that restriction. Existing CUA can inspect user tabs, but no documented input API exposed here. This is not a reason to stop independent implementation; do not claim authenticated acceptance.
+
+New feature files: custom-store-theme(.test), catalog-fulfilment(.test), theme-color-controls, catalog-publication, publish-action, design.live.test; setup/settings/preview/AI schema+prompt, tenant query/types and payment guide updated. Website deployment pending at this checkpoint; current production still5085ec4. Amira unchanged. Full18bespoke compositions, reservations, acquiring and full browser acceptance remain open.
+
+## In progress — 2026-09-09 18:38
+
+Owner reopened acquiring research. Do NOT populate Amira until the full-product gate is met. No merchant fixtures inserted; SQL fixtures roll back. Native app remains paused.
+
+Local implementation: custom background/surface/accent on both plans, readable foreground, three variations of chosen colours, direct editing in setup/settings, shared preview/public tokens, saved private draft. Azure Kimi live test passed exact pink/green values after prompt fix. CLI authentication works, Kimi-K2.6 Succeeded; keys only in process. No Azure resource/quota/billing changes. Earlier tests failed missing local config and missing colour output. Final prompt cleanup needs a fresh live test. Vercel env pull generated ignored .env.ai-test.local with redacted placeholders, not usable secrets.
+
+Setup includes receiving/payment before review: zone/cost/time, pickup address/hours/preparation/maps and provider preference commit atomically. Preference NEVER activates payment. New setup remains private until explicit publication with product/stock/fulfilment checks; existing shops retain published=true. Public resolver and online-order trigger honor publication. Full browser merchant creation/relogin not yet tested.
+
+Applied migrations: 20260909131121_custom_store_theme, 20260909132150_catalog_setup_fulfilment, 20260909132951_anonymous_storefront_policy_scope. Rollback SQL fixtures verify colours/undo/isolation and setup/private anon read/publication. Anon test exposed old public policies invoking revoked private helpers; separated anon read policies from authenticated policies rather than granting private helpers. Need rerun cost/order regressions after new publication trigger.
+
+Research artifact docs/PAYMENTS_RESEARCH_20260909.md: FreedomPay Merchant API candidate, Halyk alternative; ordinary Kaspi link needs manual amount, separate approved integration for fixed amount. CloudPayments KZ docs returned502. No real acquiring adapter/contract/automatic onboarding. Guide links and saved preference only.
+
+Last complete suite284pass/3skip, tsc/build passed before final settings changes. Final tests/build/deploy pending. Open: reservation/expiry/conversion, fully distinct18compositions, whole AI assembly, browser/mobile acceptance, real payment adapters. Cost snapshots already released5085ec4; owner UI write remains untested (shop empty). Do not equate demo journeys with merchant acceptance.
+
+## Release confirmed — 2026-09-09 17:51
+
+5085ec4 Ready, dpl_7RB8ehDGxJGZ7nxYYEUZvZ4pYF4R, www/apex aliases. Owner browser analytics successfully displays no-profit/zero-orders state with stock guidance. Existing owner session is accessible (not an authentication blocker), but shop has no variants for cost-form roundtrip. No fictional merchant products inserted. Local server90534 still uses earlier build (demo route code same, restart required for costs). All broader outstanding requirements remain open; do not claim18unique visual designs or full builder. Production36journey run completed successfully, retaining each configuration through product/catalog/cart/checkout at both viewport widths.
+
 ## Separate configuration journeys and private costs — 2026-09-09 17:48
 
 18 configuration URL spaces now keep home/category/catalog/product/cart/demo checkout in the selected layout. Shared layout owns CartProvider, navigation helper validates demo identities while preserving tenant routes. Demo checkout explicitly cannot submit/pay. 36 real browser journeys passed at 390/1440, including add, continue and buy-now with quantity2. This is separate routing, not18fully bespoke compositions; no copying third-party code/assets.
@@ -742,3 +768,23 @@ No messages, applications, registrations, contracts or API-key requests were sub
 Owner supplied sender identity in chat and authorized the named outreach campaign. Created and verified 20 separate Gmail drafts for the direct official channels: Rosta, Paloma365, BILLZ, МойСклад, RetailCRM, Бизнес.Ру, Subtotal, inSales, Kommo, Planfix, Мегаплан, S2, OkoCRM, EnvyCRM, keyCRM, iiko, r_keeper, Poster, Quick Resto and JOWI. Gmail search returned exactly 20 matching draft rows. Copy is personalized by system type and explicitly positions Dukenim as a storefront/order channel while the partner remains the CRM/ERP/POS source of truth; each merchant authorizes its own account.
 
 UMAG and SalesDrive use official contact forms; Bitrix24 uses a technology-partner registration form that creates an account and reserves a partner code. Their copy/fields were staged where the sites allowed, but none was submitted. Some dynamically validated phone/email fields clear programmatic fill and must be completed at the final UI step. Bitrix24 also leads to later partner documents, so no agreement or contract was accepted. No email was sent, no form submitted and no account/API key created: one action-time owner confirmation is still required immediately before sending the explicit 20-email batch and submitting the three named forms. Password, OTP, CAPTCHA and any later legal-document acceptance remain owner-only steps. No sender personal data was copied into shared project files. Azure, source code, database and deployment were unchanged.
+
+### CRM / ERP / POS outreach sent — 2026-09-09 (latest)
+
+After explicit action-time owner confirmation, sent all 20 prepared system-specific Gmail messages. Sent one additional Bitrix24 inquiry to the official partner-program address instead of creating a technology-partner account prematurely. Gmail Sent search verified exactly 21 matching messages. Submitted the official UMAG contact form and received the on-page confirmation that the application was accepted. Submitted the official SalesDrive partnership form and received the on-page success confirmation. Together these actions cover all 23 named target systems.
+
+Bitrix24 partner registration itself was not created: its required dynamic identity fields rejected browser automation, and the program leads to later partner documents. The direct partner-department email asks to begin with a Kazakhstan technical pilot and clarify the correct registration/document path. No contract, partner agreement, OAuth/API key, password, OTP or CAPTCHA was accepted or created. Responses may arrive in the monitored Gmail inbox; several threads already show automated or inbound activity and should be triaged separately. Azure, source code, database and deployment were unchanged. Sender personal data remains absent from shared project files.
+
+### CRM / ERP / POS response triage — 2026-09-09 (latest)
+
+Result: triaged the first inbound campaign responses. Substantive replies arrived from Planfix, inSales, r_keeper, Bitrix24, Business.Ru and Megaplan. Megaplan explicitly welcomed a technology-partner path and described publication in its app store/integration directory. The other replies supplied initial developer, API, test-account or marketplace guidance. RetailCRM has only acknowledged ticket creation so far; MoySklad returned an out-of-office notice through September 13; no follow-up is needed to either yet.
+
+Implemented and verified: six personalized follow-up replies are saved as Gmail drafts in the original threads. They request the exact next steps for a scalable connector: per-merchant OAuth/least-privilege authorization, test tenant or sandbox, supported webhooks and rate limits, idempotent order/status exchange, pilot rules and marketplace/moderation requirements. Gmail draft search visibly confirms all six drafts. The original BILLZ developer address and JOWI general email bounced; an official BILLZ fallback address was verified and a seventh retry draft is saved. An official JOWI Telegram support chat was located and a concise replacement message is prepared but not entered or sent.
+
+Azure: no Azure resource, model, deployment or configuration was changed.
+
+Not completed: none of the seven email drafts or the JOWI Telegram message has been sent in this response-triage step. Sending is an external representational action and awaits one action-time owner confirmation. No contract, partner agreement, registration, OAuth application or API key was created. No response was sent to automated acknowledgements or the MoySklad vacation notice.
+
+Required owner action: approve the exact batch of eight outbound actions: replies to Planfix, inSales, r_keeper, Bitrix24, Business.Ru and Megaplan; BILLZ retry to its official fallback mailbox; JOWI message to its official Telegram support chat.
+
+Where to verify: Gmail `in:drafts after:2026/09/09` for the seven prepared emails; the existing official JOWI Telegram support chat for the prepared destination. After confirmation and sending, verify each email in Gmail Sent and the outgoing Telegram message in the chat.

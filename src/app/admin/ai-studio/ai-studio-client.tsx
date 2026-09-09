@@ -10,6 +10,7 @@ import { ProductForm } from "@/components/admin/product-form";
 import { StudioConversation } from "@/components/admin/studio-conversation";
 import { BrandMaterials } from "@/components/admin/brand-materials";
 import { DesignHistory } from "@/components/admin/design-history";
+import { CatalogPublication } from "@/components/admin/catalog-publication";
 import styles from "./studio.module.css";
 import type { BusinessVertical } from "@/types/database";
 
@@ -23,12 +24,13 @@ const paletteNames: Record<string, string> = { mono: "Чёрный и белый
 type Props = {
   enabled: boolean; imageEnabled: boolean; brand: boolean;
   catalogStatus: "not_started" | "building" | "ready";
+  catalogPublished?: boolean;
   storeName: string; slug: string; plan: "basic" | "standard" | "pro";
   vertical: BusinessVertical;
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, storeName, slug, plan, vertical, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, storeName, slug, plan, vertical, initialStructure, categories = [] }: Props) {
   const router = useRouter();
   const [intent, setIntent] = useState<Intent>("catalog_structure");
   const [brief, setBrief] = useState("");
@@ -156,6 +158,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, st
   </div>;
 
   return <div className={styles.workspace}>
+    {!catalogPublished&&<CatalogPublication/>}
     <StudioConversation enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}

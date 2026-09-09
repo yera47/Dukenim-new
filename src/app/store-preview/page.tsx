@@ -13,6 +13,7 @@ import { proposedDesignSettings } from "@/lib/ai/design-settings";
 import { hasPlan, type Plan } from "@/lib/plans";
 import { templateCatalog } from "@/lib/storefront-theme";
 import { demoProductsFor } from "@/lib/demo-catalogs";
+import { customStoreThemeSchema } from "@/lib/custom-store-theme";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
@@ -29,8 +30,8 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
   if(theme.error||policies.error||campaignResult.error) return <p role="alert">Предпросмотр не загрузился. Сохранённый магазин не изменён.</p>;
   const query=await searchParams;
   const plan=computeEntitlement(tenant).plan;
-  let settings=theme.data??{tenant_id:tenant.id,template_key:"atelier",palette_key:"mono",brand_color:null,hero_title:null,hero_subtitle:null,hero_image_url:null,hero_cta_label:"Смотреть каталог",updated_at:""};
-  if(typeof query.template==="string"&&launchTemplatesForPlan(plan).some(t=>t.key===query.template)) settings.template_key=query.template;
+  let settings=theme.data??{color_theme:null,tenant_id:tenant.id,template_key:"atelier",palette_key:"mono",brand_color:null,hero_title:null,hero_subtitle:null,hero_image_url:null,hero_cta_label:"Смотреть каталог",updated_at:""};
+  let proposedSections:string[]=[];
   if(typeof query.palette==="string"&&palettes.some(p=>p.key===query.palette)) settings.palette_key=query.palette;
   if(typeof query.name==="string") tenant.catalog_name=query.name.slice(0,80);
   if(typeof query.generation==="string") {
@@ -40,12 +41,21 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
     const template=design.success?templateCatalog.find(t=>t.key===design.data.templateKey):null;
     if(generation.error||!design.success||!template||!hasPlan(plan,template.minPlan as Plan)||(plan==="basic"&&design.data.brandColor))return <p role="alert">Предложение недоступно в вашем магазине.</p>;
     settings={...settings,...proposedDesignSettings(design.data,theme.data)};
+    proposedSections=design.data.sections?.map(section=>section.name)??[];
   }
+  if(typeof query.template==="string"&&launchTemplatesForPlan(plan).some(t=>t.key===query.template)) settings.template_key=query.template;
   // Sample data is read-only and never written to the merchant's catalogue.
+  if(typeof query.colors==="string") {
+    try {
+      const colors=customStoreThemeSchema.safeParse(JSON.parse(query.colors));
+      if(colors.success) settings={...settings,color_theme:colors.data};
+    } catch { /* Invalid preview parameters never change stored settings. */ }
+  }
   const sample = query.content === "example";
   const previewProducts = sample ? demoProductsFor(tenant.business_vertical ?? "other") : products;
   return <div style={storefrontStyle(settings,plan,tenant.accent_color)} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]">
     <p className="border-b p-3 text-sm">{sample ? "Пример с демонстрационными товарами · они не сохраняются в ваш магазин." : "Ваш магазин · только реальные товары."} Покупка отключена.</p>
+    {proposedSections.length>0&&<p className="border-b p-3 text-sm">Предложенные разделы: {proposedSections.join(" · ")}. При создании они сохранятся в каталог; товары в них добавите вы.</p>}
     <div inert><CartProvider><StoreHeader slug={tenant.slug} name={tenant.catalog_name || tenant.name} categories={Array.from(new Set(previewProducts.map(p=>p.category).filter(Boolean)))}/>
       <StoreHome slug={tenant.slug} tenant={tenant} settings={settings} products={previewProducts} campaign={sample ? null : campaignResult.data} storePolicies={sample ? null : policies.data}/>
     </CartProvider></div>

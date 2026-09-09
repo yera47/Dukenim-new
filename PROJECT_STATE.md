@@ -1,5 +1,9 @@
 # Dukenim — current project state
 
+- 2026-09-09 18:38 IN PROGRESS: custom-theme, receiving/payment setup and explicit new-store publication migrations applied; rollback DB tests pass. Local UI/prompt not deployed. Kimi colour test passed before final prompt cleanup; browser flow unverified. Acquiring research reopened, FreedomPay candidate only. Amira not seeded; reservations/full18bespoke compositions remain open.
+
+- 2026-09-09 17:51: 5085ec4 Ready on canonical domain (dpl_7RB8ehDGxJGZ7nxYYEUZvZ4pYF4R). Separate18demo route spaces with retained cart/layout; private cost snapshot migration applied, stock cost entry and gross profit released.272tests/2skip,tsc/build,36local journeys,transaction owner/outsider/immutability tests passed. Owner browser analytics empty-state verified; stock UI save not verified (current shop has no products). Acquiring paused. Individual shades/full builder/reservations remain unfinished.
+
 - 2026-09-09 17:27: 1637906 published Ready (dpl_41vQDGad3pUXzAevPtH5BAoQ81PG), canonical domain verified. Segment-first demo chooser, add/buy-now dialog and distinct approach grids. Production purchase navigation passes at 390/1440 with cart quantity preserved. 267 tests pass/2 skip, tsc/build and 36 local layout checks pass. No live payment or authenticated AI-save acceptance; broader unfinished requirements remain open.
 
 - 2026-09-09 16:53: bd30165 Ready dpl_7P8cRBaBFtv6sSsk8PShPUeMqaGr on canonical domain;18composed landing examples/3approaches and matching AI context published.267tests,36local viewport checks, demo navigation passed. Full merchant generation/save and remaining colour/commerce requirements not verified complete.
