@@ -6,12 +6,12 @@ Date checked: 2026-09-09. This file records verified partner replies and the tec
 
 | System | Verified response | What it means for Dukenim | Current gate |
 | --- | --- | --- | --- |
-| Planfix | A standard account is sufficient to start; the complete product is available for a 14-day pilot. | Best first technical pilot. The public REST API supports global OAuth 2.0 Authorization Code with mandatory PKCE S256, per-user permissions, 24-hour access tokens and refresh tokens. | The `dukenim.planfix.com` Central Asia test account and account-scoped confidential OAuth pilot application now exist. Production Dukenim still needs the migration, server-only secrets and deployment before the authorization-code flow can run. |
+| Planfix | A standard account is sufficient to start; the complete product is available for a 14-day pilot. | Best first technical pilot. The public REST API supports global OAuth 2.0 Authorization Code with mandatory PKCE S256, per-user permissions, 24-hour access tokens and refresh tokens. | The `dukenim.planfix.com` Central Asia test account, account-scoped confidential OAuth pilot application, production schema and server-only Vercel configuration now exist. The remaining gate is deployment followed by an owner-approved authorization grant. |
 | Megaplan | The integration proposal is welcome. Dukenim may become a technology partner and publish an application in the application store and integrations directory. Register Megaplan, create an app and submit it for moderation. | Strong second pilot. Current application authentication uses an application UUID and API token; password-based application authentication is deprecated. | Wait for clarification about a test account, partner status and closed pilot, then create the app with explicit owner approval. |
 | inSales | Partner support directed Dukenim to the official developer guide. | The install flow creates a separate password for each shop from the one-time install token and application secret. Webhooks cover order create/update/delete; documented limit is 500 requests per shop per 5 minutes. | Partner registration and a test shop are required. Do not start the final registration until the owner's actual legal status and the applicable agreement are known. |
 | r_keeper | Support supplied White Server API v2 and integrator quick-start documentation. | The API supports menu, stop-list, validation, order creation, status, cancellation and prepayment operations. It is an aggregator-level integration, not per-restaurant OAuth. | r_keeper requires an aggregator request, company details, a test-stand declaration, an authorization token and paid licenses. Wait for their answer before provisioning infrastructure. |
 | Bitrix24 | Support described technology partnership, Marketplace publication and a 15-day demo portal; Kazakhstan scenarios should use the `.kz` zone. | A local app or webhook is useful only for a single test portal. The scalable product must be a registered OAuth 2.0 application installed by each portal administrator. | Await the regional moderator/partner route. Do not confuse a local webhook proof with the final multi-tenant connector. |
-| Business.Ru | Support provided the developer/API route. | The public developer site says the API can manage warehouse and CRM documents and offers an integrator program. | Becoming a partner accepts a public offer. Do not press the final partner button until legal identity and owner approval for that agreement are available. |
+| Business.Ru | Support confirmed customer orders, reservations, status/conducted-document cancellation, webhooks and a default limit of 500 requests per five minutes. They offered a test-account invitation; each test store creates its own API integration in the application marketplace. | This is a viable merchant-authorized pilot without a shared master token. Dukenim must create missing counterparties/products before orders and preserve the provider-issued order ID alongside Dukenim's external ID. | Reply with the monitored email for the test invitation. Becoming a formal partner still accepts a public offer, so do not press that later partner button until the legal identity is known. |
 | BILLZ | The first developer mailbox bounced; a retry was sent to the verified general mailbox. | API capability is advertised, but no usable credentials or onboarding procedure has been received. | Wait for a routed technical reply. |
 | JOWI | The email bounced; the request was delivered to the official Telegram support chat and acknowledged. | Old developer material exists, but API 2.0 access and current partner rules are not yet verified. | Wait for the API/integrations contact and test-venue instructions. |
 | RetailCRM | Ticket creation acknowledgement only. | No technical decision yet. | Wait for a specialist response. |
@@ -43,13 +43,13 @@ No partner has sent a production API key. This is expected: application credenti
 ## Planfix pilot acceptance scenario
 
 1. Owner creates a disposable Planfix test account and an OAuth application with redirect URI `https://www.dukenim.kz/api/integrations/planfix/callback` (completed for the account-scoped pilot on 2026-09-09).
-2. Owner connects the account from Dukenim and approves the minimum scopes; Dukenim validates `state`, `iss` and PKCE before exchanging the code.
+2. Owner connects the account from Dukenim and approves the minimum scopes; Dukenim validates the signed-in owner/tenant, encrypted `state`, expiry and PKCE before exchanging the code.
 3. A synthetic Dukenim customer is created or matched using its stable UUID as `sourceObjectId`.
 4. A synthetic order totaling exactly 21,700 KZT is sent as a Planfix task using the order UUID as `sourceObjectId`; items, quantities, delivery and payment state appear in the description.
 5. Replaying the same event does not create a second task. A newer `sourceDataVersion` may update the same task only after an explicit status mapping is configured.
 6. Revoking the connection prevents further calls, does not delete the Dukenim order and does not expose the refresh token.
 
-## Implemented locally in this slice
+## Implemented in this slice
 
 - A single provider registry now covers all 23 systems in the first outreach wave plus 1C/other fallback and groups them for the owner UI.
 - The integration request action validates against that registry; root and owner pages use the same labels.
@@ -58,13 +58,15 @@ No partner has sent a production API key. This is expected: application credenti
 - The Planfix task payload uses `sourceObjectId` and `sourceDataVersion`, preserving integer KZT totals and a stable idempotency identity.
 - A Planfix test account in the Central Asia data region and a confidential account-scoped OAuth application were created after separate action-time confirmations. Only profile, contact add/read and task add/read/update access is configured. The one-time secret is not present in source, shared documentation or chat output.
 - Connect and callback routes now bind OAuth state to the signed-in user and tenant, use PKCE, encrypt the short-lived state cookie and encrypt token material with AES-256-GCM before server-only database storage.
-- A new server-only `integration_connections` migration has no browser-facing RLS policy and explicitly revokes anonymous/authenticated access. The owner UI exposes the Planfix connection button only when all server configuration is present.
+- The two reviewed migrations were applied individually to the linked production database and recorded in migration history. The new server-only `integration_connections` table has RLS enabled, no browser-facing policy, explicit anonymous/authenticated revocation and verified service-role CRUD access.
+- All four Planfix values are stored as non-revealable Vercel Production secrets. No credential-shaped value is present in Git commit `1101b90`.
+- The callback now validates the encrypted OAuth state before accepting either success or denial and derives the stored account URL only from the allowlisted `*.planfix.com` account domain.
 - Eleven focused tests, TypeScript and the full 69-route/page production build pass.
 
 ## Not implemented yet
 
-- No production migration was applied and no release was deployed.
+- The connector source is committed locally as `1101b90`, but it has not yet been pushed or deployed because another in-progress release owns the shared build/deployment window.
 - The Planfix account and account-scoped OAuth application exist, but no merchant authorization grant, access token or remote contact/task has been created yet.
-- The new OAuth routes and encrypted connection storage are local only. Their two migrations are not applied, the four Planfix/encryption environment values are not in Vercel, and the code is not deployed.
+- The OAuth routes are not live until that coordinated production deployment completes.
 - Outbox/inbox workers, provider field-mapping UI, token revocation UI and live order synchronization remain after the first authorization grant.
 - No contract, public offer, paid license or partner agreement was accepted.
