@@ -1,5 +1,22 @@
 # Dukenim — единый контроль выполнения
 
+## Current checkpoint — 10.09 17:08
+
+New scope remains **in progress** until authenticated browser acceptance, not just compilation. Staff invite/accept/revoke and scoped module RPCs are now implemented and transaction-tested; older notes saying no server authorization describe previous checkpoints. Buyer order tracking now uses signed HttpOnly receipts, tenant/ID scoping and polling. Pickup readiness is seller-driven, reservation expiry suppresses readiness. Local owner team screen verified; employee email acceptance/login and a real buyer order browser round trip are still unverified. Azure consultation and exact pink/green design passed live again. No acquiring or native release.
+
+| ID | Requirement | Status | Evidence / remaining acceptance |
+|---|---|---|---|
+| 28 | Staff invitation, roles, per-module server access | in progress | Five applied migrations; rollback test `supabase/tests/staff_access_regression.sql`; local owner team screen. Employee email/login acceptance not yet verified; staff catalog editor currently updates existing products, not media upload/creation; staff Studio creates conversation proposals, not owner publishing actions. |
+| 29 | Buyer My Orders and live readiness | in progress | Signed receipt and API tenant/ID isolation tests; order/expiry progression tests; checkout/reservation redirect; polling. Real buyer/seller browser transaction not yet verified. History is browser-bound, last 20 receipts/30 days. |
+| 30 | Working days/hours and clear hold durations | in progress | Native day/time controls and Russian duration labels; focused tests pass. Owner settings save/reload not yet verified. |
+| 31 | Staff notifications | in progress | Order trigger queues only opted-in authorized staff; sender rechecks current access. Native delivery on a registered device remains unverified; app is paused by owner. |
+
+## Earlier checkpoints
+
+10.09 15:47: выбор7рабочих дней/времени добавлен локально в мастер, самовывоз и бронь.13focusedtests/tsc проходят; сохранение через интерфейс/деплой не проверены. Новые задачи покупательских статусов, приглашений и серверных прав сотрудников остаются в работе, не являются внешними блокерами. auth.ts/status-action.ts подтверждают отсутствие текущего staff-flow.
+
+10.09 15:12: настоящий owner PUT черновика → подтверждение → reload → открытие мастера восстанавливает шаг3. Это не повторная авторизация/публикация. Новые раздельные поля адреса покупателя локально:3теста,tsc/build проходят. Azure диалог и точные цвета/разделы живые тесты прошли. Новый запрос «свой курьер/Яндекс с уточняемой стоимостью» — не начат; нельзя заменять неизвестную цену бесплатной доставкой. Полный путь и остальные незакрытые ID остаются в работе.
+
 Обновлено 2026-09-10. Статусы: не начат / в работе / проверен / внешне заблокирован. «В работе» не означает готовность. Прежние исследования и релизы учитываются как частичные доказательства, а не как закрытие требований.
 
 10.09: эквайринг снова в исследовании по позднему запросу владельца, договор/реальная оплата не подключены. ID24:18маршрутных вариантов и отличающиеся композиции на общем engine;36новых browser journeys390/1440 прошли локально. ID27: приватные себестоимости и неизменный snapshot проверены в DB. Authenticated UI/relogin ещё не проверен. Новая фотосерия Higgsfield не запускалась:5кредитов при цене2/фото недостаточно на весь набор.

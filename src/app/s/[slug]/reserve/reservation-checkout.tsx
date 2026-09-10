@@ -1,5 +1,6 @@
 "use client";
 import React,{useState} from "react";
+import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {useCart} from "@/components/store/cart-provider";
 import {PickupLocationCard} from "@/components/store/pickup-location";
@@ -7,6 +8,7 @@ import type {PickupLocation} from "@/lib/pickup-location";
 import {money} from "@/lib/demo-data";
 import {reservationLabels} from "@/lib/reservations";
 export function ReservationCheckout({slug,hours,location}:{slug:string;hours:number;location:PickupLocation}){
+ const router=useRouter();
  const {items,total,clear}=useCart();const[name,setName]=useState(''),[phone,setPhone]=useState(''),[pending,setPending]=useState(false),[message,setMessage]=useState('');
  const[result,setResult]=useState<{number:number;expires:string;total:number}|null>(null);
  async function submit(event:React.FormEvent){
@@ -19,7 +21,7 @@ export function ReservationCheckout({slug,hours,location}:{slug:string;hours:num
    if(!response.ok)throw new Error(data.error||'Не удалось подтвердить бронь.');
    if(!['reserved','confirmed'].includes(data.reservationStatus))throw new Error(`Эта бронь уже закрыта: ${reservationLabels[data.reservationStatus as keyof typeof reservationLabels]??'проверьте у магазина'}. Для повторной брони свяжитесь с магазином.`);
    if(!Number.isSafeInteger(data.orderNumber)||data.orderNumber<1||!Number.isSafeInteger(data.total)||data.total<0||!Number.isFinite(Date.parse(data.expiresAt)))throw new Error('Неполный ответ. Проверьте бронь у магазина.');
-   setResult({number:data.orderNumber,expires:data.expiresAt,total:data.total});clear();
+   setResult({number:data.orderNumber,expires:data.expiresAt,total:data.total});clear();router.push(`/s/${slug}/orders`);
   }catch(error){setMessage(error instanceof Error?error.message:'Ответ не подтверждён. Повторная отправка с теми же данными не создаст ещё одну бронь.');}finally{setPending(false);}
  }
  return <main className="container max-w-3xl space-y-5 py-10"><Link href={`/s/${slug}/checkout`} className="text-sm underline">← К оформлению заказа</Link><h1 className="text-3xl font-semibold">{result?`Бронь №${result.number} принята`:'Забронировать в магазине'}</h1><p>Без онлайн-оплаты. Храним товар {hours} ч. с момента бронирования. Дождитесь подтверждения магазина перед поездкой. Для отмены свяжитесь с магазином.</p><PickupLocationCard value={location}/>{result?<p role="status">Сумма при покупке: {money(result.total)}. Бронь до {new Date(result.expires).toLocaleString('ru-KZ')}. После этого товар вернётся в продажу.</p>:<form onSubmit={submit} className="card space-y-4 p-6"><p>Товары: {items.length} · {money(total)}</p><input aria-label="Имя" className="input" required minLength={2} maxLength={80} placeholder="Серик" value={name} onChange={e=>setName(e.target.value)}/><input aria-label="Телефон" className="input" type="tel" required maxLength={30} placeholder="Телефон" value={phone} onChange={e=>setPhone(e.target.value)}/><button disabled={pending||!items.length} className="btn btn-primary">{pending?'Бронируем…':'Подтвердить бронь'}</button>{message&&<p role="alert">{message}</p>}</form>}</main>;

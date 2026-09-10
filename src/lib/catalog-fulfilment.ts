@@ -9,7 +9,7 @@ export const fulfilmentDraftSchema=z.object({
   gisUrl:z.string().max(1500),yandexUrl:z.string().max(1500),
 }).strict();
 export type FulfilmentDraft=z.infer<typeof fulfilmentDraftSchema>;
-export const emptyFulfilment:FulfilmentDraft={reservation:false,holdHours:24,delivery:false,pickup:false,zone:"",cost:"",eta:"",address:"",hours:"",preparation:"",gisUrl:"",yandexUrl:""};
+export const emptyFulfilment:FulfilmentDraft={reservation:false,holdHours:24,delivery:false,pickup:false,zone:"",cost:"",eta:"",address:"",hours:"",preparation:"После подтверждения готовности продавцом в разделе «Мои заказы»",gisUrl:"",yandexUrl:""};
 export const paymentPreferenceSchema=z.enum(["later","freedompay","halyk","kaspi"]);
 export const fulfilmentCommitSchema=fulfilmentDraftSchema.superRefine((value,ctx)=>{
   if(!value.delivery&&!value.pickup&&!value.reservation)ctx.addIssue({code:"custom",message:"Выберите доставку, самовывоз или бронь.",path:["delivery"]});

@@ -14,6 +14,8 @@ import { contrastInk } from "@/lib/color-contrast";
 import { emptyFulfilment, fulfilmentCommitSchema, type FulfilmentDraft, type paymentPreferenceSchema } from "@/lib/catalog-fulfilment";
 import type { z } from "zod";
 import {BrandMaterials} from "./brand-materials";
+import { hoursLabel } from "@/lib/duration-label";
+import { WorkingHours } from "./working-hours";
 
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
@@ -52,7 +54,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           const saved = parsed.data;
           setDesignStage(saved.designStage ?? "brief");
           setColorBrief(saved.colorBrief ?? "");
-          setFulfilment(saved.fulfilment??emptyFulfilment);
+          setFulfilment({...saved.fulfilment??emptyFulfilment,preparation:emptyFulfilment.preparation});
           setPaymentPreference(saved.paymentPreference??"later");
           setColorTheme(saved.colorTheme);
           if(saved.colorTheme) setThemeChoices(themeVariations(saved.colorTheme));
@@ -171,8 +173,8 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           {fulfilment.delivery&&<div className="grid gap-4 sm:grid-cols-2">{([['zone','Куда доставляете','Например, Алматы в пределах города'],['cost','Стоимость, ₸','Например, 1500'],['eta','Срок доставки','Например, на следующий день']] as const).map(([key,label,placeholder])=><label key={key} className="text-sm">{label}<input className="input mt-2" value={fulfilment[key]} inputMode={key==='cost'?'numeric':'text'} maxLength={key==='cost'?10:key==='zone'?100:200} placeholder={placeholder} onChange={e=>setFulfilment({...fulfilment,[key]:e.target.value})}/></label>)}</div>}
           <label className="flex items-center gap-3 rounded-xl border p-4"><input type="checkbox" checked={fulfilment.pickup} onChange={e=>setFulfilment({...fulfilment,pickup:e.target.checked})}/>Самовывоз из магазина</label>
           <label className="flex items-center gap-3 rounded-xl border p-4"><input type="checkbox" checked={fulfilment.reservation} onChange={e=>setFulfilment({...fulfilment,reservation:e.target.checked})}/>Бронь в магазине без онлайн-оплаты</label>
-          {fulfilment.reservation&&<label className="block text-sm">Сколько часов держать товар (1–72)<input type="number" min={1} max={72} className="input mt-2" value={fulfilment.holdHours} onChange={e=>setFulfilment({...fulfilment,holdHours:Number(e.target.value)})}/><span className="mt-2 block text-neutral-500">Бронь временно уменьшает доступный остаток. После срока товар возвращается в продажу.</span></label>}
-          {(fulfilment.pickup||fulfilment.reservation)&&<div className="grid gap-4 sm:grid-cols-2">{([['address','Адрес','Город, улица, дом'],['hours','Часы работы','Например, ежедневно 10:00–20:00'],['preparation','Когда заказ будет готов','Например, через 2 часа после подтверждения'],['gisUrl','Ссылка на 2ГИС · необязательно','https://2gis.kz/…'],['yandexUrl','Яндекс Карты · необязательно','https://yandex.kz/maps/…']] as const).map(([key,label,placeholder])=><label key={key} className="text-sm">{label}<input className="input mt-2" value={fulfilment[key]} maxLength={key.endsWith('Url')?1500:key==='address'?300:200} placeholder={placeholder} onChange={e=>setFulfilment({...fulfilment,[key]:e.target.value})}/></label>)}</div>}
+          {fulfilment.reservation&&<label className="block text-sm">Срок бронирования<select className="input mt-2" value={fulfilment.holdHours} onChange={e=>setFulfilment({...fulfilment,holdHours:Number(e.target.value)})}>{Array.from({length:72},(_,i)=>i+1).map(hours=><option key={hours} value={hours}>{hoursLabel(hours)}</option>)}</select><span className="mt-2 block text-neutral-500">Бронь временно уменьшает доступный остаток. После срока товар возвращается в продажу.</span></label>}
+          {(fulfilment.pickup||fulfilment.reservation)&&<div className="grid gap-4 sm:grid-cols-2"><WorkingHours value={fulfilment.hours} onChange={hours=>setFulfilment({...fulfilment,hours})}/>{([['address','Адрес','Город, улица, дом'],['gisUrl','Ссылка на 2ГИС · необязательно','https://2gis.kz/…'],['yandexUrl','Яндекс Карты · необязательно','https://yandex.kz/maps/…']] as const).map(([key,label,placeholder])=><label key={key} className="text-sm">{label}<input className="input mt-2" value={fulfilment[key]} maxLength={key.endsWith('Url')?1500:key==='address'?300:200} placeholder={placeholder} onChange={e=>setFulfilment({...fulfilment,[key]:e.target.value})}/></label>)}<p className="text-sm text-neutral-500 sm:col-span-2">Готовность подтверждает продавец после проверки наличия. Покупатель отслеживает заказ в разделе «Мои заказы».</p></div>}
           <p className="text-xs leading-5 text-neutral-500">Пока онлайн-оплата не подключена, не обещаем предоплаченный самовывоз. Выбранная бронь станет доступна после сохранения условий и публикации магазина.</p>
         </div>}
         {step===3&&<div className="mt-5 space-y-3">

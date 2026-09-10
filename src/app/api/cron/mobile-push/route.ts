@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import {createStaffAdminClient} from "@/lib/staff-server";
 import { readPushTickets, readPushReceipts, savedTicketsSchema } from "@/lib/expo-push-receipts";
 import { authorizePushWorker } from "@/lib/push-worker-auth";
 
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
     let providerAccepted=false;
     try {
       const member=await client.from('tenant_users').select('id').eq('tenant_id',notification.tenant_id).eq('user_id',notification.user_id).eq('role','owner').maybeSingle();
-      if(member.error||!member.data)throw new Error('Recipient no longer authorized');
+      if(member.error)throw new Error('Recipient authorization unavailable');
+      if(!member.data){const staff=await createStaffAdminClient().rpc('can_notify_staff',{p_tenant:notification.tenant_id,p_user:notification.user_id});if(staff.error||!staff.data)throw new Error('Recipient no longer authorized');}
       const devices=await client.from('mobile_device_tokens').select('id,token').eq('user_id',notification.user_id).eq('enabled',true).limit(100);
       if(devices.error||!devices.data?.length)throw new Error('No registered device');
       const response=await fetch('https://exp.host/--/api/v2/push/send',{

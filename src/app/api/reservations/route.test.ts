@@ -1,5 +1,6 @@
 import {describe,it,expect,vi,afterEach} from 'vitest';
 vi.mock('@/lib/supabase/admin',()=>({createAdminClient:vi.fn()}));
+vi.mock('next/headers',()=>({cookies:async()=>({get:()=>undefined})}));
 vi.mock('@/lib/queries/tenants',()=>({getPublicTenantBySlug:vi.fn()}));
 import {createAdminClient} from '@/lib/supabase/admin';
 import {getPublicTenantBySlug} from '@/lib/queries/tenants';

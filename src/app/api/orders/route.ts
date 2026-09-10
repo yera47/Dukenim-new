@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import {guestOrdersCookie,readGuestOrders,signGuestOrders} from "@/lib/guest-orders";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStorefrontOrder, getCheckoutOptions, type CheckoutItem } from "@/lib/queries/orders";
 import { getPublicTenantBySlug } from "@/lib/queries/tenants";
@@ -77,6 +79,8 @@ export async function POST(request: Request) {
       if (!zoneId || !options.zones.some((zone) => zone.id === zoneId)) return NextResponse.json({ error: "Выберите доступную зону доставки" }, { status: 400 });
     }
 
+    const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const previous=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
     const { data, error } = await createStorefrontOrder(client, {
       tenantId: tenant.id,
       name,
@@ -89,7 +93,10 @@ export async function POST(request: Request) {
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];
-    return NextResponse.json({ orderId: order.order_id, orderNumber: order.order_number, total: order.total });
+    const response=NextResponse.json({ orderId: order.order_id, orderNumber: order.order_number, total: order.total });
+    response.cookies.set(guestOrdersCookie,signGuestOrders([...previous,{id:order.order_id,tenant:tenant.id,expires:Date.now()+30*86400000}],secret),{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:30*86400});
+    response.headers.set("Cache-Control","private, no-store");
+    return response;
   } catch {
     return NextResponse.json({ error: "Не удалось прочитать данные заказа" }, { status: 400 });
   }

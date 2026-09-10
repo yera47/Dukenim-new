@@ -158,6 +158,15 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     </section>}
   </div>;
 
+  if (catalogStatus === "building") return <div className={styles.workspace}>
+    <StudioConversation enabled={enabled} stageHint="Оформление сохранено. Добавим первый товар: название, фотографию, цену и наличие. Если нужна помощь, спросите здесь.">
+    <section className={styles.setupFlow} aria-label="Добавление первого товара">
+      <p className="mb-4 text-sm text-neutral-500">✓ Оформление сохранено · Следующий шаг — первый товар</p>
+      <ProductForm fromStudio categories={categories} vertical={vertical}/>
+    </section>
+    </StudioConversation>
+  </div>;
+
   return <div className={styles.workspace}>
     {!catalogPublished&&<CatalogPublication/>}
     <StudioConversation enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
@@ -190,7 +199,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
       {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
-    <BrandMaterials/><DesignHistory/>
+    <details className="rounded-xl border p-4"><summary className="cursor-pointer text-sm">Оформление и материалы бренда</summary><div className="mt-4 space-y-4"><BrandMaterials/><DesignHistory/></div></details>
     </StudioConversation>
   </div>;
 }

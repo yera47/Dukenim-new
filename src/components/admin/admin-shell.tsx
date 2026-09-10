@@ -37,6 +37,7 @@ const baseNav = [
   ["/admin/stock", "Склад", Boxes],
   ["/admin/analytics", "Аналитика", BarChart3],
   ["/admin/customers", "Клиенты", Users],
+  ["/admin/team", "Сотрудники", Users],
   ["/admin/requests", "Поддержка", MessageSquare],
   ["/admin/integrations", "Интеграции", Link2],
   ["/admin/domains", "Ссылка и домен", ExternalLink],

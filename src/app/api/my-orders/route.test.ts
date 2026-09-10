@@ -1,0 +1,13 @@
+import {afterEach,beforeEach,expect,it,vi} from "vitest";
+const mocks=vi.hoisted(()=>({cookie:vi.fn(),admin:vi.fn()}));
+vi.mock("next/headers",()=>({cookies:async()=>({get:mocks.cookie})}));
+vi.mock("@/lib/supabase/admin",()=>({createAdminClient:mocks.admin}));
+vi.mock("@/lib/reservations",()=>({reservationsClient:()=>({from:()=>({select:()=>({eq:()=>({in:async()=>({data:[],error:null})})})})})}));
+import {GET} from "./route";
+import {signGuestOrders} from "@/lib/guest-orders";
+const tenant="11111111-1111-4111-8111-111111111111",id="22222222-2222-4222-8222-222222222222";
+afterEach(()=>vi.unstubAllEnvs());
+beforeEach(()=>{vi.clearAllMocks();vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY","fixture-signing-key");});
+it("does not query orders without a valid signed receipt",async()=>{mocks.cookie.mockReturnValue({value:"forged"});const response=await GET(new Request("https://example.test/api/my-orders?slug=shop"));expect(await response.json()).toEqual({orders:[]});expect(mocks.admin).not.toHaveBeenCalled();expect(response.headers.get("cache-control")).toContain("no-store");});
+it("never transfers a receipt to another store",async()=>{mocks.cookie.mockReturnValue({value:signGuestOrders([{id,tenant,expires:Date.now()+10000}],"fixture-signing-key")});const from=vi.fn(()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:"33333333-3333-4333-8333-333333333333"}})})})}));mocks.admin.mockReturnValue({from});const response=await GET(new Request("https://example.test/api/my-orders?slug=other"));expect(await response.json()).toEqual({orders:[]});expect(from).toHaveBeenCalledTimes(1);});
+it("restricts the order query to both signed IDs and tenant",async()=>{mocks.cookie.mockReturnValue({value:signGuestOrders([{id,tenant,expires:Date.now()+10000}],"fixture-signing-key")});const inIds=vi.fn(()=>({order:async()=>({data:[{id,status:"confirmed"}],error:null})}));const eq=vi.fn(()=>({in:inIds}));mocks.admin.mockReturnValue({from:(name:string)=>name==="tenants"?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:tenant}})})})}:{select:()=>({eq})}});const response=await GET(new Request("https://example.test/api/my-orders?slug=shop"));expect(response.status).toBe(200);expect(eq).toHaveBeenCalledWith("tenant_id",tenant);expect(inIds).toHaveBeenCalledWith("id",[id]);});
