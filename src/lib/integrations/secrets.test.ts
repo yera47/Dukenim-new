@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { createPlanfixOAuthState, openPlanfixOAuthState, sealPlanfixOAuthState } from "./oauth-state";
+import { createPlanfixOAuthState, openPlanfixOAuthState, planfixOAuthCookieDomain, sealPlanfixOAuthState } from "./oauth-state";
 import { decryptIntegrationSecret, encryptIntegrationSecret } from "./secrets";
 
 const key = Buffer.alloc(32, 7).toString("base64url");
 
 describe("integration secret storage", () => {
+  it("shares the Planfix state cookie across the canonical apex and www hosts only", () => {
+    expect(planfixOAuthCookieDomain("https://www.dukenim.kz/api/integrations/planfix/callback")).toBe("dukenim.kz");
+    expect(planfixOAuthCookieDomain("https://dukenim.kz/api/integrations/planfix/callback")).toBe("dukenim.kz");
+    expect(planfixOAuthCookieDomain("http://localhost:3000/api/integrations/planfix/callback")).toBeUndefined();
+    expect(planfixOAuthCookieDomain("https://dukenim.kz.attacker.example/callback")).toBeUndefined();
+  });
+
   it("encrypts and authenticates token payloads", () => {
     const encrypted = encryptIntegrationSecret({ accessToken: "access", refreshToken: "refresh" }, key);
     expect(encrypted).not.toContain("access");

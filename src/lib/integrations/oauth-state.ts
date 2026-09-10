@@ -4,6 +4,11 @@ import { decryptIntegrationSecret, encryptIntegrationSecret } from "./secrets";
 export const PLANFIX_OAUTH_COOKIE_NAME = "__Secure-dukenim-planfix-oauth";
 export const PLANFIX_OAUTH_MAX_AGE_SECONDS = 10 * 60;
 
+export function planfixOAuthCookieDomain(redirectUri: string): string | undefined {
+  const hostname = new URL(redirectUri).hostname.toLowerCase();
+  return hostname === "dukenim.kz" || hostname.endsWith(".dukenim.kz") ? "dukenim.kz" : undefined;
+}
+
 export type PlanfixOAuthState = {
   state: string;
   verifier: string;

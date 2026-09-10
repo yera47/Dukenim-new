@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { buildPlanfixAuthorizationUrl, createPlanfixPkcePair } from "@/lib/integrations/planfix";
-import { createPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME, PLANFIX_OAUTH_MAX_AGE_SECONDS, sealPlanfixOAuthState } from "@/lib/integrations/oauth-state";
+import { createPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME, PLANFIX_OAUTH_MAX_AGE_SECONDS, planfixOAuthCookieDomain, sealPlanfixOAuthState } from "@/lib/integrations/oauth-state";
 
 function config() {
   const clientId = process.env.PLANFIX_CLIENT_ID?.trim();
@@ -27,6 +27,7 @@ export async function GET() {
       sameSite: "lax",
       path: "/api/integrations/planfix",
       maxAge: PLANFIX_OAUTH_MAX_AGE_SECONDS,
+      domain: planfixOAuthCookieDomain(redirectUri),
     });
     return response;
   } catch {

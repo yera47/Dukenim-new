@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { exchangePlanfixAuthorizationCode } from "@/lib/integrations/planfix";
-import { openPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME } from "@/lib/integrations/oauth-state";
+import { openPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME, planfixOAuthCookieDomain } from "@/lib/integrations/oauth-state";
 import { encryptIntegrationSecret } from "@/lib/integrations/secrets";
 
 function config() {
@@ -21,7 +21,7 @@ function resultRedirect(redirectUri: string, result: string) {
   const destination = new URL("/admin/integrations", redirectUri);
   destination.searchParams.set("planfix", result);
   const response = NextResponse.redirect(destination);
-  response.cookies.set(PLANFIX_OAUTH_COOKIE_NAME, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/integrations/planfix", maxAge: 0 });
+  response.cookies.set(PLANFIX_OAUTH_COOKIE_NAME, "", { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/api/integrations/planfix", maxAge: 0, domain: planfixOAuthCookieDomain(redirectUri) });
   return response;
 }
 
