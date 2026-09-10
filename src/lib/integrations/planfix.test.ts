@@ -135,6 +135,17 @@ describe("Planfix integration", () => {
     })).rejects.toMatchObject({ status: 401, code: "invalid_client" } satisfies Partial<PlanfixOAuthError>);
   });
 
+  it("classifies a non-JSON successful token response without exposing it", async () => {
+    const fetcher = vi.fn(async () => new Response("unexpected provider page", { status: 200 })) as unknown as typeof fetch;
+    await expect(exchangePlanfixAuthorizationCode({
+      clientId: "client",
+      code: "code",
+      redirectUri: "https://dukenim.kz/api/integrations/planfix/callback",
+      verifier: "v".repeat(43),
+      fetcher,
+    })).rejects.toMatchObject({ code: "invalid_json" } satisfies Partial<PlanfixOAuthError>);
+  });
+
   it("posts a task only to an allowed Planfix account domain", async () => {
     const fetcher = vi.fn(async () => new Response(JSON.stringify({ result: "success", id: 42 }), {
       status: 201,

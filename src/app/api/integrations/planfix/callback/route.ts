@@ -92,7 +92,14 @@ export async function GET(request: NextRequest) {
     return resultRedirect(redirectUri, "connected");
   } catch (error) {
     const oauthFailure = error instanceof PlanfixOAuthError ? `-${error.status}-${error.code}` : "";
-    const responseFailure = error instanceof PlanfixTokenResponseError ? `-response-${error.code}` : "";
+    const responseCode = error instanceof PlanfixTokenResponseError
+      ? error.code
+      : error && typeof error === "object" && "name" in error && error.name === "PlanfixTokenResponseError" && "code" in error
+        ? String(error.code)
+        : "";
+    const responseFailure = /^(invalid_json|missing_tokens|missing_account|unexpected_account)$/.test(responseCode)
+      ? `-response-${responseCode}`
+      : "";
     return resultRedirect(redirectUri, `failed-${failureStage}${oauthFailure}${responseFailure}`);
   }
 }

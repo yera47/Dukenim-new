@@ -161,7 +161,13 @@ export async function exchangePlanfixAuthorizationCode(input: {
     cache: "no-store",
   });
   if (!response.ok) throw await planfixOAuthFailure(response);
-  return parsePlanfixTokenResponse(await response.json());
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new PlanfixTokenResponseError("invalid_json");
+  }
+  return parsePlanfixTokenResponse(body);
 }
 
 export async function refreshPlanfixAccessToken(input: {
@@ -182,7 +188,13 @@ export async function refreshPlanfixAccessToken(input: {
     cache: "no-store",
   });
   if (!response.ok) throw await planfixOAuthFailure(response);
-  return parsePlanfixTokenResponse(await response.json());
+  let body: unknown;
+  try {
+    body = await response.json();
+  } catch {
+    throw new PlanfixTokenResponseError("invalid_json");
+  }
+  return parsePlanfixTokenResponse(body);
 }
 
 function parsePlanfixTokenResponse(value: unknown): PlanfixOAuthTokens {
