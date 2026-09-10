@@ -1,4 +1,14 @@
 "use server";
+import {redirect} from "next/navigation";
+export async function deleteEmptyStore(form:FormData){
+ const {client,actorId}=await rootClient();
+ const tenant=String(form.get("tenantId")??""),slug=String(form.get("confirmSlug")??"").trim(),reason=String(form.get("reason")??"").trim();
+ if(!/^[0-9a-f-]{36}$/i.test(tenant)||!slug||reason.length<3||reason.length>1000)throw new Error("Проверьте адрес и причину удаления.");
+ const rpc=client as unknown as {rpc:(name:"root_delete_empty_store",args:{p_tenant:string;p_actor:string;p_slug:string;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_delete_empty_store",{p_tenant:tenant,p_actor:actorId,p_slug:slug,p_reason:reason});
+ if(result.error||!result.data)throw new Error(result.error?.message??"Удаление не выполнено.");
+ revalidatePath("/root");redirect("/root");
+}
 import{revalidatePath}from"next/cache";import{requireRole}from"@/lib/auth";import{createAdminClient}from"@/lib/supabase/admin";import{createPlatformAuditEvent,createTenantAndOwner,rootMessage,setRequestStatus}from"@/lib/queries/root";import type{Plan}from"@/lib/plans";import type{Database}from"@/types/database";
 async function rootClient(){const context=await requireRole(["superadmin"]);if(!context.user)throw new Error("Для действий требуется вход в аккаунт суперадминистратора.");return{client:createAdminClient(),actorId:context.user.id}}
 export async function createStore(form:FormData){const{client,actorId}=await rootClient();const slug=String(form.get("slug")??"").trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw new Error("Некорректный slug");const{data,error}=await createTenantAndOwner(client,{email:String(form.get("email")),password:String(form.get("password")),slug,name:String(form.get("name")),color:String(form.get("color")??"#0E5C4A"),plan:String(form.get("plan")??"basic")as Plan});if(error)throw error;await createPlatformAuditEvent(client,{actorId,tenantId:data?.tenantId,action:"tenant.created",reason:"Создано из root-кабинета"});revalidatePath("/root")}

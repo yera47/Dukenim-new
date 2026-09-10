@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { money } from "@/lib/demo-data";
-import { updateRootProduct } from "../../actions";
+import { updateRootProduct,deleteEmptyStore } from "../../actions";
 
 export default async function RootStorePage({
   params,
@@ -89,6 +89,7 @@ export default async function RootStorePage({
       <div className="container py-10">
         <p className="data-label text-white/40">МАГАЗИН · /s/{tenant.slug}</p>
         <h1 className="mt-2 text-4xl font-extrabold">{tenant.name}</h1>
+        <details className="mt-5 rounded-xl border border-red-300/40 p-4"><summary className="cursor-pointer">Удалить пустой магазин</summary><p className="mt-3 text-sm">Безвозвратно удаляет пустой магазин, его черновики и обращения. Аккаунт владельца остаётся. Магазины с товарами, клиентами или финансовой историей защищены от удаления — используйте приостановку в списке магазинов.</p><form action={deleteEmptyStore} className="mt-4 grid gap-3"><input type="hidden" name="tenantId" value={tenant.id}/><label>Для подтверждения введите {tenant.slug}<input name="confirmSlug" required className="input text-black" autoComplete="off"/></label><label>Причина<input name="reason" required minLength={3} maxLength={1000} className="input text-black"/></label><button className="btn bg-red-800 text-white">Удалить безвозвратно</button></form></details>
         <p className="mt-3 text-white/55">
           Безопасное операционное управление. Удаление заменено на обратимое
           скрытие товара; каждое изменение требует причину и записывает

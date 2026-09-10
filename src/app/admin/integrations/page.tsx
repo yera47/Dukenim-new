@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { RefreshStatus } from "@/components/admin/refresh-status";
 import { IntegrationStatusDialog } from "@/components/admin/integration-status-dialog";
-import { ArrowRight, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { PaymentConnectionGuide } from "@/components/admin/payment-connection-guide";
 import { requireRole } from "@/lib/auth";
 import {
-  integrationConnectionModeLabel,
   integrationProviderGroups,
   integrationProviders,
   isIntegrationProvider,
@@ -45,6 +44,7 @@ type IntegrationRequest = {
   notes: string | null;
   status: string;
   updated_at: string;
+  preflight_summary: string | null;
 };
 
 export default async function IntegrationsPage({
@@ -69,7 +69,7 @@ export default async function IntegrationsPage({
     const [settings, requestResult] = await Promise.all([
       client.from("tenant_settings").select("payment_setup_preference").eq("tenant_id", tenantId!).maybeSingle(),
       client.from("crm_integration_requests")
-        .select("provider,account_url,admin_contact,sync_direction,notes,status,updated_at")
+        .select("provider,account_url,admin_contact,sync_direction,notes,status,updated_at,preflight_summary")
         .eq("tenant_id", tenantId!)
         .order("updated_at", { ascending: false }),
     ]);
@@ -85,8 +85,6 @@ export default async function IntegrationsPage({
   const latestProvider = requests.find((request) => isIntegrationProvider(request.provider))?.provider ?? null;
   const selectedProvider = requestedProvider ?? latestProvider ?? "";
   const selectedRequest = selectedProvider ? byProvider.get(selectedProvider) ?? null : null;
-  const selectedDefinition = integrationProviders.find((provider) => provider.key === selectedProvider);
-  const current = statuses[selectedRequest?.status ?? "not_selected"];
   const planfixRequest = byProvider.get("planfix");
   const businessRuRequest = byProvider.get("biznes_ru");
 
@@ -96,7 +94,7 @@ export default async function IntegrationsPage({
       <div>
         <p className="data-label">ИНТЕГРАЦИИ</p>
         <h1 className="mt-2 text-4xl font-extrabold">Подключения магазина</h1>
-        <p className="mt-3 max-w-3xl text-[var(--ink-60)]">Подключайте несколько CRM, учётных систем и ресторанных POS независимо. Каждая система получает только разрешение конкретного магазина.</p>
+        <p className="mt-3 text-[var(--ink-60)]">Онлайн-оплата и ваши системы учёта.</p>
       </div>
       <Link href="/admin/ai-studio" className="btn btn-secondary">В AI Studio <ArrowRight size={17}/></Link>
     </div>
@@ -109,21 +107,11 @@ export default async function IntegrationsPage({
     {requestsUnavailable && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось загрузить сохранённые статусы интеграций. Каталог доступен, но перед изменением заявки обновите страницу.</div>}
 
     <section className="card mt-6 p-5"><h2 className="text-xl font-semibold">Мои подключения</h2>
-      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=><IntegrationStatusDialog key={request.provider} provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={statuses[request.status]?.description??"Уточните статус в поддержке."} ready={request.status==="connected"}/>):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
+      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=><IntegrationStatusDialog key={request.provider} provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={request.preflight_summary || statuses[request.status]?.description || "Уточните статус в поддержке."} ready={request.status==="connected"}/>):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
     </section>
 
-    <section id="request-connector" className="mt-8 grid gap-6 lg:grid-cols-[.88fr_1.12fr]">
-      <aside className="panel-dark rounded-[var(--r-card)] p-6">
-        <div className="flex items-center gap-3 text-[var(--accent-bright)]"><Clock3 size={21}/><span className="data-label text-[var(--accent-bright)]">СТАТУС</span></div>
-        <h2 className="mt-6 text-2xl font-extrabold">{current.title}</h2>
-        <p className="mt-3 text-sm leading-6 text-white/65">{current.description}</p>
-        {selectedDefinition && <p className="mt-4 rounded-xl bg-white/7 p-3 text-sm"><b>{selectedDefinition.label}</b><span className="mt-1 block text-white/55">{integrationConnectionModeLabel(selectedDefinition.connection)}</span></p>}
-        <div className="mt-8 space-y-4 border-t border-white/12 pt-5 text-sm">
-          <p className="flex gap-3"><ShieldCheck size={18} className="shrink-0 text-[var(--accent-bright)]"/>Не просим пароль от CRM, учёта или POS.</p>
-          <p className="flex gap-3"><CheckCircle2 size={18} className="shrink-0 text-[var(--accent-bright)]"/>Каждое подключение проверяется отдельно и не заменяет разрешение магазина.</p>
-        </div>
-      </aside>
-
+    <details id="request-connector" className="card mt-6 p-5" open={Boolean(requestedProvider) || requests.length === 0}>
+      <summary className="cursor-pointer text-lg font-semibold">+ Подключить систему</summary>
       <form action={saveCrmIntegrationRequest} className="card p-6">
         <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно вести несколько заявок одновременно. Пароли и API-ключи сюда не вставляются.</p></div><details className="text-sm"><summary className="cursor-pointer whitespace-nowrap">ⓘ Стоимость</summary><p className="mt-2">«Бренд»: включено. «Старт»: 70 000 ₸ после подключения и проверки. Лицензия поставщика оплачивается отдельно. Сейчас отправляется только заявка, без списания.</p></details></div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
@@ -150,7 +138,7 @@ export default async function IntegrationsPage({
         <p className="mt-4 text-xs leading-5 text-[var(--ink-60)]">Не вставляйте пароль, секретный ключ или webhook в эту форму. Если понадобится доступ, появится отдельный защищённый шаг.</p>
         <div className="mt-6 flex flex-wrap gap-3"><button className="btn btn-cta" type="submit" name="intent" value="submit">Отправить на проверку <ArrowRight size={17}/></button><button className="btn btn-secondary" type="submit" name="intent" value="later">Добавить позже</button></div>
       </form>
-    </section>
+    </details>
 
     {(selectedProvider === "planfix" || planfixRequest) && <section className="card mt-6 p-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
