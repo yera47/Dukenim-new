@@ -84,6 +84,16 @@ export class PlanfixOAuthError extends Error {
   }
 }
 
+export class PlanfixTokenResponseError extends Error {
+  readonly code: "invalid_json" | "missing_tokens" | "missing_account" | "unexpected_account";
+
+  constructor(code: PlanfixTokenResponseError["code"]) {
+    super(`Invalid Planfix token response (${code})`);
+    this.name = "PlanfixTokenResponseError";
+    this.code = code;
+  }
+}
+
 async function planfixOAuthFailure(response: Response): Promise<PlanfixOAuthError> {
   let code = "provider_error";
   try {
@@ -176,29 +186,45 @@ export async function refreshPlanfixAccessToken(input: {
 }
 
 function parsePlanfixTokenResponse(value: unknown): PlanfixOAuthTokens {
-  if (!value || typeof value !== "object") throw new Error("Invalid Planfix token response");
+  if (!value || typeof value !== "object") throw new PlanfixTokenResponseError("invalid_json");
   const data = value as Record<string, unknown>;
+  const accountName = String(data.account_name ?? "");
+  const accountValue = String(data.account_domain ?? data.account_url ?? "");
+  if (!accountValue) throw new PlanfixTokenResponseError("missing_account");
+  let accountDomain: string;
+  try {
+    accountDomain = normalizePlanfixAccountDomain(accountValue);
+  } catch {
+    throw new PlanfixTokenResponseError("unexpected_account");
+  }
   const result = {
     accessToken: String(data.access_token ?? ""),
     refreshToken: String(data.refresh_token ?? ""),
     expiresIn: Number(data.expires_in),
     scope: String(data.scope ?? ""),
-    accountName: String(data.account_name ?? ""),
-    accountDomain: String(data.account_domain ?? ""),
-    accountUrl: String(data.account_url ?? ""),
+    accountName,
+    accountDomain,
+    accountUrl: `https://${accountDomain}`,
   };
   if (!result.accessToken || !result.refreshToken || !Number.isFinite(result.expiresIn) || result.expiresIn < 1) {
-    throw new Error("Incomplete Planfix token response");
+    throw new PlanfixTokenResponseError("missing_tokens");
   }
-  planfixApiBaseUrl(result.accountDomain);
   return result;
 }
 
-export function planfixApiBaseUrl(accountDomain: string): string {
-  const normalized = accountDomain.trim().toLowerCase().replace(/^https?:\/\//, "").replace(/\/$/, "");
+function normalizePlanfixAccountDomain(accountDomainOrUrl: string): string {
+  const candidate = accountDomainOrUrl.trim();
+  const normalized = /^https?:\/\//i.test(candidate)
+    ? new URL(candidate).hostname.toLowerCase()
+    : candidate.toLowerCase().replace(/\/$/, "");
   if (!/^[a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*\.planfix\.(?:com|ru)$/.test(normalized)) {
     throw new Error("Unexpected Planfix account domain");
   }
+  return normalized;
+}
+
+export function planfixApiBaseUrl(accountDomain: string): string {
+  const normalized = normalizePlanfixAccountDomain(accountDomain);
   return `https://${normalized}/rest`;
 }
 

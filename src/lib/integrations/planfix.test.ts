@@ -101,6 +101,26 @@ describe("Planfix integration", () => {
     expect(fetcher).toHaveBeenCalledOnce();
   });
 
+  it("accepts the documented account URL when account_domain is omitted", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({
+      access_token: "access",
+      refresh_token: "refresh",
+      expires_in: 86_400,
+      scope: "openid email",
+      account_name: "demo",
+      account_url: "https://demo.planfix.com/",
+    }), { status: 200, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    const tokens = await exchangePlanfixAuthorizationCode({
+      clientId: "client",
+      code: "code",
+      redirectUri: "https://dukenim.kz/api/integrations/planfix/callback",
+      verifier: "v".repeat(43),
+      fetcher,
+    });
+    expect(tokens.accountDomain).toBe("demo.planfix.com");
+    expect(tokens.accountUrl).toBe("https://demo.planfix.com");
+  });
+
   it("surfaces only a reviewed OAuth error code and status", async () => {
     const fetcher = vi.fn(async () => new Response(JSON.stringify({
       error: "invalid_client",

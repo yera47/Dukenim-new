@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { exchangePlanfixAuthorizationCode, PlanfixOAuthError } from "@/lib/integrations/planfix";
+import { exchangePlanfixAuthorizationCode, PlanfixOAuthError, PlanfixTokenResponseError } from "@/lib/integrations/planfix";
 import { openPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME, planfixOAuthCookieDomain } from "@/lib/integrations/oauth-state";
 import { encryptIntegrationSecret } from "@/lib/integrations/secrets";
 
@@ -92,6 +92,7 @@ export async function GET(request: NextRequest) {
     return resultRedirect(redirectUri, "connected");
   } catch (error) {
     const oauthFailure = error instanceof PlanfixOAuthError ? `-${error.status}-${error.code}` : "";
-    return resultRedirect(redirectUri, `failed-${failureStage}${oauthFailure}`);
+    const responseFailure = error instanceof PlanfixTokenResponseError ? `-response-${error.code}` : "";
+    return resultRedirect(redirectUri, `failed-${failureStage}${oauthFailure}${responseFailure}`);
   }
 }
