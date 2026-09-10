@@ -161,7 +161,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   </div>;
 
   if (catalogStatus === "building") return <div className={styles.workspace}>
-    <StudioConversation designOnly enabled={enabled&&!pending} onTask={task=>{if(task.intent==="store_design"){setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}} stageHint="Оформление сохранено. Добавим первый товар: название, фотографию, цену и наличие. Если нужна помощь, спросите здесь.">
+    <StudioConversation designOnly working={pending} enabled={enabled&&!pending} onTask={task=>{if(task.intent==="store_design"){setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}} stageHint="Оформление сохранено. Добавим первый товар: название, фотографию, цену и наличие. Если нужна помощь, спросите здесь.">
     {pending&&<p role="status">Готовлю персональное оформление…</p>}
     {error&&<p role="alert" className={styles.error}>{error}</p>}
     {designPanel}
@@ -175,7 +175,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
 
   return <div className={styles.workspace}>
     {!catalogPublished&&<CatalogPublication/>}
-    <StudioConversation enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+    <StudioConversation working={pending} enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}
       {pending && <p role="status">Готовлю предложение…</p>}

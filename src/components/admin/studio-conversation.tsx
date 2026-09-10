@@ -5,7 +5,7 @@ import { consultationSchema, type Consultation, type ConsultationTurn } from "@/
 import styles from "./studio-conversation.module.css";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
-export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean}) {
+export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false,working=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean;working?:boolean}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
   const [includeBrandLogo,setIncludeBrandLogo]=useState(false);
@@ -55,7 +55,7 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
       <div className="flex flex-wrap items-center justify-between gap-3">{staff?<span className="text-sm">Права меняет владелец магазина.</span>:<Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать в поддержку</Link>}<button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>
       {onBanner&&<details className="mt-3 text-sm"><summary className="cursor-pointer text-neutral-500">Дополнительные действия</summary><button type="button" className="mt-3 underline" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать фон баннера по этому сообщению</button></details>}
     </form>
-    {!enabled&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
+    {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
     {!stageHint&&<nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>}
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
   </section>;
