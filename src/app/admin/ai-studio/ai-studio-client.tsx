@@ -166,10 +166,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     {error&&<p role="alert" className={styles.error}>{error}</p>}
     {designPanel}
     {design&&<button type="button" className="text-sm underline" onClick={()=>{setDesign(null);setSubmitted("");}}>Вернуться к добавлению товара</button>}
-    {!design&&!pending&&<section className={styles.setupFlow} aria-label="Добавление первого товара">
+    <section hidden={Boolean(design||pending)} className={styles.setupFlow} aria-label="Добавление первого товара">
       <p className="mb-4 text-sm text-neutral-500">✓ Оформление сохранено · Следующий шаг — первый товар</p>
       <ProductForm fromStudio categories={categories} vertical={vertical}/>
-    </section>}
+    </section>
     </StudioConversation>
   </div>;
 
