@@ -10,6 +10,7 @@ import {
 } from "@/lib/integrations/providers";
 import { createClient } from "@/lib/supabase/server";
 import { saveCrmIntegrationRequest } from "./actions";
+import { connectBusinessRu } from "./business-ru-actions";
 
 const statuses: Record<string, { title: string; description: string }> = {
   not_selected: { title: "Система не выбрана", description: "Выберите нужную CRM, учётную систему или POS из каталога ниже." },
@@ -85,6 +86,7 @@ export default async function IntegrationsPage({
   const selectedDefinition = integrationProviders.find((provider) => provider.key === selectedProvider);
   const current = statuses[selectedRequest?.status ?? "not_selected"];
   const planfixRequest = byProvider.get("planfix");
+  const businessRuRequest = byProvider.get("biznes_ru");
 
   return <div className="mx-auto max-w-6xl">
     <div className="flex flex-wrap items-end justify-between gap-5">
@@ -176,6 +178,31 @@ export default async function IntegrationsPage({
         <div><p className="data-label">PLANFIX PILOT</p><h2 className="mt-2 text-xl font-extrabold">Подключить аккаунт безопасно</h2><p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-60)]">Вы входите на стороне Planfix и подтверждаете только контакты и задачи. Пароль Planfix в Dukenim не передаётся.</p></div>
         {planfixRequest?.status === "connected" ? <span className="badge">ПОДКЛЮЧЕНО</span> : planfixConfigured ? <Link href="/api/integrations/planfix/connect" className="btn btn-cta">Подключить Planfix <ArrowRight size={17}/></Link> : <span className="badge">НАСТРОЙКА ПИЛОТА</span>}
       </div>
+    </section>}
+
+    {selectedProvider === "biznes_ru" && <section className="card mt-6 p-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <p className="data-label">БИЗНЕС.РУ · ЧАСТНАЯ ИНТЕГРАЦИЯ</p>
+          <h2 className="mt-2 text-xl font-extrabold">Защищённое подключение магазина</h2>
+          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--ink-60)]">Dukenim проверит подпись API и доступ к схеме заказов без создания клиентов, товаров или документов. ID, секрет и токен хранятся только в зашифрованном серверном хранилище.</p>
+        </div>
+        {businessRuRequest?.status === "connected" && <span className="badge">ПРОВЕРЕНО · ДАННЫЕ НЕ ПЕРЕДАЮТСЯ</span>}
+      </div>
+      {businessRuRequest?.status !== "connected" && <form action={connectBusinessRu} className="mt-6 grid gap-4 sm:grid-cols-2">
+        <label className="grid gap-2 text-sm font-bold">Адрес аккаунта
+          <input name="accountUrl" className="input" type="url" defaultValue={businessRuRequest?.account_url ?? ""} placeholder="https://company.business.ru" autoComplete="url" required/>
+        </label>
+        <label className="grid gap-2 text-sm font-bold">ID интеграции
+          <input name="appId" className="input" inputMode="numeric" pattern="[0-9]{1,20}" autoComplete="off" required/>
+        </label>
+        <label className="grid gap-2 text-sm font-bold sm:col-span-2">Секретный ключ
+          <input name="secret" className="input" type="password" minLength={32} maxLength={32} autoComplete="new-password" required/>
+        </label>
+        <p className="text-xs leading-5 text-[var(--ink-60)] sm:col-span-2">Секрет не сохраняется в заявке и не показывается после подключения. Кнопка выполняет только безопасную проверку чтения.</p>
+        <div className="sm:col-span-2"><button className="btn btn-cta" type="submit">Проверить и подключить <ArrowRight size={17}/></button></div>
+      </form>}
+      {businessRuRequest?.status === "connected" && <p className="mt-5 text-sm leading-6 text-[var(--ink-60)]">API-подпись и модель заказов подтверждены. Автоматическую отправку включим отдельно после проверки полей тестового заказа и защиты от повторов.</p>}
     </section>}
   </div>;
 }
