@@ -67,6 +67,17 @@ export type IntegrationConnectionMode = IntegrationProviderDefinition["connectio
 const providerKeys = new Set<string>(integrationProviders.map((provider) => provider.key));
 const providerLabels = new Map<string, string>(integrationProviders.map((provider) => [provider.key, provider.label]));
 
+const connectionModeLabels: Record<IntegrationConnectionMode, string> = {
+  oauth: "OAuth каждого аккаунта",
+  oauth_pkce: "Защищённый OAuth + PKCE",
+  merchant_token: "Ключ каждого магазина",
+  partner_review: "После согласования с партнёром",
+  app_install: "Установка приложения магазином",
+  aggregator_token: "Стенд и лицензии поставщика",
+  integrator: "Через сертифицированного интегратора",
+  unknown: "Требуется техническая проверка",
+};
+
 export function isIntegrationProvider(value: string): value is IntegrationProvider {
   return providerKeys.has(value);
 }
@@ -74,4 +85,8 @@ export function isIntegrationProvider(value: string): value is IntegrationProvid
 export function integrationProviderLabel(value: string): string {
   if (value === "not_selected") return "Не выбрана";
   return providerLabels.get(value) ?? value;
+}
+
+export function integrationConnectionModeLabel(value: IntegrationConnectionMode): string {
+  return connectionModeLabels[value];
 }

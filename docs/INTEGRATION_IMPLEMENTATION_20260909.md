@@ -1,6 +1,6 @@
 # Dukenim — implementation plan for CRM, ERP and POS connectors
 
-Date checked: 2026-09-09. This file records verified partner replies and the technical implementation order. It does not contain credentials, tokens, passwords, personal contact details or legal identifiers.
+Date checked: 2026-09-10. This file records verified partner replies and the technical implementation order. It does not contain credentials, tokens, passwords, personal contact details or legal identifiers.
 
 ## Result of the first response round
 
@@ -9,7 +9,7 @@ Date checked: 2026-09-09. This file records verified partner replies and the tec
 | Planfix | A standard account is sufficient to start; the complete product is available for a 14-day pilot. | Best first technical pilot. The public REST API supports global OAuth 2.0 Authorization Code with mandatory PKCE S256, per-user permissions, 24-hour access tokens and refresh tokens. | The `dukenim.planfix.com` Central Asia test account, account-scoped confidential OAuth pilot application, production connect/callback routes, encrypted token storage and order-sync ledger now exist. The remaining gate is the owner's private login/password recovery followed by an owner-approved authorization grant. |
 | Megaplan | The integration proposal is welcome. Dukenim may become a technology partner and publish an application in the application store and integrations directory. Register Megaplan, create an app and submit it for moderation. | Strong second pilot. Current application authentication uses an application UUID and API token; password-based application authentication is deprecated. | Wait for clarification about a test account, partner status and closed pilot, then create the app with explicit owner approval. |
 | inSales | Partner support directed Dukenim to the official developer guide. | The install flow creates a separate password for each shop from the one-time install token and application secret. Webhooks cover order create/update/delete; documented limit is 500 requests per shop per 5 minutes. | Partner registration and a test shop are required. Do not start the final registration until the owner's actual legal status and the applicable agreement are known. |
-| r_keeper | Support supplied White Server API v2 and integrator quick-start documentation and directed test-stand requests to `integrations@rkeeper.ru`. | The API supports menu, stop-list, validation, order creation, status, cancellation and prepayment operations. It is an aggregator-level integration, not per-restaurant OAuth. | The test-stand request was sent on 2026-09-10. r_keeper still must issue the aggregator token/test object and clarify paid licenses before infrastructure is provisioned. |
+| r_keeper | Support supplied White Server API v2 guidance and offered a three-month test stand for 10,000 RUB. For Kazakhstan they require an official regional dealer to deploy the demo object; r_keeper then licenses it after receiving its object code. | The API supports menu, stop-list, validation, order creation, status, cancellation and prepayment operations. It is an aggregator/licensed-object integration, not per-restaurant OAuth. | A reply is drafted asking for the Kazakhstan dealer, exact White Server license pool, per-venue production licensing and final payment path. No payment is accepted and no stand is provisioned until those points are answered and the owner confirms the spend. |
 | Bitrix24 | Support described technology partnership, Marketplace publication and a 15-day demo portal; Kazakhstan scenarios should use the `.kz` zone. | A local app or webhook is useful only for a single test portal. The scalable product must be a registered OAuth 2.0 application installed by each portal administrator. | Await the regional moderator/partner route. Do not confuse a local webhook proof with the final multi-tenant connector. |
 | Business.Ru | Support confirmed customer orders, reservations, status/conducted-document cancellation, webhooks and a default limit of 500 requests per five minutes. They offered a test-account invitation; each test store creates its own API integration in the application marketplace. | This is a viable merchant-authorized pilot without a shared master token. Dukenim must create missing counterparties/products before orders and preserve the provider-issued order ID alongside Dukenim's external ID. | The monitored email was sent on 2026-09-10; wait for the test invitation. Becoming a formal partner still accepts a public offer, so do not press that later partner button until the legal identity is known. |
 | BILLZ | The first developer mailbox bounced; a retry was sent to the verified general mailbox. | API capability is advertised, but no usable credentials or onboarding procedure has been received. | Wait for a routed technical reply. |
@@ -18,6 +18,19 @@ Date checked: 2026-09-09. This file records verified partner replies and the tec
 | MoySklad | Out-of-office notice through September 13. The official site confirms that ordinary JSON API testing needs only a regular account, while marketplace publication requires an IP/legal entity in Russia or the CIS, a RUB settlement account and software development as the primary activity. | A regular 14-day test account is enough for a private API pilot; the public marketplace application is not currently eligible without verified legal and banking details. | The registration form is ready, but the owner must privately choose a password. Do not submit the developer marketplace form with invented legal details. |
 
 No partner has sent a production API key. This is expected: application credentials identify Dukenim, while every merchant or venue must separately authorize its own account. Tokens must never be pasted into the normal integration-request form or committed to source control.
+
+## Acceptance checklist
+
+| Requirement | Status | Evidence or blocker |
+| --- | --- | --- |
+| List every system from the 23-company outreach wave | verified | The shared registry and grouped owner catalog contain all 23 targets; 1C and an `other` fallback are additional options. |
+| Let one store track several integrations without overwriting them | verified | Production migration `20260910111537` enforces one row per `(tenant_id, provider)`; owner and Planfix writes use that conflict key. |
+| Keep unimplemented systems honest | verified | Cards show authorization route and request state; only Planfix exposes a connector action. |
+| Preserve per-merchant authorization | verified | UI copy and provider modes require OAuth, app installation or a merchant-issued key for the individual merchant where applicable. |
+| Connect Planfix to a real merchant account | externally blocked | Connector code is deployed from the earlier pilot, but the owner must privately recover/login to Planfix and confirm the OAuth grant. |
+| Build working adapters for every listed provider | externally blocked | No other provider has issued the required test account/application credentials or confirmed its final scalable onboarding route. Adapter work starts provider by provider when official access exists. |
+| Follow up with r_keeper without accepting costs | in progress | A no-commitment clarification draft is ready; final Send needs action-time owner confirmation. |
+| Receive Business.Ru test access | externally blocked | Dukenim accepted the invitation route by email; the provider has not delivered the test invitation yet. |
 
 ## Implementation order
 
@@ -54,6 +67,8 @@ No partner has sent a production API key. This is expected: application credenti
 - A single provider registry now covers all 23 systems in the first outreach wave plus 1C/other fallback and groups them for the owner UI.
 - The integration request action validates against that registry; root and owner pages use the same labels.
 - A forward-only database migration expands the existing provider constraint without changing existing rows or adding credential storage.
+- The owner integration page now renders the full provider catalog, explains each authorization model and tracks one independent request/status per tenant and provider. Selecting or postponing one system no longer overwrites another system's request.
+- Production migration `20260910111537_multi_provider_integration_requests.sql` replaces the former one-row-per-tenant constraint with a unique `(tenant_id, provider)` index. RLS remains enabled; database metadata verifies the old tenant-only constraint is absent and the new unique index is active.
 - The Planfix adapter implements PKCE generation, the global authorization URL, authorization-code exchange, token refresh response validation, strict Planfix-domain validation and deterministic customer/order payloads.
 - The Planfix task payload uses `sourceObjectId` and `sourceDataVersion`, preserving integer KZT totals and a stable idempotency identity.
 - A Planfix test account in the Central Asia data region and a confidential account-scoped OAuth application were created after separate action-time confirmations. Only profile, contact add/read and task add/read/update access is configured. The one-time secret is not present in source, shared documentation or chat output.
@@ -64,7 +79,7 @@ No partner has sent a production API key. This is expected: application credenti
 - The deployed connect/callback foundation is now extended locally with a manual owner-only order sync. It creates a Planfix contact and task from the real Dukenim order, preserves integer KZT totals, refreshes rotating OAuth tokens atomically and stores provider IDs separately from credentials.
 - A server-only `integration_entity_links` ledger prevents duplicate contacts/tasks. Network interruptions after a possible provider acceptance become `uncertain` and are never retried blindly. Its production migration `20260910101627` is applied and recorded; RLS is enabled, anon/authenticated SELECT is denied and service-role CRUD is verified.
 - The order page discloses which customer/order fields are transmitted and shows the manual sync action only for connected Planfix accounts and non-reservation orders.
-- The full local suite passes: 340 tests, strict TypeScript, production build and diff validation.
+- The full local suite passes: 355 tests, strict TypeScript and the production build.
 
 ## Not implemented yet
 
@@ -72,5 +87,6 @@ No partner has sent a production API key. This is expected: application credenti
 - The Planfix account and account-scoped OAuth application exist, but no merchant authorization grant, access token or remote contact/task has been created yet.
 - The owner must complete Planfix password recovery/login privately before the final OAuth authorization action can be presented.
 - Automatic outbox delivery, inbound callbacks, provider field-mapping UI, token revocation UI and live end-to-end order synchronization remain after the first authorization grant. The current implementation is deliberately manual and outbound-only.
-- Business.Ru test access and the r_keeper stand request were sent and are awaiting provider action; neither provider has issued credentials yet. keyCRM and regular MoySklad test accounts still require owner-handled password/SMS steps.
+- Business.Ru test access is still awaiting its invitation. r_keeper has answered with a paid/dealer-gated test-stand route; the clarification reply is drafted but not sent. Neither provider has issued credentials. keyCRM and regular MoySklad test accounts still require owner-handled password/SMS steps.
+- The full catalog and multi-provider request storage are implemented, but only Planfix currently has connector code. The other cards deliberately show request/review state until each provider issues a supported test account, application credential or merchant authorization route.
 - No contract, public offer, paid license or partner agreement was accepted.

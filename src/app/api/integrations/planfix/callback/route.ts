@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
       secret_reference: connection.id,
       last_status_at: now.toISOString(),
       updated_at: now.toISOString(),
-    }, { onConflict: "tenant_id" });
+    }, { onConflict: "tenant_id,provider" });
     if (requestError) throw new Error("Could not update integration status");
     return resultRedirect(redirectUri, "connected");
   } catch {

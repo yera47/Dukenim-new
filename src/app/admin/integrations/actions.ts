@@ -17,16 +17,25 @@ export async function saveCrmIntegrationRequest(formData: FormData) {
   const syncDirection = String(formData.get("syncDirection") ?? "orders_and_customers");
   const notes = String(formData.get("notes") ?? "").trim();
 
-  if (intent !== "later" && !isIntegrationProvider(provider)) throw new Error("Выберите систему из списка.");
+  if (intent !== "submit" && intent !== "later") throw new Error("Выберите корректное действие.");
+  if (!isIntegrationProvider(provider)) throw new Error("Выберите систему из списка.");
   if (!directions.has(syncDirection)) throw new Error("Выберите корректное направление синхронизации.");
   if (accountUrl.length > 300 || adminContact.length > 160 || notes.length > 1200) throw new Error("Сократите данные заявки и попробуйте снова.");
+  if (accountUrl) {
+    try {
+      const parsedAccountUrl = new URL(accountUrl);
+      if (parsedAccountUrl.protocol !== "https:" && parsedAccountUrl.protocol !== "http:") throw new Error();
+    } catch {
+      throw new Error("Укажите корректную ссылку на аккаунт.");
+    }
+  }
 
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const client = await createClient();
     const status = intent === "later" ? "details_later" : accountUrl && adminContact ? "submitted" : "credentials_needed";
     const { error } = await client.from("crm_integration_requests").upsert({
       tenant_id: tenantId!,
-      provider: (intent === "later" ? "not_selected" : provider) as Database["public"]["Tables"]["crm_integration_requests"]["Row"]["provider"],
+      provider: provider as Database["public"]["Tables"]["crm_integration_requests"]["Row"]["provider"],
       account_url: accountUrl || null,
       admin_contact: adminContact || null,
       sync_direction: syncDirection as Database["public"]["Tables"]["crm_integration_requests"]["Row"]["sync_direction"],
@@ -35,7 +44,7 @@ export async function saveCrmIntegrationRequest(formData: FormData) {
       submitted_at: status === "submitted" ? new Date().toISOString() : null,
       last_status_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }, { onConflict: "tenant_id" });
+    }, { onConflict: "tenant_id,provider" });
     if (error) throw new Error("Не удалось сохранить заявку. Попробуйте ещё раз.");
   }
 

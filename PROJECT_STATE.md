@@ -2,6 +2,7 @@
 
 ## Current acceptance — 2026-09-10
 
+- CRM/POS integrations: the owner catalog now covers all 23 outreach targets plus 1C/other and stores independent per-provider requests. Production DB migration `20260910111537` is applied with RLS retained; 355 tests, strict TypeScript and production build pass. Planfix remains the only implemented adapter and still awaits private owner login/OAuth approval. No provider has issued a production key. r_keeper offered a 10,000 RUB dealer-gated test stand; no payment was accepted and a clarification reply remains drafted.
 - Composition6d07d41 is published/Ready33AdrUPENuSf1caWXToPRxeqJ9Z2;36production purchase journeys pass. Selected-page PDF visual analysis and four-step first-product form published47da9d8/ReadyPbAFHL5HzBx2LEGDGESScJooER2K.331tests/tsc/build pass, local browser checks and live Kimi page test pass. Full owner persistence acceptance is not replaced by mock-action UI tests. See newest AI_HANDOFF checkpoint.
 
 - Production ea0b670: independent reservation settings, stock holds, confirmation/collection/cancellation and expiry cron; database isolation/idempotency/stock checks passed. Authenticated owner settings read verified; full reservation browser transaction not yet verified.

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   integrationProviderGroups,
   integrationProviders,
+  integrationConnectionModeLabel,
   integrationProviderLabel,
   isIntegrationProvider,
 } from "./providers";
@@ -32,5 +33,6 @@ describe("integration provider registry", () => {
     ]);
     expect(integrationProviderLabel("r_keeper")).toBe("r_keeper");
     expect(integrationProviderLabel("not_selected")).toBe("Не выбрана");
+    expect(integrationConnectionModeLabel("oauth_pkce")).toBe("Защищённый OAuth + PKCE");
   });
 });
