@@ -34,5 +34,8 @@ describe("integration provider registry", () => {
     expect(integrationProviderLabel("r_keeper")).toBe("r_keeper");
     expect(integrationProviderLabel("not_selected")).toBe("Не выбрана");
     expect(integrationConnectionModeLabel("oauth_pkce")).toBe("Защищённый OAuth + PKCE");
+    expect(integrationProviders.find((provider) => provider.key === "moysklad")?.connection).toBe("app_install");
+    expect(integrationProviders.find((provider) => provider.key === "biznes_ru")?.connection).toBe("merchant_token");
+    expect(integrationProviders.find((provider) => provider.key === "iiko")?.connection).toBe("merchant_token");
   });
 });

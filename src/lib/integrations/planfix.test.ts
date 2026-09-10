@@ -11,6 +11,7 @@ import {
   createPlanfixTask,
   exchangePlanfixAuthorizationCode,
   PlanfixApiError,
+  PlanfixOAuthError,
   planfixApiBaseUrl,
   type CanonicalIntegrationOrder,
 } from "./planfix";
@@ -98,6 +99,20 @@ describe("Planfix integration", () => {
     });
     expect(tokens.accountDomain).toBe("demo.planfix.com");
     expect(fetcher).toHaveBeenCalledOnce();
+  });
+
+  it("surfaces only a reviewed OAuth error code and status", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({
+      error: "invalid_client",
+      error_description: "must not be exposed",
+    }), { status: 401, headers: { "content-type": "application/json" } })) as unknown as typeof fetch;
+    await expect(exchangePlanfixAuthorizationCode({
+      clientId: "client",
+      code: "code",
+      redirectUri: "https://dukenim.kz/api/integrations/planfix/callback",
+      verifier: "v".repeat(43),
+      fetcher,
+    })).rejects.toMatchObject({ status: 401, code: "invalid_client" } satisfies Partial<PlanfixOAuthError>);
   });
 
   it("posts a task only to an allowed Planfix account domain", async () => {

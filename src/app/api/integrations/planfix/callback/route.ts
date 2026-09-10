@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { getSessionContext } from "@/lib/auth";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { exchangePlanfixAuthorizationCode } from "@/lib/integrations/planfix";
+import { exchangePlanfixAuthorizationCode, PlanfixOAuthError } from "@/lib/integrations/planfix";
 import { openPlanfixOAuthState, PLANFIX_OAUTH_COOKIE_NAME, planfixOAuthCookieDomain } from "@/lib/integrations/oauth-state";
 import { encryptIntegrationSecret } from "@/lib/integrations/secrets";
 
@@ -90,7 +90,8 @@ export async function GET(request: NextRequest) {
     }, { onConflict: "tenant_id,provider" });
     if (requestError) throw new Error("Could not update integration status");
     return resultRedirect(redirectUri, "connected");
-  } catch {
-    return resultRedirect(redirectUri, `failed-${failureStage}`);
+  } catch (error) {
+    const oauthFailure = error instanceof PlanfixOAuthError ? `-${error.status}-${error.code}` : "";
+    return resultRedirect(redirectUri, `failed-${failureStage}${oauthFailure}`);
   }
 }

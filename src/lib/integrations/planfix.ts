@@ -64,6 +64,38 @@ export class PlanfixApiError extends Error {
   }
 }
 
+const PLANFIX_OAUTH_ERROR_CODES = new Set([
+  "invalid_client",
+  "invalid_grant",
+  "invalid_request",
+  "invalid_scope",
+  "unauthorized_client",
+]);
+
+export class PlanfixOAuthError extends Error {
+  readonly status: number;
+  readonly code: string;
+
+  constructor(status: number, code: string) {
+    super(`Planfix OAuth request failed (${status}:${code})`);
+    this.name = "PlanfixOAuthError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
+async function planfixOAuthFailure(response: Response): Promise<PlanfixOAuthError> {
+  let code = "provider_error";
+  try {
+    const body = await response.json() as { error?: unknown };
+    const candidate = String(body.error ?? "");
+    if (PLANFIX_OAUTH_ERROR_CODES.has(candidate)) code = candidate;
+  } catch {
+    // OAuth error bodies are optional; never surface an unreviewed provider response.
+  }
+  return new PlanfixOAuthError(response.status, code);
+}
+
 export function createPlanfixPkcePair(verifier = randomBytes(32).toString("base64url")): PlanfixPkcePair {
   if (!/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) throw new Error("Invalid PKCE verifier");
   return {
@@ -118,7 +150,7 @@ export async function exchangePlanfixAuthorizationCode(input: {
     }),
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Planfix token exchange failed (${response.status})`);
+  if (!response.ok) throw await planfixOAuthFailure(response);
   return parsePlanfixTokenResponse(await response.json());
 }
 
@@ -139,7 +171,7 @@ export async function refreshPlanfixAccessToken(input: {
     }),
     cache: "no-store",
   });
-  if (!response.ok) throw new Error(`Planfix token refresh failed (${response.status})`);
+  if (!response.ok) throw await planfixOAuthFailure(response);
   return parsePlanfixTokenResponse(await response.json());
 }
 

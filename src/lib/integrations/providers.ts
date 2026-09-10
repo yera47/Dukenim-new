@@ -13,9 +13,9 @@ export const integrationProviderGroups = [
     key: "commerce",
     label: "Торговля и учёт",
     providers: [
-      { key: "moysklad", label: "МойСклад", connection: "oauth" },
+      { key: "moysklad", label: "МойСклад", connection: "app_install" },
       { key: "retailcrm", label: "RetailCRM", connection: "merchant_token" },
-      { key: "biznes_ru", label: "Бизнес.Ру", connection: "partner_review" },
+      { key: "biznes_ru", label: "Бизнес.Ру", connection: "merchant_token" },
       { key: "subtotal", label: "Subtotal", connection: "merchant_token" },
       { key: "insales", label: "inSales", connection: "app_install" },
     ],
@@ -39,7 +39,7 @@ export const integrationProviderGroups = [
     key: "restaurant",
     label: "Рестораны и POS",
     providers: [
-      { key: "iiko", label: "iiko", connection: "partner_review" },
+      { key: "iiko", label: "iiko", connection: "merchant_token" },
       { key: "r_keeper", label: "r_keeper", connection: "aggregator_token" },
       { key: "poster", label: "Poster", connection: "oauth" },
       { key: "quick_resto", label: "Quick Resto", connection: "partner_review" },
@@ -70,7 +70,7 @@ const providerLabels = new Map<string, string>(integrationProviders.map((provide
 const connectionModeLabels: Record<IntegrationConnectionMode, string> = {
   oauth: "OAuth каждого аккаунта",
   oauth_pkce: "Защищённый OAuth + PKCE",
-  merchant_token: "Ключ каждого магазина",
+  merchant_token: "Ключ каждого магазина или заведения",
   partner_review: "После согласования с партнёром",
   app_install: "Установка приложения магазином",
   aggregator_token: "Стенд и лицензии поставщика",
