@@ -5,6 +5,7 @@ import { consultationSchema, type Consultation, type ConsultationTurn } from "@/
 import styles from "./studio-conversation.module.css";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
+const helpLinks={payments:["/admin/requests?source=integrations&intent=card-payments","Заявка на онлайн-оплату"],kaspi:["/admin/requests?source=integrations&intent=kaspi-payments","Заявка на Kaspi Pay"],integrations:["/admin/integrations","Выбрать подключение"],delivery:["/admin/settings/delivery","Настроить получение заказа"],team:["/admin/team","Открыть сотрудников"],analytics:["/admin/analytics","Открыть аналитику"],campaigns:["/admin/catalog/campaigns","Открыть акции"],support:["/admin/requests?source=ai-studio","Написать в поддержку"]} as const;
 export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false,working=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean;working?:boolean}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
@@ -43,6 +44,7 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
         <p className={`${styles.userMessage} ml-8 whitespace-pre-wrap break-words rounded-2xl p-4`}><span className="sr-only">Вы: </span>{turn.message}</p>
         <div className="mr-4 space-y-3 p-2"><p className="whitespace-pre-wrap break-words"><span className="sr-only">AI Studio: </span>{turn.response.reply}</p>
           {turn.response.task&&onTask&&(!designOnly||turn.response.task.intent==="store_design")&&<button type="button" className="btn btn-secondary" disabled={pending||!enabled} onClick={()=>onTask(turn.response.task!)}>{labels[turn.response.task.intent]}</button>}
+          {!staff&&turn.response.help&&<Link className="btn btn-secondary" href={helpLinks[turn.response.help][0]}>{helpLinks[turn.response.help][1]} →</Link>}
         </div>
       </article>)}
       {pending&&<p>Обдумываю ваш ответ…</p>}

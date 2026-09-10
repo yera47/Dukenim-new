@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { RefreshStatus } from "@/components/admin/refresh-status";
+import { IntegrationStatusDialog } from "@/components/admin/integration-status-dialog";
 import { ArrowRight, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import { PaymentConnectionGuide } from "@/components/admin/payment-connection-guide";
 import { requireRole } from "@/lib/auth";
@@ -89,6 +91,7 @@ export default async function IntegrationsPage({
   const businessRuRequest = byProvider.get("biznes_ru");
 
   return <div className="mx-auto max-w-6xl">
+    <RefreshStatus/>
     <div className="flex flex-wrap items-end justify-between gap-5">
       <div>
         <p className="data-label">ИНТЕГРАЦИИ</p>
@@ -105,32 +108,8 @@ export default async function IntegrationsPage({
 
     {requestsUnavailable && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось загрузить сохранённые статусы интеграций. Каталог доступен, но перед изменением заявки обновите страницу.</div>}
 
-    <section className="mt-8">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div><p className="data-label">КАТАЛОГ СИСТЕМ</p><h2 className="mt-2 text-2xl font-extrabold">Все подключения в одном месте</h2></div>
-        <span className="badge">{integrationProviders.length} ВАРИАНТОВ</span>
-      </div>
-      <p className="mt-2 max-w-3xl text-sm leading-6 text-[var(--ink-60)]">Наличие карточки означает официальный маршрут на проверку, а не готовую интеграцию. Рабочий статус показывается отдельно для каждой системы.</p>
-      <div className="mt-5 grid gap-5">
-        {integrationProviderGroups.map((group) => <div key={group.key}>
-          <h3 className="mb-3 text-sm font-extrabold text-[var(--ink-60)]">{group.label}</h3>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {group.providers.map((provider) => {
-              const request = byProvider.get(provider.key);
-              const selected = selectedProvider === provider.key;
-              const state = request ? statusNames[request.status] ?? request.status : provider.key === "planfix" ? "Пилот доступен" : "Не настроено";
-              return <Link
-                key={provider.key}
-                href={`/admin/integrations?provider=${provider.key}#request-connector`}
-                className={`rounded-2xl border p-4 transition hover:border-[var(--accent)] ${selected ? "border-[var(--accent)] bg-[var(--surface-muted)]" : "border-[var(--line)] bg-white"}`}
-              >
-                <div className="flex items-start justify-between gap-3"><b>{provider.label}</b><span className="badge">{state}</span></div>
-                <p className="mt-3 text-xs leading-5 text-[var(--ink-60)]">{integrationConnectionModeLabel(provider.connection)}</p>
-              </Link>;
-            })}
-          </div>
-        </div>)}
-      </div>
+    <section className="card mt-6 p-5"><h2 className="text-xl font-semibold">Мои подключения</h2>
+      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=><IntegrationStatusDialog key={request.provider} provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={statuses[request.status]?.description??"Уточните статус в поддержке."} ready={request.status==="connected"}/>):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
     </section>
 
     <section id="request-connector" className="mt-8 grid gap-6 lg:grid-cols-[.88fr_1.12fr]">
@@ -146,7 +125,7 @@ export default async function IntegrationsPage({
       </aside>
 
       <form action={saveCrmIntegrationRequest} className="card p-6">
-        <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно вести несколько заявок одновременно. Пароли и API-ключи сюда не вставляются.</p></div><span className="badge">0 ₸ НА ЗАПУСКЕ</span></div>
+        <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно вести несколько заявок одновременно. Пароли и API-ключи сюда не вставляются.</p></div><details className="text-sm"><summary className="cursor-pointer whitespace-nowrap">ⓘ Стоимость</summary><p className="mt-2">«Бренд»: включено. «Старт»: 70 000 ₸ после подключения и проверки. Лицензия поставщика оплачивается отдельно. Сейчас отправляется только заявка, без списания.</p></details></div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-bold">CRM, учёт или POS
             <select name="provider" className="input" defaultValue={selectedProvider} required>

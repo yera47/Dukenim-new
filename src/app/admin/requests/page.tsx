@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getOwnerMessages, getOwnerRequests } from "@/lib/queries/owner";
 import { sendRequest } from "@/app/admin/actions";
 import type { Database, Json } from "@/types/database";
+import { integrationProviders } from "@/lib/integrations/providers";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];
 type RequestRow = Database["public"]["Tables"]["change_requests"]["Row"];
@@ -25,7 +26,7 @@ function contextLabel(value: Json) {
   return typeof intent === "string" && intent ? `Сценарий: ${intent}` : null;
 }
 
-export default async function Requests({ searchParams }: { searchParams: Promise<{ source?: string; intent?: string }> }) {
+export default async function Requests({ searchParams }: { searchParams: Promise<{ source?: string; intent?: string; provider?: string }> }) {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
   const query = await searchParams;
   const source = allowedSources.has(query.source as RequestRow["source"])
@@ -33,7 +34,8 @@ export default async function Requests({ searchParams }: { searchParams: Promise
     : "support";
   const aiIntent = source === "ai-studio" ? String(query.intent ?? "").slice(0, 50) : "";
   const paymentIntent = source === "integrations" && (query.intent === "card-payments" || query.intent === "kaspi-payments") ? query.intent : null;
-  const subject = paymentIntent ? `Подключение ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплаты картой"}` : source === "ai-studio" ? `Вопрос по AI Studio${aiIntent ? ` · ${aiIntent}` : ""}` : "Обращение в поддержку";
+  const provider = source === "integrations" ? integrationProviders.find(p=>p.key===query.provider) : undefined;
+  const subject = provider ? `Статус подключения ${provider.label}` : paymentIntent ? `Подключение ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплаты картой"}` : source === "ai-studio" ? `Вопрос по AI Studio${aiIntent ? ` · ${aiIntent}` : ""}` : "Обращение в поддержку";
   let messages: Message[] = [];
   let requests: RequestRow[] = [];
 
@@ -63,7 +65,7 @@ export default async function Requests({ searchParams }: { searchParams: Promise
           <input type="hidden" name="pagePath" value={source === "ai-studio" ? "/admin/ai-studio" : "/admin/requests"}/>
           <input type="hidden" name="aiIntent" value={aiIntent}/>
           <label className="text-sm font-extrabold">Тема<input name="subject" required minLength={2} maxLength={120} defaultValue={subject} className="input mt-2"/></label>
-          <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" defaultValue={paymentIntent ? `Хочу подключить ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплату картой"} для своего магазина.\nПровайдер и статус заявки: \nНужна помощь со следующим шагом.` : ""} placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
+          <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" defaultValue={provider ? `Здравствуйте! Хотел узнать статус подключения ${provider.label} к моему магазину. Какой следующий шаг и нужны ли данные с моей стороны?` : paymentIntent ? `Хочу подключить ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплату картой"} для своего магазина.\nНужна помощь со следующим шагом.` : ""} placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
           {paymentIntent && <p className="text-xs leading-5 text-neutral-500">Укажите только название провайдера и статус заявки. Не отправляйте API-ключи, банковские реквизиты, пароли или коды подтверждения.</p>}
           <button className="btn btn-primary justify-self-start"><Send size={17}/> Отправить в поддержку</button>
         </form>

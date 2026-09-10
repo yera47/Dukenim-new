@@ -4,6 +4,12 @@ vi.mock("server-only",()=>({}));
 vi.mock("./azure-foundry",()=>({createAzureFoundryChatCompletion:mock,AzureFoundryError:class extends Error {}}));
 import { createConsultation } from "./consultation";
 describe("consultation context and safe output",()=>{
+  it("returns only allowlisted help destinations",async()=>{
+    mock.mockResolvedValue({content:JSON.stringify({reply:"Откройте заявку на оплату.",task:null,help:"payments"})});
+    expect((await createConsultation("Подключи оплату",{},[])).consultation.help).toBe("payments");
+    mock.mockResolvedValue({content:JSON.stringify({reply:"Откройте ссылку",task:null,help:"https://evil.example"})});
+    await expect(createConsultation("Помоги",{},[])).rejects.toThrow();
+  });
   it("fits even escaped merchant text into the transport limit",async()=>{
     mock.mockResolvedValue({content:'{"reply":"Готов предложить оформление.","task":null}'});
     const huge='"\\\n\u0001'.repeat(9000);

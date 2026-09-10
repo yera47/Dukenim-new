@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PromotionValue } from "@/components/admin/promotion-value";
 import {
   Activity,
   BarChart3,
@@ -352,21 +353,7 @@ export default async function Root({
                 className="input text-black"
                 placeholder="Название кампании"
               />
-              <div className="grid grid-cols-2 gap-2">
-                <select name="type" className="input text-black">
-                  <option value="percent">Скидка, %</option>
-                  <option value="fixed_kzt">Скидка, ₸</option>
-                  <option value="free_days">Доп. дни доступа</option>
-                </select>
-                <input
-                  name="value"
-                  type="number"
-                  min={1}
-                  required
-                  className="input text-black"
-                  placeholder="30"
-                />
-              </div>
+              <PromotionValue/>
               <div className="grid grid-cols-2 gap-2">
                 <select name="plan" className="input text-black">
                   <option value="">Оба тарифа</option>

@@ -39,7 +39,7 @@ const baseNav = [
   ["/admin/customers", "Клиенты", Users],
   ["/admin/team", "Сотрудники", Users],
   ["/admin/requests", "Поддержка", MessageSquare],
-  ["/admin/integrations", "Интеграции", Link2],
+  ["/admin/integrations", "Интеграции и онлайн-оплата", Link2],
   ["/admin/domains", "Ссылка и домен", ExternalLink],
   ["/admin/plan", "Тариф", WalletCards],
   ["/admin/settings", "Настройки", Settings],

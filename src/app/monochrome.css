@@ -1,4 +1,8 @@
 /* Platform surfaces only. Never desaturate tenant photographs or brand palettes. */
+.admin-frame .btn-primary,.admin-frame .btn-cta{background:#171717;color:#fff;border-color:#171717;box-shadow:none}
+.admin-frame .btn-primary:disabled,.admin-frame .btn-cta:disabled{background:#e5e5e5;color:#525252;border-color:#d4d4d4;cursor:not-allowed}
+.admin-frame a[aria-current="page"]{background:#171717;color:#fff}
+.admin-frame .status-ready{background:#e4f5ec;color:#17623c;border:1px solid #b9dfc9}
 @media(max-width:760px){input,textarea,select{font-size:16px}.btn,.input{min-height:44px}.admin-mobile-nav{bottom:max(.75rem,env(safe-area-inset-bottom))}.admin-sheet-layer{padding-bottom:max(.75rem,env(safe-area-inset-bottom))}.root-store-switch{bottom:max(1rem,env(safe-area-inset-bottom))}}
 .admin-sidebar{background:#171717!important;border-color:#333;box-shadow:none}.admin-brand{color:#fff}.admin-desktop-nav>a{color:#bcbcbc}.admin-desktop-nav>a:hover svg{color:#fff}.admin-desktop-nav>a.is-active{background:#f0f0f0;color:#171717;box-shadow:none}.admin-desktop-nav>a.is-active svg{color:#171717}.admin-desktop-nav>a.is-active:before{background:#fff}
 .admin-root-link{color:#eee;border-color:#555}.admin-root-link:hover{background:#333}.admin-store-link{color:#eee}.admin-logout{color:#aaa}.admin-topbar{background:rgb(255 255 255/.94)}.admin-avatar{background:#222;color:#fff;box-shadow:none}.admin-mobile-nav{background:rgb(23 23 23/.97);border-color:#444;color:#fff;box-shadow:0 10px 30px #0002}.admin-mobile-nav>a,.admin-mobile-nav>button{color:#bcbcbc}.admin-mobile-nav .is-active{background:#eee;color:#171717}.admin-sheet-layer{background:#0007}.admin-sheet{background:#fff;border-color:#ddd;box-shadow:0 20px 60px #0003}
