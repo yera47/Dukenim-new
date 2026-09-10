@@ -27,9 +27,11 @@ function resultRedirect(redirectUri: string, result: string) {
 
 export async function GET(request: NextRequest) {
   let redirectUri = process.env.PLANFIX_REDIRECT_URI?.trim() || "https://www.dukenim.kz/api/integrations/planfix/callback";
+  let failureStage = "config";
   try {
     const configured = config();
     redirectUri = configured.redirectUri;
+    failureStage = "authorization";
     const code = request.nextUrl.searchParams.get("code") ?? "";
     const state = request.nextUrl.searchParams.get("state") ?? "";
     if (!state) return resultRedirect(redirectUri, "invalid");
@@ -43,6 +45,7 @@ export async function GET(request: NextRequest) {
     if (request.nextUrl.searchParams.get("error")) return resultRedirect(redirectUri, "denied");
     if (!code) return resultRedirect(redirectUri, "invalid");
 
+    failureStage = "token";
     const tokens = await exchangePlanfixAuthorizationCode({
       clientId: configured.clientId,
       clientSecret: configured.clientSecret,
@@ -53,6 +56,7 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const accountUrl = `https://${tokens.accountDomain}`;
     const admin = createAdminClient();
+    failureStage = "connection";
     const { data: connection, error: connectionError } = await admin.from("integration_connections").upsert({
       tenant_id: context.tenantId,
       provider: "planfix",
@@ -70,6 +74,7 @@ export async function GET(request: NextRequest) {
     }, { onConflict: "tenant_id,provider" }).select("id").single();
     if (connectionError || !connection) throw new Error("Could not persist Planfix connection");
 
+    failureStage = "request";
     const { error: requestError } = await admin.from("crm_integration_requests").upsert({
       tenant_id: context.tenantId,
       provider: "planfix",
@@ -86,6 +91,6 @@ export async function GET(request: NextRequest) {
     if (requestError) throw new Error("Could not update integration status");
     return resultRedirect(redirectUri, "connected");
   } catch {
-    return resultRedirect(redirectUri, "failed");
+    return resultRedirect(redirectUri, `failed-${failureStage}`);
   }
 }
