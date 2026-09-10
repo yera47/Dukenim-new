@@ -54,6 +54,16 @@ export type CanonicalIntegrationOrder = {
 
 type FetchLike = typeof fetch;
 
+export class PlanfixApiError extends Error {
+  readonly outcomeUncertain: boolean;
+
+  constructor(message: string, outcomeUncertain: boolean) {
+    super(message);
+    this.name = "PlanfixApiError";
+    this.outcomeUncertain = outcomeUncertain;
+  }
+}
+
 export function createPlanfixPkcePair(verifier = randomBytes(32).toString("base64url")): PlanfixPkcePair {
   if (!/^[A-Za-z0-9._~-]{43,128}$/.test(verifier)) throw new Error("Invalid PKCE verifier");
   return {
@@ -198,6 +208,66 @@ export function buildPlanfixTaskPayload(order: CanonicalIntegrationOrder, counte
   };
 }
 
+function parseCreatedObject(value: unknown): { id: number } {
+  if (!value || typeof value !== "object") throw new PlanfixApiError("Invalid Planfix create response", true);
+  const data = value as Record<string, unknown>;
+  const id = Number(data.id);
+  if (data.result !== "success" || !Number.isSafeInteger(id) || id < 1) {
+    throw new PlanfixApiError("Planfix did not confirm object creation", true);
+  }
+  return { id };
+}
+
+async function postPlanfixObject(input: {
+  accountDomain: string;
+  accessToken: string;
+  resource: "contact" | "task";
+  payload: unknown;
+  fetcher?: FetchLike;
+}) {
+  let response: Response;
+  try {
+    response = await (input.fetcher ?? fetch)(`${planfixApiBaseUrl(input.accountDomain)}/${input.resource}/`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${input.accessToken}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(input.payload),
+      cache: "no-store",
+      signal: AbortSignal.timeout(8_000),
+    });
+  } catch {
+    // A timeout or network interruption can happen after Planfix accepted the
+    // object. Callers must stop automatic retries and surface an uncertain state.
+    throw new PlanfixApiError("Planfix delivery outcome is unknown", true);
+  }
+  if (!response.ok) throw new PlanfixApiError(`Planfix ${input.resource} creation failed (${response.status})`, false);
+  try {
+    return parseCreatedObject(await response.json());
+  } catch (error) {
+    if (error instanceof PlanfixApiError) throw error;
+    throw new PlanfixApiError("Planfix returned an unreadable create response", true);
+  }
+}
+
+export async function createPlanfixContact(input: {
+  accountDomain: string;
+  accessToken: string;
+  order: CanonicalIntegrationOrder;
+  fetcher?: FetchLike;
+}) {
+  const payload = buildPlanfixContactPayload(input.order);
+  if (!payload) return null;
+  return postPlanfixObject({
+    accountDomain: input.accountDomain,
+    accessToken: input.accessToken,
+    resource: "contact",
+    payload,
+    fetcher: input.fetcher,
+  });
+}
+
 export async function createPlanfixTask(input: {
   accountDomain: string;
   accessToken: string;
@@ -205,17 +275,13 @@ export async function createPlanfixTask(input: {
   counterpartyId?: number;
   fetcher?: FetchLike;
 }) {
-  const response = await (input.fetcher ?? fetch)(`${planfixApiBaseUrl(input.accountDomain)}/task/`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${input.accessToken}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(buildPlanfixTaskPayload(input.order, input.counterpartyId)),
-    cache: "no-store",
+  return postPlanfixObject({
+    accountDomain: input.accountDomain,
+    accessToken: input.accessToken,
+    resource: "task",
+    payload: buildPlanfixTaskPayload(input.order, input.counterpartyId),
+    fetcher: input.fetcher,
   });
-  if (!response.ok && response.status !== 202) throw new Error(`Planfix task creation failed (${response.status})`);
-  return response.json() as Promise<unknown>;
 }
 
 function formatKzt(value: number): string {

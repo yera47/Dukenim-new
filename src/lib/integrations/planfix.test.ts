@@ -6,9 +6,11 @@ import {
   buildPlanfixAuthorizationUrl,
   buildPlanfixContactPayload,
   buildPlanfixTaskPayload,
+  createPlanfixContact,
   createPlanfixPkcePair,
   createPlanfixTask,
   exchangePlanfixAuthorizationCode,
+  PlanfixApiError,
   planfixApiBaseUrl,
   type CanonicalIntegrationOrder,
 } from "./planfix";
@@ -108,5 +110,28 @@ describe("Planfix integration", () => {
       method: "POST",
       cache: "no-store",
     }));
+  });
+
+  it("creates a contact with the stable Dukenim customer id", async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ result: "success", id: 17 }), {
+      status: 201,
+      headers: { "content-type": "application/json" },
+    })) as unknown as typeof fetch;
+    await expect(createPlanfixContact({ accountDomain: "demo.planfix.com", accessToken: "secret", order, fetcher }))
+      .resolves.toEqual({ id: 17 });
+    const body = JSON.parse(String(vi.mocked(fetcher).mock.calls[0]?.[1]?.body));
+    expect(body).toMatchObject({ sourceObjectId: order.customerId, name: "Алия" });
+  });
+
+  it("marks a network interruption as an unknown provider outcome", async () => {
+    const fetcher = vi.fn(async () => { throw new Error("timeout"); }) as unknown as typeof fetch;
+    await expect(createPlanfixTask({ accountDomain: "demo.planfix.com", accessToken: "secret", order, fetcher }))
+      .rejects.toMatchObject({ name: "PlanfixApiError", outcomeUncertain: true } satisfies Partial<PlanfixApiError>);
+  });
+
+  it("does not permit a blind retry after an unreadable successful response", async () => {
+    const fetcher = vi.fn(async () => new Response("not-json", { status: 201 })) as unknown as typeof fetch;
+    await expect(createPlanfixTask({ accountDomain: "demo.planfix.com", accessToken: "secret", order, fetcher }))
+      .rejects.toMatchObject({ outcomeUncertain: true } satisfies Partial<PlanfixApiError>);
   });
 });
