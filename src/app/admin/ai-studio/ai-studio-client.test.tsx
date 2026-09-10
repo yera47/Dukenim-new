@@ -8,6 +8,15 @@ import { AiStudioClient } from "./ai-studio-client";
 
 describe("AI Studio first-run access", () => {
   const props = { enabled: true, imageEnabled: false, brand: false, storeName: "Магазин", slug: "shop", plan: "basic" as const, vertical: "fashion" as const };
+  it.each(["building","ready"] as const)("restores the saved design without regenerating or auto-applying at %s",catalogStatus=>{
+    const initialDesign={generationId:"8e1a50dd-3dc6-434e-b102-ab37ef181462",design:{templateKey:"studio",paletteKey:"mono",heroTitle:"Сохранённый дизайн",heroSubtitle:"Индивидуальная витрина",heroCtaLabel:"Каталог",rationale:"По пожеланиям"}};
+    const html=renderToStaticMarkup(<AiStudioClient {...props} catalogStatus={catalogStatus} initialDesign={initialDesign} initialStructure={{generationId:"old",structure:{sections:[{name:"Старое",description:"Предыдущее предложение"}]}}}/>);
+    expect(html).toContain("Последнее предложение восстановлено");
+    expect(html).toContain("/store-preview?generation="+initialDesign.generationId);
+    expect(html).toContain("Применить оформление");
+    expect(html).not.toContain("Оформление применено");
+    expect(html).not.toContain("Предыдущее предложение");
+  });
   it.each(["ready"] as const)("keeps the assistant available at %s", (catalogStatus) => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus={catalogStatus}/>);
     expect(html).toContain('id="studio-conversation"');

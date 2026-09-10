@@ -27,10 +27,11 @@ type Props = {
   catalogPublished?: boolean;
   storeName: string; slug: string; plan: "basic" | "standard" | "pro";
   vertical: BusinessVertical;
+  initialDesign?: {generationId:string;design:Design};
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, storeName, slug, plan, vertical, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
   const router = useRouter();
   const storefrontHref = catalogPublished ? `/s/${slug}` : "/store-preview";
   const [intent, setIntent] = useState<Intent>("catalog_structure");
@@ -41,10 +42,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
-  const [resultIntent, setResultIntent] = useState<Intent | null>(initialStructure ? "catalog_structure" : null);
-  const [structure, setStructure] = useState<Structure | null>(initialStructure?.structure ?? null);
-  const [design, setDesign] = useState<Design | null>(null);
-  const [generationId, setGenerationId] = useState<string | null>(initialStructure?.generationId ?? null);
+  const [resultIntent, setResultIntent] = useState<Intent | null>(initialDesign ? "store_design" : initialStructure ? "catalog_structure" : null);
+  const [structure, setStructure] = useState<Structure | null>(initialDesign ? null : initialStructure?.structure ?? null);
+  const [design, setDesign] = useState<Design | null>(initialDesign?.design ?? null);
+  const [generationId, setGenerationId] = useState<string | null>(initialDesign?.generationId ?? initialStructure?.generationId ?? null);
   const [structureSaving, setStructureSaving] = useState(false);
   const [structureSaved, setStructureSaved] = useState(false);
   const [designSaving, setDesignSaving] = useState(false);
@@ -148,7 +149,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     finally { setDraftSaving(false); }
   }
 
-  const designPanel = design ? <>{generationId && <iframe title="Предпросмотр предложения AI" className="h-[620px] w-full rounded-xl border" src={`/store-preview?generation=${encodeURIComponent(generationId)}`}/>}<div className={styles.designMeta}><span>{templateNames[design.templateKey] ?? design.templateKey}</span>{design.colorTheme ? <span>Индивидуальные цвета: {Object.values(design.colorTheme).join(" / ")}</span> : <span>{paletteNames[design.paletteKey] ?? design.paletteKey}</span>}{design.brandColor&&<span>Акцент: {design.brandColor}</span>}</div><div className={styles.designHero}><small>ГЛАВНЫЙ ЭКРАН</small><h3>{design.heroTitle}</h3><p>{design.heroSubtitle}</p><b>{design.heroCtaLabel}</b></div><p>{design.rationale}</p><p>{designSaved ? "Оформление применено. Откройте витрину и проверьте результат глазами покупателя." : "AI подготовил вариант, но ещё ничего не изменил. Фотография сохранится; акцентный цвет будет таким, как в предпросмотре."}</p><button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button>{designSaved && <Link href={storefrontHref} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}</> : null;
+  const designPanel = design ? <>{initialDesign?.generationId===generationId&&<p role="status" className="text-sm text-neutral-500">Последнее предложение восстановлено. Повторная генерация не нужна; применение — только по вашей кнопке.</p>}{generationId && <iframe title="Предпросмотр предложения AI" className="h-[620px] w-full rounded-xl border" src={`/store-preview?generation=${encodeURIComponent(generationId)}`}/>}<div className={styles.designMeta}><span>{templateNames[design.templateKey] ?? design.templateKey}</span>{design.colorTheme ? <span>Индивидуальные цвета: {Object.values(design.colorTheme).join(" / ")}</span> : <span>{paletteNames[design.paletteKey] ?? design.paletteKey}</span>}{design.brandColor&&<span>Акцент: {design.brandColor}</span>}</div><div className={styles.designHero}><small>ГЛАВНЫЙ ЭКРАН</small><h3>{design.heroTitle}</h3><p>{design.heroSubtitle}</p><b>{design.heroCtaLabel}</b></div><p>{design.rationale}</p><p>{designSaved ? "Оформление применено. Откройте витрину и проверьте результат глазами покупателя." : "AI подготовил вариант, но ещё ничего не изменил. Фотография сохранится; акцентный цвет будет таким, как в предпросмотре."}</p><button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button>{designSaved && <Link href={storefrontHref} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}</> : null;
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
     {!workspaceOpen ? <section className={styles.welcome} aria-label="Начало создания магазина">

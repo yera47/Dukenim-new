@@ -2,6 +2,8 @@
 
 ## Current checkpoint — 10.09 17:08
 
+11.09 recovery: source through4faa7a4 and saved design8e1a50dd confirmed intact (read-only DB, prior deployment success). Found page restored structure only; latest saved design was not hydrated after reload. Added session/RLS tenant-filtered latest-design read and initial proposal/preview restoration without generation/application.8focused tests and tsc pass; release/browser verification in progress. This does not close owner apply/re-login/publication acceptance.
+
 19:12 personal assembly: source073489c deployed, applied20260910140146. Verified live model returns requested colors+layout+sections; validated layout persists through catalog creation, staff apply and undo in rollback DB tests. Shared renderer tests pass. Overall personal assembly remains in progress until owner browser/re-login/publication acceptance; not unrestricted generated code. Detailed remaining audit: PERSONAL_ASSEMBLY_AUDIT_20260910.md.
 
 18:54 update: staff saved-design preview/apply implemented using the common StoreHome renderer; studio write, active plan and CAS updated_at enforced by applied RPC. Rollback regression confirms read-only/revoked denial, persistence/history and unchanged storefront publication flag. 383 tests pass; employee browser E2E remains in progress. Stock name/SKU/variant search and availability filters implemented. CRM comparison covers6official documentation sets, not all25registry entries. Personal unrestricted assembly remains internal unfinished work; see CRM_PRODUCT_COMPARISON_20260910.md.
