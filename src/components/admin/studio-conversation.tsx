@@ -5,7 +5,7 @@ import { consultationSchema, type Consultation, type ConsultationTurn } from "@/
 import styles from "./studio-conversation.module.css";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
-export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean}) {
+export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
   const [includeBrandLogo,setIncludeBrandLogo]=useState(false);
@@ -42,7 +42,7 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
       {(stageHint?turns.slice(-1):turns).map(turn=><article key={turn.id} className="space-y-3">
         <p className={`${styles.userMessage} ml-8 whitespace-pre-wrap break-words rounded-2xl p-4`}><span className="sr-only">Вы: </span>{turn.message}</p>
         <div className="mr-4 space-y-3 p-2"><p className="whitespace-pre-wrap break-words"><span className="sr-only">AI Studio: </span>{turn.response.reply}</p>
-          {turn.response.task&&onTask&&<button type="button" className="btn btn-secondary" disabled={pending||!enabled} onClick={()=>onTask(turn.response.task!)}>{labels[turn.response.task.intent]}</button>}
+          {turn.response.task&&onTask&&(!designOnly||turn.response.task.intent==="store_design")&&<button type="button" className="btn btn-secondary" disabled={pending||!enabled} onClick={()=>onTask(turn.response.task!)}>{labels[turn.response.task.intent]}</button>}
         </div>
       </article>)}
       {pending&&<p>Обдумываю ваш ответ…</p>}

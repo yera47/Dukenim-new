@@ -2,6 +2,8 @@
 
 ## Current checkpoint — 10.09 17:08
 
+19:12 personal assembly: source073489c deployed, applied20260910140146. Verified live model returns requested colors+layout+sections; validated layout persists through catalog creation, staff apply and undo in rollback DB tests. Shared renderer tests pass. Overall personal assembly remains in progress until owner browser/re-login/publication acceptance; not unrestricted generated code. Detailed remaining audit: PERSONAL_ASSEMBLY_AUDIT_20260910.md.
+
 18:54 update: staff saved-design preview/apply implemented using the common StoreHome renderer; studio write, active plan and CAS updated_at enforced by applied RPC. Rollback regression confirms read-only/revoked denial, persistence/history and unchanged storefront publication flag. 383 tests pass; employee browser E2E remains in progress. Stock name/SKU/variant search and availability filters implemented. CRM comparison covers6official documentation sets, not all25registry entries. Personal unrestricted assembly remains internal unfinished work; see CRM_PRODUCT_COMPARISON_20260910.md.
 
 18:32 update: staff product/photo creation implemented (up to4 JPEG/PNG/WebP,3MB total, decoded/re-encoded server-side, hidden initially). Applied RPC checks actual membership and stock permission, tenant lifecycle, own image path, replay ID; tests confirm stored product/stock and denied/revoked access. 376 tests/tsc/build pass. Staff browser upload/invitation acceptance still in progress; employee email requested. Studio design publishing is still internal unfinished work, not blocked by that email. Previous reservation clarification deployment Ready confirmed.

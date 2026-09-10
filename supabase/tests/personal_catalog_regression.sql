@@ -10,6 +10,13 @@ select public.create_catalog_setup('cb090909-0000-4000-8000-000000000002','Test'
 do $$ begin
  if (select layout_config->>'hero' from public.tenant_storefront_settings where tenant_id='cb090909-0000-4000-8000-000000000002') is distinct from 'centered' then raise exception 'Personal layout lost';end if;
  if (select count(*) from public.categories where tenant_id='cb090909-0000-4000-8000-000000000002')<>2 then raise exception 'Sections lost';end if;
+ begin
+  update public.tenant_storefront_settings set layout_config='{"typography":"invalid"}' where tenant_id='cb090909-0000-4000-8000-000000000002';
+  raise exception 'Invalid layout accepted';
+ exception when check_violation then null;end;
+ update public.tenant_storefront_settings set layout_config=jsonb_set(layout_config,'{hero}','"compact"'),updated_at=clock_timestamp() where tenant_id='cb090909-0000-4000-8000-000000000002';
+ perform public.undo_storefront_design('cb090909-0000-4000-8000-000000000002',(select id from public.storefront_design_history where tenant_id='cb090909-0000-4000-8000-000000000002' order by created_at desc,id desc limit 1));
+ if (select layout_config->>'hero' from public.tenant_storefront_settings where tenant_id='cb090909-0000-4000-8000-000000000002') is distinct from 'centered' then raise exception 'Undo layout lost';end if;
  if public.is_storefront_public('cb090909-0000-4000-8000-000000000002') then raise exception 'Premature publication';end if;
  if (select payment_online from public.tenant_settings where tenant_id='cb090909-0000-4000-8000-000000000002') then raise exception 'Payment activated';end if;
  if not exists(select 1 from public.delivery_zones where tenant_id='cb090909-0000-4000-8000-000000000002' and cost=1500 and is_active) then raise exception 'Zone not saved';end if;
