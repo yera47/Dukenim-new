@@ -9,6 +9,15 @@ import { commerceConfigurations } from "@/lib/commerce-configurations";
 vi.mock("./catalog-browser",()=>({CatalogBrowser:()=>null}));
 vi.mock("@/components/store/catalog-browser",()=>({CatalogBrowser:()=>null}));
 afterEach(()=>vi.unstubAllGlobals());
+it.each(["compact","centered","editorial"] as const)("renders persisted personal %s layout through the common renderer",hero=>{
+ vi.stubGlobal("React",React);
+ const settings={tenant_id:"test",color_theme:null,template_key:"gallery",palette_key:"mono",brand_color:null,hero_title:"Серик",hero_subtitle:"Коллекция",hero_image_url:null,hero_cta_label:"Каталог",updated_at:"",layout_config:{typography:"editorial",hero,density:"airy",columns:2,corners:"soft",imageRatio:"portrait"}};
+ const html=renderToStaticMarkup(<StoreHome slug="own" tenant={{name:"Серик",catalog_name:null,tagline:null,business_vertical:"fashion"}} products={demoProductsFor("fashion")} settings={settings} campaign={null} storePolicies={null}/>);
+ expect(html).toContain('data-personal="true"');
+ expect(html).toContain('data-columns="2"');
+ expect(html).toContain('data-typography="editorial"');
+ expect(html.includes("storefront-hero-grid")).toBe(hero==="editorial");
+});
 it.each(commerceConfigurations)("renders the configured block order for $id",config=>{
  vi.stubGlobal("React",React);
  const html=renderToStaticMarkup(<StoreHome slug="example" tenant={{name:"Dukenim Shop",catalog_name:null,tagline:null,business_vertical:config.vertical}} products={demoProductsFor(config.vertical)} settings={null} campaign={null} storePolicies={null} approach={config.approach}/>);

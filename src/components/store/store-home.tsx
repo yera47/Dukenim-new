@@ -8,6 +8,7 @@ import { approachForTemplate, configurationFor, type CommerceApproach } from "@/
 import styles from "./commerce-layouts.module.css";
 import { storefrontPath } from "@/lib/storefront-path";
 import { EditorialCover } from "./editorial-cover";
+import { personalStoreLayout } from "@/lib/personal-store-layout";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -22,6 +23,7 @@ export type StoreHomeProps = {
 };
 // Same render tree for authenticated draft preview and the published homepage.
 export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach}:StoreHomeProps) {
+  const layout=personalStoreLayout(settings?.layout_config);
   const approach=requestedApproach??approachForTemplate(settings?.template_key??"atelier");
   const configuration=configurationFor(tenant.business_vertical??"other",approach);
   const categories=Array.from(new Set(products.map(p=>p.category).filter(Boolean)));
@@ -31,8 +33,8 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
   const heroImage = settings?.hero_image_url && /^https?:\/\//.test(settings.hero_image_url) ? settings.hero_image_url : null;
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
 
-  return <main className={`storefront-theme ${styles.root}`} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
-    {approach==="collection"?<EditorialCover vertical={tenant.business_vertical??"other"} title={title} subtitle={subtitle} cta={settings?.hero_cta_label||"Смотреть каталог"} heroImage={heroImage} products={products} slug={slug}/>:<header className={`container ${styles.intro}`}><div><span className={styles.sectionCount}>{categories.length>0?`${categories.length} разделов · ${products.length} товаров`:"Каталог магазина"}</span><h1>{title}</h1><p>{subtitle}</p></div>{approach==="assortment"&&categories.length>0&&<nav className={styles.quickSections} aria-label="Быстрый выбор раздела">{categories.map(category=><Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`}>{category}<ArrowRight size={16}/></Link>)}</nav>}</header>}
+  return <main className={`storefront-theme ${styles.root}`} data-personal={layout?"true":undefined} data-typography={layout?.typography} data-hero={layout?.hero} data-density={layout?.density} data-columns={layout?.columns} data-corners={layout?.corners} data-ratio={layout?.imageRatio} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
+    {(layout?layout.hero==="editorial":approach==="collection")?<EditorialCover vertical={tenant.business_vertical??"other"} title={title} subtitle={subtitle} cta={settings?.hero_cta_label||"Смотреть каталог"} heroImage={heroImage} products={products} slug={slug}/>:<header className={`container ${styles.intro}`}><div><span className={styles.sectionCount}>{categories.length>0?`${categories.length} разделов · ${products.length} товаров`:"Каталог магазина"}</span><h1>{title}</h1><p>{subtitle}</p></div>{approach==="assortment"&&categories.length>0&&<nav className={styles.quickSections} aria-label="Быстрый выбор раздела">{categories.map(category=><Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`}>{category}<ArrowRight size={16}/></Link>)}</nav>}</header>}
 
     {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
       {/* eslint-disable-next-line @next/next/no-img-element */}

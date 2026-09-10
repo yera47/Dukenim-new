@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { customStoreThemeSchema } from "../custom-store-theme";
+import { personalStoreLayoutSchema } from "../personal-store-layout";
 
 export const aiStudioDraftSchema = z.object({
   eyebrow: z.string().trim().max(48).optional(),
@@ -11,6 +12,7 @@ export const aiStudioDraftSchema = z.object({
 export type AiStudioDraft = z.infer<typeof aiStudioDraftSchema>;
 
 export const aiStudioDesignSchema = z.object({
+  layout: personalStoreLayoutSchema.optional(),
   sections: z.array(z.object({name:z.string().trim().min(2).max(40)}).strict()).min(2).max(6).optional(),
   colorTheme: customStoreThemeSchema.optional(),
   brandColor: z.string().regex(/^#[0-9a-f]{6}$/i).optional(),

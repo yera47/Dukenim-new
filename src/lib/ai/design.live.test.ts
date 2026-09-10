@@ -12,5 +12,6 @@ it.skipIf(process.env.RUN_AZURE_DESIGN_TEST!=="1")("actual deployment returns in
   expect(result.design.colorTheme).toEqual({background:"#f7dce6",surface:"#fff3f7",accent:"#164a36"});
   expect(themeVariations(result.design.colorTheme!)).toHaveLength(3);
   expect(result.design.sections!.length).toBeGreaterThanOrEqual(2);
+  expect(result.design.layout).toBeDefined();
   } finally { vi.unstubAllEnvs(); }
 },60000);

@@ -4,7 +4,7 @@ vi.mock('server-only',()=>({}));
 vi.mock('./azure-foundry',()=>({getAzureFoundryStatus:()=>({configured:true}),createAzureFoundryChatCompletion:chat,AzureFoundryError:class extends Error{}}));
 import {createAiStudioDesign,createAiStudioDraft,createAiStudioStructure} from './studio';
 beforeEach(()=>{vi.clearAllMocks();vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','test');});
-const design={colorTheme:{background:'#f7dce6',surface:'#fff3f7',accent:'#164a36'},templateKey:'atelier',paletteKey:'mono',brandColor:'#c04455',heroTitle:'Серик Шоп',heroSubtitle:'Одежда для города',heroCtaLabel:'В каталог',rationale:'Цвет логотипа'};
+const design={layout:{typography:'editorial',hero:'centered',density:'airy',columns:2,corners:'soft',imageRatio:'portrait'},colorTheme:{background:'#f7dce6',surface:'#fff3f7',accent:'#164a36'},templateKey:'atelier',paletteKey:'mono',brandColor:'#c04455',heroTitle:'Серик Шоп',heroSubtitle:'Одежда для города',heroCtaLabel:'В каталог',rationale:'Цвет логотипа'};
 it('passes brand rules to design and accepts individual hex color on eligible plan',async()=>{
   chat.mockResolvedValue({content:JSON.stringify(design)});
   const result=await createAiStudioDesign('Спокойный магазин','fashion','pro',{brand:{notes:'Без зелёного',colors:['#c04455']}});
