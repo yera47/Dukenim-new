@@ -14,13 +14,17 @@ import { hasPlan, type Plan } from "@/lib/plans";
 import { templateCatalog } from "@/lib/storefront-theme";
 import { demoProductsFor } from "@/lib/demo-catalogs";
 import { customStoreThemeSchema } from "@/lib/custom-store-theme";
+import {staffPreviewContext} from "@/lib/staff-preview";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
 export default async function StorePreview({searchParams}:{searchParams:Promise<Record<string,string|string[]|undefined>>}) {
-  const context=await requireRole(["owner","superadmin"]);
+  const query=await searchParams;
+  const staff=typeof query.access==="string"?await staffPreviewContext(query.access):null;
+  if(query.access&&!staff)return <p role="alert">Нет доступа к предпросмотру.</p>;
+  const context=staff??await requireRole(["owner","superadmin"]);
   if(!context.user||!context.tenantId) return <p>Для предпросмотра нужен аккаунт владельца магазина.</p>;
-  const client=await createClient();
+  const client=staff?.client??await createClient();
   const {data:tenant,error}=await client.from("tenants").select("id,slug,name,catalog_name,tagline,business_vertical,accent_color,plan,next_plan,status,trial_ends_at").eq("id",context.tenantId).single();
   if(error||!tenant) return <p role="alert">Не удалось загрузить магазин.</p>;
   const [theme,products,policies,campaignResult]=await Promise.all([
@@ -28,7 +32,6 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
     client.from("storefront_campaigns").select("title,eyebrow,body,cta_label,cta_href,image_url").eq("tenant_id",tenant.id).eq("status","published").order("created_at",{ascending:false}).limit(1).maybeSingle()
   ]);
   if(theme.error||policies.error||campaignResult.error) return <p role="alert">Предпросмотр не загрузился. Сохранённый магазин не изменён.</p>;
-  const query=await searchParams;
   const plan=computeEntitlement(tenant).plan;
   let settings=theme.data??{color_theme:null,tenant_id:tenant.id,template_key:"atelier",palette_key:"mono",brand_color:null,hero_title:null,hero_subtitle:null,hero_image_url:null,hero_cta_label:"Смотреть каталог",updated_at:""};
   let proposedSections:string[]=[];

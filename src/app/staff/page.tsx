@@ -1,3 +1,4 @@
+import {StaffDesigns} from "./designs";
 import Link from "next/link";
 import {redirect} from "next/navigation";
 import {createStaffClient} from "@/lib/staff-server";
@@ -23,7 +24,7 @@ export default async function StaffPage(){
   {staffCan(member.permissions,"catalog","write")&&<StaffProductCreate access={member.id} stock={staffCan(member.permissions,"stock","write")}/>}
   {canRead&&<><h3 className="text-lg font-semibold">Заказы</h3>{result?.error?<p role="alert">Доступ изменён или заказы недоступны.</p>:orders.success&&orders.data.length?orders.data.map(order=><article key={order.id} className="rounded-xl border bg-white p-4"><p className="font-semibold">Заказ №{order.order_number??"—"} · {order.total.toLocaleString("ru-RU")} ₸</p><p>{orderStatusLabels[order.status as OrderStatus]} · {order.delivery_method}</p>{staffCan(member.permissions,"orders","write")&&<StaffOrderControl access={member.id} id={order.id} status={order.status}/>}</article>):<p>Заказов пока нет.</p>}</>}
   {await Promise.all((["catalog","stock","customers","analytics"] as const).filter(module=>staffCan(member.permissions,module,"read")).map(async module=>{const result=await client.rpc("staff_module_data",{p_access:member.id,p_module:module});return <details key={module} className="rounded-xl border p-4"><summary className="cursor-pointer font-semibold">{staffModules[module]}</summary><div className="mt-4 space-y-3">{result.error?<p>Раздел недоступен. Обновите права.</p>:Array.isArray(result.data)&&result.data.length?result.data.map((record,index)=>record&&typeof record==="object"&&!Array.isArray(record)?<ModuleRecord key={index} access={member.id} module={module} record={record} write={staffCan(member.permissions,module,"write")}/>:null):<p>Пока нет записей.</p>}</div></details>;}))}
-  {staffCan(member.permissions,"studio","read")&&<details className="rounded-xl border p-4"><summary className="font-semibold">AI Studio</summary><StudioConversation staff enabled={staffCan(member.permissions,"studio","write")} endpoint={`/api/staff/studio?access=${member.id}`} stageHint="Помогу подготовить тексты и предложения для магазина. Публикацию и настройку выполняет владелец."/></details>}
+  {staffCan(member.permissions,"studio","read")&&<details className="rounded-xl border p-4"><summary className="font-semibold">AI Studio</summary><StudioConversation staff enabled={staffCan(member.permissions,"studio","write")} endpoint={`/api/staff/studio?access=${member.id}`} stageHint="Помогу подготовить тексты и предложения. Сохранённое оформление можно проверить и применить ниже при наличии права изменения."/><StaffDesigns access={member.id}/></details>}
   </section>;
  }))}<Link href="/login" className="inline-block underline">Войти под другим аккаунтом</Link></main>;
 }

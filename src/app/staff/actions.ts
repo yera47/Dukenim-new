@@ -3,6 +3,13 @@ import {z} from "zod";
 import {revalidatePath} from "next/cache";
 import {createStaffClient} from "@/lib/staff-server";
 const status=z.enum(["new","confirmed","assembled","delivering","done","cancelled"]);
+export async function applyStaffDesign(_: {error?:string;success?:string},form:FormData):Promise<{error?:string;success?:string}>{
+ const input=z.object({p_access:z.string().uuid(),p_generation:z.string().uuid(),p_expected:z.string().datetime({offset:true})}).safeParse(Object.fromEntries(form));
+ if(!input.success)return{error:"Обновите предложение."};
+ const client=await createStaffClient();const result=await client.rpc("staff_apply_design",input.data);
+ if(result.error)return{error:"Не сохранено: права или оформление изменились. Обновите страницу и предпросмотр."};
+ revalidatePath("/staff");revalidatePath("/admin/ai-studio");revalidatePath("/s/[slug]","page");return{success:"Оформление применено. Статус публикации магазина не изменён."};
+}
 export async function editStaffRecord(_: {error?:string;success?:string},form:FormData):Promise<{error?:string;success?:string}>{
  const input=z.object({access:z.string().uuid(),module:z.enum(["catalog","stock","customers"]),id:z.string().uuid()}).safeParse({access:form.get("access"),module:form.get("module"),id:form.get("id")});
  if(!input.success)return {error:"Обновите страницу."};

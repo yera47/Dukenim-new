@@ -1,0 +1,10 @@
+import {beforeEach,expect,it,vi} from "vitest";
+const create=vi.hoisted(()=>vi.fn());
+vi.mock("server-only",()=>({}));
+vi.mock("./staff-server",()=>({createStaffClient:create}));
+vi.mock("./supabase/admin",()=>({createAdminClient:()=>{throw new Error("Privileged client before grant");}}));
+import {staffPreviewContext} from "./staff-preview";
+beforeEach(()=>vi.clearAllMocks());
+it("rejects invalid grant without database access",async()=>{expect(await staffPreviewContext("bad")).toBeNull();expect(create).not.toHaveBeenCalled();});
+it("rejects missing session",async()=>{create.mockResolvedValue({auth:{getUser:async()=>({data:{user:null}})}});expect(await staffPreviewContext("123e4567-e89b-42d3-a456-426614174000")).toBeNull();});
+it("rejects inactive or foreign grant before admin client",async()=>{const chain={select:()=>chain,eq:()=>chain,maybeSingle:async()=>({data:null,error:null})};create.mockResolvedValue({auth:{getUser:async()=>({data:{user:{id:"person"}}})},from:()=>chain});expect(await staffPreviewContext("123e4567-e89b-42d3-a456-426614174000")).toBeNull();});
