@@ -2,6 +2,8 @@
 
 ## Current checkpoint — 10.09 17:08
 
+18:32 update: staff product/photo creation implemented (up to4 JPEG/PNG/WebP,3MB total, decoded/re-encoded server-side, hidden initially). Applied RPC checks actual membership and stock permission, tenant lifecycle, own image path, replay ID; tests confirm stored product/stock and denied/revoked access. 376 tests/tsc/build pass. Staff browser upload/invitation acceptance still in progress; employee email requested. Studio design publishing is still internal unfinished work, not blocked by that email. Previous reservation clarification deployment Ready confirmed.
+
 New scope remains **in progress** until authenticated browser acceptance, not just compilation. Staff invite/accept/revoke and scoped module RPCs are now implemented and transaction-tested; older notes saying no server authorization describe previous checkpoints. Buyer order tracking now uses signed HttpOnly receipts, tenant/ID scoping and polling. Pickup readiness is seller-driven, reservation expiry suppresses readiness. Local owner team screen verified; employee email acceptance/login and a real buyer order browser round trip are still unverified. Azure consultation and exact pink/green design passed live again. No acquiring or native release.
 
 | ID | Requirement | Status | Evidence / remaining acceptance |

@@ -18,6 +18,7 @@ type StaffDatabase = {public: Omit<Database["public"],"Tables"|"Functions"> & {
   can_notify_staff:{Args:{p_tenant:string;p_user:string};Returns:boolean};
   staff_module_data:{Args:{p_access:string;p_module:string};Returns:Json};
   staff_edit:{Args:{p_access:string;p_module:string;p_id:string;p_data:Json};Returns:boolean};
+  staff_create_product:{Args:{p_access:string;p_request:string;p_data:Json};Returns:string};
   staff_order_status:{Args:{p_access:string;p_order:string;p_expected:Database["public"]["Enums"]["order_status"];p_status:Database["public"]["Enums"]["order_status"]};Returns:boolean};
  };
 }};

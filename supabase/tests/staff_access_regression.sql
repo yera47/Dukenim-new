@@ -3,7 +3,7 @@ begin;
 do $$
 <<fixture>>
 declare owner_id uuid:=gen_random_uuid(); staff_id uuid:=gen_random_uuid(); outsider uuid:=gen_random_uuid(); tenant uuid:=gen_random_uuid();
- invitation uuid; membership uuid; product_id uuid:=gen_random_uuid(); variant_id uuid:=gen_random_uuid(); permissions jsonb:='{"orders":"write","catalog":"none","stock":"none","customers":"none","analytics":"none","studio":"none"}';
+ invitation uuid; membership uuid; created_id uuid:=gen_random_uuid(); product_id uuid:=gen_random_uuid(); variant_id uuid:=gen_random_uuid(); permissions jsonb:='{"orders":"write","catalog":"none","stock":"none","customers":"none","analytics":"none","studio":"none"}';
 begin
  insert into auth.users(id,email,email_confirmed_at) values(owner_id,owner_id||'@example.invalid',now()),(staff_id,staff_id||'@example.invalid',now()),(outsider,outsider||'@example.invalid',now());
  insert into public.tenants(id,slug,name,phone,catalog_published,status,plan) values(tenant,'staff-test-'||tenant,'Rollback fixture','00000000000',false,'active','standard');
@@ -21,6 +21,7 @@ begin
  membership:=public.accept_staff_invitation(repeat('a',64));
  if exists(select 1 from public.tenant_users where user_id=staff_id) then raise exception 'TEST FAILED: broad membership';end if;
  if public.staff_orders(membership)<>'[]'::jsonb then raise exception 'TEST FAILED: cross tenant orders';end if;
+ begin perform public.staff_create_product(membership,created_id,'{"title":"Denied product","price":100,"stock":0,"images":[]}');raise exception 'TEST FAILED: product without permission';exception when insufficient_privilege then null;end;
  begin perform public.staff_module_data(membership,'customers');raise exception 'TEST FAILED: ungranted customers read';exception when insufficient_privilege then null;end;
  begin perform public.accept_staff_invitation(repeat('a',64));raise exception 'TEST FAILED: replay accepted';exception when insufficient_privilege then null;end;
  perform set_config('request.jwt.claim.sub',owner_id::text,true);
@@ -30,6 +31,11 @@ begin
  insert into product_variants(id,tenant_id,product_id,stock_qty) values(variant_id,tenant,product_id,0);
  insert into stock_movements(tenant_id,variant_id,delta,reason) values(tenant,variant_id,10,'restock');
  perform set_config('request.jwt.claim.sub',staff_id::text,true);
+ update public.tenants set catalog_status='building' where id=tenant;
+ perform public.staff_create_product(membership,created_id,'{"title":"New staff product","description":"Fixture","price":1200,"stock":3,"images":[]}');
+ perform public.staff_create_product(membership,created_id,'{"title":"New staff product","description":"Fixture","price":1200,"stock":3,"images":[]}');
+ if (select count(*) from public.products where id=created_id and tenant_id=tenant and not is_active)<>1 then raise exception 'TEST FAILED: hidden product creation';end if;
+ if (select v.stock_qty from public.product_variants v where v.product_id=created_id)<>3 then raise exception 'TEST FAILED: initial stock or replay';end if;
  perform public.staff_edit(membership,'catalog',product_id,'{"title":"Updated fixture","description":"Test","price":"1200","active":"true","expected_price":"1000","expected_title":"Fixture product"}');
  if (select price from products where id=product_id)<>1200 then raise exception 'TEST FAILED: product edit not persisted';end if;
  perform public.staff_edit(membership,'stock',variant_id,'{"expected":"10","quantity":"8"}');
@@ -39,6 +45,7 @@ begin
  perform public.manage_staff(tenant,'update',jsonb_build_object('id',membership,'revision',2,'title','Manager','permissions',permissions,'active',false,'notify_orders',false));
  perform set_config('request.jwt.claim.sub',staff_id::text,true);
  begin perform public.staff_orders(membership);raise exception 'TEST FAILED: revoked member read';exception when insufficient_privilege then null;end;
+ begin perform public.staff_create_product(membership,gen_random_uuid(),'{"title":"Revoked","price":100,"stock":0,"images":[]}');raise exception 'TEST FAILED: revoked creation';exception when insufficient_privilege then null;end;
  if has_table_privilege('authenticated','public.staff_access','INSERT') or has_table_privilege('authenticated','public.staff_access','UPDATE') then raise exception 'TEST FAILED: direct write grant';end if;
  if has_function_privilege('anon','public.manage_staff(uuid,text,jsonb)','EXECUTE') then raise exception 'TEST FAILED: anonymous execute';end if;
 end $$;
