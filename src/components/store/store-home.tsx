@@ -10,6 +10,7 @@ import { storefrontPath } from "@/lib/storefront-path";
 import { EditorialCover } from "./editorial-cover";
 import { personalStoreLayout } from "@/lib/personal-store-layout";
 import { FoodFulfilmentGate } from "./food-fulfilment-gate";
+import { FoodQuickMenu } from "./food-quick-menu";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -35,6 +36,14 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
   const heroImage = settings?.hero_image_url && /^https?:\/\//.test(settings.hero_image_url) ? settings.hero_image_url : null;
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const food=tenant.business_vertical==="food";
+
+  if(food&&approach==="assortment")return <main className="storefront-theme bg-white" data-approach={approach} data-vertical="food">
+    {checkoutOptions&&<FoodFulfilmentGate slug={slug} deliveryEnabled={checkoutOptions.deliveryEnabled} pickupEnabled={checkoutOptions.pickupEnabled}/>}
+    <div id="catalog" style={{paddingTop:0}}><FoodQuickMenu products={products} slug={slug} name={tenant.catalog_name||tenant.name}/></div>
+    {campaign&&<section className="container pb-8"><div className="rounded-3xl bg-[#eeeafa] p-6 text-[#352665]">{campaign.eyebrow&&<span className="text-sm">{campaign.eyebrow}</span>}<h2 className="mt-2 text-2xl font-bold">{campaign.title}</h2>{campaign.body&&<p className="mt-3">{campaign.body}</p>}<Link className="mt-4 inline-block font-semibold underline" href={campaign.cta_href||"#catalog"}>{campaign.cta_label||"Посмотреть меню"} →</Link></div></section>}
+    {storePolicies?.delivery_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Доставка и самовывоз</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.delivery_policy}</p></section>}
+    {storePolicies?.return_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Условия магазина</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.return_policy}</p></section>}
+  </main>;
 
   return <main className={`storefront-theme ${styles.root}`} data-personal={layout?"true":undefined} data-typography={layout?.typography} data-hero={layout?.hero} data-density={layout?.density} data-columns={layout?.columns} data-corners={layout?.corners} data-ratio={layout?.imageRatio} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
     {(layout?layout.hero==="editorial":approach==="collection")?<EditorialCover vertical={tenant.business_vertical??"other"} title={title} subtitle={subtitle} cta={settings?.hero_cta_label||"Смотреть каталог"} heroImage={heroImage} products={products} slug={slug}/>:<header className={`container ${styles.intro}`}><div><span className={styles.sectionCount}>{categories.length>0?`${categories.length} разделов · ${products.length} товаров`:"Каталог магазина"}</span><h1>{title}</h1><p>{subtitle}</p></div>{approach==="assortment"&&categories.length>0&&<nav className={styles.quickSections} aria-label="Быстрый выбор раздела">{categories.map(category=><Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`}>{category}<ArrowRight size={16}/></Link>)}</nav>}</header>}

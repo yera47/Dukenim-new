@@ -15,7 +15,7 @@ export function TemplateIllustration({vertical,compact=false,approach}:{vertical
       <div className="hidden grid-cols-2 gap-3 p-4 sm:grid">{products.slice(1,3).map(product=><ProductTile key={product.id} product={product}/>)}</div>
     </>}
     {mode==="assortment"&&<>
-      <div className="border-b p-4"><div className="rounded-lg bg-neutral-100 px-4 py-3 text-sm text-neutral-500">Найти товар…</div><p className="mt-3 text-xs text-neutral-500">Все · Популярное · В наличии</p></div>
+      {vertical==="food"?<div className="flex gap-2 border-b p-3">{products.slice(0,3).map(product=><div key={product.id} className="relative h-24 w-20 overflow-hidden rounded-2xl border-2 border-[#6650cf]"><Image unoptimized width={150} height={200} src={product.images![0]} alt="" className="h-full w-full object-cover"/><span className="absolute inset-x-0 bottom-0 bg-black/50 p-1 text-[9px] text-white">{product.title}</span></div>)}</div>:<div className="border-b p-4"><div className="rounded-lg bg-neutral-100 px-4 py-3 text-sm text-neutral-500">Найти товар…</div><p className="mt-3 text-xs text-neutral-500">Все · Популярное · В наличии</p></div>}
       <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">{products.map((product,index)=><ProductTile key={product.id} product={product} className={index>1?"hidden sm:block":undefined}/>)}</div>
     </>}
     {mode==="guided"&&<>
