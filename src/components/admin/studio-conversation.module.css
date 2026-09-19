@@ -5,10 +5,13 @@
   padding: clamp(16px, 3vw, 32px);
   color: #202020;
   min-width: 0;
+  min-height: min(760px, calc(100dvh - 190px));
+  display: flex;
+  flex-direction: column;
 }
 .userMessage { background: #e2e2e2; color: #202020; }
 .steps > section { border-color: #dedede; }
-.composer { border-color: #d4d4d4; box-shadow: 0 4px 20px rgb(0 0 0 / 5%); }
+.composer { border-color: #d4d4d4; box-shadow: 0 4px 20px rgb(0 0 0 / 5%); margin-top:auto; }
 .composer:focus-within { border-color: #8a8a8a; box-shadow: 0 0 0 3px rgb(0 0 0 / 5%); }
 .workspace textarea { min-width: 0; font-size: 16px; }
 @media (max-width: 480px) {

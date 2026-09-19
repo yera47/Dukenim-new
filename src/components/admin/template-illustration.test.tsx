@@ -11,5 +11,12 @@ it.each(launchVerticals)("shows labelled populated examples for $id",({id})=>{
  expect(editorial).toContain("В центре внимания");
  expect(catalog).toContain("Найти товар");
  expect(editorial).toContain("не товары вашего магазина");
- expect((catalog.match(/<img /g)||[]).length).toBeGreaterThanOrEqual(3);
+  expect((catalog.match(/<img /g)||[]).length).toBeGreaterThanOrEqual(3);
+});
+it.each(["collection","assortment","guided"] as const)("renders a complete %s illustration without an embedded page",approach=>{
+ vi.stubGlobal("React",React);
+ const html=renderToStaticMarkup(<TemplateIllustration vertical="food" approach={approach}/>);
+ expect(html).toContain("Наглядный пример");
+ expect(html).not.toContain("iframe");
+ expect((html.match(/<img /g)||[]).length).toBeGreaterThanOrEqual(3);
 });

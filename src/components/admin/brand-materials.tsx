@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { brandColorsSchema } from "@/lib/brand-materials";
 import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
 import {BrandPdfVisual} from "./brand-pdf-visual";
+import { FileText, ImagePlus } from "lucide-react";
 export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;onBusyChange?:(busy:boolean)=>void}={}) {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
@@ -48,11 +49,11 @@ export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;
     <p className="my-3 text-sm text-neutral-500">Без брендбука тоже можно. Загрузите логотип и опишите пожелания.</p>
     <div role="group" aria-label="Материалы бренда" onKeyDown={event=>{if(embedded){event.stopPropagation();if(event.key==="Enter"&&event.target instanceof HTMLInputElement)event.preventDefault();}}} className="space-y-4">
       <fieldset disabled={busy||pdfBusy||visualBusy||revision===null} className="space-y-4">
-        <label className="block text-sm">Брендбук PDF · необязательно<input type="file" accept="application/pdf,.pdf" className="mt-2 block w-full" onChange={event=>void readPdf(event.target.files?.[0])}/></label>
+        <div className="flex flex-wrap items-center gap-3"><label className="btn btn-secondary inline-flex cursor-pointer"><FileText size={18}/>Добавить PDF<input type="file" accept="application/pdf,.pdf" className="sr-only" onChange={event=>void readPdf(event.target.files?.[0])}/></label>{pdfFile&&<span className="max-w-full truncate text-xs text-neutral-500">{pdfFile.name}</span>}</div>
         <p className="text-xs text-neutral-500">До 10 МБ и 40 страниц. Чтение происходит в браузере; исходный PDF не загружается. Для сканов и оформления можно отдельно отправить выбранную страницу AI.</p>
         {pdfFile&&<BrandPdfVisual key={`${pdfFile.name}:${pdfFile.size}:${pdfFile.lastModified}`} file={pdfFile} onBusyChange={setVisualBusy} onRules={rules=>{const combined=[notes,rules].filter(Boolean).join("\n\n");if(combined.length>6000){setMessage("Сократите правила: общий лимит 6000 символов.");return;}setNotes(combined);setMessage("Рекомендации добавлены. Проверьте и сохраните материалы для AI.");}}/>}
         {pdfText&&<div className="space-y-2"><textarea aria-label="Извлечённые правила PDF" value={pdfText} onChange={event=>setPdfText(event.target.value)} maxLength={5800} rows={5} className="input w-full"/><button type="button" className="btn btn-secondary" onClick={()=>{const combined=[notes,pdfText].filter(Boolean).join("\n\n");if(combined.length>6000){setMessage("В правилах получится больше 6000 символов. Сократите текст перед добавлением.");return;}setNotes(combined);setPdfText("");setMessage("Текст добавлен в правила. Нажмите «Сохранить материалы для AI», чтобы сохранить его.");}}>Добавить проверенный текст в правила</button></div>}
-        <label className="block text-sm">Логотип (PNG, JPEG, WebP, до 3 МБ)<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>setFile(event.target.files?.[0]??null)} className="mt-2 block w-full"/></label>
+        <div className="flex flex-wrap items-center gap-3"><label className="btn btn-secondary inline-flex cursor-pointer"><ImagePlus size={18}/>Добавить логотип<input type="file" accept="image/png,image/jpeg,image/webp" onChange={event=>setFile(event.target.files?.[0]??null)} className="sr-only"/></label>{file&&<span className="max-w-full truncate text-xs text-neutral-500">{file.name}</span>}</div>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         {logoUrl&&<img src={logoUrl} alt="Сохранённый логотип бренда" className="max-h-24 max-w-48 object-contain"/>}
         <label className="block text-sm">Правила из брендбука или ваши пожелания<textarea value={notes} onChange={e=>setNotes(e.target.value)} maxLength={6000} rows={6} className="input mt-2 w-full" placeholder="Цвета, шрифты, характер магазина, чего избегать. Можно вставить текст из брендбука."/></label>

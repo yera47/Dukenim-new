@@ -45,6 +45,8 @@ describe("AI Studio first-run access", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="building" catalogPublished={false}/>);
     expect(html).toContain("Добавление первого товара");
     for (const label of ["Свернуть редактор", "Опубликовать магазин", "История оформления", "Логотип и правила бренда", "Создать фон баннера"]) expect(html).not.toContain(label);
+    expect(html).not.toContain('id="studio-conversation"');
+    expect(html).toContain("Чат и дополнительные настройки здесь не нужны");
   });
   it("does not call a ready catalog published", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready"/>);

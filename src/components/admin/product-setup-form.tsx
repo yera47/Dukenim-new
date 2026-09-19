@@ -4,6 +4,7 @@ import {createProductAction,type ProductActionState} from "@/app/admin/actions";
 import {businessWorkflow} from "@/lib/business-workflow";
 import type {BusinessVertical} from "@/types/database";
 import Image from "next/image";
+import { ImagePlus } from "lucide-react";
 
 export function ProductSetupForm({categories=[],vertical="other"}:{categories?:Array<{id:string;name:string}>;vertical?:BusinessVertical}){
   const [state,action,pending]=useActionState(createProductAction,{} as ProductActionState);
@@ -38,7 +39,7 @@ export function ProductSetupForm({categories=[],vertical="other"}:{categories?:A
       <section data-product-step="1" hidden={step!==1} className="space-y-4">
         <h3 className="text-xl font-semibold">Покажите товар покупателю</h3>
         <p className="text-sm text-neutral-500">Используйте свои фотографии. Первое фото будет обложкой. До четырёх файлов, каждый до 5 МБ. Можно добавить позже.</p>
-        <label className="block rounded-2xl border border-dashed p-5 text-sm">Выбрать фотографии<input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="mt-3 block w-full" onChange={e=>{
+        <label className="btn btn-secondary inline-flex cursor-pointer"><ImagePlus size={18}/>Добавить фотографии<input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple className="sr-only" onChange={e=>{
           const files=Array.from(e.target.files??[]);if(files.length>4||files.some(file=>file.size>5*1024*1024||!["image/jpeg","image/png","image/webp"].includes(file.type))){e.target.value="";setPhotos([]);setError("Выберите до 4 фотографий PNG, JPEG или WebP, не больше 5 МБ каждая.");return;}
           setError("");setPhotos(files.map(file=>URL.createObjectURL(file)));
         }}/></label>

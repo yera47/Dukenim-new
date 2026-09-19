@@ -16,6 +16,7 @@ import type { z } from "zod";
 import {BrandMaterials} from "./brand-materials";
 import { hoursLabel } from "@/lib/duration-label";
 import { WorkingHours } from "./working-hours";
+import { TemplateIllustration } from "./template-illustration";
 
 const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:string}>>>={
   food:[
@@ -50,8 +51,9 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const [draftSaving, setDraftSaving] = useState(false);
   const [draftRevision, setDraftRevision] = useState<number | null>(null);
   const [draftMessage, setDraftMessage] = useState("");
-  const [previewContent,setPreviewContent]=useState<"example"|"own">("example");
   const presets=briefPresets[vertical]??[];
+  const selectedApproach=approachForTemplate(templateKey);
+  const selectedConfiguration=configurationFor(vertical,selectedApproach);
   useEffect(() => {
     const controller = new AbortController();
     void (async () => {
@@ -141,8 +143,8 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     <input type="hidden" name="catalogName" value={catalogName}/>
     <input type="hidden" name="templateKey" value={templateKey}/>
     <input type="hidden" name="paletteKey" value={paletteKey}/>
-    <nav aria-label="Шаги создания" className="flex flex-wrap gap-3 border-b pb-4 text-sm">{["Название","Оформление","Получение","Оплата","Проверка"].slice(0,step+1).map((label,index)=>index<step?<button type="button" key={label} disabled={draftSaving||draftLoading||pending||aiPending||brandBusy} onClick={()=>void saveDraft(index)} className="text-neutral-500">✓ {index===0?catalogName:label}</button>:<span key={label} aria-current="step" className="font-bold">{index+1}. {label}</span>)}</nav>
-    <p role="status" className="py-3 text-xs text-neutral-500">{draftLoading?"Загружаем сохранённые ответы…":draftSaving?"Сохраняем ответ…":draftMessage || "Ответ сохраняется при переходе к следующему шагу."}</p>
+    <nav aria-label="Шаги создания" className="flex items-center justify-between gap-4 border-b pb-4 text-sm"><strong>Шаг {step+1} из 5</strong><div className="flex gap-2">{["Название","Оформление","Получение","Оплата","Проверка"].map((label,index)=>index<step?<button type="button" key={label} aria-label={`Вернуться: ${label}`} title={label} disabled={draftSaving||draftLoading||pending||aiPending||brandBusy} onClick={()=>void saveDraft(index)} className="size-2.5 rounded-full bg-neutral-900"/>:<span key={label} aria-label={index===step?`Текущий шаг: ${label}`:label} className={`size-2.5 rounded-full ${index===step?"ring-2 ring-neutral-900 ring-offset-2":"bg-neutral-200"}`}/>)}</div></nav>
+    {(draftLoading||draftSaving||draftMessage)&&<p role="status" className="py-3 text-xs text-neutral-500">{draftLoading?"Загружаем сохранённые ответы…":draftSaving?"Сохраняем ответ…":draftMessage}</p>}
     <div className={fromStudio ? "space-y-4" : "catalog-wizard-layout"}>
       <fieldset key={step} disabled={pending || aiPending || draftLoading || draftSaving || brandBusy} className="catalog-active-step min-w-0 py-4">
         <small className="text-neutral-500">{nichePresets[vertical].label}</small>
@@ -169,14 +171,10 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
 
         {step===0&&<><p className="my-4 text-sm leading-7 text-neutral-500">Это название увидят покупатели. Его можно изменить позже.</p><label className="block text-sm font-semibold">Название<input value={catalogName} maxLength={80} onChange={event=>{setCatalogName(event.target.value);setGenerationId(undefined);setAiReason("");}} className="input mt-2" placeholder="Например, Серик Шоп"/></label><p className="mt-4 break-all text-xs text-neutral-500">dukenim.kz/s/{slug}</p></>}
         {step===1&&designStage==="examples"&&<>
-          <p className="my-4 text-sm leading-7 text-neutral-500">{vertical==="food"?"Выберите путь меню: быстрый список для повторных заказов или крупные категории для первого знакомства. В обоих вариантах покупатель сначала выбирает доставку или самовывоз, добавляет блюда прямо из меню и указывает «как можно скорее» или время.":"Это наполненные иллюстрации. Ваши товары добавим позже. Выберите подходящую подачу — цвета можно изменить после."}</p>
-          <button type="button" onClick={()=>void saveDraft(1,"brief")} className="mb-5 text-sm underline underline-offset-4">✓ О магазине: {brief.slice(0,70)} · Изменить</button>
-          <div className="grid gap-5 lg:grid-cols-3">{templates.map(option=>{const config=configurationFor(vertical,approachForTemplate(option.key));return <article key={option.key} className={`overflow-hidden rounded-2xl border-2 bg-white p-3 text-left ${option.key===templateKey?"border-neutral-900":"border-neutral-200"}`}>
-            <div className="px-1 pb-4"><h3 className="text-base font-semibold">{config?.title??option.benefit}</h3><p className="mt-2 text-sm leading-6 text-neutral-500">{config?.description??option.benefit}</p></div>
-            <iframe loading="lazy" title={`Пример: ${config?.title??option.key}`} className="h-[420px] w-full rounded-lg border border-neutral-100" src={`/store-preview?${new URLSearchParams({name:catalogName,template:option.key,palette:paletteKey,...(colorTheme?{colors:JSON.stringify(colorTheme)}:{}),content:"example"})}`}/>
-            {config&&<a href={config.href} target="_blank" rel="noopener noreferrer" className="my-3 block text-center text-sm underline">Открыть полный пример ↗</a>}
-            <button type="button" aria-pressed={option.key===templateKey} onClick={()=>{setTemplateKey(option.key);}} className="btn btn-secondary mt-2 w-full">{option.key===templateKey?"✓ Выбрано":"Выбрать"}</button>
-          </article>})}</div>
+          <p className="my-4 text-sm leading-6 text-neutral-500">Выберите один из трёх понятных способов показать ассортимент. Сначала — общая структура, ваши фотографии и товары добавятся дальше.</p>
+          <button type="button" onClick={()=>void saveDraft(1,"brief")} className="mb-5 text-sm underline underline-offset-4">✓ О магазине · Изменить</button>
+          <div className="grid gap-2 sm:grid-cols-3">{templates.map((option,index)=>{const config=configurationFor(vertical,approachForTemplate(option.key));return <button key={option.key} type="button" aria-pressed={option.key===templateKey} onClick={()=>setTemplateKey(option.key)} className={`min-h-20 rounded-xl border p-3 text-left transition ${option.key===templateKey?"border-neutral-900 bg-neutral-900 text-white":"border-neutral-200 bg-white hover:border-neutral-500"}`}><span className="text-[10px] opacity-70">ВАРИАНТ {index+1}</span><strong className="mt-2 block text-sm leading-5">{config?.title??option.benefit}</strong></button>})}</div>
+          <section className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Выбранный вариант оформления"><div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div className="max-w-xl"><h3 className="text-lg font-semibold">{selectedConfiguration?.title}</h3><p className="mt-1 text-sm leading-6 text-neutral-500">{selectedConfiguration?.description}</p></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть целиком ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>
         </>}
         {step===4&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">Ниже — выбранное оформление с примерами товаров. Они не добавятся в ваш магазин. Вкладка «Мои товары» показывает только ваши данные.</p></>}
         {step===2&&<div className="mt-5 space-y-5">
@@ -198,12 +196,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
         <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,"brief"):saveDraft(step-1))}>Назад</button>}{step<4?<button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===1&&designStage==="brief"?"Показать варианты":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
       </fieldset>
-      {step===4&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white" aria-label="Проверка оформления">
-        <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 p-3">
-          {(["example","own"] as const).map(mode=><button key={mode} type="button" aria-pressed={previewContent===mode} onClick={()=>setPreviewContent(mode)} className={`rounded-lg px-4 py-2 text-sm ${previewContent===mode?"bg-neutral-900 text-white":"bg-neutral-100"}`}>{mode==="example"?"Пример с товарами":"Мои товары"}</button>)}
-        </div>
-        <iframe title={previewContent==="example"?"Пример выбранного оформления с демонстрационными товарами":"Ваш каталог с реальными товарами"} className="h-[640px] w-full border-0" src={`/store-preview?${new URLSearchParams({name:catalogName,template:templateKey,palette:paletteKey,...(colorTheme?{colors:JSON.stringify(colorTheme)}:{}),content:previewContent,...(generationId?{generation:generationId}:{})})}`}/>
-      </section>}
+      {step===4&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Проверка оформления"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-neutral-500">ВЫБРАННОЕ ОФОРМЛЕНИЕ</p><h3 className="mt-1 text-lg font-semibold">{selectedConfiguration?.title}</h3></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть полный пример ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>}
     </div>
     <button type="button" className="mt-4 text-xs text-neutral-500 underline underline-offset-4" disabled={draftLoading||draftSaving||aiPending||pending||brandBusy||draftRevision===null} onClick={()=>void saveDraft()}>Сохранить текущий ответ и продолжить позже</button>
   </form>;

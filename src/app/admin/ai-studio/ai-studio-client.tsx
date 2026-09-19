@@ -166,16 +166,14 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   </div>;
 
   if (catalogStatus === "building") return <div className={styles.workspace}>
-    <StudioConversation designOnly working={pending} enabled={enabled&&!pending} onTask={task=>{if(task.intent==="store_design"){setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}} stageHint="Оформление сохранено. Добавим первый товар: название, фотографию, цену и наличие. Если нужна помощь, спросите здесь.">
+    <section className={styles.guidedHeader}><p className="data-label">СЛЕДУЮЩИЙ ШАГ</p><h2>Добавьте первый товар</h2><p>Заполняйте по одному экрану. Чат и дополнительные настройки здесь не нужны.</p></section>
     {pending&&<p role="status">Готовлю персональное оформление…</p>}
     {error&&<p role="alert" className={styles.error}>{error}</p>}
     {designPanel}
     {design&&<button type="button" className="text-sm underline" onClick={()=>{setDesign(null);setSubmitted("");}}>Вернуться к добавлению товара</button>}
     <section hidden={Boolean(design||pending)} className={styles.setupFlow} aria-label="Добавление первого товара">
-      <p className="mb-4 text-sm text-neutral-500">✓ Оформление сохранено · Следующий шаг — первый товар</p>
       <ProductForm fromStudio categories={categories} vertical={vertical}/>
     </section>
-    </StudioConversation>
   </div>;
 
   return <div className={styles.workspace}>

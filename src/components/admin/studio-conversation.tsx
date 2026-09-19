@@ -52,6 +52,9 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
       {pending&&<p>Обдумываю ваш ответ…</p>}
     </div>
     {children && <div className={`${styles.steps} space-y-4`} aria-label="Текущий шаг создания магазина">{children}</div>}
+    {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
+    {!stageHint&&<nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>}
+    {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
     <form onSubmit={event=>{event.preventDefault();void send();}} className={`${styles.composer} sticky bottom-3 z-10 rounded-2xl border bg-white p-4 shadow-sm`}>
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>
       {!stageHint&&<details className="mb-3 text-sm"><summary className="cursor-pointer text-neutral-500">Добавить контекст бренда</summary><label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={includeBrandLogo} disabled={pending} onChange={event=>setIncludeBrandLogo(event.target.checked)}/>Проанализировать сохранённый логотип в этом сообщении</label></details>}
@@ -59,8 +62,5 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
       <div className="flex flex-wrap items-center justify-between gap-3">{staff?<span className="text-sm">Права меняет владелец магазина.</span>:<Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать в поддержку</Link>}<button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>
       {onBanner&&<details className="mt-3 text-sm"><summary className="cursor-pointer text-neutral-500">Дополнительные действия</summary><button type="button" className="mt-3 underline" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать фон баннера по этому сообщению</button></details>}
     </form>
-    {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
-    {!stageHint&&<nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>}
-    {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
   </section>;
 }

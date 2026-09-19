@@ -2,15 +2,30 @@ import Image from "next/image";
 import { demoProductsFor } from "@/lib/demo-catalogs";
 import { money } from "@/lib/demo-data";
 import type { BusinessVertical } from "@/types/database";
+import type { CommerceApproach } from "@/lib/commerce-configurations";
 
 /** Illustrative example, deliberately separate from the merchant's actual draft. */
-export function TemplateIllustration({vertical,compact}:{vertical:BusinessVertical;compact:boolean}) {
+export function TemplateIllustration({vertical,compact=false,approach}:{vertical:BusinessVertical;compact?:boolean;approach?:CommerceApproach}) {
   const products=demoProductsFor(vertical).filter(product=>product.images?.[0]).slice(0,4);
+  const mode=approach??(compact?"assortment":"collection");
   return <div aria-label="Иллюстрация структуры на демонстрационных товарах" className="overflow-hidden rounded-xl border border-neutral-200 bg-white text-neutral-900">
-    <div className="flex items-center justify-between border-b px-3 py-3"><b className="text-xs">dukenim {vertical} shop.</b><span className="text-[9px]">Каталог · Корзина</span></div>
-    {!compact&&products[0]&&<div className="grid grid-cols-2 items-center bg-neutral-100"><div className="p-3"><span className="text-[9px] uppercase tracking-wider">Новая коллекция</span><b className="mt-2 block text-lg leading-tight">В центре внимания — ваш продукт</b><span className="mt-3 inline-block rounded bg-neutral-900 px-2 py-1 text-[9px] text-white">Смотреть коллекцию →</span></div><Image unoptimized width={400} height={400} src={products[0].images![0]} alt="" loading="lazy" className="h-40 w-full object-cover"/></div>}
-    {compact&&<div className="p-3"><div className="rounded-md bg-neutral-100 p-2 text-[10px] text-neutral-500">Найти товар…</div><p className="mt-2 text-[9px]">Категории · Цена · В наличии</p></div>}
-    <div className={`grid gap-2 p-3 ${compact?"grid-cols-3":"grid-cols-2"}`}>{products.slice(0,compact?3:2).map(product=><div key={product.id}><Image unoptimized width={400} height={400} src={product.images![0]} alt="" loading="lazy" className="aspect-square w-full rounded-md object-cover"/><p className="mt-1 truncate text-[9px]">{product.title}</p><b className="text-[10px]">{money(product.price)}</b></div>)}</div>
-    <p className="border-t px-3 py-2 text-[9px] text-neutral-500">Пример структуры, не товары вашего магазина</p>
+    <div className="flex items-center justify-between border-b px-4 py-3"><b className="text-sm">dukenim {vertical} shop.</b><span className="text-xs text-neutral-500">Меню · Корзина</span></div>
+    {mode==="collection"&&products[0]&&<>
+      <div className="grid min-h-64 grid-cols-[minmax(0,.9fr)_minmax(0,1.1fr)] items-stretch bg-neutral-100"><div className="flex flex-col justify-center p-5 sm:p-7"><span className="text-[10px] uppercase tracking-[.16em]">Новая коллекция</span><b className="mt-3 block text-xl leading-tight sm:text-3xl">В центре внимания — ваш продукт</b><span className="mt-5 inline-block self-start rounded-lg bg-neutral-900 px-3 py-2 text-xs text-white">Смотреть →</span></div><Image unoptimized width={700} height={700} src={products[0].images![0]} alt="" loading="lazy" className="h-full min-h-64 w-full object-cover"/></div>
+      <div className="grid grid-cols-2 gap-3 p-4">{products.slice(1,3).map(product=><ProductTile key={product.id} product={product}/>)}</div>
+    </>}
+    {mode==="assortment"&&<>
+      <div className="border-b p-4"><div className="rounded-lg bg-neutral-100 px-4 py-3 text-sm text-neutral-500">Найти товар…</div><p className="mt-3 text-xs text-neutral-500">Все · Популярное · В наличии</p></div>
+      <div className="grid grid-cols-2 gap-3 p-4 sm:grid-cols-4">{products.map(product=><ProductTile key={product.id} product={product}/>)}</div>
+    </>}
+    {mode==="guided"&&<>
+      <div className="p-5"><b className="text-xl">С чего начать?</b><div className="mt-4 grid grid-cols-3 gap-3">{products.slice(0,3).map(product=><div key={product.id} className="text-center"><Image unoptimized width={360} height={360} src={product.images![0]} alt="" loading="lazy" className="aspect-square w-full rounded-full object-cover"/><p className="mt-2 truncate text-xs font-semibold">{product.title}</p></div>)}</div></div>
+      <div className="grid grid-cols-2 gap-3 border-t p-4">{products.slice(0,2).map(product=><ProductTile key={product.id} product={product}/>)}</div>
+    </>}
+    <p className="border-t px-4 py-3 text-xs text-neutral-500">Наглядный пример · не товары вашего магазина</p>
   </div>;
+}
+
+function ProductTile({product}:{product:ReturnType<typeof demoProductsFor>[number]}){
+  return <div className="min-w-0"><Image unoptimized width={500} height={500} src={product.images![0]} alt="" loading="lazy" className="aspect-square w-full rounded-lg object-cover"/><p className="mt-2 truncate text-xs">{product.title}</p><b className="text-sm">{money(product.price)}</b></div>;
 }
