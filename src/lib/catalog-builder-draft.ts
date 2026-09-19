@@ -1,10 +1,12 @@
+import {loyaltyProgramSchema} from "./loyalty";
 import { z } from "zod";
 import { customStoreThemeSchema } from "./custom-store-theme";
 import { fulfilmentDraftSchema, paymentPreferenceSchema } from "./catalog-fulfilment";
 import { palettes, templateCatalog } from "./storefront-theme";
 
 export const catalogBuilderStateSchema = z.object({
-  step: z.number().int().min(0).max(4),
+  step: z.number().int().min(0).max(5),
+  loyalty: loyaltyProgramSchema.optional(),
   fulfilment: fulfilmentDraftSchema.optional(),
   paymentPreference: paymentPreferenceSchema.optional(),
   designStage: z.enum(["brief", "colors", "examples"]).optional(),

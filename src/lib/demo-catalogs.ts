@@ -24,6 +24,7 @@ export function demoProductsFor(vertical: BusinessVertical): Product[] {
   const preset = nichePresets[vertical];
   return (examples[vertical] ?? []).map(([title, category, price], index) => ({
     id: `${vertical}-${index + 1}`, title, category, price,
+    foodOptions:vertical==="food"?(index===0?{ingredients:[{id:"cucumber",name:"Огурцы",removable:true},{id:"salad",name:"Салат",removable:true},{id:"croissant",name:"Круассан",removable:false}],groups:[{id:"extras",title:"Добавить к сэндвичу",kind:"addon",min:0,max:2,options:[{id:"cheese",label:"Сыр",price:300,variantId:null},{id:"sauce",label:"Соус",price:150,variantId:null}]}]}:index===3?{ingredients:[],groups:[{id:"drink",title:"Напиток в комбо",kind:"combo",min:1,max:1,options:[{id:"coffee",label:"Кофе с молоком",price:0,variantId:"food-v3"}]},{id:"breakfast",title:"Сэндвич в комбо",kind:"combo",min:1,max:1,options:[{id:"croissant",label:"Круассан-сэндвич",price:300,variantId:"food-v1"},{id:"sandwich",label:"Сэндвич с сыром",price:0,variantId:"food-v2"}]}]}:undefined):undefined,
     description: "Пример позиции для знакомства с возможностями каталога Dukenim. Данные демонстрационные.",
     images: demoMedia[`${vertical}-${index + 1}`] ? [demoMedia[`${vertical}-${index + 1}`]] : index === 0 && preset.imageUrl ? [preset.imageUrl] : [],
     featured: index === 0,

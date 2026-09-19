@@ -1,3 +1,4 @@
+import {readFoodOptions} from "@/lib/food-options";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database, ProductRow, VariantRow } from "@/types/database";
 import type { Product } from "@/lib/demo-data";
@@ -34,7 +35,7 @@ export async function getStorefrontProduct(client: SupabaseClient<Database>, ten
 }
 
 export function mapStorefrontProduct(product: ProductRow, variants: VariantRow[], categoryNames: ReadonlyMap<string, string>): Product {
-  return { id: product.id, title: product.title, description: product.description ?? "", price: product.price,
+  return { foodOptions:readFoodOptions(product.food_options), id: product.id, title: product.title, description: product.description ?? "", price: product.price,
     oldPrice: product.old_price ?? undefined, category: (product.category_id && categoryNames.get(product.category_id)) || "Каталог",
     featured: product.is_featured, images: product.images,
     variants: variants.map(variant => ({ id: variant.id, size: variant.size, color: variant.color ?? "", stock: variant.stock_qty })) };

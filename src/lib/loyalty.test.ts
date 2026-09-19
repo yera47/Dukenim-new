@@ -1,0 +1,5 @@
+import {it,expect} from "vitest";
+import {loyaltyProgramSchema,loyaltyRuleSchema,rewardDiscount,newLoyaltyRule} from "./loyalty";
+it("accepts independent custom goals rather than one fixed stamp card",()=>{const rule=newLoyaltyRule();expect(loyaltyProgramSchema.safeParse({name:"Club",enabled:true,terms:"",rules:[rule,{...rule,id:crypto.randomUUID(),trigger:"referral",threshold:2,reward:"percent",value:20}]}).success).toBe(true);});
+it("rejects unbounded percentages and invalid cashback combinations",()=>{const rule=newLoyaltyRule();expect(loyaltyRuleSchema.safeParse({...rule,reward:"percent",value:101}).success).toBe(false);expect(loyaltyRuleSchema.safeParse({...rule,reward:"cashback",trigger:"referral"}).success).toBe(false);});
+it("rounds integer KZT discount and caps it at goods subtotal",()=>{const reward={ruleId:crypto.randomUUID(),milestone:1,reward:"percent" as const,label:"Discount",value:15,expiresAt:null};expect(rewardDiscount(reward,999)).toBe(149);expect(rewardDiscount({...reward,reward:"fixed",value:5000},999)).toBe(999);});

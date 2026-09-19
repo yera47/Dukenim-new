@@ -1,5 +1,6 @@
+import type {FoodOptions} from "./food-options";
 import { extraDemoProducts } from "./demo-extra-products";
-export type Product = { id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; images?:string[]; variants:{id:string;size:string|null;color:string;stock:number}[] };
+export type Product = { foodOptions?:FoodOptions; id:string; title:string; description:string; price:number; oldPrice?:number; category:string; featured?:boolean; images?:string[]; variants:{id:string;size:string|null;color:string;stock:number}[] };
 export const tenant={name:"Серик Шоп",slug:"demo-shop",tagline:"Вещи, которые работают вместе",city:"Казахстан",phone:"+7 777 000 00 00",whatsapp:"77000000000",accent:"#171717",plan:"standard" as const};
 export const products:Product[]=[
  ...extraDemoProducts,

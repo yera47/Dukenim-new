@@ -16,6 +16,7 @@ type Settings={tenant_id:string;enabled:boolean;hold_hours:number;location:Json}
 type Table<T>={Row:T;Insert:Partial<T>;Update:Partial<T>;Relationships:[]};
 type ReservationDatabase={public:{Tables:{reservation_settings:Table<Settings>;merchandise_reservations:Table<ReservationRow>};Views:Record<never,never>;Enums:Record<never,never>;CompositeTypes:Record<never,never>;Functions:{
  create_merchandise_reservation:{Args:{p_tenant_id:string;p_request_id:string;p_name:string;p_phone:string;p_items:Json};Returns:{order_id:string;order_number:number;total:number;expires_at:string;reservation_status:ReservationStatus}[]};
+ create_buyer_reservation:{Args:{p_tenant_id:string;p_request_id:string;p_name:string;p_phone:string;p_items:Json;p_user:string|null;p_guest_hash:string};Returns:{order_id:string;order_number:number;total:number;expires_at:string;reservation_status:ReservationStatus}[]};
  manage_merchandise_reservation:{Args:{p_order_id:string;p_action:string};Returns:ReservationStatus};
 }}};
 // Isolated schema extension: avoids overwriting another integration's generated types.

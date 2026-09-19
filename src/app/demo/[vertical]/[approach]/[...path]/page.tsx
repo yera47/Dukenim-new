@@ -1,3 +1,4 @@
+import {BuyerHub} from "@/components/store/buyer-hub";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { configurationFor } from "@/lib/commerce-configurations";
@@ -11,6 +12,7 @@ export default async function DemoSubpage({params}:{params:Promise<{vertical:str
   const {vertical,approach,path}=await params;
   const config=configurationFor(vertical,approach);if(!config)notFound();
   const products=demoProductsFor(config.vertical),slug=configurationSlug(vertical,approach);
+  if(path.length===1&&path[0]==="orders")return <BuyerHub slug={slug} base={config.href} demo/>;
   if(path.length===1&&(path[0]==="cart"||path[0]==="checkout"))return <DemoBasket base={config.href} checkout={path[0]==="checkout"}/>;
   if(path.length===2&&path[0]==="product") {
     const product=products.find(p=>p.id===path[1]);if(!product)notFound();

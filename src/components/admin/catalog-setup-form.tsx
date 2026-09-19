@@ -16,6 +16,8 @@ import type { z } from "zod";
 import {BrandMaterials} from "./brand-materials";
 import { hoursLabel } from "@/lib/duration-label";
 import { WorkingHours } from "./working-hours";
+import { LoyaltyEditor } from "./loyalty-editor";
+import {newLoyaltyProgram,loyaltyProgramSchema} from "@/lib/loyalty";
 import { TemplateIllustration } from "./template-illustration";
 
 const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:string}>>>={
@@ -31,7 +33,7 @@ const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:stri
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
   const templates = useMemo(() => launchTemplatesForPlan(plan), [plan]);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(0); const reviewStep=vertical==="food"?5:4; const [loyalty,setLoyalty]=useState(newLoyaltyProgram);
   const [designStage,setDesignStage]=useState<"brief"|"colors"|"examples">("brief");
   const [colorBrief,setColorBrief]=useState("");
   const [fulfilment,setFulfilment]=useState<FulfilmentDraft>(emptyFulfilment);
@@ -68,7 +70,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           setDesignStage(saved.designStage ?? "brief");
           setColorBrief(saved.colorBrief ?? "");
           setFulfilment({...saved.fulfilment??emptyFulfilment,preparation:emptyFulfilment.preparation});
-          setPaymentPreference(saved.paymentPreference??"later");
+          setPaymentPreference(saved.paymentPreference??"later"); if(saved.loyalty)setLoyalty(saved.loyalty);
           setColorTheme(saved.colorTheme);
           if(saved.colorTheme) setThemeChoices(themeVariations(saved.colorTheme));
           setGenerationId(saved.generationId); setCatalogName(saved.catalogName); setBrief(previous => previous || saved.brief); setPaletteKey(saved.paletteKey); setStep(saved.step);
@@ -88,7 +90,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     if (draftRevision === null || draftSaving || draftLoading || brandBusy) return;
     setDraftSaving(true); setDraftMessage("");
     try {
-      const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step:nextStep,designStage:nextStage,fulfilment,paymentPreference,colorBrief,colorTheme,catalogName,templateKey,paletteKey,brief,generationId}})});
+      const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step:nextStep,designStage:nextStage,loyalty,fulfilment,paymentPreference,colorBrief,colorTheme,catalogName,templateKey,paletteKey,brief,generationId}})});
       const result = await response.json();
       if (!response.ok || !Number.isSafeInteger(result.revision)) throw new Error(result.error || "Сохранение не подтверждено.");
       setDraftRevision(result.revision); setDraftMessage("Черновик сохранён. Можно закрыть страницу и продолжить позже.");
@@ -115,7 +117,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   async function advance() {
     if(brandBusy)return;
     setAiError("");
-    if(step===2){const parsed=fulfilmentCommitSchema.safeParse(fulfilment);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}}
+    if(step===4&&vertical==="food"){const parsed=loyaltyProgramSchema.safeParse(loyalty);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}} if(step===2){const parsed=fulfilmentCommitSchema.safeParse(fulfilment);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}}
     if (step===1 && designStage==="brief") {
       if (brief.trim().length < 8) { setAiError("Расскажите хотя бы коротко, что продаёте и кому."); return; }
       await saveDraft(1,"examples");
@@ -130,12 +132,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   }
   return <form action={action} onSubmit={event => {
     if (aiPending || pending || draftLoading || draftSaving || brandBusy || draftRevision===null) { event.preventDefault(); return; }
-    if (step < 4) {
+    if (step < reviewStep) {
       event.preventDefault();
       if (catalogName.trim().length >= 2) void advance();
     }
   }} className="catalog-wizard">
-    <input type="hidden" name="generationId" value={generationId??""}/>
+    <input type="hidden" name="loyalty" value={vertical==="food"?JSON.stringify(loyalty):""}/><input type="hidden" name="generationId" value={generationId??""}/>
     <input type="hidden" name="colorTheme" value={colorTheme?JSON.stringify(colorTheme):""}/>
     <input type="hidden" name="fulfilment" value={JSON.stringify(fulfilment)}/>
     <input type="hidden" name="paymentPreference" value={paymentPreference}/>
@@ -143,12 +145,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     <input type="hidden" name="catalogName" value={catalogName}/>
     <input type="hidden" name="templateKey" value={templateKey}/>
     <input type="hidden" name="paletteKey" value={paletteKey}/>
-    <nav aria-label="Шаги создания" className="flex items-center justify-between gap-4 border-b pb-4 text-sm"><strong>Шаг {step+1} из 5</strong><div className="flex gap-2">{["Название","Оформление","Получение","Оплата","Проверка"].map((label,index)=>index<step?<button type="button" key={label} aria-label={`Вернуться: ${label}`} title={label} disabled={draftSaving||draftLoading||pending||aiPending||brandBusy} onClick={()=>void saveDraft(index)} className="size-2.5 rounded-full bg-neutral-900"/>:<span key={label} aria-label={index===step?`Текущий шаг: ${label}`:label} className={`size-2.5 rounded-full ${index===step?"ring-2 ring-neutral-900 ring-offset-2":"bg-neutral-200"}`}/>)}</div></nav>
+    <nav aria-label="Шаги создания" className="flex items-center justify-between gap-4 border-b pb-4 text-sm"><strong>Шаг {step+1} из {reviewStep+1}</strong><div className="flex gap-2">{["Название","Оформление","Получение","Оплата",...(vertical==="food"?["Лояльность"]:[]),"Проверка"].map((label,index)=>index<step?<button type="button" key={label} aria-label={`Вернуться: ${label}`} title={label} disabled={draftSaving||draftLoading||pending||aiPending||brandBusy} onClick={()=>void saveDraft(index)} className="size-2.5 rounded-full bg-neutral-900"/>:<span key={label} aria-label={index===step?`Текущий шаг: ${label}`:label} className={`size-2.5 rounded-full ${index===step?"ring-2 ring-neutral-900 ring-offset-2":"bg-neutral-200"}`}/>)}</div></nav>
     {(draftLoading||draftSaving||draftMessage)&&<p role="status" className="py-3 text-xs text-neutral-500">{draftLoading?"Загружаем сохранённые ответы…":draftSaving?"Сохраняем ответ…":draftMessage}</p>}
     <div className={fromStudio ? "space-y-4" : "catalog-wizard-layout"}>
       <fieldset key={step} disabled={pending || aiPending || draftLoading || draftSaving || brandBusy} className="catalog-active-step min-w-0 py-4">
         <small className="text-neutral-500">{nichePresets[vertical].label}</small>
-        <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":"Проверьте магазин перед добавлением товаров"}</h2>
+        <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":step===4&&vertical==="food"?"Как будете радовать постоянных гостей?":"Проверьте магазин перед добавлением товаров"}</h2>
         {step===1&&designStage==="brief"&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
           <label className="block text-sm font-semibold">Что продаёте и для кого?<textarea className="input mt-2" value={brief} maxLength={650} rows={3} onChange={event=>{setBrief(event.target.value);setGenerationId(undefined);setAiReason("");}} placeholder="Например, натуральная косметика для ежедневного ухода. Небольшой ассортимент, спокойная светлая подача."/></label>
           {presets.length>0&&<div className="mt-4"><p className="text-xs font-semibold text-neutral-500">Можно начать с примера</p><div className="mt-2 flex flex-wrap gap-2">{presets.map(preset=><button key={preset.label} type="button" className="rounded-full border px-3 py-2 text-left text-xs hover:border-neutral-900" onClick={()=>{setBrief(preset.text);setGenerationId(undefined);setAiReason("");}}>{preset.label}</button>)}</div></div>}
@@ -176,8 +178,8 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           <div className="grid grid-cols-3 gap-2">{templates.map((option,index)=>{const config=configurationFor(vertical,approachForTemplate(option.key));return <button key={option.key} type="button" aria-pressed={option.key===templateKey} onClick={()=>setTemplateKey(option.key)} className={`min-h-20 rounded-xl border p-2 text-left transition sm:p-3 ${option.key===templateKey?"border-neutral-900 bg-neutral-900 text-white":"border-neutral-200 bg-white hover:border-neutral-500"}`}><span className="text-[9px] opacity-70 sm:text-[10px]">ВАРИАНТ {index+1}</span><strong className="mt-1.5 block text-[11px] leading-4 sm:mt-2 sm:text-sm sm:leading-5">{config?.title??option.benefit}</strong></button>})}</div>
           <section className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Выбранный вариант оформления"><div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div className="max-w-xl"><h3 className="text-lg font-semibold">{selectedConfiguration?.title}</h3><p className="mt-1 text-sm leading-6 text-neutral-500">{selectedConfiguration?.description}</p></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть целиком ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>
         </>}
-        {step===4&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">Ниже — выбранное оформление с примерами товаров. Они не добавятся в ваш магазин. Вкладка «Мои товары» показывает только ваши данные.</p></>}
-        {step===2&&<div className="mt-5 space-y-5">
+        {step===reviewStep&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">Ниже — выбранное оформление с примерами товаров. Они не добавятся в ваш магазин. Вкладка «Мои товары» показывает только ваши данные.</p></>}
+        {step===4&&vertical==="food"&&<div className="mt-5"><LoyaltyEditor value={loyalty} onChange={setLoyalty}/></div>}{step===2&&<div className="mt-5 space-y-5">
           <p className="text-sm text-neutral-500">Выберите доступные способы. Условия сохранятся в магазине; позже их можно изменить в настройках.</p>
           <label className="flex items-center gap-3 rounded-xl border p-4"><input type="checkbox" checked={fulfilment.delivery} onChange={e=>setFulfilment({...fulfilment,delivery:e.target.checked})}/>Доставка покупателю</label>
           {fulfilment.delivery&&<div className="grid gap-4 sm:grid-cols-2">{([['zone','Куда доставляете','Например, Алматы в пределах города'],['cost','Стоимость, ₸','Например, 1500'],['eta','Срок доставки','Например, на следующий день']] as const).map(([key,label,placeholder])=><label key={key} className="text-sm">{label}<input className="input mt-2" value={fulfilment[key]} inputMode={key==='cost'?'numeric':'text'} maxLength={key==='cost'?10:key==='zone'?100:200} placeholder={placeholder} onChange={e=>setFulfilment({...fulfilment,[key]:e.target.value})}/></label>)}</div>}
@@ -191,12 +193,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           <p className="mb-4 text-sm text-neutral-500">Можно продолжить без онлайн-оплаты. Выбор провайдера не подключает платёж сам: для этого нужны аккаунт бизнеса и проверка интеграции.</p>
           {([['later','Подключу онлайн-оплату позже','Продолжить создание магазина. Не показываем покупателю неработающую оплату.'],['freedompay','Карты через FreedomPay','Кандидат для подключения: сумма заказа, платёжная страница и подтверждение серверу.'],['halyk','Карты через Halyk ePay','Если ваш бизнес подключает эквайринг Halyk. Нужны реквизиты доступа от банка.'],['kaspi','Kaspi Pay','Обсудить официальную интеграцию. Обычная ссылка не подставляет сумму автоматически.']] as const).map(([value,label,description])=><label key={value} className={`flex gap-3 rounded-2xl border p-4 ${paymentPreference===value?'border-neutral-900 bg-white':'border-neutral-200'}`}><input type="radio" name="payment-choice" value={value} checked={paymentPreference===value} onChange={()=>setPaymentPreference(value)}/><span><strong className="block text-sm">{label}</strong><span className="mt-1 block text-xs leading-5 text-neutral-500">{description}</span></span></label>)}
         </div>}
-        {step===4&&<dl className="mt-5 space-y-2 rounded-xl border p-4 text-sm"><div><dt className="text-neutral-500">Получение</dt><dd>{fulfilment.delivery?`Доставка: ${fulfilment.zone}, ${fulfilment.cost} ₸, ${fulfilment.eta}`:''}{fulfilment.pickup?<p>Самовывоз: {fulfilment.address}, {fulfilment.hours}</p>:null}{fulfilment.reservation?<p>Бронь: {fulfilment.address}, {fulfilment.holdHours} ч.</p>:null}</dd></div><div><dt className="text-neutral-500">Онлайн-оплата</dt><dd>{paymentPreference==='later'?'Подключить позже':`${paymentPreference} — ещё не подключено`}</dd></div></dl>}
+        {step===reviewStep&&<dl className="mt-5 space-y-2 rounded-xl border p-4 text-sm"><div><dt className="text-neutral-500">Получение</dt><dd>{fulfilment.delivery?`Доставка: ${fulfilment.zone}, ${fulfilment.cost} ₸, ${fulfilment.eta}`:''}{fulfilment.pickup?<p>Самовывоз: {fulfilment.address}, {fulfilment.hours}</p>:null}{fulfilment.reservation?<p>Бронь: {fulfilment.address}, {fulfilment.holdHours} ч.</p>:null}</dd></div><div><dt className="text-neutral-500">Онлайн-оплата</dt><dd>{paymentPreference==='later'?'Подключить позже':`${paymentPreference} — ещё не подключено`}</dd></div></dl>}
         {step>=2&&aiError&&<p role="alert" className="mt-4 text-sm text-red-700">{aiError}</p>}
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
-        <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,"brief"):saveDraft(step-1))}>Назад</button>}{step<4?<button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===1&&designStage==="brief"?"Показать варианты":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
+        <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,"brief"):saveDraft(step-1))}>Назад</button>}{step<reviewStep?<button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===1&&designStage==="brief"?"Показать варианты":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
       </fieldset>
-      {step===4&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Проверка оформления"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-neutral-500">ВЫБРАННОЕ ОФОРМЛЕНИЕ</p><h3 className="mt-1 text-lg font-semibold">{selectedConfiguration?.title}</h3></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть полный пример ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>}
+      {step===reviewStep&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Проверка оформления"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-neutral-500">ВЫБРАННОЕ ОФОРМЛЕНИЕ</p><h3 className="mt-1 text-lg font-semibold">{selectedConfiguration?.title}</h3></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть полный пример ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>}
     </div>
     <button type="button" className="mt-4 text-xs text-neutral-500 underline underline-offset-4" disabled={draftLoading||draftSaving||aiPending||pending||brandBusy||draftRevision===null} onClick={()=>void saveDraft()}>Сохранить текущий ответ и продолжить позже</button>
   </form>;

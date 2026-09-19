@@ -1,3 +1,4 @@
+import {loadOwnerCatalog} from "@/lib/owner-data";
 import { ProductForm } from "@/components/admin/product-form";
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
@@ -17,6 +18,7 @@ export default async function NewProduct() {
     vertical = tenant.business_vertical ?? "other";
     categories = (await (await createClient()).from("categories").select("id,name").eq("tenant_id", tenantId!).eq("is_active", true).order("sort_order")).data ?? [];
   }
+  const catalog=vertical==="food"?await loadOwnerCatalog(tenantId!):null;const choices=catalog?catalog.variants.filter(v=>v.is_active).map(v=>({id:v.id,label:`${catalog.products.find(p=>p.id===v.product_id)?.title??"Товар"}${v.size?` · ${v.size}`:""}`})):[];
   const workflow = businessWorkflow(vertical);
-  return <><div><p className="muted text-sm">Каталог / Новая позиция</p><h1 className="mt-1 text-3xl font-semibold">Добавить: {workflow.item.toLowerCase()}</h1><p className="muted mt-2">Добавьте фотографии, цену и остаток. Разделы из AI Studio доступны для выбора ниже.</p></div><ProductForm categories={categories} vertical={vertical} /></>;
+  return <><div><p className="muted text-sm">Каталог / Новая позиция</p><h1 className="mt-1 text-3xl font-semibold">Добавить: {workflow.item.toLowerCase()}</h1><p className="muted mt-2">Добавьте фотографии, цену и остаток. Разделы из AI Studio доступны для выбора ниже.</p></div><ProductForm choices={choices} categories={categories} vertical={vertical} /></>;
 }

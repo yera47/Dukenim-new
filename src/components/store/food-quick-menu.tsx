@@ -1,6 +1,6 @@
 "use client";
-
 import Link from "next/link";
+
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Search, ShoppingBag, X } from "lucide-react";
 import { money, type Product } from "@/lib/demo-data";
@@ -49,7 +49,7 @@ export function FoodQuickMenu({products,slug,name}:{products:Product[];slug:stri
     <div className={styles.menuHeading}><div><h1>Меню</h1><span>{products.length} позиций · {name}</span></div><label className={styles.search}><Search size={18}/><input type="search" aria-label="Найти блюдо" placeholder="Найти блюдо" value={query} onChange={event=>setQuery(event.target.value)}/></label></div>
     {categories.map((category,index)=>{const items=visible.filter(product=>(product.category||"Меню")===category);return items.length>0&&<section key={category} id={`food-section-${index}`} className={styles.section}><h2>{category}</h2><div className={styles.grid}>{items.map(product=><FoodProductCard key={product.id} product={product} slug={slug}/>)}</div></section>;})}
     {visible.length===0&&<p className={styles.empty}>{products.length?"Ничего не найдено. Попробуйте другое название.":"Заведение добавляет первые блюда и напитки."}</p>}
-    {count>0&&<Link className={styles.cart} href={`${base}/cart`}><ShoppingBag size={20}/><span>Корзина · {count}</span><strong>{money(total)}</strong></Link>}
+    {count>0&&<a className={styles.cart} href={`${base}/cart`}><ShoppingBag size={20}/><span>Корзина · {count}</span><strong>{money(total)}</strong></a>}
     <dialog ref={dialog} className={styles.viewer} aria-label="История меню" onCancel={close} onClose={close} onClick={event=>{if(event.target===event.currentTarget)close();}} onKeyDown={event=>{if(event.key==="ArrowRight")next();if(event.key==="ArrowLeft")setStory(index=>Math.max(0,(index??0)-1));}}>
       {current&&<div className={styles.storyScreen} onTouchStart={event=>{touchStart.current=event.touches[0].clientX;}} onTouchEnd={event=>{if(touchStart.current===null)return;const distance=event.changedTouches[0].clientX-touchStart.current;touchStart.current=null;if(distance< -45)next();else if(distance>45)setStory(index=>Math.max(0,(index??0)-1));}}>
         {/* eslint-disable-next-line @next/next/no-img-element */}

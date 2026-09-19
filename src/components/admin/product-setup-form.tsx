@@ -3,6 +3,7 @@ import React,{startTransition,useActionState,useEffect,useRef,useState} from "re
 import {createProductAction,type ProductActionState} from "@/app/admin/actions";
 import {businessWorkflow} from "@/lib/business-workflow";
 import type {BusinessVertical} from "@/types/database";
+import {FoodOptionsEditor} from "./food-options-editor";
 import Image from "next/image";
 import { ImagePlus } from "lucide-react";
 
@@ -57,7 +58,7 @@ export function ProductSetupForm({categories=[],vertical="other"}:{categories?:A
       <section data-product-step="3" hidden={step!==3} className="space-y-4">
         <h3 className="text-xl font-semibold">Проверим перед сохранением</h3>
         <div className="flex gap-4 rounded-2xl border bg-white p-4">{photos[0]&&<Image unoptimized width={112} height={140} src={photos[0]} alt="Обложка товара" className="h-32 w-24 rounded-lg object-cover"/>}<div className="min-w-0"><strong className="break-words">{title}</strong><p className="mt-2">{new Intl.NumberFormat("ru-KZ").format(Number(price)||0)} ₸</p><p className="mt-2 text-xs text-neutral-500">{photos.length?`Фотографий: ${photos.length}`:"Фото можно добавить позже"}</p></div></div>
-        <label className="flex items-center gap-3 text-sm"><input name="isActive" type="checkbox" defaultChecked/>Показывать товар в каталоге</label>
+        {vertical==="food"&&<FoodOptionsEditor/>}<label className="flex items-center gap-3 text-sm"><input name="isActive" type="checkbox" defaultChecked/>Показывать товар в каталоге</label>
         <p className="text-xs text-neutral-500">Магазин не публикуется этой кнопкой. После добавления проверим витрину и отдельно откроем её покупателям.</p>
       </section>
       {(error||state.error)&&<p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error||state.error}</p>}

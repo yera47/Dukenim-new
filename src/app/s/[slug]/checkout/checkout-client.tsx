@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ChevronLeft, MapPin, Store, Truck } from "lucide-react";
+import {rewardDiscount,type LoyaltyProgress} from "@/lib/loyalty";
 import { money } from "@/lib/demo-data";
 import { useCart } from "@/components/store/cart-provider";
 import { submitCheckout } from "@/lib/checkout-submit";
@@ -24,7 +25,8 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const router=useRouter();
   const { items, total, clear } = useCart();
   const firstMethod = deliveryEnabled ? "courier" : "pickup";
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(1); const [rewards,setRewards]=useState<LoyaltyProgress[]>([]);const [selectedReward,setSelectedReward]=useState(""); const reward=rewards.find(r=>r.rule.id===selectedReward)?.available??null; const discount=rewardDiscount(reward,total);
+  useEffect(()=>{if(demo)return;const controller=new AbortController();void fetch(`/api/buyer-history?slug=${encodeURIComponent(slug)}`,{cache:"no-store",signal:controller.signal}).then(r=>r.ok?r.json():null).then(data=>{if(data?.signedIn)setRewards(data.rules.filter((r:LoyaltyProgress)=>r.available));}).catch(()=>{});return()=>controller.abort();},[slug,demo]);
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [delivery, setDelivery] = useState<"courier" | "pickup">(firstMethod);
@@ -61,7 +63,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
       return;
     }
     try {
-      const data = await submitCheckout({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) });
+      const data = await submitCheckout({ reward:reward?{ruleId:reward.ruleId,milestone:reward.milestone}:null, referralCode:window.localStorage.getItem(`dukenim:${slug}:referral`), slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty, selection:item.selection })) });
       clear();
       setResult(data);
       router.push(`/s/${slug}/orders`);
@@ -106,7 +108,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
             {timingMode === "scheduled" && <label className="text-sm font-extrabold">Дата и время<input type="datetime-local" className="input mt-2" value={requestedFor} min={localDateTimeInput(new Date(Date.now() + 15 * 60_000))} max={localDateTimeInput(new Date(Date.now() + 14 * 86_400_000))} onChange={event => setRequestedFor(event.target.value)}/><small className="muted mt-2 block">Не раньше чем через 15 минут и не позже чем через 14 дней.</small></label>}
           </fieldset>
         </div></>}
-        {step === 3 && <><h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.variantId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.product.price * item.qty)}</b></p>)}<p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p><p className="flex justify-between"><span>Получение</span><b>{deliveryCost ? money(deliveryCost) : "Бесплатно"}</b></p><p className="flex justify-between"><span>Когда</span><b>{timingMode === "scheduled" && requestedDate ? new Intl.DateTimeFormat("ru-KZ", {dateStyle:"medium",timeStyle:"short"}).format(requestedDate) : "Как можно скорее"}</b></p><p className="flex justify-between border-t pt-4 text-xl font-bold"><span>Итого</span><span>{money(total + deliveryCost)}</span></p></div><div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн.</small></div></>}
+        {step === 3 && <>{rewards.length>0&&<label className="mb-6 block rounded-2xl bg-purple-50 p-4 text-sm font-semibold">Ваша награда<select className="input mt-2" value={selectedReward} onChange={e=>setSelectedReward(e.target.value)}><option value="">Сохранить на потом</option>{rewards.map(r=><option key={r.rule.id} value={r.rule.id} disabled={total<r.rule.minOrder}>{r.rule.label}{total<r.rule.minOrder?` · заказ от ${money(r.rule.minOrder)}`:""}</option>)}</select>{reward&&<p className="mt-2 text-xs">{reward.reward==="gift"?"Подарок выдадут вместе с заказом":`Скидка: −${money(discount)}`}</p>}</label>}<h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.lineId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.unitPrice * item.qty)}</b></p>)}<p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p><p className="flex justify-between"><span>Получение</span><b>{deliveryCost ? money(deliveryCost) : "Бесплатно"}</b></p><p className="flex justify-between"><span>Когда</span><b>{timingMode === "scheduled" && requestedDate ? new Intl.DateTimeFormat("ru-KZ", {dateStyle:"medium",timeStyle:"short"}).format(requestedDate) : "Как можно скорее"}</b></p><p className="flex justify-between border-t pt-4 text-xl font-bold"><span>Итого</span><span>{money(total + deliveryCost - discount)}</span></p></div><div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн.</small></div></>}
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-[var(--danger)]">{error}</p>}
         <div className="mt-8 flex justify-between"><button disabled={step === 1 || pending} onClick={() => setStep((value) => value - 1)} className="btn btn-secondary disabled:opacity-0">Назад</button>{step < 3 ? <button disabled={(step === 1 && !contactsReady) || (step === 2 && (!deliveryReady || !timingReady))} onClick={() => setStep((value) => value + 1)} className="btn btn-cta disabled:opacity-50">Продолжить</button> : <button disabled={pending || !items.length || total < minOrder || !timingReady} onClick={submit} className="btn btn-cta disabled:opacity-50">{pending ? "Оформляем…" : "Подтвердить заказ"}</button>}</div>
       </section>

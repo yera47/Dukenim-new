@@ -4,6 +4,9 @@ import {guestOrdersCookie,readGuestOrders,signGuestOrders} from "@/lib/guest-ord
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createStorefrontOrder, getCheckoutOptions, type CheckoutItem } from "@/lib/queries/orders";
 import { getPublicTenantBySlug } from "@/lib/queries/tenants";
+import {buyerIdentity,setBuyerCookie} from "@/lib/buyer-identity";
+import {z} from "zod";
+import {foodSelectionSchema,foodSelectionKey,emptyFoodSelection} from "@/lib/food-options";
 
 type Body = {
   slug?: unknown;
@@ -16,6 +19,8 @@ type Body = {
   timingMode?: unknown;
   requestedFor?: unknown;
   items?: unknown;
+  reward?:unknown;
+  referralCode?:unknown;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -28,15 +33,20 @@ function parseItems(value: unknown): CheckoutItem[] | null {
     if (!item || typeof item !== "object") return null;
     const variantId = "variantId" in item ? String(item.variantId) : "";
     const qty = "qty" in item ? Number(item.qty) : Number.NaN;
-    if (!uuidPattern.test(variantId) || !Number.isInteger(qty) || qty < 1 || qty > 20 || seen.has(variantId)) return null;
-    seen.add(variantId);
-    items.push({ variantId, qty });
+    const selection=foodSelectionSchema.safeParse("selection" in item?item.selection:emptyFoodSelection);
+    if(!selection.success)return null;const key=foodSelectionKey(variantId,selection.data);
+    if (!uuidPattern.test(variantId) || !Number.isInteger(qty) || qty < 1 || qty > 20 || seen.has(key)) return null;
+    if(items.filter(i=>i.variantId===variantId).reduce((sum,i)=>sum+i.qty,0)+qty>20)return null;
+    seen.add(key);
+    items.push({ variantId, qty, selection:selection.data });
   }
   return items;
 }
 
 function safeOrderError(message?: string) {
   if (!message) return "Не удалось создать заказ";
+  if(message.includes("Reward")||message.includes("Sign in"))return "Награда пока недоступна. Обновите карту и проверьте условия.";
+  if(/Option|Ingredient|Combo|selection/i.test(message))return "Состав блюда изменился. Откройте его в меню и выберите варианты заново.";
   if (message.includes("Minimum order")) return "Сумма заказа меньше минимальной для этого магазина.";
   if (message.includes("Delivery zone")) return "Выберите доступную зону доставки.";
   if (message.includes("Delivery unavailable")) return "Доставка временно недоступна.";
@@ -47,6 +57,7 @@ function safeOrderError(message?: string) {
 }
 
 export async function POST(request: Request) {
+  if(request.headers.get("origin")&&request.headers.get("origin")!==new URL(request.url).origin)return NextResponse.json({error:"Недопустимый источник запроса"},{status:403});
   // Demonstration checkout is explicitly simulated by the demo client, never by
   // the real order endpoint. Missing configuration must not report a saved order.
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -65,6 +76,8 @@ export async function POST(request: Request) {
     const timingMode = body.timingMode === "scheduled" ? "scheduled" : body.timingMode === "asap" || body.timingMode === undefined ? "asap" : null;
     const requestedFor = timingMode === "scheduled" && typeof body.requestedFor === "string" ? new Date(body.requestedFor) : null;
     const items = parseItems(body.items);
+    const extra=z.object({reward:z.object({ruleId:z.string().uuid(),milestone:z.number().int().positive()}).nullable().optional(),referralCode:z.string().uuid().nullable().optional()}).safeParse({reward:body.reward,referralCode:body.referralCode});
+    if(!extra.success)return NextResponse.json({error:"Проверьте выбранную награду"},{status:400});
 
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || name.length < 2 || name.length > 80 || phone.length > 30 || phone.replace(/\D/g, "").length < 7 || !items) {
       return NextResponse.json({ error: "Проверьте контакты и товары в заказе" }, { status: 400 });
@@ -88,6 +101,7 @@ export async function POST(request: Request) {
     }
 
     const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
+    const buyer=await buyerIdentity();
     const previous=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
     const { data, error } = await createStorefrontOrder(client, {
       tenantId: tenant.id,
@@ -99,10 +113,12 @@ export async function POST(request: Request) {
       paymentMethod: "cash",
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
+      buyer,reward:extra.data.reward,referralCode:extra.data.referralCode,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];
     const response=NextResponse.json({ orderId: order.order_id, orderNumber: order.order_number, total: order.total });
+    setBuyerCookie(response,buyer.token);
     response.cookies.set(guestOrdersCookie,signGuestOrders([...previous,{id:order.order_id,tenant:tenant.id,expires:Date.now()+30*86400000}],secret),{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:30*86400});
     response.headers.set("Cache-Control","private, no-store");
     return response;

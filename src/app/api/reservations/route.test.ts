@@ -1,3 +1,4 @@
+vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:null,hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
 import {describe,it,expect,vi,afterEach} from 'vitest';
 vi.mock('@/lib/supabase/admin',()=>({createAdminClient:vi.fn()}));
 vi.mock('next/headers',()=>({cookies:async()=>({get:()=>undefined})}));
@@ -16,7 +17,7 @@ describe('reservation API boundary',()=>{
   const response=await POST(new Request('https://www.dukenim.kz/api/reservations',{method:'POST',headers:{origin:'https://www.dukenim.kz','content-type':'application/json'},body:JSON.stringify(input)}));
   expect(response.status).toBe(200);expect(response.headers.get('cache-control')).toBe('private, no-store');
   expect(await response.json()).toEqual({orderNumber:12,total:21700,expiresAt:'2026-09-11T12:00:00Z',reservationStatus:'reserved'});
-  expect(rpc).toHaveBeenCalledWith('create_merchandise_reservation',expect.objectContaining({p_tenant_id:'resolved-shop',p_request_id:input.requestId}));
+  expect(rpc).toHaveBeenCalledWith('create_buyer_reservation',expect.objectContaining({p_tenant_id:'resolved-shop',p_request_id:input.requestId}));
  });
  it('rejects cross-origin stock holds before touching database',async()=>{
   const response=await POST(new Request('https://www.dukenim.kz/api/reservations',{method:'POST',headers:{origin:'https://attacker.example','content-type':'application/json'},body:'{}'}));

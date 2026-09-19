@@ -1,3 +1,5 @@
+import {CashPayment} from "./cash-payment";
+import {loyaltyClient} from "@/lib/loyalty-db";
 import {requireRole} from "@/lib/auth";
 import {loadOwnerOrders} from "@/lib/owner-data";
 import {money} from "@/lib/demo-data";
@@ -12,7 +14,9 @@ import {LiveOrders} from "@/components/admin/live-orders";
 export default async function Orders(){
   const {tenantId}=await requireRole(["owner","superadmin"]);
   const orders=await loadOwnerOrders(tenantId!);
+  const kitchen=await (await createClient()).from("order_items").select("order_id,title_snapshot,qty,options_snapshot,combo_parent").eq("tenant_id",tenantId!).in("order_id",orders.map(o=>o.id));
   const holds=await reservationsClient(await createClient()).from("merchandise_reservations").select("*").eq("tenant_id",tenantId!).order("created_at",{ascending:false}).limit(100);
+  const loyalty=await loyaltyClient(createAdminClient()).from("buyer_order_access").select("order_id,discount,reward_label").eq("tenant_id",tenantId!).in("order_id",orders.map(o=>o.id));
   const byId=new Map((holds.data??[]).map(hold=>[hold.order_id,hold]));
   let planfixConnected=false;
   const planfixStates=new Map<string,string>();
@@ -31,13 +35,13 @@ export default async function Orders(){
     <LiveOrders/>
     {holds.error&&<p role="alert">Состояния брони не загрузились. Управление заказами временно скрыто.</p>}
     <div className="mt-6 grid gap-4">{orders.map(order=>{
-      const hold=byId.get(order.id);
+      const hold=byId.get(order.id); const benefit=loyalty.data?.find(row=>row.order_id===order.id);
       return <article key={order.id} className="card flex flex-wrap items-start justify-between gap-4 p-5">
         <div>
-          <b>{hold?"Бронь":"Заказ"} #{order.order_number}</b>
+          {benefit?.reward_label&&<p className="mb-2 rounded-xl bg-purple-50 p-3 text-sm font-semibold">Награда гостю: {benefit.reward_label}{benefit.discount>0?` · скидка ${money(benefit.discount)}`:" · выдайте вместе с заказом"}</p>}<b>{hold?"Бронь":"Заказ"} #{order.order_number}</b>
           <p className="muted mt-1 text-sm">Создан: {new Date(order.created_at).toLocaleString("ru-KZ")}</p>
           {!hold&&<p className="mt-2 text-sm font-semibold">{order.requested_for?`Ко времени: ${new Date(order.requested_for).toLocaleString("ru-KZ")}`:"Как можно скорее"}</p>}
-          {planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
+          {!hold&&order.payment_method==="cash"&&["pending","paid"].includes(order.payment_status)&&order.status!=="cancelled"&&<CashPayment orderId={order.id} paid={order.payment_status==="paid"}/>}<div className="mt-4 space-y-2">{kitchen.data?.filter(i=>i.order_id===order.id).map((item,index)=><div key={index} className="rounded-xl bg-neutral-50 p-3 text-sm"><b>{item.title_snapshot} × {item.qty}</b>{item.combo_parent&&<small className="ml-2 text-neutral-500">В комбо</small>}{Array.isArray(item.options_snapshot)&&item.options_snapshot.map((label,i)=><p key={i} className="mt-1 text-xs text-purple-700">{String(label)}</p>)}</div>)}</div>{planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
         </div>
         <span className="badge">{hold?"В магазине":order.source==="online"?"Онлайн":"В зале"}</span>
         <strong>{money(order.total)}</strong>

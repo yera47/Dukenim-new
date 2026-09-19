@@ -56,7 +56,7 @@ it("presents food as a menu with fulfilment before ordering",()=>{
   expect(html).toContain("позиций");
   expect(html).toContain('aria-label="Истории меню"');
   expect(html).toContain('href="#food-section-0"');
-  expect(html).toContain("Добавить Круассан-сэндвич в корзину");
+  expect(html).toContain("Выбрать состав: Круассан-сэндвич");
 });
 it("does not invent food stories for an empty merchant",()=>{
  vi.stubGlobal("React",React);

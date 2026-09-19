@@ -13,7 +13,7 @@ describe("business-specific catalog workflow", () => {
     const flow = businessWorkflow("food");
     expect(flow.stockLabel).toBe("Наличие блюд");
     expect(flow.optionLabel).toBe("Порция / вес");
-    expect(flow.stockHelp).toContain("пока не поддерживаются");
+    expect(flow.stockHelp).toContain("сырьё отдельно не списывается");
   });
   it("does not promise automatic ticket issuing", () => {
     expect(businessWorkflow("event").stockHelp).toContain("QR-проверка");

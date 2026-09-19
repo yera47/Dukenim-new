@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:null,hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn() }));
 vi.mock("@/lib/queries/orders", () => ({ createStorefrontOrder: vi.fn(), getCheckoutOptions: vi.fn() }));
