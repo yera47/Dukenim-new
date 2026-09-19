@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
+import { AiRequestCard } from "./ai-request-card";
 import { consultationSchema, type Consultation, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 import styles from "./studio-conversation.module.css";
 
@@ -45,6 +46,7 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
         <div className="mr-4 space-y-3 p-2"><p className="whitespace-pre-wrap break-words"><span className="sr-only">AI Studio: </span>{turn.response.reply}</p>
           {turn.response.task&&onTask&&(!designOnly||turn.response.task.intent==="store_design")&&<button type="button" className="btn btn-secondary" disabled={pending||!enabled} onClick={()=>onTask(turn.response.task!)}>{labels[turn.response.task.intent]}</button>}
           {!staff&&turn.response.help&&<Link className="btn btn-secondary" href={helpLinks[turn.response.help][0]}>{helpLinks[turn.response.help][1]} →</Link>}
+          {!staff&&turn.response.help&&(turn.response.help==="payments"||turn.response.help==="kaspi"||turn.response.help==="integrations"||turn.response.help==="support")&&<AiRequestCard kind={turn.response.help} message={turn.message} generationId={turn.id}/>}
         </div>
       </article>)}
       {pending&&<p>Обдумываю ваш ответ…</p>}
