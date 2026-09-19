@@ -13,7 +13,7 @@ export async function GET(request:Request){
   const client=createAdminClient();const{data:tenant}=await client.from("tenants").select("id").eq("slug",slug).maybeSingle();
   const ids=receipts.filter(receipt=>receipt.tenant===tenant?.id).map(receipt=>receipt.id);
   if(!tenant||!ids.length)return NextResponse.json({orders:[]},{headers});
-  const result=await client.from("orders").select("id,order_number,status,total,delivery_method,fulfilment_snapshot,created_at").eq("tenant_id",tenant.id).in("id",ids).order("created_at",{ascending:false});
+  const result=await client.from("orders").select("id,order_number,status,total,delivery_method,requested_for,fulfilment_snapshot,created_at").eq("tenant_id",tenant.id).in("id",ids).order("created_at",{ascending:false});
   if(result.error)throw result.error;
   const reservations=await reservationsClient(client).from("merchandise_reservations").select("order_id,status,expires_at").eq("tenant_id",tenant.id).in("order_id",ids);
   if(reservations.error)throw reservations.error;

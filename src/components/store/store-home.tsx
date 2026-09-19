@@ -9,6 +9,7 @@ import styles from "./commerce-layouts.module.css";
 import { storefrontPath } from "@/lib/storefront-path";
 import { EditorialCover } from "./editorial-cover";
 import { personalStoreLayout } from "@/lib/personal-store-layout";
+import { FoodFulfilmentGate } from "./food-fulfilment-gate";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -20,9 +21,10 @@ export type StoreHomeProps = {
   campaign:Campaign|null;
   storePolicies:{delivery_policy:string|null;return_policy:string|null}|null;
   approach?:CommerceApproach;
+  checkoutOptions?:{deliveryEnabled:boolean;pickupEnabled:boolean};
 };
 // Same render tree for authenticated draft preview and the published homepage.
-export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach}:StoreHomeProps) {
+export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach,checkoutOptions}:StoreHomeProps) {
   const layout=personalStoreLayout(settings?.layout_config);
   const approach=requestedApproach??approachForTemplate(settings?.template_key??"atelier");
   const configuration=configurationFor(tenant.business_vertical??"other",approach);
@@ -45,6 +47,7 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
       {campaign.eyebrow && <span>{campaign.eyebrow}</span>}<h2>{campaign.title}</h2>{campaign.body && <p>{campaign.body}</p>}
     </div><Link href={campaign.cta_href || "#catalog"}>{campaign.cta_label}<ArrowRight size={17} /></Link></div></section>}
 
+    {tenant.business_vertical==="food"&&checkoutOptions&&<FoodFulfilmentGate slug={slug} deliveryEnabled={checkoutOptions.deliveryEnabled} pickupEnabled={checkoutOptions.pickupEnabled}/>}
     <section id="catalog" className="container py-20">
       <div className="mb-10 flex items-end justify-between gap-6"><h2 className="text-4xl font-semibold tracking-[-.035em]">Каталог</h2><span className="hidden text-sm font-bold opacity-60 md:block">{products.length} товаров</span></div>
       {products.length ? <CatalogBrowser products={products} slug={slug}/> : <div className="rounded-2xl border border-dashed border-black/20 py-16 text-center"><h3 className="text-xl font-bold">Каталог наполняется</h3><p className="mt-2 opacity-60">Владелец магазина добавляет первые товары.</p></div>}

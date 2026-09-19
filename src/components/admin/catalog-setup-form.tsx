@@ -17,6 +17,16 @@ import {BrandMaterials} from "./brand-materials";
 import { hoursLabel } from "@/lib/duration-label";
 import { WorkingHours } from "./working-hours";
 
+const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:string}>>>={
+  food:[
+    {label:"Кафе с доставкой",text:"Городское кафе с понятным меню, доставкой и самовывозом. Гости выбирают блюда по разделам и могут заказать как можно скорее или ко времени."},
+    {label:"Столовая в бизнес-центре",text:"Столовая в бизнес-центре с завтраками и обедами. Важно быстро выбрать блюда и оформить самовывоз ко времени, например к 13:00."},
+    {label:"Выпечка и кофе",text:"Небольшая кофейня с выпечкой и напитками. Простое меню, быстрый самовывоз и предзаказ ко времени."},
+  ],
+  fashion:[{label:"Одежда и аксессуары",text:"Магазин одежды и аксессуаров с небольшими коллекциями. Покупателю важно быстро выбрать категорию, размер и цвет."}],
+  beauty:[{label:"Уход и косметика",text:"Магазин косметики и средств ухода. Спокойная подача, понятные категории и акцент на составе и назначении товара."}],
+};
+
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
   const templates = useMemo(() => launchTemplatesForPlan(plan), [plan]);
@@ -41,6 +51,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const [draftRevision, setDraftRevision] = useState<number | null>(null);
   const [draftMessage, setDraftMessage] = useState("");
   const [previewContent,setPreviewContent]=useState<"example"|"own">("example");
+  const presets=briefPresets[vertical]??[];
   useEffect(() => {
     const controller = new AbortController();
     void (async () => {
@@ -105,7 +116,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     if(step===2){const parsed=fulfilmentCommitSchema.safeParse(fulfilment);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}}
     if (step===1 && designStage==="brief") {
       if (brief.trim().length < 8) { setAiError("Расскажите хотя бы коротко, что продаёте и кому."); return; }
-      await saveDraft(1,"colors");
+      await saveDraft(1,"examples");
       return;
     }
     if (step===1 && designStage==="colors") {
@@ -138,7 +149,8 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":"Проверьте магазин перед добавлением товаров"}</h2>
         {step===1&&designStage==="brief"&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
           <label className="block text-sm font-semibold">Что продаёте и для кого?<textarea className="input mt-2" value={brief} maxLength={650} rows={3} onChange={event=>{setBrief(event.target.value);setGenerationId(undefined);setAiReason("");}} placeholder="Например, натуральная косметика для ежедневного ухода. Небольшой ассортимент, спокойная светлая подача."/></label>
-          <p className="mt-3 text-xs leading-6 text-neutral-500">Дальше обсудим цвета, затем посмотрим варианты оформления с товарами.</p>
+          {presets.length>0&&<div className="mt-4"><p className="text-xs font-semibold text-neutral-500">Можно начать с примера</p><div className="mt-2 flex flex-wrap gap-2">{presets.map(preset=><button key={preset.label} type="button" className="rounded-full border px-3 py-2 text-left text-xs hover:border-neutral-900" onClick={()=>{setBrief(preset.text);setGenerationId(undefined);setAiReason("");}}>{preset.label}</button>)}</div></div>}
+          <p className="mt-3 text-xs leading-6 text-neutral-500">Следом покажем готовые варианты. Цвета и материалы можно уточнить позже.</p>
           {aiError&&<p role="alert" className="mt-3 text-sm text-red-700">{aiError}</p>}
           {aiReason&&<p role="status" className="mt-3 text-sm leading-6">{aiReason}</p>}
         </div>}
@@ -184,7 +196,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         {step===4&&<dl className="mt-5 space-y-2 rounded-xl border p-4 text-sm"><div><dt className="text-neutral-500">Получение</dt><dd>{fulfilment.delivery?`Доставка: ${fulfilment.zone}, ${fulfilment.cost} ₸, ${fulfilment.eta}`:''}{fulfilment.pickup?<p>Самовывоз: {fulfilment.address}, {fulfilment.hours}</p>:null}{fulfilment.reservation?<p>Бронь: {fulfilment.address}, {fulfilment.holdHours} ч.</p>:null}</dd></div><div><dt className="text-neutral-500">Онлайн-оплата</dt><dd>{paymentPreference==='later'?'Подключить позже':`${paymentPreference} — ещё не подключено`}</dd></div></dl>}
         {step>=2&&aiError&&<p role="alert" className="mt-4 text-sm text-red-700">{aiError}</p>}
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
-        <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,designStage==="examples"?"colors":"brief"):saveDraft(step-1))}>Назад</button>}{step<4?<button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===1&&designStage==="brief"?"Перейти к цветам":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
+        <div className="mt-8 flex gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,"brief"):saveDraft(step-1))}>Назад</button>}{step<4?<button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===1&&designStage==="brief"?"Показать варианты":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
       </fieldset>
       {step===4&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white" aria-label="Проверка оформления">
         <div className="flex flex-wrap items-center gap-2 border-b border-neutral-200 p-3">

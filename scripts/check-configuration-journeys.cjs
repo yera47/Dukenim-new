@@ -11,6 +11,7 @@ const origin=process.argv[3]||'http://localhost:3001';
     const base=`/demo/${vertical}/${approach}`;
     await page.goto(origin+base);
     const consent=page.getByRole('button',{name:'Только необходимые'});if(await consent.isVisible())await consent.click();
+    const fulfilment=page.getByRole('heading',{name:'Как хотите заказать?'});if(await fulfilment.isVisible()){await page.getByRole('button',{name:/Доставка/}).click();}
     const productLink=page.locator('main a[href*="/product/"]').first();
     const href=await productLink.getAttribute('href');if(!href.startsWith(base+'/'))throw Error('Lost configuration '+href);
     await productLink.click();await page.getByRole('button',{name:'В корзину',exact:true}).click();

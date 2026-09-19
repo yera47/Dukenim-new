@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, ChevronLeft, MapPin, Store, Truck } from "lucide-react";
@@ -15,6 +15,11 @@ export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: n
 type Result = { orderNumber: number; total: number };
 type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; pickupLocation?: unknown; minOrder: number; zones: CheckoutZone[]; demo?: boolean };
 
+function localDateTimeInput(date:Date){
+  const local=new Date(date.getTime()-date.getTimezoneOffset()*60_000);
+  return local.toISOString().slice(0,16);
+}
+
 export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLocation, minOrder, zones, demo = false }: Props) {
   const router=useRouter();
   const { items, total, clear } = useCart();
@@ -23,6 +28,8 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [delivery, setDelivery] = useState<"courier" | "pickup">(firstMethod);
+  const [timingMode, setTimingMode] = useState<"asap" | "scheduled">("asap");
+  const [requestedFor, setRequestedFor] = useState("");
   const [zoneId, setZoneId] = useState(zones[0]?.id ?? "");
   const [addressFields, setAddressFields] = useState<CustomerDeliveryAddress>({ street: "", house: "", apartment: "", entrance: "", floor: "", comment: "" });
   const address = formatCustomerDeliveryAddress(addressFields);
@@ -34,9 +41,17 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const methodsAvailable = deliveryEnabled || pickupEnabled;
   const contactsReady = name.trim().length >= 2 && phone.replace(/\D/g, "").length >= 7;
   const deliveryReady = delivery === "pickup" ? pickupEnabled : deliveryEnabled && Boolean(zone) && isCustomerDeliveryAddressReady(addressFields);
+  const requestedDate = requestedFor ? new Date(requestedFor) : null;
+  const timingReady = timingMode === "asap" || Boolean(requestedDate && Number.isFinite(requestedDate.getTime()) && requestedDate.getTime() >= Date.now() + 15 * 60_000 && requestedDate.getTime() <= Date.now() + 14 * 86_400_000);
+
+  useEffect(() => {
+    const saved = window.sessionStorage.getItem(`dukenim:${slug}:fulfilment`);
+    if (saved === "courier" && deliveryEnabled) setDelivery("courier");
+    if (saved === "pickup" && pickupEnabled) setDelivery("pickup");
+  }, [deliveryEnabled, pickupEnabled, slug]);
 
   async function submit() {
-    if (pending || !contactsReady || !deliveryReady || !items.length || total < minOrder) return;
+    if (pending || !contactsReady || !deliveryReady || !timingReady || !items.length || total < minOrder) return;
     setPending(true);
     setError(null);
     if (demo) {
@@ -46,7 +61,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
       return;
     }
     try {
-      const data = await submitCheckout({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) });
+      const data = await submitCheckout({ slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty })) });
       clear();
       setResult(data);
       router.push(`/s/${slug}/orders`);
@@ -84,10 +99,16 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
             </div>
             {zone && <div className="flex gap-3 rounded-[var(--r-card)] bg-[var(--surface-2)] p-4 text-sm"><MapPin className="shrink-0 text-[var(--accent)]" size={18}/><span><b>{zone.name}: {deliveryCost ? money(deliveryCost) : "бесплатно"}</b>{zone.freeFrom !== null && <small className="muted block">Бесплатно от {money(zone.freeFrom)}</small>}{zone.etaText && <small className="muted block">{zone.etaText}</small>}</span></div>}
           </>}
+          <fieldset className="mt-3 grid gap-3 border-t pt-5">
+            <legend className="mb-2 font-extrabold">Когда приготовить заказ?</legend>
+            <label className="card flex cursor-pointer gap-3 p-4"><input type="radio" checked={timingMode === "asap"} onChange={() => setTimingMode("asap")}/><span><b>Как можно скорее</b><small className="muted block">Магазин подтвердит время после оформления</small></span></label>
+            <label className="card flex cursor-pointer gap-3 p-4"><input type="radio" checked={timingMode === "scheduled"} onChange={() => setTimingMode("scheduled")}/><span><b>Ко времени</b><small className="muted block">Например, к обеду в 13:00</small></span></label>
+            {timingMode === "scheduled" && <label className="text-sm font-extrabold">Дата и время<input type="datetime-local" className="input mt-2" value={requestedFor} min={localDateTimeInput(new Date(Date.now() + 15 * 60_000))} max={localDateTimeInput(new Date(Date.now() + 14 * 86_400_000))} onChange={event => setRequestedFor(event.target.value)}/><small className="muted mt-2 block">Не раньше чем через 15 минут и не позже чем через 14 дней.</small></label>}
+          </fieldset>
         </div></>}
-        {step === 3 && <><h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.variantId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.product.price * item.qty)}</b></p>)}<p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p><p className="flex justify-between"><span>Получение</span><b>{deliveryCost ? money(deliveryCost) : "Бесплатно"}</b></p><p className="flex justify-between border-t pt-4 text-xl font-bold"><span>Итого</span><span>{money(total + deliveryCost)}</span></p></div><div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн.</small></div></>}
+        {step === 3 && <><h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.variantId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.product.price * item.qty)}</b></p>)}<p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p><p className="flex justify-between"><span>Получение</span><b>{deliveryCost ? money(deliveryCost) : "Бесплатно"}</b></p><p className="flex justify-between"><span>Когда</span><b>{timingMode === "scheduled" && requestedDate ? new Intl.DateTimeFormat("ru-KZ", {dateStyle:"medium",timeStyle:"short"}).format(requestedDate) : "Как можно скорее"}</b></p><p className="flex justify-between border-t pt-4 text-xl font-bold"><span>Итого</span><span>{money(total + deliveryCost)}</span></p></div><div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн.</small></div></>}
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-[var(--danger)]">{error}</p>}
-        <div className="mt-8 flex justify-between"><button disabled={step === 1 || pending} onClick={() => setStep((value) => value - 1)} className="btn btn-secondary disabled:opacity-0">Назад</button>{step < 3 ? <button disabled={(step === 1 && !contactsReady) || (step === 2 && !deliveryReady)} onClick={() => setStep((value) => value + 1)} className="btn btn-cta disabled:opacity-50">Продолжить</button> : <button disabled={pending || !items.length || total < minOrder} onClick={submit} className="btn btn-cta disabled:opacity-50">{pending ? "Оформляем…" : "Подтвердить заказ"}</button>}</div>
+        <div className="mt-8 flex justify-between"><button disabled={step === 1 || pending} onClick={() => setStep((value) => value - 1)} className="btn btn-secondary disabled:opacity-0">Назад</button>{step < 3 ? <button disabled={(step === 1 && !contactsReady) || (step === 2 && (!deliveryReady || !timingReady))} onClick={() => setStep((value) => value + 1)} className="btn btn-cta disabled:opacity-50">Продолжить</button> : <button disabled={pending || !items.length || total < minOrder || !timingReady} onClick={submit} className="btn btn-cta disabled:opacity-50">{pending ? "Оформляем…" : "Подтвердить заказ"}</button>}</div>
       </section>
     </div>
   </main>;

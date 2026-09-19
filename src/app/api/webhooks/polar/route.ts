@@ -4,7 +4,7 @@ import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks"
 import type { Subscription } from "@polar-sh/sdk/models/components/subscription.js";
 import type { Order } from "@polar-sh/sdk/models/components/order.js";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { planFromPolarProductId } from "@/lib/polar";
+import { getPolarCrmSetupProductId, planFromPolarProductId } from "@/lib/polar";
 import type { Json } from "@/types/database";
 
 function metadataTenantId(subscription: Subscription): string | null {
@@ -55,6 +55,12 @@ export async function POST(request: Request) {
       const { error } = await createAdminClient().rpc("grant_purchased_ai_credits" as never, { p_event_id: eventId, p_event_type: event.type, p_payload: payload, p_tenant_id: tenantId, p_order_id: order.id, p_credits: 100, p_amount_kzt: amountKzt } as never);
       if (error) return NextResponse.json({ error: "Failed to apply AI credit purchase" }, { status: 500 });
       return NextResponse.json({ received: true, creditsGranted: true });
+    }
+    const chargeId=typeof metadata.chargeId==="string"&&/^[0-9a-f-]{36}$/i.test(metadata.chargeId)?metadata.chargeId:null;
+    if(productId===getPolarCrmSetupProductId()&&tenantId&&chargeId&&metadata.purchaseType==="crm_setup"&&amountKzt===70000){
+      const{data,error}=await createAdminClient().rpc("confirm_crm_setup_payment" as never,{p_event_id:eventId,p_event_type:event.type,p_payload:payload,p_tenant_id:tenantId,p_charge_id:chargeId,p_order_id:order.id,p_amount_kzt:amountKzt} as never);
+      if(error)return NextResponse.json({error:"Failed to apply CRM setup payment"},{status:500});
+      return NextResponse.json({received:true,crmSetupPaid:true,duplicate:data===false});
     }
     await recordIgnoredEvent(eventId, event.type, payload);
     return NextResponse.json({ received: true, ignored: true });

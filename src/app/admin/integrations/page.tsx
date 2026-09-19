@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { saveCrmIntegrationRequest } from "./actions";
 import { connectBusinessRu } from "./business-ru-actions";
+import { CrmSetupPayment } from "@/components/admin/crm-setup-payment";
 
 const statuses: Record<string, { title: string; description: string }> = {
   not_selected: { title: "Система не выбрана", description: "Выберите нужную CRM, учётную систему или POS из каталога ниже." },
@@ -37,6 +38,7 @@ const statusNames: Record<string, string> = {
 };
 
 type IntegrationRequest = {
+  id: string;
   provider: string;
   account_url: string | null;
   admin_contact: string | null;
@@ -50,7 +52,7 @@ type IntegrationRequest = {
 export default async function IntegrationsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ planfix?: string; provider?: string }>;
+  searchParams: Promise<{ planfix?: string; provider?: string; crmPayment?: string }>;
 }) {
   const { tenantId } = await requireRole(["owner"]);
   const params = await searchParams;
@@ -62,23 +64,27 @@ export default async function IntegrationsPage({
   );
   let paymentPreference = "later";
   let requests: IntegrationRequest[] = [];
+  let charges: Array<{id:string;integration_request_id:string;status:string}> = [];
   let requestsUnavailable = false;
 
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const client = await createClient();
-    const [settings, requestResult] = await Promise.all([
+    const [settings, requestResult, chargeResult] = await Promise.all([
       client.from("tenant_settings").select("payment_setup_preference").eq("tenant_id", tenantId!).maybeSingle(),
       client.from("crm_integration_requests")
-        .select("provider,account_url,admin_contact,sync_direction,notes,status,updated_at,preflight_summary")
+        .select("id,provider,account_url,admin_contact,sync_direction,notes,status,updated_at,preflight_summary")
         .eq("tenant_id", tenantId!)
         .order("updated_at", { ascending: false }),
+      client.from("crm_setup_charges").select("id,integration_request_id,status").eq("tenant_id",tenantId!),
     ]);
     paymentPreference = settings.data?.payment_setup_preference ?? "later";
     requests = requestResult.data ?? [];
+    charges = chargeResult.data ?? [];
     requestsUnavailable = Boolean(requestResult.error);
   }
 
   const byProvider = new Map(requests.map((request) => [request.provider, request]));
+  const chargeByRequest = new Map(charges.map(charge=>[charge.integration_request_id,charge]));
   const requestedProvider = typeof params.provider === "string" && isIntegrationProvider(params.provider)
     ? params.provider
     : null;
@@ -101,13 +107,14 @@ export default async function IntegrationsPage({
 
     {params.planfix === "connected" && <div className="mt-6 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-900">Planfix подключён. Передача реальных заказов выполняется вручную со страницы заказов.</div>}
     {params.planfix && params.planfix !== "connected" && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось завершить подключение Planfix. Повторите вход или обратитесь в поддержку Dukenim.</div>}
+    {params.crmPayment === "success" && <div className="mt-6 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-900">Оплата принята провайдером. Статус обновится после защищённого подтверждения платежа.</div>}
 
     <PaymentConnectionGuide preference={paymentPreference}/>
 
     {requestsUnavailable && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось загрузить сохранённые статусы интеграций. Каталог доступен, но перед изменением заявки обновите страницу.</div>}
 
     <section className="card mt-6 p-5"><h2 className="text-xl font-semibold">Мои подключения</h2>
-      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=><IntegrationStatusDialog key={request.provider} provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={request.preflight_summary || statuses[request.status]?.description || "Уточните статус в поддержке."} ready={request.status==="connected"}/>):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
+      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=>{const charge=chargeByRequest.get(request.id);return <div key={request.provider}><IntegrationStatusDialog provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={request.preflight_summary || statuses[request.status]?.description || "Уточните статус в поддержке."} ready={request.status==="connected"}/>{charge?.status==="awaiting_payment"&&<CrmSetupPayment chargeId={charge.id}/>} {charge?.status==="paid"&&<p className="mt-2 text-sm font-semibold text-emerald-700">Настройка CRM оплачена.</p>}{charge?.status==="included"&&<p className="mt-2 text-sm font-semibold text-emerald-700">Настройка включена в тариф.</p>}</div>}):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
     </section>
 
     <details id="request-connector" className="card mt-6 p-5" open={Boolean(requestedProvider) || requests.length === 0}>

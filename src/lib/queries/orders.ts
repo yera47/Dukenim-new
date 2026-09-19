@@ -10,11 +10,12 @@ export type CheckoutInput = {
   deliveryAddress: string;
   zoneId: string | null;
   paymentMethod: "cash";
+  requestedFor: string | null;
   items: CheckoutItem[];
 };
 
 export async function createStorefrontOrder(client: SupabaseClient<Database>, input: CheckoutInput) {
-  return client.rpc("create_storefront_order_v2", {
+  const args = {
     p_tenant_id: input.tenantId,
     p_name: input.name,
     p_phone: input.phone,
@@ -23,7 +24,9 @@ export async function createStorefrontOrder(client: SupabaseClient<Database>, in
     p_zone_id: input.zoneId,
     p_payment_method: input.paymentMethod,
     p_items: input.items.map((item) => ({ variant_id: item.variantId, qty: item.qty })) as Json,
-  });
+    p_requested_for: input.requestedFor,
+  } as Database["public"]["Functions"]["create_storefront_order_v2"]["Args"] & { p_requested_for: string | null };
+  return client.rpc("create_storefront_order_v2", args);
 }
 
 export async function getCheckoutOptions(client: SupabaseClient<Database>, tenantId: string) {

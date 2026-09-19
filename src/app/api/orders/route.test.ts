@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn() }));
 vi.mock("@/lib/queries/orders", () => ({ createStorefrontOrder: vi.fn(), getCheckoutOptions: vi.fn() }));
 vi.mock("@/lib/queries/tenants", () => ({ getPublicTenantBySlug: vi.fn() }));
+vi.mock("next/headers",()=>({cookies:vi.fn().mockResolvedValue({get:vi.fn(),set:vi.fn()})}));
 import { POST } from "./route";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicTenantBySlug } from "@/lib/queries/tenants";
@@ -37,8 +38,18 @@ describe("order API fails safely before database writes", () => {
     { ...valid, items: [{ ...valid.items[0], qty: -1 }] },
     { ...valid, paymentMethod: "online" },
     { ...valid, deliveryMethod: "courier", deliveryAddress: "" },
+    { ...valid, timingMode: "scheduled", requestedFor: new Date(Date.now() - 60_000).toISOString() },
   ])("rejects invalid checkout input", async body => {
     expect((await POST(request(body))).status).toBe(400);
     expect(createAdminClient).not.toHaveBeenCalled();
+  });
+  it("passes a validated requested time to the atomic order RPC", async()=>{
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:7,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
+    const requestedFor=new Date(Date.now()+60*60_000).toISOString();
+    const response=await POST(request({...valid,timingMode:"scheduled",requestedFor}));
+    expect(response.status).toBe(200);
+    expect(createStorefrontOrder).toHaveBeenCalledWith(undefined,expect.objectContaining({tenantId:"mine",requestedFor}));
   });
 });

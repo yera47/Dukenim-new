@@ -13,6 +13,8 @@ type Body = {
   deliveryAddress?: unknown;
   zoneId?: unknown;
   paymentMethod?: unknown;
+  timingMode?: unknown;
+  requestedFor?: unknown;
   items?: unknown;
 };
 
@@ -39,6 +41,7 @@ function safeOrderError(message?: string) {
   if (message.includes("Delivery zone")) return "Выберите доступную зону доставки.";
   if (message.includes("Delivery unavailable")) return "Доставка временно недоступна.";
   if (message.includes("Pickup unavailable")) return "Самовывоз временно недоступен.";
+  if (message.includes("Requested time")) return "Выберите время не раньше чем через 15 минут и не позже чем через 14 дней.";
   if (message.includes("Variant unavailable") || message.includes("Insufficient stock")) return "Один из товаров закончился или изменился. Обновите корзину.";
   return "Не удалось создать заказ. Проверьте данные и попробуйте ещё раз.";
 }
@@ -59,12 +62,17 @@ export async function POST(request: Request) {
     const deliveryAddress = typeof body.deliveryAddress === "string" ? body.deliveryAddress.trim() : "";
     const deliveryMethod = body.deliveryMethod === "delivery" ? "courier" : body.deliveryMethod;
     const zoneId = typeof body.zoneId === "string" && uuidPattern.test(body.zoneId) ? body.zoneId : null;
+    const timingMode = body.timingMode === "scheduled" ? "scheduled" : body.timingMode === "asap" || body.timingMode === undefined ? "asap" : null;
+    const requestedFor = timingMode === "scheduled" && typeof body.requestedFor === "string" ? new Date(body.requestedFor) : null;
     const items = parseItems(body.items);
 
     if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || name.length < 2 || name.length > 80 || phone.length > 30 || phone.replace(/\D/g, "").length < 7 || !items) {
       return NextResponse.json({ error: "Проверьте контакты и товары в заказе" }, { status: 400 });
     }
     if (deliveryMethod !== "pickup" && deliveryMethod !== "courier") return NextResponse.json({ error: "Выберите способ получения" }, { status: 400 });
+    if (!timingMode || (timingMode === "scheduled" && (!requestedFor || !Number.isFinite(requestedFor.getTime()) || requestedFor.getTime() < Date.now() + 15 * 60_000 || requestedFor.getTime() > Date.now() + 14 * 86_400_000))) {
+      return NextResponse.json({ error: "Выберите время не раньше чем через 15 минут и не позже чем через 14 дней." }, { status: 400 });
+    }
     if (deliveryMethod === "courier" && (deliveryAddress.length < 4 || deliveryAddress.length > 500)) return NextResponse.json({ error: "Укажите полный адрес доставки" }, { status: 400 });
     if ((body.paymentMethod ?? "cash") !== "cash") return NextResponse.json({ error: "Сейчас доступна только оплата при получении" }, { status: 400 });
 
@@ -89,6 +97,7 @@ export async function POST(request: Request) {
       deliveryAddress,
       zoneId: deliveryMethod === "courier" ? zoneId : null,
       paymentMethod: "cash",
+      requestedFor: requestedFor?.toISOString() ?? null,
       items,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });

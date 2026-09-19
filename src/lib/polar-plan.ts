@@ -41,3 +41,4 @@ export function isPolarWebhookConfigured(): boolean {
 }
 
 export function getPolarAiCreditsProductId(): string | null { return process.env.POLAR_AI_CREDITS_PRODUCT_ID?.trim() || null; }
+export function getPolarCrmSetupProductId(): string | null { return process.env.POLAR_CRM_SETUP_PRODUCT_ID?.trim() || null; }

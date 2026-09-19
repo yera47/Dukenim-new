@@ -10,5 +10,5 @@ export default async function ConfigurationDemo({params}:{params:Promise<{vertic
   const config=configurationFor(vertical,approach);if(!config)notFound();
   const products=demoProductsFor(config.vertical),slug=configurationSlug(config.vertical,config.approach);
   const name=`Dukenim ${config.vertical=== "other"?"Shop":config.vertical[0].toUpperCase()+config.vertical.slice(1)+" Shop"}`;
-  return <StoreHome slug={slug} tenant={{name,catalog_name:name,tagline:nichePresets[config.vertical].headline,business_vertical:config.vertical}} products={products} settings={null} campaign={null} storePolicies={null} approach={config.approach}/>;
+  return <StoreHome slug={slug} tenant={{name,catalog_name:name,tagline:nichePresets[config.vertical].headline,business_vertical:config.vertical}} products={products} settings={null} campaign={null} storePolicies={null} approach={config.approach} checkoutOptions={config.vertical==="food"?{deliveryEnabled:true,pickupEnabled:true}:undefined}/>;
 }

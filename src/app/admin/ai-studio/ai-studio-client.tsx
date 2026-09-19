@@ -159,13 +159,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   </section> : null;
 
   if (catalogStatus === "not_started") return <div className={styles.workspace}>
-    {!workspaceOpen ? <section className={styles.welcome} aria-label="Начало создания магазина">
-      <h2>Ваш магазин начинается здесь</h2>
-      <p>Назовите магазин и расскажите, что продаёте. Вместе с AI подберём оформление, затем добавим товары и условия заказа.</p>
-      <button type="button" className="btn btn-primary" onClick={()=>setWorkspaceOpen(true)}>Начать создание каталога <ArrowRight size={17}/></button>
-    </section> : <section id="catalog-setup-workspace" className={styles.setupFlow}>
+    <section className={styles.welcome} aria-label="Начало создания магазина"><p className="data-label">5 КОРОТКИХ ШАГОВ</p><h2>Соберём магазин без лишних настроек</h2><p>Ответьте по одному вопросу. Каждый ответ сохранится, а перед добавлением товара вы увидите готовый результат.</p></section>
+    <section id="catalog-setup-workspace" className={styles.setupFlow}>
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
-    </section>}
+    </section>
   </div>;
 
   if (catalogStatus === "building") return <div className={styles.workspace}>
