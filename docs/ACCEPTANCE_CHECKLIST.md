@@ -68,3 +68,19 @@ PDF.js разрешён, приложение/TestFlight на паузе вла�
 Дополнительно: PROJECT_STATE одновременно содержал «опубликовано» и «локально, не опубликовано» в текущей сводке. Это исправляется удалением противоречащих текущих утверждений, а не ещё одной надписью supersedes.
 
 Исправление процесса: постоянное правило в AGENTS.md, единый список выше, доказательство на уровне требования. Исправление самого продукта ещё не завершено. Перед финалом сверять каждый ID; не отмечать проверенным без поведения, сохранения/reload и tenant negative test где применимо. Не считать размер работы внешним блокером.
+
+## Buyer history, food loyalty and configurable cart — 2026-09-19
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| Persistent history and verified account recovery | verified | Browser checkout, reload and fresh authenticated browser; SQL isolation/claim tests; permanent ownership also added for reservations |
+| My orders + loyalty beside basket | verified | Shared header/hub; 390/1440 browser journeys and card screenshots |
+| Flexible food loyalty + required builder step | verified | Owner authenticated mandatory-step save, product creation, reload/publish; six rule combinations in rollback SQL; settings mobile rendering |
+| Earn/redeem/cancel/refund correctness and tenant isolation | verified | Actual browser paid+done → gift → redeem → cancel exact-milestone restoration; SQL refund/expiry/replay/referral/tenant tests |
+| Visual references and mobile/desktop | verified | Official Starbucks/Dodo research; inspected menu, recipe modal, combo, cart and loyalty at 390/1440; no overflow |
+| Quantity in catalog/cart | verified | +/- controls, edit/reload; unit aggregate stock/20-unit caps |
+| Ingredient removals, paid additions, editable recipes | verified | Buyer checkout and kitchen show cucumber removal and cheese; DB ignores client prices; separate recipes persist |
+| Real combos and structured owner editor | verified | Owner created real coffee+combo through UI; buyer ordered it; SQL stock/cancel/component/foreign-tenant checks |
+| Release/canonical-domain smoke | verified | Source d874f0c; dpl_3KmhbgfdBsXgoNUFu9K1CrdaeBcp Ready/promoted; www.dukenim.kz 390/1440 configured cart, combo, edit/reload and card pass |
+| Disposable acceptance data cleanup | verified | Isolated tenant/products/orders and two fixture auth users removed; real stores untouched |
+| Source push | verified | d874f0c pushed to origin/main; previous network blocker resolved |

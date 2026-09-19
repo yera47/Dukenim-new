@@ -1,5 +1,8 @@
 # Dukenim — current project state
 
+- 2026-09-19 food configuration and loyalty: implemented quantity/editable recipe cart, structured merchant ingredients/addons/real-product combos, permanent account order history, food loyalty builder and rule-based rewards. Seven production migrations applied; authenticated owner/buyer save/order/paid-completion/redeem/cancel/fresh-browser journey and 390/1440 visual checks pass. Source d874f0c is pushed; dpl_3KmhbgfdBsXgoNUFu9K1CrdaeBcp is Ready/promoted, with canonical-domain 390/1440 smoke passing. No Azure changes.
+
+
 ## Current acceptance — 2026-09-10
 
 - 18:32 follow-up: previous reservation clarification 4828b14 is Vercel Ready. Staff product creation with raster photos is implemented; new tenant-scoped RPC applied and rollback-tested (hidden product, stock movement, replay, missing permission/revocation). Source checks: 376 tests, TypeScript and production build pass. Actual staff upload/login browser acceptance is pending a separate employee email; broader personal assembly/payment/device acceptance is not complete.

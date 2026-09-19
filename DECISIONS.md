@@ -69,3 +69,7 @@ This is an append-only decision log. New entries must reflect an explicit owner 
 - Codex and Claude use repository files and Git as their persistent shared context.
 - 2026-09-07 owner UX decision: AI Studio starts with a catalog-creation CTA and a guided name/design/review flow. Hide routine token counts and per-request costs from chat; expose usage in settings and warn near 10% remaining. Real website/CRM recordings must use actual Dukenim UI, not AI-invented screens. Longer promotional footage uses the real logo as a separate accurate overlay.
 - The owner pre-authorizes routine technical marketing work: research, audits, drafts, scripts, asset preparation, local configuration, and integration preparation. Ask at action time before any public Instagram/TikTok profile change, publication, scheduling of newly approved content, deletion, paid spend, or other externally visible deployment. Authentication, OTP, and account authorization remain owner-controlled.
+
+## 2026-09-19 — Owner: flexible food loyalty and structured food configuration
+
+The owner requested a configurable loyalty constructor rather than a fixed money-to-bonus rate or one stamp preset, plus persistent buyer orders/card. Food catalog creation must include loyalty conditions. The owner also requested Frito visual presentation with Dodo-style quantity editing, removable ingredients, paid additions, combos and structured optional merchant controls instead of a single composition text field.
