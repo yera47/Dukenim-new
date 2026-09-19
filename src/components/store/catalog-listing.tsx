@@ -9,5 +9,6 @@ export async function CatalogListing({ slug, category }: { slug: string; categor
   const all = await loadProducts(tenant.id);
   if (category && !all.some(product => product.category === category)) notFound();
   const products = category ? all.filter(product => product.category === category) : all;
-  return <main className="container min-h-[60vh] py-10"><Link href={`/s/${slug}`} className="text-sm opacity-60">Главная / {category ?? "Каталог"}</Link><div className="flex items-end justify-between gap-4 py-10"><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{category ?? "Все товары"}</h1><span className="text-sm opacity-60">Позиций: {products.length}</span></div>{products.length ? <CatalogBrowser key={category ?? "all"} products={products} slug={slug}/> : <p className="py-12 opacity-60">Товары скоро появятся.</p>}</main>;
+  const food=tenant.business_vertical==="food";
+  return <main className="container min-h-[60vh] py-10"><Link href={`/s/${slug}`} className="text-sm opacity-60">Главная / {category ?? (food?"Меню":"Каталог")}</Link><div className="flex items-end justify-between gap-4 py-10"><h1 className="text-4xl font-semibold tracking-tight md:text-6xl">{category ?? (food?"Всё меню":"Все товары")}</h1><span className="text-sm opacity-60">Позиций: {products.length}</span></div>{products.length ? <CatalogBrowser key={category ?? "all"} products={products} slug={slug} food={food}/> : <p className="py-12 opacity-60">{food?"Позиции скоро появятся.":"Товары скоро появятся."}</p>}</main>;
 }

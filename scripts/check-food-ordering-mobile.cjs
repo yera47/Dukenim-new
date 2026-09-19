@@ -12,6 +12,9 @@ const origin=process.argv[3]||'http://localhost:3000';
     await page.screenshot({path:'output/food-fulfilment-mobile-390.png',fullPage:true});
     await page.getByRole('button',{name:/Доставка/}).click();
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('Food storefront overflows at 390px');
+    await page.getByRole('navigation',{name:'Разделы меню'}).waitFor();
+    await page.getByRole('button',{name:/Добавить .* в корзину/}).first().waitFor();
+    await page.screenshot({path:'output/food-menu-mobile-390.png',fullPage:true});
     const product=page.locator('main a[href*="/product/"]').first();await product.click();
     await page.getByRole('button',{name:'Купить сейчас',exact:true}).click();
     await page.getByRole('heading',{name:'Ваши контакты'}).waitFor();
@@ -22,6 +25,15 @@ const origin=process.argv[3]||'http://localhost:3000';
     await page.getByText('Когда приготовить заказ?').waitFor();
     await page.screenshot({path:'output/food-checkout-time-mobile-390.png',fullPage:true});
     if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error('Food checkout overflows at 390px');
-    console.log('PASS food choice and scheduled checkout 390');
+    for(const approach of ['assortment','guided']){
+      await page.goto(`${origin}/demo/food/${approach}`);
+      await page.getByRole('heading',{name:'Как хотите заказать?'}).waitFor();
+      await page.getByRole('button',{name:/Самовывоз/}).click();
+      if(approach==='assortment')await page.getByRole('navigation',{name:'Разделы меню'}).waitFor();
+      else await page.getByRole('region',{name:'Выбор раздела'}).waitFor();
+      if(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1))throw Error(`Food ${approach} overflows at 390px`);
+      await page.screenshot({path:`output/food-${approach}-mobile-390.png`,fullPage:true});
+    }
+    console.log('PASS food gate, quick menu, category menu and scheduled checkout 390');
   }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});

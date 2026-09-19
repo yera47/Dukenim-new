@@ -47,3 +47,10 @@ it("does not inject sample products into an empty real store",()=>{
   expect(html).toContain("Каталог наполняется");
   expect(html).not.toContain("<img");
 });
+it("presents food as a menu with fulfilment before ordering",()=>{
+  vi.stubGlobal("React",React);
+  const html=renderToStaticMarkup(<StoreHome slug="food" tenant={{name:"Кафе",catalog_name:null,tagline:null,business_vertical:"food"}} products={demoProductsFor("food")} settings={null} campaign={null} storePolicies={null} approach="assortment" checkoutOptions={{deliveryEnabled:true,pickupEnabled:true}}/>);
+  expect(html).toContain("Выбрать получение");
+  expect(html).toContain(">Меню<");
+  expect(html).toContain("позиций");
+});

@@ -114,3 +114,22 @@
  .root[data-approach="assortment"] .intro h1{font-size:2rem}
  .root[data-approach="assortment"] :global(#catalog)>div:first-child{margin-bottom:1.5rem}
 }
+.root :global(.food-category-strip){display:flex;gap:.5rem;overflow-x:auto;margin:0 0 1rem;padding:.25rem 0 .75rem;scrollbar-width:none;position:sticky;top:5rem;z-index:20;background:var(--store-bg)}
+.root :global(.food-category-strip::-webkit-scrollbar){display:none}
+.root :global(.food-category-strip button){flex:none;min-height:42px;padding:.65rem 1rem;border:1px solid color-mix(in srgb,currentColor 14%,transparent);border-radius:999px;background:var(--store-surface);font-size:.82rem;font-weight:750}
+.root :global(.food-category-strip button[aria-pressed="true"]){border-color:var(--tenant-accent);background:var(--tenant-accent);color:var(--store-accent-ink)}
+.root[data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:1fr!important;gap:12px}
+.root :global(.food-menu-card){display:grid;grid-template-columns:104px minmax(0,1fr);gap:14px;min-height:128px;padding:10px;border:1px solid color-mix(in srgb,currentColor 12%,transparent);border-radius:20px;background:var(--store-surface)}
+.root :global(.food-menu-image){display:block;aspect-ratio:1;border-radius:15px;background:color-mix(in srgb,currentColor 7%,transparent) center/cover no-repeat}
+.root :global(.food-menu-copy){display:flex;min-width:0;flex-direction:column;padding:.15rem .15rem .15rem 0}
+.root :global(.food-menu-copy h3){font-size:1rem;font-weight:800;line-height:1.2}
+.root :global(.food-menu-copy>p){display:-webkit-box;overflow:hidden;margin-top:.4rem;color:var(--store-muted);font-size:.75rem;line-height:1.35;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+.root :global(.food-menu-bottom){display:flex;align-items:center;justify-content:space-between;gap:.65rem;margin-top:auto;padding-top:.65rem}
+.root :global(.food-menu-bottom strong){white-space:nowrap;font-size:.94rem}
+.root :global(.food-menu-bottom button),.root :global(.food-menu-bottom a){display:inline-flex;min-height:38px;align-items:center;justify-content:center;gap:.3rem;padding:.45rem .7rem;border:0;border-radius:999px;background:var(--tenant-accent);color:var(--store-accent-ink);font-size:.75rem;font-weight:800}
+.root :global(.food-menu-bottom span){font-size:.75rem;color:var(--store-muted)}
+@media(min-width:640px){
+ .root[data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:18px}
+ .root :global(.food-menu-card){grid-template-columns:128px minmax(0,1fr);min-height:152px;padding:12px}
+ .root :global(.food-menu-copy h3){font-size:1.08rem}
+}
