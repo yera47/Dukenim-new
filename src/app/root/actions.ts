@@ -9,7 +9,7 @@ export async function deleteEmptyStore(form:FormData){
  if(result.error||!result.data)throw new Error(result.error?.message??"Удаление не выполнено.");
  revalidatePath("/root");redirect("/root");
 }
-import{revalidatePath}from"next/cache";import{requireRole}from"@/lib/auth";import{createAdminClient}from"@/lib/supabase/admin";import{createPlatformAuditEvent,createTenantAndOwner,rootMessage,setRequestStatus}from"@/lib/queries/root";import type{Plan}from"@/lib/plans";import type{Database}from"@/types/database";
+import{revalidatePath}from"next/cache";import{requireRole}from"@/lib/auth";import{createAdminClient}from"@/lib/supabase/admin";import{createClient}from"@/lib/supabase/server";import{smsClient}from"@/lib/sms-db";import{createPlatformAuditEvent,createTenantAndOwner,rootMessage,setRequestStatus}from"@/lib/queries/root";import type{Plan}from"@/lib/plans";import type{Database}from"@/types/database";
 async function rootClient(){const context=await requireRole(["superadmin"]);if(!context.user)throw new Error("Для действий требуется вход в аккаунт суперадминистратора.");return{client:createAdminClient(),actorId:context.user.id}}
 export async function createStore(form:FormData){const{client,actorId}=await rootClient();const slug=String(form.get("slug")??"").trim().toLowerCase();if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug))throw new Error("Некорректный slug");const{data,error}=await createTenantAndOwner(client,{email:String(form.get("email")),password:String(form.get("password")),slug,name:String(form.get("name")),color:String(form.get("color")??"#0E5C4A"),plan:String(form.get("plan")??"basic")as Plan});if(error)throw error;await createPlatformAuditEvent(client,{actorId,tenantId:data?.tenantId,action:"tenant.created",reason:"Создано из root-кабинета"});revalidatePath("/root")}
 export async function updateStore(form: FormData) {
@@ -57,4 +57,13 @@ export async function updateRootProduct(form:FormData){
   if(changed.error||!changed.data)throw new Error("Не удалось изменить товар. Обновите страницу перед повтором.");
   await createPlatformAuditEvent(client,{actorId,tenantId,action:"product.changed",reason,metadata:{productId,before:current.data,after:next}});
   revalidatePath(`/root/stores/${tenantId}`);revalidatePath("/s/[slug]","page");revalidatePath("/s/[slug]/product/[id]","page");
+}
+
+export async function reviewSmsSender(form:FormData){
+  await requireRole(["superadmin"]);
+  const tenantId=String(form.get("tenantId")??"");const status=String(form.get("status")??"");const reason=String(form.get("reason")??"").trim();
+  if(!UUID_PATTERN.test(tenantId)||!["approved","rejected","pending"].includes(status)||reason.length<3||reason.length>1000)throw new Error("Проверьте статус и причину модерации.");
+  const{data,error}=await smsClient(await createClient()).rpc("review_sms_sender",{p_tenant:tenantId,p_status:status,p_reason:reason});
+  if(error||!data)throw new Error(error?.message??"Статус отправителя не изменён.");
+  revalidatePath(`/root/stores/${tenantId}`);revalidatePath("/admin/settings/sms");
 }

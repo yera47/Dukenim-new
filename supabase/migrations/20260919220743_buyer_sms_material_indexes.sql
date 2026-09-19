@@ -1,0 +1,10 @@
+create index customers_user_idx on public.customers(user_id) where user_id is not null;
+create index food_recipe_material_idx on public.food_recipe_items(material_id);
+create index food_recipe_tenant_idx on public.food_recipe_items(tenant_id);
+create index food_material_movement_material_idx on public.food_material_movements(material_id);
+create index food_material_movement_order_idx on public.food_material_movements(order_id) where order_id is not null;
+create index food_material_movement_staff_idx on public.food_material_movements(staff_id) where staff_id is not null;
+create index sms_campaign_created_by_idx on public.sms_campaigns(created_by) where created_by is not null;
+create index sms_outbox_tenant_idx on public.sms_outbox(tenant_id);
+create index sms_outbox_customer_idx on public.sms_outbox(customer_id) where customer_id is not null;
+create index sms_outbox_campaign_idx on public.sms_outbox(campaign_id) where campaign_id is not null;

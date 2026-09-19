@@ -1,0 +1,7 @@
+import type{SupabaseClient}from"@supabase/supabase-js";
+import type{Database,Json}from"@/types/database";
+type Table<Row>={Row:Row;Insert:Partial<Row>;Update:Partial<Row>;Relationships:[]};
+export type SmsSettings={tenant_id:string;provider:string;sender_id:string|null;sender_status:"not_configured"|"pending"|"approved"|"rejected";transactional_enabled:boolean;marketing_enabled:boolean;templates:Json;updated_at:string};
+export type SmsOutbox={id:string;tenant_id:string;customer_id:string|null;order_id:string|null;campaign_id:string|null;kind:string;recipient:string;sender_id:string;body:string;status:"pending"|"processing"|"sent"|"failed";attempts:number;deliver_after:string;claimed_at:string|null;sent_at:string|null;provider_message_id:string|null;last_error:string|null;created_at:string};
+type SmsDb={public:{Tables:{tenant_sms_settings:Table<SmsSettings>;sms_campaigns:Table<{id:string;tenant_id:string;title:string;body:string;recipient_count:number;created_by:string|null;created_at:string}>;sms_outbox:Table<SmsOutbox>};Views:Record<string,never>;Enums:Record<string,never>;CompositeTypes:Record<string,never>;Functions:{save_sms_settings:{Args:{p_tenant:string;p_sender:string;p_transactional:boolean;p_marketing:boolean;p_templates:Json};Returns:boolean};queue_sms_campaign:{Args:{p_tenant:string;p_title:string;p_body:string};Returns:number};review_sms_sender:{Args:{p_tenant:string;p_status:string;p_reason:string};Returns:boolean}}}};
+export const smsClient=(client:SupabaseClient<Database>)=>client as unknown as SupabaseClient<SmsDb>;

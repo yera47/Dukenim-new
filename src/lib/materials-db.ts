@@ -1,0 +1,5 @@
+import type{SupabaseClient}from"@supabase/supabase-js";import type{Database,Json}from"@/types/database";
+type Table<Row>={Row:Row;Insert:Partial<Row>;Update:Partial<Row>;Relationships:[]};
+export type FoodMaterial={id:string;tenant_id:string;name:string;unit:"g"|"kg"|"ml"|"l"|"pcs";stock_qty:number;created_at:string;updated_at:string};export type RecipeItem={product_id:string;material_id:string;tenant_id:string;amount:number};
+type MaterialsDb={public:{Tables:{food_materials:Table<FoodMaterial>;food_recipe_items:Table<RecipeItem>;food_material_movements:Table<Record<string,unknown>>};Views:Record<string,never>;Enums:Record<string,never>;CompositeTypes:Record<string,never>;Functions:{owner_save_food_material:{Args:{p_tenant:string;p_id:string|null;p_name:string;p_unit:string;p_stock:number};Returns:string};owner_save_food_recipe:{Args:{p_tenant:string;p_product:string;p_recipe:Json};Returns:boolean}}}};
+export const materialsClient=(client:SupabaseClient<Database>)=>client as unknown as SupabaseClient<MaterialsDb>;

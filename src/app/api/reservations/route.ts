@@ -16,8 +16,11 @@ export async function POST(request:Request){
   if(!tenant)return NextResponse.json({error:"Магазин недоступен."},{status:404});
   const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const buyer=await buyerIdentity();
+  if(!buyer.userId)return NextResponse.json({error:"Подтвердите номер телефона перед бронированием."},{status:401});
+  const account=await admin.auth.admin.getUserById(buyer.userId);const verifiedPhone=account.data.user?.phone_confirmed_at?account.data.user.phone:null;
+  if(!verifiedPhone)return NextResponse.json({error:"Подтвердите номер телефона перед бронированием."},{status:401});
   const receipts=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
-  const {data,error}=await reservationsClient(admin).rpc("create_buyer_reservation",{p_tenant_id:tenant.id,p_request_id:input.requestId,p_name:input.name,p_phone:input.phone,p_items:input.items.map(item=>({variant_id:item.variantId,qty:item.qty})),p_user:buyer.userId,p_guest_hash:buyer.hash});
+  const {data,error}=await reservationsClient(admin).rpc("create_buyer_reservation",{p_tenant_id:tenant.id,p_request_id:input.requestId,p_name:input.name,p_phone:`+${verifiedPhone.replace(/\D/g,"")}`,p_items:input.items.map(item=>({variant_id:item.variantId,qty:item.qty})),p_user:buyer.userId,p_guest_hash:buyer.hash});
   if(error||!data?.[0])return NextResponse.json({error:error?.message.includes("Request conflict")?"Эта попытка уже использована с другими данными. Обновите корзину.":error?.message.includes("limit")?"Слишком много активных бронирований. Свяжитесь с магазином.":"Не удалось забронировать. Проверьте наличие товара и условия магазина."},{status:409});
   const row=data[0];const response=NextResponse.json({orderNumber:row.order_number,total:row.total,expiresAt:row.expires_at,reservationStatus:row.reservation_status},{headers:{"Cache-Control":"private, no-store"}});
   setBuyerCookie(response,buyer.token);

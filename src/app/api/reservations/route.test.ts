@@ -1,4 +1,4 @@
-vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:null,hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
+vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:"buyer-user",hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
 import {describe,it,expect,vi,afterEach} from 'vitest';
 vi.mock('@/lib/supabase/admin',()=>({createAdminClient:vi.fn()}));
 vi.mock('next/headers',()=>({cookies:async()=>({get:()=>undefined})}));
@@ -11,13 +11,18 @@ describe('reservation API boundary',()=>{
  it('uses resolved tenant and server amount, without exposing order IDs or contacts',async()=>{
   vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','test');vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL','https://example.supabase.co');
   const rpc=vi.fn().mockResolvedValue({data:[{order_id:'private-id',order_number:12,total:21700,expires_at:'2026-09-11T12:00:00Z',reservation_status:'reserved',phone:'private'}]});
-  vi.mocked(createAdminClient).mockReturnValue({rpc} as unknown as ReturnType<typeof createAdminClient>);
+  vi.mocked(createAdminClient).mockReturnValue({rpc,auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:"+77000000000",phone_confirmed_at:"2026-09-20T00:00:00Z"}}})}}} as unknown as ReturnType<typeof createAdminClient>);
   vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:'resolved-shop'},error:null} as unknown as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
   const input={slug:'serik',requestId:'cb101010-0000-4000-8000-000000000005',name:'Серик',phone:'77000000000',items:[{variantId:'cb101010-0000-4000-8000-000000000004',qty:1}]};
   const response=await POST(new Request('https://www.dukenim.kz/api/reservations',{method:'POST',headers:{origin:'https://www.dukenim.kz','content-type':'application/json'},body:JSON.stringify(input)}));
   expect(response.status).toBe(200);expect(response.headers.get('cache-control')).toBe('private, no-store');
   expect(await response.json()).toEqual({orderNumber:12,total:21700,expiresAt:'2026-09-11T12:00:00Z',reservationStatus:'reserved'});
   expect(rpc).toHaveBeenCalledWith('create_buyer_reservation',expect.objectContaining({p_tenant_id:'resolved-shop',p_request_id:input.requestId}));
+ });
+ it('rejects a reservation without a verified phone account',async()=>{
+  vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY','test');vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL','https://example.supabase.co');
+  vi.mocked(createAdminClient).mockReturnValue({auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:null,phone_confirmed_at:null}}})}}} as unknown as ReturnType<typeof createAdminClient>);vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:'resolved-shop'},error:null} as unknown as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+  const input={slug:'serik',requestId:'cb101010-0000-4000-8000-000000000005',name:'Серик',phone:'77000000000',items:[{variantId:'cb101010-0000-4000-8000-000000000004',qty:1}]};const response=await POST(new Request('https://www.dukenim.kz/api/reservations',{method:'POST',headers:{origin:'https://www.dukenim.kz','content-type':'application/json'},body:JSON.stringify(input)}));expect(response.status).toBe(401);
  });
  it('rejects cross-origin stock holds before touching database',async()=>{
   const response=await POST(new Request('https://www.dukenim.kz/api/reservations',{method:'POST',headers:{origin:'https://attacker.example','content-type':'application/json'},body:'{}'}));

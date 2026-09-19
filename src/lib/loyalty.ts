@@ -12,6 +12,7 @@ export const loyaltyRuleSchema = z.object({
   expiryDays: z.number().int().min(0).max(365),
   repeat: z.boolean(),
   earnOnReward: z.boolean(),
+  giftVariantId:z.string().uuid().nullable().optional(),
 }).strict().superRefine((rule, ctx) => {
   if (rule.trigger === "product" && !rule.category) ctx.addIssue({code:"custom", path:["category"], message:"Укажите категорию товаров"});
   if (["percent", "cashback"].includes(rule.reward) && rule.value > 100) ctx.addIssue({code:"custom",path:["value"],message:"Процент — от 1 до 100"});
@@ -26,7 +27,7 @@ export type LoyaltyProgram = z.infer<typeof loyaltyProgramSchema>;
 export type LoyaltyReward = {ruleId:string;milestone:number;reward:LoyaltyRule["reward"];label:string;value:number;expiresAt:string|null};
 export type LoyaltyProgress = {rule:LoyaltyRule;active:boolean;progress:number;available:LoyaltyReward|null};
 export function newLoyaltyRule():LoyaltyRule {
-  return {id:crypto.randomUUID(),trigger:"orders",threshold:6,category:"",reward:"gift",label:"Кофе в подарок",value:1,minOrder:0,expiryDays:0,repeat:true,earnOnReward:false};
+  return {id:crypto.randomUUID(),trigger:"orders",threshold:6,category:"",reward:"gift",label:"Кофе в подарок",value:1,minOrder:0,expiryDays:0,repeat:true,earnOnReward:false,giftVariantId:null};
 }
 export function newLoyaltyProgram():LoyaltyProgram {return {name:"Клуб гостей",enabled:true,terms:"",rules:[newLoyaltyRule()]};}
 function countWord(value:number,one:string,few:string,many:string){const last=value%10;return value%100>=11&&value%100<=14?many:last===1?one:last>=2&&last<=4?few:many;}

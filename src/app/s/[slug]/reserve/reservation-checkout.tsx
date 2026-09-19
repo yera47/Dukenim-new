@@ -1,5 +1,5 @@
 "use client";
-import React,{useState} from "react";
+import React,{useEffect,useState} from "react";
 import {useRouter} from "next/navigation";
 import Link from "next/link";
 import {useCart} from "@/components/store/cart-provider";
@@ -7,10 +7,13 @@ import {PickupLocationCard} from "@/components/store/pickup-location";
 import type {PickupLocation} from "@/lib/pickup-location";
 import {money} from "@/lib/demo-data";
 import {reservationLabels} from "@/lib/reservations";
+import {PhoneAuth} from "@/components/store/phone-auth";
+import {createClient} from "@/lib/supabase/client";
 export function ReservationCheckout({slug,hours,location}:{slug:string;hours:number;location:PickupLocation}){
  const router=useRouter();
- const {items,total,clear}=useCart();const[name,setName]=useState(''),[phone,setPhone]=useState(''),[pending,setPending]=useState(false),[message,setMessage]=useState('');
+ const {items,total,clear}=useCart();const[name,setName]=useState(''),[phone,setPhone]=useState(''),[authenticated,setAuthenticated]=useState(false),[pending,setPending]=useState(false),[message,setMessage]=useState('');
  const[result,setResult]=useState<{number:number;expires:string;total:number}|null>(null);
+ useEffect(()=>{void createClient().auth.getUser().then(({data})=>{if(data.user?.phone&&data.user.phone_confirmed_at){setAuthenticated(true);setPhone(data.user.phone);setName(String(data.user.user_metadata?.full_name??data.user.user_metadata?.name??''));}});},[]);
  async function submit(event:React.FormEvent){
   event.preventDefault();if(pending||!items.length)return;setPending(true);setMessage('');
   try{
@@ -24,5 +27,5 @@ export function ReservationCheckout({slug,hours,location}:{slug:string;hours:num
    setResult({number:data.orderNumber,expires:data.expiresAt,total:data.total});clear();router.push(`/s/${slug}/orders`);
   }catch(error){setMessage(error instanceof Error?error.message:'Ответ не подтверждён. Повторная отправка с теми же данными не создаст ещё одну бронь.');}finally{setPending(false);}
  }
- return <main className="container max-w-3xl space-y-5 py-10"><Link href={`/s/${slug}/checkout`} className="text-sm underline">← К оформлению заказа</Link><h1 className="text-3xl font-semibold">{result?`Бронь №${result.number} принята`:'Забронировать в магазине'}</h1><p>Без онлайн-оплаты. Храним товар {hours} ч. с момента бронирования. Дождитесь подтверждения магазина перед поездкой. Для отмены свяжитесь с магазином.</p><PickupLocationCard value={location}/>{result?<p role="status">Сумма при покупке: {money(result.total)}. Бронь до {new Date(result.expires).toLocaleString('ru-KZ')}. После этого товар вернётся в продажу.</p>:<form onSubmit={submit} className="card space-y-4 p-6"><p>Товары: {items.length} · {money(total)}</p><input aria-label="Имя" className="input" required minLength={2} maxLength={80} placeholder="Серик" value={name} onChange={e=>setName(e.target.value)}/><input aria-label="Телефон" className="input" type="tel" required maxLength={30} placeholder="Телефон" value={phone} onChange={e=>setPhone(e.target.value)}/><button disabled={pending||!items.length} className="btn btn-primary">{pending?'Бронируем…':'Подтвердить бронь'}</button>{message&&<p role="alert">{message}</p>}</form>}</main>;
+ return <main className="container max-w-3xl space-y-5 py-10"><Link href={`/s/${slug}/checkout`} className="text-sm underline">← К оформлению заказа</Link><h1 className="text-3xl font-semibold">{result?`Бронь №${result.number} принята`:'Забронировать в магазине'}</h1><p>Без онлайн-оплаты. Храним товар {hours} ч. с момента бронирования. Дождитесь подтверждения магазина перед поездкой. Для отмены свяжитесь с магазином.</p><PickupLocationCard value={location}/>{result?<p role="status">Сумма при покупке: {money(result.total)}. Бронь до {new Date(result.expires).toLocaleString('ru-KZ')}. После этого товар вернётся в продажу.</p>:<form onSubmit={submit} className="card space-y-4 p-6"><p>Товары: {items.length} · {money(total)}</p>{!authenticated&&<PhoneAuth slug={slug} compact onAuthenticated={user=>{setAuthenticated(true);setPhone(user.phone??'');setName(String(user.user_metadata?.full_name??user.user_metadata?.name??''));}}/>}<input aria-label="Имя" className="input" required minLength={2} maxLength={80} placeholder="Серик" value={name} onChange={e=>setName(e.target.value)}/>{authenticated&&<input aria-label="Телефон" className="input bg-[var(--surface-2)]" type="tel" readOnly value={phone}/>}<button disabled={pending||!items.length||!authenticated} className="btn btn-primary">{pending?'Бронируем…':'Подтвердить бронь'}</button>{message&&<p role="alert">{message}</p>}</form>}</main>;
 }

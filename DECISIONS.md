@@ -1,5 +1,9 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-19 owner: for external research and account creation, represent the real product as `Dukenim`; do not use names such as “test shop” that make the project look disposable. Continue an accepted multi-part task until every requirement is verified or a concrete owner-only action is immediately required. Internal unfinished implementation, long-running checks, or a convenient checkpoint are not reasons to end the task. Routine reversible engineering, production verification and configuration needed for the accepted scope are authorized; paid purchases, final account creation, and cloud permission changes still follow mandatory action-time confirmation rules.
+
+- 2026-09-11 owner: simplify workspace copy with optional help, show integration requests/status/support in compact windows; move campaigns to catalog; add arbitrary analytics date range and team directory. AI creation remains in every plan. Owner authorizes tariff differentiation with a product cap around 200 on Start and CRM setup 70,000 KZT on Start payable only after connection, included on premium. Provider subscriptions are separate; this decision does not verify a payment integration or authorize invented paid status.
+
 - 2026-09-09 18: Owner reopens research and implementation of easy merchant goods payments (Kaspi/card), with receiving and payment setup during initial catalog creation and an explicit connect-later option. Do not seed Amira with test products/sales until the full requested product is ready. Custom colours must follow owner wishes rather than mandatory preset palettes. No provider contract or tariff was selected by the owner through this request.
 
 - 2026-09-09 17: owner pauses goods acquiring pending provider decision; continue remaining website work, including separately navigable18storefront configurations, personalized builder, shades, historical costs and reservations. Native app pause remains in force.
@@ -52,6 +56,9 @@ This is an append-only decision log. New entries must reflect an explicit owner 
 
 - 2026-09-08: Hide unsupported service booking and event ticketing from new onboarding until properly implemented and verified. Launch food scope is ready-made dishes/drinks with finite quantities, not recipe/ingredient inventory. Existing tenants and their verticals are preserved.
 
+- 2026-09-20: Food businesses may optionally maintain structured raw materials and product recipes; completed orders consume recipe stock and cancellations return it. This expands the earlier ready-made-only launch scope without requiring every food merchant to use raw-material accounting.
+- 2026-09-20: Buyer checkout is phone-first: confirmation creates or restores the buyer account before a real order, then permanent order history and loyalty attach to that identity. Marketing SMS is opt-in per merchant; transactional SMS and campaigns use the merchant's moderated Sender ID. Platform black/white surfaces use a restrained dark-blue accent, including the Dukenim symbol and logo dot.
+
 - 2026-09-08: Owner wants platform administration without a personal store; retain the main superadmin account independently of tenant membership and remove its unused store. Business-specific workflows must reflect actual capabilities rather than treating every business as a clothing warehouse.
 
 - Build the complete production product, not a disposable demo.
@@ -69,6 +76,16 @@ This is an append-only decision log. New entries must reflect an explicit owner 
 - Codex and Claude use repository files and Git as their persistent shared context.
 - 2026-09-07 owner UX decision: AI Studio starts with a catalog-creation CTA and a guided name/design/review flow. Hide routine token counts and per-request costs from chat; expose usage in settings and warn near 10% remaining. Real website/CRM recordings must use actual Dukenim UI, not AI-invented screens. Longer promotional footage uses the real logo as a separate accurate overlay.
 - The owner pre-authorizes routine technical marketing work: research, audits, drafts, scripts, asset preparation, local configuration, and integration preparation. Ask at action time before any public Instagram/TikTok profile change, publication, scheduling of newly approved content, deletion, paid spend, or other externally visible deployment. Authentication, OTP, and account authorization remain owner-controlled.
+
+- 2026-09-19 owner explicitly approved extending Amira shop's expired trial by seven days for AI-request acceptance, without payment. Applied atomically with platform audit; new expiry 2026-09-26 08:06:42 UTC. No plan, paid subscription, product or order changed.
+
+## 2026-09-19 — Еда: единый заказ ко времени вместо отдельного типа точки
+
+- Не делить продукт на «обычную точку» и «бизнес-центр». Для всех заведений еды сначала показывать выбор доставки/самовывоза, а в заказе давать «как можно скорее» или конкретное время. Пример столовой в бизнес-центре используется как готовый сценарий в AI-брифе, а не как отдельная модель магазина.
+
+## 2026-09-19 — Food template reference
+
+Owner requested the food quick-menu template to closely follow Frito, including the vertical stories block, with slightly optimized colours. Implement this as the existing food assortment option, backed by merchant data and the shared cart/checkout.
 
 ## 2026-09-19 — Owner: flexible food loyalty and structured food configuration
 

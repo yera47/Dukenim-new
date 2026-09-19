@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:null,hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
+vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:"buyer-user",hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn() }));
 vi.mock("@/lib/queries/orders", () => ({ createStorefrontOrder: vi.fn(), getCheckoutOptions: vi.fn() }));
@@ -45,12 +45,20 @@ describe("order API fails safely before database writes", () => {
     expect(createAdminClient).not.toHaveBeenCalled();
   });
   it("passes a validated requested time to the atomic order RPC", async()=>{
+    const admin={auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:"+77000000000",phone_confirmed_at:"2026-09-20T00:00:00Z"}}})}}};
+    vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
     vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
     vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:7,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
     const requestedFor=new Date(Date.now()+60*60_000).toISOString();
     const response=await POST(request({...valid,timingMode:"scheduled",requestedFor}));
     expect(response.status).toBe(200);
-    expect(createStorefrontOrder).toHaveBeenCalledWith(undefined,expect.objectContaining({tenantId:"mine",requestedFor}));
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({tenantId:"mine",requestedFor,phone:"+77000000000",buyer:expect.objectContaining({userId:"buyer-user"})}));
+  });
+  it("requires a verified phone account before creating the order",async()=>{
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(createAdminClient).mockReturnValue({auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:null,phone_confirmed_at:null}}})}}} as unknown as ReturnType<typeof createAdminClient>);
+    expect((await POST(request(valid))).status).toBe(401);expect(createStorefrontOrder).not.toHaveBeenCalled();
   });
 });

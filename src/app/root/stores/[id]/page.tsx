@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { money } from "@/lib/demo-data";
-import { updateRootProduct,deleteEmptyStore } from "../../actions";
+import { smsClient } from "@/lib/sms-db";
+import { updateRootProduct,deleteEmptyStore,reviewSmsSender } from "../../actions";
 
 export default async function RootStorePage({
   params,
@@ -24,6 +25,7 @@ export default async function RootStorePage({
     categoriesResult,
     ordersResult,
     auditResult,
+    smsResult,
   ] = await Promise.all([
     client.from("tenants").select("*").eq("id", id).single(),
     client
@@ -48,6 +50,7 @@ export default async function RootStorePage({
       .eq("tenant_id", id)
       .order("created_at", { ascending: false })
       .limit(20),
+    smsClient(client).from("tenant_sms_settings").select("*").eq("tenant_id", id).maybeSingle(),
   ]);
   if (tenantResult.error || !tenantResult.data) notFound();
   const tenant = tenantResult.data;
@@ -55,6 +58,7 @@ export default async function RootStorePage({
   const categories = categoriesResult.data ?? [];
   const orders = ordersResult.data ?? [];
   const events = auditResult.data ?? [];
+  const sms = smsResult.data;
   const revenue = orders
     .filter((order) => order.status !== "cancelled")
     .reduce((sum, order) => sum + order.total, 0);
@@ -216,6 +220,23 @@ export default async function RootStorePage({
             </div>
           </section>
           <aside className="space-y-6">
+            <section className="rounded-2xl bg-white/7 p-5">
+              <h2 className="font-extrabold">SMS от имени магазина</h2>
+              {sms?.sender_id ? <>
+                <p className="mt-3 text-sm text-white/65">Имя: <b className="text-white">{sms.sender_id}</b></p>
+                <p className="mt-1 text-sm text-white/65">Статус: <b className="text-white">{sms.sender_status}</b></p>
+                <form action={reviewSmsSender} className="mt-4 grid gap-3">
+                  <input type="hidden" name="tenantId" value={tenant.id}/>
+                  <select name="status" defaultValue={sms.sender_status} className="input text-black">
+                    <option value="pending">На модерации</option>
+                    <option value="approved">Одобрено</option>
+                    <option value="rejected">Отклонено</option>
+                  </select>
+                  <input name="reason" required minLength={3} maxLength={1000} className="input text-black" placeholder="Причина решения"/>
+                  <button className="btn bg-[var(--accent)] text-white">Сохранить статус</button>
+                </form>
+              </> : <p className="mt-3 text-sm text-white/45">Владелец ещё не указал Sender ID.</p>}
+            </section>
             <section className="rounded-2xl bg-white/7 p-5">
               <div className="flex items-center gap-2">
                 <ReceiptText className="text-[var(--accent-bright)]" />

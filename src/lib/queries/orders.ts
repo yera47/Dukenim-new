@@ -17,6 +17,7 @@ export type CheckoutInput = {
   buyer?:{userId:string|null;hash:string};
   reward?:{ruleId:string;milestone:number}|null;
   referralCode?:string|null;
+  marketingConsent?:boolean;
 };
 
 export async function createStorefrontOrder(client: SupabaseClient<Database>, input: CheckoutInput) {

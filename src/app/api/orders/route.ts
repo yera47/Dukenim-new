@@ -7,6 +7,7 @@ import { getPublicTenantBySlug } from "@/lib/queries/tenants";
 import {buyerIdentity,setBuyerCookie} from "@/lib/buyer-identity";
 import {z} from "zod";
 import {foodSelectionSchema,foodSelectionKey,emptyFoodSelection} from "@/lib/food-options";
+import {buyerClient} from "@/lib/buyer-db";
 
 type Body = {
   slug?: unknown;
@@ -21,6 +22,7 @@ type Body = {
   items?: unknown;
   reward?:unknown;
   referralCode?:unknown;
+  marketingConsent?:unknown;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -69,7 +71,7 @@ export async function POST(request: Request) {
     const body = JSON.parse(raw) as Body;
     const slug = typeof body.slug === "string" ? body.slug.trim() : "";
     const name = typeof body.name === "string" ? body.name.trim() : "";
-    const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    let phone = typeof body.phone === "string" ? body.phone.trim() : "";
     const deliveryAddress = typeof body.deliveryAddress === "string" ? body.deliveryAddress.trim() : "";
     const deliveryMethod = body.deliveryMethod === "delivery" ? "courier" : body.deliveryMethod;
     const zoneId = typeof body.zoneId === "string" && uuidPattern.test(body.zoneId) ? body.zoneId : null;
@@ -102,6 +104,11 @@ export async function POST(request: Request) {
 
     const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const buyer=await buyerIdentity();
+    if(!buyer.userId)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
+    const account=await client.auth.admin.getUserById(buyer.userId);
+    const verifiedPhone=account.data.user?.phone_confirmed_at?account.data.user.phone:null;
+    if(!verifiedPhone)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
+    phone=`+${verifiedPhone.replace(/\D/g,"")}`;
     const previous=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
     const { data, error } = await createStorefrontOrder(client, {
       tenantId: tenant.id,
@@ -117,6 +124,9 @@ export async function POST(request: Request) {
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];
+    if(body.marketingConsent===true){
+      await buyerClient(client).from("customers").update({marketing_sms_consent:true,marketing_sms_consent_at:new Date().toISOString()}).eq("tenant_id",tenant.id).eq("user_id",buyer.userId);
+    }
     const response=NextResponse.json({ orderId: order.order_id, orderNumber: order.order_number, total: order.total });
     setBuyerCookie(response,buyer.token);
     response.cookies.set(guestOrdersCookie,signGuestOrders([...previous,{id:order.order_id,tenant:tenant.id,expires:Date.now()+30*86400000}],secret),{httpOnly:true,secure:process.env.NODE_ENV==="production",sameSite:"lax",path:"/",maxAge:30*86400});

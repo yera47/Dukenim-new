@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { expect, it } from "vitest";
-import { authorizePushWorker } from "./push-worker-auth";
+import { authorizePushWorker, authorizeWorker } from "./push-worker-auth";
 const secret = "a".repeat(64), now = 1788905000000;
 function signed(time = now, key = secret) {
   const stamp = String(Math.floor(time / 1000));
@@ -19,4 +19,10 @@ it("rejects wrong key, malformed and missing server secret", () => {
 it("retains authenticated direct cron while rejecting a guessed bearer", () => {
   expect(authorizePushWorker(new Headers({ authorization: `Bearer ${secret}` }), secret, now)).toBe(true);
   expect(authorizePushWorker(new Headers({ authorization: "Bearer admin" }), secret, now)).toBe(false);
+});
+it("isolates signatures between worker scopes", () => {
+  const stamp = String(Math.floor(now / 1000));
+  const sms = new Headers({ "x-dukenim-time": stamp, "x-dukenim-signature": createHmac("sha256", secret).update(`dukenim:sms:${stamp}`).digest("hex") });
+  expect(authorizeWorker(sms, secret, "sms", now)).toBe(true);
+  expect(authorizePushWorker(sms, secret, now)).toBe(false);
 });

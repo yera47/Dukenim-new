@@ -1,6 +1,24 @@
 # Dukenim — единый контроль выполнения
 
+## Owner workspace redesign — 2026-09-11
+
+Release evidence: eff54dc deployed, authenticated production Studio button contrast/separation, live Azure card-payment reply/link, r_keeper modal/support prefill, Sep1–11 calendar report and team directory verified.48488d4 pushed/build74passed with compact new-request form and guarded empty-store removal (applied migration, rollback tests); actual store deletion not performed. Below parent requirements remain open where mutation/mobile/billing acceptance is incomplete; this is not a complete release of the full request.
+
+| Requirement | Status | Acceptance |
+|---|---|---|
+| Readable Studio actions, concise proposal | in progress | Contrast, separation, mobile visual check |
+| Integration requests instead of full provider grid, status/support dialog | in progress | Production modal/prefill checked; support submit and changed-status round trip pending |
+| AI help and request routing | in progress | Source8b9ba91: inline review/send/open card;421tests/tsc/build pass; applied retry guard with tenant/RLS/replay SQL verification. Production8b9ba91 verified payments-card edit/cancel/reopen/send/thread/reload/retry (one request/message). All four kinds server-tested; mobile390 override failed to apply, audit open. Support intake does not connect a provider; root reply/status round trip remains open. |
+| Root management and deletion audit | in progress | Guarded permanent empty-store delete and audit rollback-tested; no real deletion, full root audit pending |
+| Analytics custom calendar and selected state | in progress | Valid inclusive date range, revenue/profit same range |
+| Compact team list and permission editor | in progress | Existing members, invitations, save/revoke persistence |
+| Tariff differentiation / CRM 70000 after connection | in progress | Applied server cap200/2000, AIboth; fee invoice/payment and full gates incomplete |
+| Campaigns in catalog, controlled percentage input | in progress | Existing campaign CRUD moved, rootpercentage slider; browser save pending |
+| Sitewide status/contrast audit and deployment | in progress | Relevant automated and browser checks |
+
 ## Current checkpoint — 10.09 17:08
+
+11.09 recovery acceptance: **verified** — 4ed4814 deployed (Vercel success); authenticated production reload restores conversation, proposal notice and original saved-generation preview. No new generation/application. Build74, 8 focused tests and TypeScript pass. Broader owner apply/re-login/publication remains **in progress**.
 
 11.09 recovery: source through4faa7a4 and saved design8e1a50dd confirmed intact (read-only DB, prior deployment success). Found page restored structure only; latest saved design was not hydrated after reload. Added session/RLS tenant-filtered latest-design read and initial proposal/preview restoration without generation/application.8focused tests and tsc pass; release/browser verification in progress. This does not close owner apply/re-login/publication acceptance.
 
@@ -69,6 +87,34 @@ PDF.js разрешён, приложение/TestFlight на паузе вла�
 
 Исправление процесса: постоянное правило в AGENTS.md, единый список выше, доказательство на уровне требования. Исправление самого продукта ещё не завершено. Перед финалом сверять каждый ID; не отмечать проверенным без поведения, сохранения/reload и tenant negative test где применимо. Не считать размер работы внешним блокером.
 
+
+# 2026-09-19 food/CRM follow-up acceptance
+
+| Requirement | Status | Evidence / blocker |
+|---|---|---|
+| Food: delivery/pickup before menu | verified | Food gate implemented; focused 390px visual capture, all 36 390/1440 journeys, and production demo smoke pass |
+| Order ASAP / requested time | verified | API + DB validation, rollback order creation, owner/buyer rendering, past-time negative test |
+| Simpler AI builder | verified | Direct five-step flow and HoReCa presets; production save, logout, Google re-login, restored catalog and publish journey pass; unit render, TypeScript and build pass |
+| CRM 70,000 KZT after connection | verified except financial settlement | State machine, exact amount and signed webhook verified; private one-time Polar product is exactly 70,000 KZT and `POLAR_CRM_SETUP_PRODUCT_ID` is active in Production. A real charge was not submitted because no CRM connection is verified and that would be a financial transaction |
+| Staff invite/rights/change/revoke | verified | Production browser: invite accepted by verified existing account; initial four modules visible; changed to Orders only and reflected after account switch; revoked and employee then saw no active access. DB: inactive revision 3, no broad membership, invite/accept/two update audits |
+| Builder save/re-entry/publish | verified | Production browser: five-step save, real product creation, logout, Google re-login, persisted catalog restore, explicit publish, and public `/s/dukenim-shop` verification. DB: ready/published, draft revision 5, one active product |
+| Mobile and visual audit | verified | 18 configurations × 390/1440, no overflow; focused 390px fulfilment and checkout captures inspected |
+| Release and production rendering | verified | `be8a35e`; Vercel `dpl_5Kjpax9je7xXXdxqeLwpcJ2QagxA` Ready/current; authenticated integrations and orders pages render |
+| Food quick-menu and category-first templates | verified | Shared real storefront/cart; one-tap add for single variants; category-first path; production 390px checks, 427 tests, TypeScript and build pass; `e86511e` / `dpl_GrnzoScYwiNQEu4V2WE7ZAZ91ENV` Ready |
+| Polar CRM product/configuration | verified | Private one-time `Подключение CRM — Старт`, exactly 70,000 KZT; production env set; `dpl_4Ej5nnic8VSK94pYvjWeSFbD1eMf` Ready. No payment submitted |
+| Wraxa account/research | externally blocked | Real `Dukenim` account/project created; service requires payment before generation/editor. No paid step taken |
+
+## Food stories template acceptance — 2026-09-19
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| Frito-style stories and menu composition | verified | Reference inspected; full-screen image stories/progress/pause/next/Escape, category sections and two-column cards; production browser 390/1440 |
+| Functional menu, cart, delivery and timing | verified | Production search/add/cart passes both widths; existing delivery/pickup/scheduled checkout regression passes at 390 |
+| Softer colours and mobile layout | verified | Purple/white theme; screenshots inspected and zero horizontal overflow at 390/1440 |
+| Builder and saved-template integration | verified | Existing saved assortment key selects shared renderer; matching private-preview header and builder illustration; render tests and production build |
+| Publish | verified | 9f6b337; Vercel dpl_BZWHfcL9Doh49NwewCG3UgSAWcEq Ready/current |
+| Push source to GitHub | externally blocked | Three connection timeouts to github.com:443; local commit safe, direct deployment successful |
+
 ## Buyer history, food loyalty and configurable cart — 2026-09-19
 
 | Requirement | Status | Evidence |
@@ -84,3 +130,18 @@ PDF.js разрешён, приложение/TestFlight на паузе вла�
 | Release/canonical-domain smoke | verified | Source d874f0c; dpl_3KmhbgfdBsXgoNUFu9K1CrdaeBcp Ready/promoted; www.dukenim.kz 390/1440 configured cart, combo, edit/reload and card pass |
 | Disposable acceptance data cleanup | verified | Isolated tenant/products/orders and two fixture auth users removed; real stores untouched |
 | Source push | verified | d874f0c pushed to origin/main; previous network blocker resolved |
+
+## Phone buyer, merchant SMS, gifts, raw materials and accent — 2026-09-20
+
+| Requirement | Status | Evidence / blocker |
+|---|---|---|
+| Phone registration before real food order/reservation | verified in code and tests; external OTP blocked | Checkout/reservation require a Supabase user with `phone_confirmed_at`; APIs re-read the verified phone and reject unverified callers. Live code delivery needs an enabled Supabase SMS provider. |
+| Permanent history and loyalty bound to buyer | verified | Order access attaches the auth user to the tenant customer and buyer member; fresh-browser history uses authenticated identity, while anonymous legacy receipts remain cookie-scoped. |
+| Merchant SMS settings, consent and campaigns | verified except delivery | Owner settings, opt-in/out, approved Sender ID guard, tenant-scoped campaign queue, transactional order triggers and signed minutely worker are applied. Delivery needs `MOBIZON_API_KEY` and provider-approved Sender ID. |
+| Automatic loyalty gifts | verified | Gift variant is selected in the loyalty builder; redemption adds a zero-price order item, decrements stock by movement and cancellation restores it. Rollback database regression passed. |
+| Raw materials and recipes | verified | Structured material/recipe owner UI and movement-only stock are applied; order quantity consumes recipe amounts, removed ingredients are skipped and cancellation restores stock. Rollback database regression passed. |
+| Food cart, customisation and combos | verified | Existing 390/1440 checks cover quantity, recipe edits, paid additions, real combo components, reload persistence and cancellation stock restoration. |
+| Dark-blue accent and logo alignment | verified locally | Global tokens, home controls, store actions and logo mask/dot updated; 390/1440 home screenshots inspected with no horizontal overflow. |
+| Mobile food journey | verified locally | 390px delivery gate → menu → add → persisted cart → checkout timing passes with no horizontal overflow. |
+| Automated checks | verified | 442 tests pass, 4 live tests skipped; strict TypeScript and 77-page production build pass. |
+| Production publish | in progress | Source is ready for explicit-file commit, push, Vercel deployment and canonical-domain smoke. |

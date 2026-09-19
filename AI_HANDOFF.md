@@ -13,6 +13,137 @@ Authenticated E2E against protected production candidates: mandatory catalog loy
 Released: source d874f0c pushed to main; Vercel dpl_3KmhbgfdBsXgoNUFu9K1CrdaeBcp Ready/promoted to www.dukenim.kz. Canonical-domain 390/1440 configured-cart/recipe/quantity/reload/card journeys passed. Next action: owner can use Catalog → product → Состав, добавки и комбо and Settings → Лояльность гостей.
 
 
+## Builder and staff authenticated acceptance — 2026-09-19 (latest)
+
+Result: the owner-approved seven-day `Dukenim shop` trial extension is active through 2026-09-26 10:51 UTC and has an audit reason; no payment or plan purchase was created. The production builder journey is verified end to end: completed the five saved setup steps, created the real Dukenim service product `Онлайн-каталог для бизнеса` at 24,900 KZT, logged out, signed back in through Google, reopened Studio, confirmed the catalog and product persisted, published the store, and verified the public storefront at `/s/dukenim-shop`. Database evidence: catalog `Dukenim` is `ready` and published, draft revision 5 remains saved, and one active product exists.
+
+Staff production acceptance is also complete. The owner invited the existing verified account, the employee accepted and initially saw only Dukenim shop with Orders, Catalog, Stock and Customers. The owner changed the title and reduced permissions to Orders only; the employee's next session showed only Orders. The owner then revoked access, and the employee's next session showed `Активного доступа нет`. Database evidence: the access row is inactive at revision 3 with only `orders=write`, there is no `tenant_users` membership, the invitation is accepted, and audit contains one invite, one accept and two update events. The final revoked state is intentionally retained for auditability.
+
+Checks and production evidence: public storefront renders one real Dukenim product; authenticated builder persistence/publication and employee invite/change/revoke were exercised in the browser, not inferred from unit or rollback tests. Existing code release remains `e86511e`, Vercel `dpl_GrnzoScYwiNQEu4V2WE7ZAZ91ENV` Ready/current. No source changes followed the already passing 427 tests, strict TypeScript and 75-route production build.
+
+Azure: unchanged; no new Azure generation, quota, billing or resource mutation in this continuation.
+
+Remaining external limits: Wraxa generation/editor stays behind its payment step, which the owner instructed us not to cross. A real CRM settlement was not submitted; the 70,000 KZT Polar product and production environment are configured, while checkout remains correctly gated behind a verified CRM connection.
+
+## Food templates, Polar CRM product and Wraxa — 2026-09-19
+
+Result: created the Wraxa account/project as exactly `Dukenim` through the owner-approved `ersatik@gmail.com`; no phone, card, purchase or subscription was submitted. Wraxa places payment before generation/editor access, so the actual editor remains inaccessible without a paid action. Created Polar private one-time product `Подключение CRM — Старт` at exactly 70,000 KZT, product ID `4ea42e1a-2b45-46cb-b3d4-6aba0f6ec165`. Added it as Vercel Production `POLAR_CRM_SETUP_PRODUCT_ID`; redeployment `dpl_4Ej5nnic8VSK94pYvjWeSFbD1eMf` is Ready and current on the canonical domains. No checkout was paid.
+
+Implemented locally after the owner clarified the Frito/Dodo requirement: food storefronts now have a quick compact menu with one-tap add for a single available variant and a category-first composition with large round category imagery. Both use the same real catalog/cart, first ask delivery or pickup, and retain ASAP/scheduled checkout. Food-specific labels say menu/dish/position, a horizontal category strip filters in place, and the global header no longer duplicates every food category. The Studio builder explains the two food paths before the merchant chooses.
+
+Checks: 427 tests pass with four explicit live-AI skips; strict TypeScript and the 75-page production build pass. Automated 390px browser checks cover the fulfilment gate, compact menu, category-first menu and scheduled checkout without horizontal overflow. Visual captures: `output/food-menu-mobile-390.png`, `output/food-assortment-mobile-390.png`, `output/food-guided-mobile-390.png`.
+
+Release: source `e86511e` is pushed to `main`; Vercel deployment `dpl_GrnzoScYwiNQEu4V2WE7ZAZ91ENV` is Ready/current. The same 390px gate, compact menu, category-first menu and scheduled checkout checks pass against `https://www.dukenim.kz`.
+
+Follow-up completed later the same day: the owner approved the `Dukenim shop` trial extension and temporary employee access; both authenticated browser journeys are recorded in the newer checkpoint above. Amira was not used for these tests. Azure unchanged.
+
+## AI request card continuation — 2026-09-19
+
+Result: resumed the saved local card, preserving unrelated shared documentation and output files. Source `8b9ba91` pushed and deployed; Vercel deployment AaaHmMwZfzEzgjJDby23Mf6U1FhL is Ready on production. Owner explicitly approved a seven-day trial extension for Amira, applied atomically with an audit reason; expires 2026-09-26 08:06:42 UTC. No payment or paid subscription was created.
+
+Implemented: editable inline request card for card payments, Kaspi, CRM and support; controlled text survives cancel/reopen and server failures; pending controls prevent double clicks; confirmed save opens the request thread and retains a fallback link. Server derives tenant from session, validates kind/text, fixes subject/source internally. Applied migration `20260919081102_ai_request_retry_guard` checks the persisted same-tenant consultation/help and owner, serializes retries and returns the original thread; unique partial index prevents duplicates. Requests are support intake, not a provider connection, invoice or payment.
+
+Checks: 421 tests pass, four explicit live-model tests skipped; TypeScript and production build (74 routes) pass. Rolled-back database fixtures before/after migration prove request/message persistence, unchanged original on retry, mismatched intent/outsider/foreign-generation denial and RLS read isolation. Function remains SECURITY INVOKER, anon execute denied. Advisor retains existing guarded-function/private-table/password findings; no zero-advisory claim. Authenticated production Studio and prior saved design restore after trial extension; production browser verifies prepare/edit/cancel/reopen retains edited text, submit disables both controls, opens the saved thread, reload preserves it, and repeat submission from the same AI answer opens the same thread. DB confirms exactly one request and one message. Technical request 1a3abc7f-7085-4ad9-aca9-cf8607ce804d explicitly says no real connection or paid work; retained for traceability. Four kinds covered by server tests; actual browser send exercised payments only.
+
+Changed files: src/components/admin/ai-request-card.tsx, studio-conversation.tsx; src/app/admin/ai-studio/request-action.ts and tests; src/lib/ai/request.ts; migration and supabase/tests/ai_request_regression.sql. Shared docs remain uncommitted, preserving other work.
+
+Azure: no resource, quota, billing or model configuration changes; no new live model request in this continuation yet.
+
+Next: CRM post-connection billing/entitlements, then remaining parent journeys. Mobile card audit remains unverified: two documented viewport-set attempts returned normally but DOM still measured1702px; override reset, no mobile screenshot claimed. Desktop card screenshot was reviewed. No new root response/status mutation was made. Remaining parent requirements (CRM 70000 payment/full tariff logic, employee invitation/rights/revocation, full builder save/re-login/publish, overall mobile/visual audit) remain open; no claim of their completion. Wraxa editor redesign has not been implemented.
+## HoReCa partnership follow-up — 2026-09-19
+
+Result: the recurring `crm-pos` heartbeat automation was deleted at the owner's request; it will no longer run or report Gmail failures. Gmail re-audit found no new API key, token, sandbox invitation or substantive provider response. r_keeper automatically closed tickets #207879 and #207963 after seven days without an answer; this is an administrative timeout, not technical approval or rejection.
+
+Sent and verified: seven no-commitment technical partnership requests appear in Gmail Sent: Poster central (`contact@joinposter.com`) and its official Kazakhstan representative Cash Machine; r_keeper partner department and Kazakhstan dealer KIPER.KZ; a reply to iiko's technology-partner contact; Quick Resto Kazakhstan sales with support copied; and JOWI 2.0. Every message states Dukenim's per-restaurant authorization model and asks only for the developer/test-pilot/API route. No contract, agency agreement, paid test stand, license, key, permanent access, customer data or order was accepted or transmitted.
+
+Verified external routes: Poster documents an app marketplace/API and Kazakhstan representatives; r_keeper documents an API connection per restaurant, requires the Delivery_API module and publishes a Kazakhstan dealer; Quick Resto Kazakhstan publishes API integration support; JOWI documents developer-cabinet/external-app capability; iiko previously confirmed its API is open but has not issued an `apiLogin` or test organization.
+
+Azure: unchanged.
+
+Not completed: no provider has answered the new requests. Dukenim cannot build live food-order synchronization until a venue provides its own authorised test access. Business.Ru credential transfer/read-only preflight and Planfix trial/API restriction remain separate pending items.
+
+Where to verify: Gmail Sent messages dated 2026-09-19 with subjects starting `Dukenim ×`; [integration ledger](docs/INTEGRATION_IMPLEMENTATION_20260909.md).
+
+## Pause for computer sleep — 2026-09-11
+
+Owner requested durable save before sleep, not further implementation in this turn. Read `docs/RESUME_AFTER_SLEEP_20260911.md` first on resume: consolidated owner requirements, implemented/deployed evidence, remaining tasks, browser unsaved-input caution and next actions. Code through48488d4 is pushed and deployed; shared documentation is saved locally. Do not reset dirty shared files, regenerate saved designs or treat old intermediate 'not deployed' notes below as current. Parent task remains incomplete; continue checklist after wake.
+
+## Workspace release checkpoint — 2026-09-11
+
+Final deployment48488d4 Vercel success confirmed. Authenticated production integration page now displays only two own connections, compact payment choices and collapsed '+ Подключить систему'; no duplicate status aside. Campaign route verified collapsed add button and empty state. No campaign/request or real store mutation submitted during this visual check. Final deployment: https://vercel.com/yersat47-s-projects/dukenim-new/ckixBWoE8o1ikbrvbVXDuCRoGhKZ . Remaining items below are unchanged; do not equate this partial release with complete parent acceptance.
+
+eff54dc deployed successfully. Authenticated production checks: readable separate Studio Apply/Return, live Azure card-payment help with correct request link (no configuration mutation), r_keeper status modal and provider-specific prefilled support text, Sep1–11 calendar/report, empty team directory with collapsed invite. Further source48488d4 pushed: collapsed new integration form, removed duplicate status aside, root administrator preflight_summary displayed in merchant modal. Guarded empty-store removal is implemented in root store detail; applied migration20260910221618 (service-only invoker, authenticated actor checked as superadmin, exact slug/reason, rejects products/customers/orders/subscriptions/payment requests/AI purchases, audit then atomic deletion; owner account preserved). Rollback regression passed before/after apply. No actual store deleted. Final TypeScript/build74 pass. Deployment48488d4 pending verification at this checkpoint.
+
+Changed paths: src/app/admin/ai-studio, integrations, analytics, team, catalog/campaigns, settings, root/actions.ts, root/stores/[id]/page.tsx; src/components/admin and marketing/pricing-section.tsx; src/lib/ai, plans.ts, custom-sales-period.ts; two applied migrations/tests. Current live status does not close all requested work. Remaining internal: CRM70k invoice/payment after connection, complete tariff entitlement differentiation, full mobile/status audit, campaign/save and employee invitation browser E2E, autonomous AI request submission. Real payment provider/checkout not configured. Azure resource/quota unchanged; application prompt and successful live help verified. Preserve unrelated shared integration edits; do not stage all files. Owner original settings tab30 has unsaved input: do not reload. Task browser tab56 can be used for verification.
+
+## Workspace redesign — 2026-09-11 in progress
+
+Owner requests cohesive UI, integration status/support dialogs, AI navigation, team list, calendar, catalog campaigns, new tariff differentiation and root management/deletion. Implemented source: removed Studio duplicate design card, fixed transparent direct-child button selector, explicit platform primary/selected contrast; custom validated UTC+5 analytics range; compact team list with expandable existing permission forms; only requested integrations, native modal with prefilled support form and visible-tab 30s refresh; payment guide shortened; allowlisted AI help destinations; moved campaigns to /admin/catalog/campaigns; root promotion percentage slider/day selector; actual catalog search. 409 tests pass before final pricing/capacity changes, TypeScript passes, build74 passes before final pricing copy. Applied migration20260910221117 enforces 200 basic/2000 standard product cards with serialized tenant lock, existing products untouched. Rollback test passed before/after apply; advisor has existing guarded-function/password warnings, no capacity trigger exposure. No merchant data seeded/deleted, Azure resource unchanged. Release not yet published. Remaining: full browser acceptance, root deletion/redesign, CRM fee/payment workflow and comprehensive status audit. Shared integration edits remain unrelated and unstaged.
+
+## Business.Ru production connector — 2026-09-11
+
+Result: commit `3b1b25c` is on `main` and the Vercel production deployment `dpl_X17QvfhomebvuDNY3URsfk4DdRU3` is Ready with aliases `dukenim.kz` and `www.dukenim.kz`. Production migration `20260910210037_business_ru_connection` is applied. The protected Business.Ru form, encrypted server-only storage and signed read-only preflight are deployed.
+
+Implemented and verified: production `integration_connections` accepts `biznes_ru`; RLS remains enabled; anon/authenticated SELECT remains unavailable and service-role CRUD remains available. Eight focused Business.Ru tests, the 399-test suite (4 live skips), strict TypeScript and the 74-page production build passed before release. The database was checked after browser automation stopped and contains no `biznes_ru` connection/request row, so no credential, customer, product or order was transmitted.
+
+Azure: unchanged. No Azure resource, deployment, model, key, quota or billing setting was changed.
+
+Not completed: transferring the account-local Business.Ru integration ID and secret into Dukenim and running the live signed read-only preflight. Windows Computer Use stopped because it could not determine Edge's current URL with sufficient confidence; policy required ending browser input instead of bypassing the guard. Real order synchronization, field mapping, idempotent outbound delivery, refresh during sync, webhooks and disconnect/revocation remain unimplemented. No order transmission is authorized.
+
+Required owner action: the authenticated Business.Ru page is open in Codex's in-app browser, which Windows Computer Use may not automate. Open the same saved `Dukenim` API integration in ordinary Microsoft Edge, keep that Business.Ru tab active and then resume the task. The agent can then copy the integration ID and secret into Dukenim `/admin/integrations?provider=biznes_ru` without exposing them and submit once. This is the only remaining step for the read-only connection test. A separate explicit decision is still required before sending any test order.
+
+Where to verify: production `/admin/integrations?provider=biznes_ru`; Supabase migration `20260910210037_business_ru_connection`; commit `3b1b25c`. Do not claim Business.Ru connected until a safe database query confirms an encrypted `biznes_ru` row and the UI shows the verified badge.
+
+## Recovery — 2026-09-11
+
+Recovery release 4ed4814 pushed; Vercel success confirmed. Build passes (74 routes), 8 focused tests and TypeScript pass. Authenticated production tab /admin/ai-studio reloaded: restored-proposal notice, previous conversation, original saved-generation iframe and apply button verified. No generation/application triggered. Recovery acceptance verified; full owner apply/re-login/publication journey remains unverified. Changed page.tsx, ai-studio-client.tsx and client tests plus checklist. Next: complete that broader owner journey with authorized merchant content; preserve Amira and paused native work.
+
+Owner reports lost work and requests resume. Git history through4faa7a4 remains, prior Vercel success confirmed. Read-only exact-ID query confirms yesterday's saved store_design exists with layout. Found actual UI omission: page loaded last catalog_structure, but client design/generation started null, so refresh lost proposal UI without losing DB data. Added tenant/session-client latest design read with schema validation, restored client preview/apply and explicit restored notice. Does not regenerate, apply or publish merchant design.8focused tests/tsc pass; build/deployment/browser checks pending. No Azure changes, no credentials or merchant products/orders modified. Existing integration/shared-file edits preserved.
+
+## Personal assembly — 2026-09-10 19:12
+
+Final release4faa7a4 Vercel success confirmed: https://vercel.com/yersat47-s-projects/dukenim-new/J3ra497Z7uNx6xSkqbR4vykyARLD . Owner-facing proposal tab retained. Audit is committed. Shared context files retain concurrent integration edits and were not bulk-staged.
+
+19:20 verification: production browser dialogue2messages persists after reload; actual saved design proposal renders requested pink/green, centered serif hero,2column portrait soft cards. Proposal left unapplied; no merchant products/orders created. Browser exposed missing onTask in building branch: fixed5c71699 (Vercel success), form preserved while hidden38b970c. Final waiting-state fix removes false “AI unavailable” while generation is pending.403tests + tsc/build74; final tinyUI change6tests/tsc pass. Full application/re-login/newshop/publication acceptance not claimed. Audit updated with precise evidence.
+
+Source073489c pushed and Vercel success confirmed. Applied20260910140146 adds validated layout_config and preserves existing owner/staff authorization through guarded function patches. AI now returns typography/hero/density/columns/corners/imageRatio; shared StoreHome renders it. Creation, owner apply, staff apply and undo persist it. Live Kimi test passed exact requested colors + sections + layout; SQL personal_catalog_regression proves create/undo/constraint/publication with rollback, staff regression proves write/read/revoked/CAS.399full tests +49targeted after renderer additions; tsc/build74pass. Browser production consultation now being checked; do not call complete owner re-login/checkout journey verified yet.
+
+Changed files: personal-store-layout schema/tests, AI schema/prompt/mapping/live fixture, StoreHome/CSS/tests, database type, migration, twoSQL regressions. Audit: docs/PERSONAL_ASSEMBLY_AUDIT_20260910.md. Existing integration task changes preserved; its concurrent biznes_ru type union entered073489c alongside layout type, without connector source or secrets.
+
+Azure resource/quotas unchanged. Local server start with a retrieved credential was denied by execution policy; did not retry credential forwarding. Production browser is the validation target. Concurrent integration build changes .next, so avoid competing builds. Remaining: unrestricted custom components, full owner creation/re-login/purchase acceptance, employee-browser invitation/upload/apply, merchant acquiring, devicepush, complete multipage brand analysis and full registry integrations. Preserve Amira's products/sales and native pause.
+
+## Business.Ru private integration and local connector — 2026-09-10 19:06
+
+Result: after the owner's action-time confirmation, the free account-local `Интеграция по API` module was saved in authenticated test company `w833379` under the name `Dukenim`. The provider UI lists `Dukenim` as a configured connection. An integration ID and secret now exist only in the provider account; their values were not copied into source, shared documentation or chat output.
+
+Implemented and verified: added a local Business.Ru connector that follows the official signed token-repair flow, generates PHP-compatible sorted query encoding, allowlists one `*.business.ru` account host, verifies signed responses, rejects forged/oversized/error responses and performs only `GET customerorders?help=1` before accepting credentials. Added an owner-only protected form and server action that encrypts ID, secret and token with the existing AES-256-GCM key before writing to the service-role-only connection table; the ordinary CRM request row stores only the opaque connection ID. Added migration `20260910190000_business_ru_connection.sql` to permit `biznes_ru` in that private table without granting browser access. Eight focused tests pass; the full suite passes 399 tests with 4 explicit live tests skipped, `npx tsc --noEmit` passes and `npm run build` completes 74 pages.
+
+Azure: unchanged. No Azure resource, model, deployment, key, quota or billing setting was touched.
+
+Not completed: the Business.Ru credential has not been transferred into Dukenim; the adapter, action, UI and migration are uncommitted, unapplied and not deployed, and the live signed read-only preflight has not run. The generated `integration_connections` provider type union was included in concurrent commit `073489c`, which is already on `origin/main`, but it is inert without the migration and protected action. No customer, product, order, webhook, payment or contract was created or transmitted. Real order synchronization, field mapping, idempotency ledger use, token refresh during sync, disconnect/revocation and webhook verification remain unimplemented; a successful build is not an end-to-end connection.
+
+Required owner action: separately authorize publishing the reviewed source/migration and transferring the specific Business.Ru integration ID and secret from `w833379.business.ru` into Dukenim's encrypted production connection store. After that, run the read-only preflight first and inspect the returned order schema before authorizing any synthetic order.
+
+Where to verify: Business.Ru Marketplace → `Интеграция по API` shows the saved `Dukenim` connection. Local source is in `src/lib/integrations/business-ru.ts`, the protected action in `src/app/admin/integrations/business-ru-actions.ts`, and the database change in `supabase/migrations/20260910190000_business_ru_connection.sql`. No production Dukenim status is claimed.
+
+## Staff design and CRM comparison — 2026-09-10 18:54
+
+Build74completed successfully. Source05a7466 pushed; Vercel3vcYxgbkcsRVkrWLpTriPkWjkFRT pending at18:56 checkpoint. Shared context/integration documents had pre-existing concurrent edits and were preserved unstaged; dedicated source/checklist/comparison committed.
+
+Release subsequently confirmed Ready/success for05a7466 at Vercel3vcYxgbkcsRVkrWLpTriPkWjkFRT. No authenticated employee preview/apply acceptance claimed.
+
+Implemented staff saved-design preview/apply: actual active membership and studio permission checked before privileged preview data, tenant derived from membership; shared StoreHome renderer is used, purchase remains inert. RPC checks write/plan and expected updated_at under locks, reads only same-tenant store_design generation, updates only appearance, retains publication flag and captures design history plus audit. No staff identity added to tenant_users. Staff currently applies owner-generated saved designs; does not generate a complete custom site itself. Applied migration20260910135001; rollback regression verifies read-only/revoked denial, saved title, history, stale conflict and unchanged private publication.383tests/tsc pass; final build running. Security advisor retains known warnings including intentional authenticated RPC; anonymous new RPC execute revoked. No zero-warning security claim.
+
+Added warehouse search by title/SKU/size/colour and available/low/empty/missing-SKU filters with4tests; renamed displayed quantity as available, not physical inventory. Read official materials for Planfix, MoySklad, RetailCRM, Bitrix24, UMAG, Poster. Comparison and uncovered providers are in docs/CRM_PRODUCT_COMPARISON_20260910.md. Other19registry entries are not claimed fully audited. No integration account/billing settings changed. Azure unchanged. Full personalized builder, owner and employee E2E remain open. Employee email still not provided. Changed areas: staff actions/design components/server types/preview guard, store-preview, stock filters/page, migration/regression and checklist. Existing dirty integration documents preserved, not included in source release. Next: authenticated staff preview/apply and owner save/relogin/publish journey, then remaining builder and CRM data-model gaps. These internal gaps are not caused by login alone.
+
+## Confirmed CRM/POS follow-ups — 2026-09-10 18:32
+
+Result: after the owner's action-time confirmation, the prepared no-secret Planfix diagnostic reply was sent in the existing support thread and Gmail showed `Сообщение отправлено`; the message now appears in the thread at 18:28. The prepared no-payment r_keeper request was sent to the official Kazakhstan dealer address and Gmail independently showed `Сообщение отправлено`; no price, contract or license was accepted.
+
+Business.Ru checkpoint superseded by the 19:06 section above: the owner later confirmed the action, and the private `Dukenim` integration was saved.
+
+Azure: unchanged. No Azure resource, model, deployment, key, quota or billing setting was touched. No customer data, test order, payment or persistent API access was transmitted or created.
+
 ## CRM/POS mailbox re-audit and Planfix OAuth diagnosis — 2026-09-10 17:20
 
 Result: Gmail was re-audited across all 23 outreach targets and explicit credential/registration terms. No production API key, client secret or access token was received. Business.Ru delivered the requested invitation; its email-verification button will create a Business.ID company/account and awaits separate confirmation. iiko explicitly permitted an open-API pilot but supplied no `apiLogin`; keyCRM and MoySklad supplied registration routes, not keys. The complete evidence/status ledger is in `docs/INTEGRATION_IMPLEMENTATION_20260909.md`. r_keeper answered the no-payment clarification by directing product, cost and deployment questions to an official dealer. The official list identifies Kazakhstan gold partner ТОО «КИПЕР.KZ»; a no-payment technical/commercial request is saved as a Gmail draft to its listed address.
@@ -957,6 +1088,8 @@ Where to verify: production `/admin/integrations?provider=r_keeper` and `/admin/
 
 18:32 continuation: 4828b14 deployment DVYj4xbXikwxFjbaeJuZTugznQ6p success. Added staff product creation UI/API/schema and applied 20260910132527 migration. Catalog write is required; nonzero initial stock additionally requires stock write. RPC derives tenant, locks membership/store, checks lifecycle, validates image paths, creates hidden product/variant/stock movement/audit atomically, and uses request UUID for retry. Server decodes/re-encodes JPEG/PNG/WebP, strips metadata, allows4images/3MB combined. Pre-save upload failures clean up only their own new objects. After uncertain RPC outcome images are deliberately retained (possible orphan) rather than deleting a potentially committed product's media; retry queries existing product. Concurrent retry can leave unused images; cleanup job not implemented. UI currently creates a single standard variant; existing owner editor handles additional variants/category. Not a full employee end-to-end acceptance.
 
+Release confirmed: a9c7380 pushed to main and Vercel ATk1jmcHNZ2Dqe1RFWxshv8dGDgX succeeded. Production POST /api/staff/products with same-origin header and no session returns401, as expected. This is a boundary smoke test, not an authenticated photo upload. Owner email question remains unanswered at this checkpoint.
+
 Checks: 376 tests/4live skips, tsc, build74pages pass; rollback SQL covers creation/stock/idempotency/missing rights/revoke. Advisor still reports intentional authenticated security-definer endpoints and existing leaked-password setting; no anonymous grant to the new function. Remaining: actual employee email acceptance/photo upload, staff design publishing, broader personal builder and buyer/device/payment acceptance. Requested employee email asynchronously; no invitation sent and no Amira test data seeded. Azure unchanged in this continuation. Changed files: staff product route/form/schema/tests, staff page/server types, migration and rollback regression, shared checklists. Release of these new source files pending at this checkpoint.
 
 Release verification: c4f058f pushed to main; Vercel deployment Fv4bJBXc8xhk7DBD3wwGrGsX461Q succeeded. Fresh authenticated production /admin/team renders owner permission controls and /admin/ai-studio renders the single building step without competing publication/brand/history/banner panels. Anonymous staff API returns403; malformed buyer-orders request returns400. This verifies hosted rendering/boundaries, not invitation acceptance or an end-to-end purchase. Follow-up removes the remaining manual readiness text field from reservation settings in favor of seller-confirmed readiness.
@@ -972,3 +1105,69 @@ Security advisor: authenticated SECURITY DEFINER warnings include intentionally 
 Changed areas: src/app/admin/team, src/app/staff, src/app/api/staff/studio, src/app/api/my-orders, storefront orders/checkout/reservations, staff-server/permissions, buyer progress/receipt helpers, five staff migrations and SQL regression; related navigation, working-hours and Studio components. Other integration-agent changes preserved and excluded from this source commit.
 
 Azure: existing Kimi-K2.6 works; no model/resource/quota/billing changes. Local development deliberately lacks privileged production credentials; hosted configuration is separate. Acquiring and native application remain outside this release; no Amira fake sales or merchant facts were created. Acceptance checklist rows28–31 remain in progress until end-to-end evidence. Next: verify hosted release, real staff invitation/acceptance under owner-provided email, full merchant and buyer journeys; complete staff creation/media/design application and remaining broader builder/delivery requirements. Internal unfinished functions are not an authentication blocker.
+
+
+
+### Food ordering, Studio simplification and CRM setup billing — 2026-09-19 (latest)
+
+Result: implemented the owner-approved HoReCa direction without a separate permanent business-centre tenant type. Food storefronts ask delivery or pickup before the menu; checkout accepts ASAP or a requested local time, validated on the API and database between 15 minutes and 14 days. The requested time is shown in owner orders and the buyer's saved browser history. AI Studio opens the builder immediately, presents five short steps and offers rich food presets for delivery cafés, business-centre canteens and coffee/bakery shops.
+
+CRM setup billing is tied to the verified connection transition. A connected Basic/«Старт» request creates one 70,000 KZT charge; Standard/«Бренд» is recorded as included. Checkout is scoped to a specific charge and owner, and the signed Polar `order.paid` webhook accepts only the configured CRM product and exactly 70,000 KZT; replay is idempotent. The UI fails closed while `POLAR_CRM_SETUP_PRODUCT_ID` is absent. Provider licensing remains separate.
+
+Changed product files include the food fulfilment gate, storefront/checkout/order views, AI setup flow, integrations page, CRM payment endpoint/component and Polar webhook. Database migrations: `20260919082323_order_requested_time.sql`, `20260919082953_crm_setup_billing.sql`, `20260919083643_crm_setup_charge_indexes.sql`; all are applied. Added rollback regression `supabase/tests/order_timing_and_crm_billing.sql` and mobile QA `scripts/check-food-ordering-mobile.cjs`; the existing 36-journey checker now handles the food gate.
+
+Checks: 423 tests pass (4 live tests skipped), strict TypeScript passes, production build passes. Production rollback SQL verifies scheduled time/past rejection, Start/Brand CRM states, exact amount and webhook replay. Existing staff access and staff design rollback suites pass (invite, email acceptance, restricted permissions, product/stock mutation, revision change, revoke and post-revoke denial). Personal catalog regression passes create/save/layout/undo/private-before-publish/product gate/publish. All 18 storefront configurations pass purchase navigation at 390 and 1440 pixels without overflow; focused 390px screenshots verify the fulfilment sheet and timing controls.
+
+Azure: unchanged; no generation, quota, model or billing change.
+
+Release: commit `be8a35e` is pushed to `main`; Vercel deployment `dpl_5Kjpax9je7xXXdxqeLwpcJ2QagxA` is Ready and current on `www.dukenim.kz`. Production browser smoke confirms the food delivery/pickup gate, scheduled checkout controls, and authenticated integrations/orders rendering.
+
+Not completed: a real CRM payment cannot be submitted until the 70,000 KZT one-time Polar product ID is configured. Staff and constructor database journeys are verified, but separate authenticated employee invite/login UI and owner save/re-login/publish browser journeys still require disposable identities or deliberate mutation of a real store. Wraxa public brief was inspected through its final registration gate; account creation and its following paid subscription were not performed.
+
+Next recommended action: commit and deploy only the scoped source/migrations/tests, smoke production food and owner pages, then configure the Polar CRM one-time product. For Wraxa, obtain the required action-time confirmation immediately before Google account creation; do not accept its paid subscription without separate authorization.
+
+### AI Studio visual simplification — 2026-09-19
+
+Result: rebuilt the catalog setup presentation around one visible decision at a time. Removed the three narrow embedded storefront iframes and the oversized final iframe. Template selection now uses three compact choices plus one large static illustration with real demo-product photos; food, clothing, furniture and the other supported verticals keep the same three structure choices with vertical-specific content. On 390×844 the entire choice step, selected example and navigation fit in one viewport without horizontal or nested scrolling. The first-product stage is a focused form without the chat wrapper, raw browser file inputs were replaced by explicit photo/PDF/logo buttons, and the ready-state AI composer is the final element at the bottom after settings.
+
+Changed files: `src/components/admin/catalog-setup-form.tsx`, `src/components/admin/template-illustration.tsx`, `src/components/admin/ai-studio-client.tsx`, `src/components/admin/studio-conversation.tsx`, `src/components/admin/studio-conversation.module.css`, `src/components/admin/product-setup-form.tsx`, `src/components/admin/brand-materials.tsx`, related setup CSS and focused tests. Commits `6b13fd0` and `de19719` are pushed to `main`.
+
+Checks: focused template tests pass (9/9); the preceding full suite passes 430 tests with 4 explicit live skips; strict TypeScript passes; production build passes with 75 routes. Local Playwright visual QA at 390×844 found zero iframes, zero horizontal overflow, two visible product photos and a total step height of 844px. Production authenticated smoke confirms the AI Studio settings precede the composer and the composer is the last interactive block.
+
+Azure: unchanged; no model request, resource, quota, key or billing setting was changed.
+
+Release: Vercel deployment `dpl_XGUS4uZHGvtcZn4SV5tqoTt1W2j4` is Ready and aliased to `https://www.dukenim.kz`.
+
+Not completed: the live store used for the production smoke is already in the ready lifecycle, so the published selection step was not reopened against that real store and no merchant data was reset. Its responsive selection state was verified with the production components in an isolated local route that was removed before commit.
+
+Required owner action: none for this visual correction.
+
+Where to verify: production `/admin/ai-studio`; a new or still-building catalog shows the simplified five-step builder, while a ready catalog shows the bottom-anchored AI composer.
+
+### Food template with stories — 2026-09-19
+
+Result: owner requested a complete Frito-like food template including the vertical stories block and softer colours. Inspected the actual Frito delivery gate, menu and full-screen image story. Implemented the food assortment template with compact header, purple/white palette, vertical photo-story covers, native full-screen story dialog (progress, automatic advance, pause, previous/next, swipe, Escape and focus return), in-page sticky categories, search, two-column mobile product cards, quick add and sticky cart total. Uses only the current merchant products/photos; demo goods remain confined to demo routes. Existing delivery/pickup and scheduled checkout are preserved. The same saved assortment template renders in production and private preview; the AI builder illustration/copy now reflects stories. Published campaign and merchant policies remain rendered.
+
+Changed files: food-quick-menu.tsx and module CSS; store-home.tsx, store-header.tsx, public/demo layouts, private preview, template-illustration.tsx, commerce configuration copy; render tests and scripts/check-food-stories.cjs. Commit: 9f6b337. Deployment: dpl_BZWHfcL9Doh49NwewCG3UgSAWcEq, Ready and aliased to www.dukenim.kz.
+
+Checks: strict TypeScript passes; full suite initially found one stale illustration assertion (428 passing), corrected assertion and all 44 affected render tests pass. Production build passes (75 routes). Local and production Playwright pass stories/pause/next/Escape/search/add/cart at 390 and 1440 with zero horizontal overflow. Production food gate/category menu/quick menu/scheduled-checkout 390px regression passes. Mobile and desktop captures were inspected. Swipe is implemented but physical-device touch was not tested. No real order/payment or customer-data mutation was submitted. No separately uploaded video story editor is included; the inspected Frito reference and implemented stories use photographs.
+
+Azure: no request, configuration, quota or expense change.
+
+Not completed: GitHub push is externally blocked by three github.com:443 connection timeouts; commit is safe locally and deployment succeeded directly from the same source. origin/main remains at de19719 until push is retried. Merchant-specific template assignment was not changed; existing assortment stores use the new renderer, and other saved styles are preserved.
+
+Required owner action: none. Next recommended action: retry git push origin main when GitHub connectivity returns. Verify the live example at https://www.dukenim.kz/demo/food/assortment.
+
+### Phone buyer, merchant SMS, automated gifts, recipes and blue accent — 2026-09-20
+
+Result: implemented phone-first real checkout/reservation with Supabase OTP, consent links, server verification of `phone_confirmed_at`, permanent tenant customer/order-history/loyalty attachment and an optional merchant marketing-SMS consent. Added owner SMS Sender ID/templates/campaign settings, root moderation, transactional outbox, campaign consent filtering and a signed minutely Supabase worker. The worker leaves messages untouched when the external provider key is absent. Loyalty gifts now select a real variant and automatically enter the order at zero price with stock movement. Food owners can maintain raw materials and per-product recipes; sales consume recipe quantities, removed ingredients are skipped and cancellations return stock. Updated the platform to a dark-blue accent and aligned the masked D symbol, wordmark and bright dot.
+
+Changed areas: buyer phone/auth/history APIs and UI; checkout/reservation; SMS owner/root/worker UI and APIs; loyalty editor; raw-material/recipe stock UI; global/home/store colours and logo; migrations `20260919214755`, `20260919220743`, `20260919221511`, `20260919223520`; focused tests and mobile QA.
+
+Checks: 442 tests pass with 4 explicit live tests skipped; strict TypeScript passes; production build generates 77 routes. Rollback database acceptance covers material consumption/return, automatic gift/stock, Sender ID gates, transactional/marketing queue and outsider isolation. Supabase has all four migrations and active `dukenim-sms-worker` with the Vault secret present. Local 390px food flow passes delivery → menu → persisted cart → timing with no overflow; home passes 390/1440 visual/overflow inspection.
+
+Azure: unchanged; no model request, resource, quota or billing change.
+
+Unresolved external dependency: Production has no `MOBIZON_API_KEY`, and Supabase phone authentication still needs an SMS provider configured. A merchant Sender ID must also be approved by that provider before messages can be delivered under the shop name. No SMS was claimed, sent or charged during this work.
+
+Next: commit/push/deploy the scoped product files and migrations, then smoke canonical production including the unauthenticated phone screen. After provider credentials and Sender ID approval exist, perform one real OTP and one consented transactional SMS delivery test.
