@@ -1170,4 +1170,6 @@ Azure: unchanged; no model request, resource, quota or billing change.
 
 Unresolved external dependency: Production has no `MOBIZON_API_KEY`, and Supabase phone authentication still needs an SMS provider configured. A merchant Sender ID must also be approved by that provider before messages can be delivered under the shop name. No SMS was claimed, sent or charged during this work.
 
-Next: commit/push/deploy the scoped product files and migrations, then smoke canonical production including the unauthenticated phone screen. After provider credentials and Sender ID approval exist, perform one real OTP and one consented transactional SMS delivery test.
+Release: `062e845` and final cart-foreground fix `83a19ea` are pushed to `main`. Vercel deployment `dpl_BEYespANwRba1SG8LV7iXEXdLsA8` is Ready and aliased to `https://www.dukenim.kz`. Fresh 390px production smoke verifies the unauthenticated phone screen, privacy/offerta links, clear «Мои заказы» and visible cart icon/count, no horizontal overflow, and unsigned SMS worker rejection with 401.
+
+Next: after provider credentials and Sender ID approval exist, perform one real OTP and one consented transactional SMS delivery test. No further source or deployment work is pending for this scope.

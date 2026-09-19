@@ -144,4 +144,4 @@ PDF.js разрешён, приложение/TestFlight на паузе вла�
 | Dark-blue accent and logo alignment | verified locally | Global tokens, home controls, store actions and logo mask/dot updated; 390/1440 home screenshots inspected with no horizontal overflow. |
 | Mobile food journey | verified locally | 390px delivery gate → menu → add → persisted cart → checkout timing passes with no horizontal overflow. |
 | Automated checks | verified | 442 tests pass, 4 live tests skipped; strict TypeScript and 77-page production build pass. |
-| Production publish | in progress | Source is ready for explicit-file commit, push, Vercel deployment and canonical-domain smoke. |
+| Production publish | verified | `062e845` plus cart-foreground fix `83a19ea` are on `origin/main`; `dpl_BEYespANwRba1SG8LV7iXEXdLsA8` is Ready/current. Fresh 390px production browser verifies phone screen, legal links, clear orders/cart controls, no overflow and unsigned SMS worker 401. |
