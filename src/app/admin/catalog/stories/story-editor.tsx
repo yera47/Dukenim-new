@@ -14,6 +14,8 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
+  const editor = useRef<HTMLElement>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [productId, setProductId] = useState("");
@@ -26,7 +28,8 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
   function select(item: EditorStory | null) {
     setEditing(item); setFile(null); setTitle(item?.title ?? ""); setCaption(item?.caption ?? "");
     if (fileInput.current) fileInput.current.value = "";
-    setProductId(item?.product_id ?? ""); setStatus(item?.status ?? "draft"); setMessage("");
+    setProductId(item?.product_id ?? ""); setStatus(item?.status ?? "draft"); setMessage(""); setConfirmDelete(false);
+    if (window.innerWidth < 1024) requestAnimationFrame(() => editor.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
   function save() {
     setMessage("");
@@ -51,8 +54,12 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
     });
   }
   function remove(item: EditorStory) {
-    if (!window.confirm(`Удалить историю «${item.title}»?`)) return;
-    startTransition(async () => { const result = await deleteFoodStory(item.id); setMessage(result.error ?? "История удалена."); select(null); router.refresh(); });
+    startTransition(async () => {
+      const result = await deleteFoodStory(item.id);
+      if (!result.error) select(null);
+      setMessage(result.error ?? "История удалена.");
+      router.refresh();
+    });
   }
 
   return <div className={`grid gap-6 ${stories.length ? "lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)]" : "max-w-xl"}`}>
@@ -64,7 +71,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
         <span className="ml-auto text-sm font-bold text-[var(--accent)]">Изменить</span>
       </button>)}
     </section>}
-    <section className="card h-fit p-5 sm:p-6" aria-label="Редактор истории">
+    <section ref={editor} className="card h-fit scroll-mt-20 p-5 sm:p-6" aria-label="Редактор истории">
       <h2 className="text-xl font-bold">{editing ? "Редактировать историю" : "Новая история"}</h2>
       <p className="muted mt-1 text-sm">Покажите блюдо, акцию или атмосферу кафе. Опубликуйте, когда всё готово.</p>
       <div className="mt-6 space-y-5">
@@ -76,7 +83,8 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
         <label className="block text-sm font-bold">3. Ссылка на блюдо · необязательно<select className="input mt-2" value={productId} onChange={event => setProductId(event.target.value)}><option value="">Без ссылки</option>{products.map(product => <option key={product.id} value={product.id}>{product.title}</option>)}</select></label>
         <label className="block text-sm font-bold">Показ на витрине<select className="input mt-2" value={status} onChange={event => setStatus(event.target.value as "draft" | "published")}><option value="draft">Черновик · виден только вам</option><option value="published">Опубликовать</option></select></label>
         {message && <p role="status" className="rounded-xl bg-[var(--surface-2)] p-3 text-sm">{message}</p>}
-        <div className="flex flex-wrap gap-3"><button type="button" disabled={pending || !title.trim()} onClick={save} className="btn btn-primary">{pending ? "Сохраняем…" : editing ? "Сохранить изменения" : "Создать историю"}</button>{editing && <button type="button" disabled={pending} onClick={() => remove(editing)} className="btn btn-secondary text-red-700">Удалить</button>}</div>
+        {editing && confirmDelete && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm"><p className="font-bold text-red-800">Удалить «{editing.title}»?</p><p className="mt-1 text-red-700">История и её файл исчезнут с витрины.</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={pending} onClick={() => remove(editing)} className="btn bg-red-700 text-white hover:bg-red-800">Да, удалить</button><button type="button" disabled={pending} onClick={() => setConfirmDelete(false)} className="btn btn-secondary">Отмена</button></div></div>}
+        <div className="flex flex-wrap gap-3"><button type="button" disabled={pending || !title.trim()} onClick={save} className="btn btn-primary">{pending ? "Сохраняем…" : editing ? "Сохранить изменения" : "Создать историю"}</button>{editing && !confirmDelete && <button type="button" disabled={pending} onClick={() => setConfirmDelete(true)} className="btn btn-secondary text-red-700">Удалить</button>}</div>
       </div>
     </section>
   </div>;
