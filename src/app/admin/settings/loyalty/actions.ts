@@ -10,6 +10,7 @@ export async function saveLoyalty(_: {error?:string;success?:string},form:FormDa
  try{
   const parsed=loyaltyProgramSchema.safeParse(JSON.parse(String(form.get("program"))));
   if(!parsed.success)return {error:parsed.error.issues[0].message};
+  if(parsed.data.enabled&&parsed.data.rules.some(rule=>rule.reward==="gift"&&!rule.giftVariantId))return {error:"Выберите товар-подарок из меню или смените награду на скидку."};
   const result=await loyaltyClient(await createClient()).rpc("save_loyalty_program",{p_tenant_id:context.tenantId,p_program:parsed.data});
   if(result.error)return {error:"Не удалось сохранить программу. Обновите страницу и повторите попытку."};
   revalidatePath("/admin/settings/loyalty");revalidatePath("/s/[slug]","layout");

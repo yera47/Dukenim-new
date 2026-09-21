@@ -76,9 +76,10 @@ describe("order API fails safely before database writes", () => {
     vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:8,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
     expect((await POST(request(valid))).status).toBe(400);
     expect(createStorefrontOrder).not.toHaveBeenCalled();
-    expect((await POST(request({...valid,privacyConsent:true}))).status).toBe(200);
+    const referralCode="12345678-1234-4123-8123-123456789099";
+    expect((await POST(request({...valid,privacyConsent:true,referralCode}))).status).toBe(200);
     expect(admin.auth.admin.getUserById).not.toHaveBeenCalled();
-    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,buyer:expect.objectContaining({userId:null,hash:"a".repeat(64)})}));
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,referralCode,buyer:expect.objectContaining({userId:null,hash:"a".repeat(64)})}));
   });
   it("links a confirmed email account while keeping its contact phone unverified",async()=>{
     const admin={auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{email:"buyer@example.test",email_confirmed_at:"2026-09-21T00:00:00Z",phone:null}}})}}};

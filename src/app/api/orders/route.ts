@@ -127,7 +127,7 @@ export async function POST(request: Request) {
       paymentMethod: "cash",
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
-      buyer:orderBuyer,reward:accountVerified?extra.data.reward:null,referralCode:accountVerified?extra.data.referralCode:null,
+      buyer:orderBuyer,reward:accountVerified?extra.data.reward:null,referralCode:extra.data.referralCode,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];

@@ -4,6 +4,7 @@ import {createProductAction,type ProductActionState} from "@/app/admin/actions";
 import {businessWorkflow} from "@/lib/business-workflow";
 import type {BusinessVertical} from "@/types/database";
 import {FoodOptionsEditor} from "./food-options-editor";
+import {QuantityStepper} from "./quantity-stepper";
 import Image from "next/image";
 import { ImagePlus } from "lucide-react";
 
@@ -36,6 +37,7 @@ export function ProductSetupForm({categories=[],vertical="other"}:{categories?:A
         <label className="block text-sm">Название<input name="title" required minLength={2} maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} className="input mt-2" placeholder={workflow.titleExample}/></label>
         {categories.length>0&&<label className="block text-sm">Раздел<select aria-label="Раздел" name="categoryId" className="input mt-2" defaultValue=""><option value="">Без раздела</option>{categories.map(category=><option key={category.id} value={category.id}>{category.name}</option>)}</select></label>}
         <label className="block text-sm">Описание · необязательно<textarea name="description" maxLength={2000} rows={4} className="input mt-2" placeholder={workflow.descriptionHint}/></label>
+        {vertical==="food"&&<FoodOptionsEditor/>}
       </section>
       <section data-product-step="1" hidden={step!==1} className="space-y-4">
         <h3 className="text-xl font-semibold">Покажите товар покупателю</h3>
@@ -48,17 +50,17 @@ export function ProductSetupForm({categories=[],vertical="other"}:{categories?:A
       </section>
       <section data-product-step="2" hidden={step!==2} className="space-y-4">
         <h3 className="text-xl font-semibold">Цена и доступное количество</h3>
-        <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm">Цена, ₸<input name="price" type="number" min={0} step={1} required value={price} onChange={e=>setPrice(e.target.value)} className="input mt-2"/></label><label className="text-sm">Старая цена · необязательно<input name="oldPrice" type="number" min={0} step={1} className="input mt-2"/></label></div>
+        <div className="grid gap-4 sm:grid-cols-2"><label className="text-sm">Цена<div className="relative mt-2"><input name="price" type="number" inputMode="numeric" min={0} step={1} required value={price} onChange={e=>setPrice(e.target.value)} className="input pr-12"/><span className="pointer-events-none absolute right-4 top-3 font-semibold">₸</span></div></label><label className="text-sm">Старая цена · необязательно<div className="relative mt-2"><input name="oldPrice" type="number" inputMode="numeric" min={0} step={1} className="input pr-12"/><span className="pointer-events-none absolute right-4 top-3 font-semibold">₸</span></div></label></div>
         <p className="text-sm text-neutral-500">{workflow.stockHelp} Если вариантов нет, заполните только количество в первой строке. При нуле покупка недоступна.</p>
         {[0,1,2].map(index=><div key={index} className="rounded-xl border p-3"><p className="mb-3 text-xs text-neutral-500">{index===0?"Основной вариант":"Дополнительный вариант · необязательно"}</p><div className="grid grid-cols-2 gap-3">
-          <label className="text-xs">{workflow.optionLabel}<input name="size" maxLength={80} className="input mt-1"/></label><label className="text-xs">{workflow.detailLabel}<input name="color" maxLength={80} className="input mt-1"/></label><label className="text-xs">Артикул · необязательно<input name="sku" maxLength={80} className="input mt-1"/></label><label className="text-xs">Количество<input name="stock" type="number" min={0} step={1} defaultValue={0} className="input mt-1"/></label>
+          <label className="text-xs">{workflow.optionLabel}<input name="size" maxLength={80} className="input mt-1"/></label><label className="text-xs">{workflow.detailLabel}<input name="color" maxLength={80} className="input mt-1"/></label><label className="text-xs">Артикул · необязательно<input name="sku" maxLength={80} className="input mt-1"/></label><div className="text-xs">Количество<div className="mt-1"><QuantityStepper name="stock" initial={index===0?1:0} label={`Количество варианта ${index+1}`}/></div></div>
         </div></div>)}
         <p className="text-xs text-neutral-500">Себестоимость можно указать после сохранения в «Складе». Она видна только владельцу и нужна для расчёта валовой прибыли.</p>
       </section>
       <section data-product-step="3" hidden={step!==3} className="space-y-4">
         <h3 className="text-xl font-semibold">Проверим перед сохранением</h3>
         <div className="flex gap-4 rounded-2xl border bg-white p-4">{photos[0]&&<Image unoptimized width={112} height={140} src={photos[0]} alt="Обложка товара" className="h-32 w-24 rounded-lg object-cover"/>}<div className="min-w-0"><strong className="break-words">{title}</strong><p className="mt-2">{new Intl.NumberFormat("ru-KZ").format(Number(price)||0)} ₸</p><p className="mt-2 text-xs text-neutral-500">{photos.length?`Фотографий: ${photos.length}`:"Фото можно добавить позже"}</p></div></div>
-        {vertical==="food"&&<FoodOptionsEditor/>}<label className="flex items-center gap-3 text-sm"><input name="isActive" type="checkbox" defaultChecked/>Показывать товар в каталоге</label>
+        <label className="flex items-center gap-3 text-sm"><input name="isActive" type="checkbox" defaultChecked/>Показывать товар в каталоге</label>
         <p className="text-xs text-neutral-500">Магазин не публикуется этой кнопкой. После добавления проверим витрину и отдельно откроем её покупателям.</p>
       </section>
       {(error||state.error)&&<p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-700">{error||state.error}</p>}

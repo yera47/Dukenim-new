@@ -5,14 +5,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
-import { CatalogSetupForm } from "@/components/admin/catalog-setup-form";
-import { ProductForm } from "@/components/admin/product-form";
+import dynamic from "next/dynamic";
 import { StudioConversation } from "@/components/admin/studio-conversation";
-import { BrandMaterials } from "@/components/admin/brand-materials";
-import { DesignHistory } from "@/components/admin/design-history";
 import { CatalogPublication } from "@/components/admin/catalog-publication";
 import styles from "./studio.module.css";
 import type { BusinessVertical } from "@/types/database";
+
+const CatalogSetupForm=dynamic(()=>import("@/components/admin/catalog-setup-form").then(module=>module.CatalogSetupForm));
+const ProductForm=dynamic(()=>import("@/components/admin/product-form").then(module=>module.ProductForm));
+const BrandMaterials=dynamic(()=>import("@/components/admin/brand-materials").then(module=>module.BrandMaterials));
+const DesignHistory=dynamic(()=>import("@/components/admin/design-history").then(module=>module.DesignHistory));
 
 type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "store_design" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
@@ -56,6 +58,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   const [banner, setBanner] = useState<Banner | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
+  const [brandOpen,setBrandOpen]=useState(false);
   const [copied, setCopied] = useState(false);
   const suggestedBrief = "";
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
@@ -208,7 +211,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
       {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
-    <details className="rounded-xl border p-4"><summary className="cursor-pointer text-sm">Оформление и материалы бренда</summary><div className="mt-4 space-y-4"><BrandMaterials/><DesignHistory/></div></details>
+    <details className="rounded-2xl border bg-white p-4" onToggle={event=>setBrandOpen(event.currentTarget.open)}><summary className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold"><span>Добавить логотип и настроить бренд<span className="mt-1 block text-xs font-normal text-slate-500">Загрузите логотип, PDF или опишите цвета — это необязательно.</span></span><span aria-hidden className="text-lg">＋</span></summary>{brandOpen&&<div className="mt-4 space-y-4"><BrandMaterials expandedInitially/><DesignHistory/></div>}</details>
     </StudioConversation>
   </div>;
 }

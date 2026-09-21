@@ -4,7 +4,7 @@ import { brandColorsSchema } from "@/lib/brand-materials";
 import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
 import {BrandPdfVisual} from "./brand-pdf-visual";
 import { FileText, ImagePlus } from "lucide-react";
-export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;onBusyChange?:(busy:boolean)=>void}={}) {
+export function BrandMaterials({embedded=false,expandedInitially=false,onBusyChange}:{embedded?:boolean;expandedInitially?:boolean;onBusyChange?:(busy:boolean)=>void}={}) {
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
   const [file,setFile]=useState<File|null>(null);const[busy,setBusy]=useState(false);const[message,setMessage]=useState("");
@@ -44,7 +44,7 @@ export function BrandMaterials({embedded=false,onBusyChange}:{embedded?:boolean;
     } catch(e){setMessage(e instanceof Error?e.message:"Связь прервалась. Ваш текст остался на экране.");}
     finally{setBusy(false);}
   }
-  return <details className="mx-auto my-4 max-w-3xl rounded-2xl border p-4">
+  return <details open={expandedInitially} className="mx-auto my-4 max-w-3xl rounded-2xl border p-4">
     <summary className="cursor-pointer font-semibold">Логотип и правила бренда · необязательно</summary>
     <p className="my-3 text-sm text-neutral-500">Без брендбука тоже можно. Загрузите логотип и опишите пожелания.</p>
     <div role="group" aria-label="Материалы бренда" onKeyDown={event=>{if(embedded){event.stopPropagation();if(event.key==="Enter"&&event.target instanceof HTMLInputElement)event.preventDefault();}}} className="space-y-4">

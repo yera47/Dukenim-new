@@ -53,7 +53,7 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
     </div>
     {children && <div className={`${styles.steps} space-y-4`} aria-label="Текущий шаг создания магазина">{children}</div>}
     {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
-    {!stageHint&&<nav aria-label="Настройки магазина" className="flex flex-wrap gap-4 text-sm"><Link href="/admin/settings/delivery" className="underline">Доставка и место самовывоза</Link><Link href="/store-preview" target="_blank" className="underline">Предпросмотр вашего магазина ↗</Link></nav>}
+    {!stageHint&&<nav aria-label="Настройки магазина" className="grid gap-3 text-sm sm:grid-cols-2"><Link href="/admin/settings/delivery" className="btn btn-secondary min-h-14 justify-between text-left">Настроить доставку и самовывоз <span aria-hidden>→</span></Link><Link href="/store-preview" target="_blank" className="btn btn-secondary min-h-14 justify-between text-left">Посмотреть магазин глазами покупателя <span aria-hidden>↗</span></Link></nav>}
     {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
     <form onSubmit={event=>{event.preventDefault();void send();}} className={`${styles.composer} sticky bottom-3 z-10 rounded-2xl border bg-white p-4 shadow-sm`}>
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>

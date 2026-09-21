@@ -48,6 +48,8 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const [pending, setPending] = useState(false);
   const [marketingConsent,setMarketingConsent]=useState(false);
   const [privacyConsent,setPrivacyConsent]=useState(false);
+  const [invited,setInvited]=useState(false);
+  useEffect(()=>{if(!demo)setInvited(Boolean(window.localStorage.getItem(`dukenim:${slug}:referral`)));},[demo,slug]);
   const [deliveryConsent,setDeliveryConsent]=useState(false);
   const zone = useMemo(() => zones.find((item) => item.id === zoneId) ?? null, [zoneId, zones]);
   const yandexDelivery = delivery === "courier" && zone?.provider === "yandex";
@@ -85,7 +87,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
     } finally { setPending(false); }
   }
 
-  if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58}/><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">{yandexDelivery?"Товары: ":"Итог: "}{money(result.total)}. {yandexDelivery?"Магазин сам закажет курьера и сообщит цену доставки отдельно.":"Магазин свяжется с вами для подтверждения."}</p><Link href={`/s/${slug}`} className="btn btn-cta mt-7">Вернуться в магазин</Link></div></main>;
+  if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58}/><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">{yandexDelivery?"Товары: ":"Итог: "}{money(result.total)}. {yandexDelivery?"Магазин сам закажет курьера и сообщит цену доставки отдельно.":"Магазин свяжется с вами для подтверждения."}</p>{invited&&guestCheckout&&<p className="mt-4 text-sm text-neutral-600">Вас пригласил друг. Откройте «Мои заказы» и, если ещё не вошли, войдите через Google с этого браузера, чтобы приглашение засчиталось.</p>}<div className="mt-7 flex flex-wrap justify-center gap-3"><Link href={`/s/${slug}/orders`} className="btn btn-primary">Мои заказы и карта</Link><Link href={`/s/${slug}`} className="btn btn-secondary">Вернуться в магазин</Link></div></div></main>;
 
   if (!methodsAvailable) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-9 text-center"><Store className="mx-auto text-[var(--accent)]" size={44}/><h1 className="mt-5 text-3xl font-semibold">Оформление временно закрыто</h1><p className="muted mt-3">Магазин ещё не настроил способы получения заказа.</p><Link href={`/s/${slug}`} className="btn btn-secondary mt-7">Вернуться в каталог</Link></div></main>;
 

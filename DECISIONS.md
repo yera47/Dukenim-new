@@ -98,3 +98,7 @@ The owner requested a configurable loyalty constructor rather than a fixed money
 ## 2026-09-21 — Guest orders while SMS is deferred
 
 The owner wants the buyer-to-merchant order path ready for selling now and explicitly defers connecting an SMS provider. Checkout therefore accepts a consented guest contact phone without claiming it is verified. Google/email sign-in may preserve signed guest receipts and loyalty across devices; an unverified phone by itself must never retrieve another browser's history. Do not claim OTP or store-branded SMS delivery until the carrier account and Sender ID are actually configured and tested.
+
+## 2026-09-21 — Лояльность при создании магазина необязательна
+
+Владелец уточнил прежнее решение: шаг лояльности для еды должен позволять «Не добавлять и продолжить». Программу и правила можно создать, изменить, выключить и снова включить позже в настройках. Подарок из меню доступен только после добавления реального товара-подарка; до этого можно выбрать скидку.

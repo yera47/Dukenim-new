@@ -1,6 +1,7 @@
 import {z} from "zod";
 const identifier=z.string().min(1).max(50).regex(/^[a-zA-Z0-9_-]+$/);
 export const foodOptionsSchema=z.object({
+ nutrition:z.object({weightGrams:z.number().int().min(0).max(100000),kcal:z.number().int().min(0).max(100000),protein:z.number().min(0).max(10000),fat:z.number().min(0).max(10000),carbs:z.number().min(0).max(10000)}).strict().optional(),
  ingredients:z.array(z.object({id:identifier,name:z.string().trim().min(1).max(60),removable:z.boolean()}).strict()).max(30),
  groups:z.array(z.object({id:identifier,title:z.string().trim().min(1).max(80),kind:z.enum(["addon","combo"]),min:z.number().int().min(0).max(10),max:z.number().int().min(1).max(10),options:z.array(z.object({id:identifier,label:z.string().trim().min(1).max(80),price:z.number().int().min(0).max(1000000),variantId:z.string().uuid().nullable()}).strict()).min(1).max(20)}).strict()).max(8),
 }).strict().superRefine((value,ctx)=>{
