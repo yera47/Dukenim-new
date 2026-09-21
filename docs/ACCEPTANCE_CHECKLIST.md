@@ -145,3 +145,15 @@ PDF.js разрешён, приложение/TestFlight на паузе вла�
 | Mobile food journey | verified locally | 390px delivery gate → menu → add → persisted cart → checkout timing passes with no horizontal overflow. |
 | Automated checks | verified | 442 tests pass, 4 live tests skipped; strict TypeScript and 77-page production build pass. |
 | Production publish | verified | `062e845` plus cart-foreground fix `83a19ea` are on `origin/main`; `dpl_BEYespANwRba1SG8LV7iXEXdLsA8` is Ready/current. Fresh 390px production browser verifies phone screen, legal links, clear orders/cart controls, no overflow and unsigned SMS worker 401. |
+
+## Guest ordering without SMS and storefront speed — 2026-09-21
+
+| Requirement | Status | Evidence / blocker |
+|---|---|---|
+| Buyer → real order → owner | verified | Published isolated food store: 390px Edge buyer placed two cash/manual-Yandex orders; `/api/orders` returned 200, database saved contact/address/1,000 KZT goods-only total, authenticated owner `/admin/orders` showed both and manual courier instructions. Test tenant and its orders were deleted after restoring the owner's original store. |
+| Browser guest history | verified | Order #2 appeared in `/s/.../orders` after checkout and again after page reload in the same browser. |
+| Cross-device history/loyalty through Google account | in progress | Confirmed-email identity, signed receipt claim, account-linked order and tenant-scoped history are covered by automated tests; actual Google login on original device followed by a second-device browser check was not performed. Unverified phone alone cannot claim history. |
+| Storefront and owner loading | verified for implementation; benchmark in progress | Store layout no longer fetches all products/variants for the header; food skips categories and other stores fetch category names only. Owner order queries run concurrently and avoid repeated scans. 461 tests, strict TypeScript and 78-route build passed; published 390px store measured navigation TTFB 399 ms / DOMContentLoaded 2,374 ms, no horizontal overflow. No before/after lab or field benchmark was taken. |
+| Full-screen courier notice on mobile | verified | At 390px cookie notice originally overlapped acknowledgement; z-index fix `c93d0a9` published, then acknowledgement, fulfillment choice and checkout completed in Edge. |
+| SMS OTP and store-name sender | externally blocked | Owner deferred provider connection. No provider account/key/approved Sender ID or real OTP/message; no claim that SMS works. |
+| Production release and cleanup | verified | `385de91` and `c93d0a9` pushed to main, Vercel Ready. Exact fixture tenant ID/slug deletion returned one row; follow-up counts: zero fixture tenants/orders, two existing stores retained. Azure unchanged. |
