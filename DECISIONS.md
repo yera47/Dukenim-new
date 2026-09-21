@@ -94,3 +94,7 @@ Owner requested the food quick-menu template to closely follow Frito, including 
 ## 2026-09-19 — Owner: flexible food loyalty and structured food configuration
 
 The owner requested a configurable loyalty constructor rather than a fixed money-to-bonus rate or one stamp preset, plus persistent buyer orders/card. Food catalog creation must include loyalty conditions. The owner also requested Frito visual presentation with Dodo-style quantity editing, removable ingredients, paid additions, combos and structured optional merchant controls instead of a single composition text field.
+
+## 2026-09-21 — Guest orders while SMS is deferred
+
+The owner wants the buyer-to-merchant order path ready for selling now and explicitly defers connecting an SMS provider. Checkout therefore accepts a consented guest contact phone without claiming it is verified. Google/email sign-in may preserve signed guest receipts and loyalty across devices; an unverified phone by itself must never retrieve another browser's history. Do not claim OTP or store-branded SMS delivery until the carrier account and Sender ID are actually configured and tested.
