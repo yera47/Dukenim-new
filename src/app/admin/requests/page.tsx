@@ -6,6 +6,7 @@ import { getOwnerMessages, getOwnerRequests } from "@/lib/queries/owner";
 import { sendRequest } from "@/app/admin/actions";
 import type { Database, Json } from "@/types/database";
 import { integrationProviders } from "@/lib/integrations/providers";
+import { GeneralSupportChat } from "@/components/admin/general-support-chat";
 
 type Message = Database["public"]["Tables"]["messages"]["Row"];
 type RequestRow = Database["public"]["Tables"]["change_requests"]["Row"];
@@ -57,9 +58,9 @@ export default async function Requests({ searchParams }: { searchParams: Promise
     {source === "ai-studio" && <div className="mt-5 rounded-[var(--r-card)] border border-[var(--line)] bg-[var(--accent-soft)] p-4 text-sm"><b>Контекст AI Studio сохранится вместе с обращением.</b><span className="muted mt-1 block">Команда увидит, из какого сценария вы пришли; добавьте в сообщении, какой результат ожидали.</span></div>}
     <div className="mt-6 grid gap-6 xl:grid-cols-[1fr_360px]">
       <section className="card p-6">
-        <div className="h-80 space-y-4 overflow-auto rounded-[var(--r-card)] bg-slate-50 p-4">
-          {messages.length ? messages.map((message) => <div key={message.id} className={`max-w-[82%] rounded-[var(--r-card)] p-4 text-sm ${message.from_role === "owner" ? "ml-auto bg-[var(--accent)] text-white" : "bg-white"}`}>{message.text}</div>) : <p className="muted text-center">Напишите команде Dukenim — обращение сразу появится в очереди.</p>}
-        </div>
+        <h2 className="mb-4 text-lg font-extrabold">Общий чат с Dukenim</h2>
+        <GeneralSupportChat tenantId={tenantId!} messages={messages}/>
+        <details className="mt-7 border-t pt-5"><summary className="cursor-pointer font-extrabold">Создать отдельную заявку</summary><p className="mt-2 text-sm text-neutral-500">Для задачи, которую нужно отслеживать по статусу, откройте отдельное обращение.</p>
         <form action={sendRequest} className="mt-4 grid gap-3">
           <input type="hidden" name="source" value={source}/>
           <input type="hidden" name="pagePath" value={source === "ai-studio" ? "/admin/ai-studio" : "/admin/requests"}/>
@@ -68,7 +69,7 @@ export default async function Requests({ searchParams }: { searchParams: Promise
           <label className="text-sm font-extrabold">Сообщение<textarea name="text" required minLength={2} maxLength={3000} className="input mt-2 min-h-28 resize-y" defaultValue={provider ? `Здравствуйте! Хотел узнать статус подключения ${provider.label} к моему магазину. Какой следующий шаг и нужны ли данные с моей стороны?` : paymentIntent ? `Хочу подключить ${paymentIntent === "kaspi-payments" ? "Kaspi Pay" : "оплату картой"} для своего магазина.\nНужна помощь со следующим шагом.` : ""} placeholder="Опишите задачу, ожидаемый результат и что уже пробовали."/></label>
           {paymentIntent && <p className="text-xs leading-5 text-neutral-500">Укажите только название провайдера и статус заявки. Не отправляйте API-ключи, банковские реквизиты, пароли или коды подтверждения.</p>}
           <button className="btn btn-primary justify-self-start"><Send size={17}/> Отправить в поддержку</button>
-        </form>
+        </form></details>
       </section>
       <aside className="card p-5"><h2 className="font-bold">Мои заявки</h2>{requests.length ? requests.map((request) => {
         const detail = contextLabel(request.context);
