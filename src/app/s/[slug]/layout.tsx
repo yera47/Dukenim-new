@@ -12,6 +12,7 @@ import { getStorefrontSettings } from "@/lib/queries/owner";
 import { storefrontStyle } from "@/lib/storefront-style";
 import {approachForTemplate} from "@/lib/commerce-configurations";
 import compositionStyles from "@/components/store/commerce-layouts.module.css";
+import { YandexDeliveryNotice } from "@/components/store/yandex-delivery-notice";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params; const tenant = await resolveTenant(slug);
@@ -21,8 +22,11 @@ export default async function StoreLayout({ children, params }: { children: Reac
   const { slug } = await params; const tenant = await resolveTenant(slug); if (!tenant) notFound();
   const demo = Boolean(demoVerticalById(tenant.id));
   const settings = !demo && process.env.NEXT_PUBLIC_SUPABASE_URL ? (await getStorefrontSettings(await createClient(), tenant.id)).data : null;
+  const yandexZone = !demo && process.env.NEXT_PUBLIC_SUPABASE_URL
+    ? await (await createClient()).from("delivery_zones").select("id").eq("tenant_id", tenant.id).eq("is_active", true).eq("provider", "yandex").limit(1)
+    : null;
   const style = storefrontStyle(settings,tenant.plan,tenant.accent_color,demo);
   const products = await loadProducts(tenant.id);
   const categories = Array.from(new Set(products.map(product => product.category).filter(Boolean)));
-  return <div style={style} data-vertical={tenant.business_vertical??"other"} data-approach={approachForTemplate(settings?.template_key??"atelier")} className={`min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)] ${compositionStyles.root}`}><CartProvider key={slug} storageKey={`store:${slug}`}><StoreHeader slug={slug} name={tenant.name} categories={categories} demo={demo} food={tenant.business_vertical==="food"} quickFood={tenant.business_vertical==="food"&&approachForTemplate(settings?.template_key??"atelier")==="assortment"}/>{children}{!demo && <InstallPrompt/>}<footer className="mt-16 border-t border-black/10 py-10"><div className="container flex flex-wrap justify-between gap-5 text-sm"><span>{tenant.name} · {tenant.city ?? "Казахстан"}</span><Link href={demo ? "/admin/ai-studio" : "/register"}>Создать свой каталог на Dukenim →</Link><Link href="/legal/privacy">Конфиденциальность</Link></div></footer></CartProvider></div>;
+  return <div style={style} data-vertical={tenant.business_vertical??"other"} data-approach={approachForTemplate(settings?.template_key??"atelier")} className={`min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)] ${compositionStyles.root}`}><CartProvider key={slug} storageKey={`store:${slug}`}><StoreHeader slug={slug} name={tenant.name} categories={categories} demo={demo} food={tenant.business_vertical==="food"} quickFood={tenant.business_vertical==="food"&&approachForTemplate(settings?.template_key??"atelier")==="assortment"}/>{children}{!demo && <InstallPrompt/>}<footer className="mt-16 border-t border-black/10 py-10"><div className="container flex flex-wrap justify-between gap-5 text-sm"><span>{tenant.name} · {tenant.city ?? "Казахстан"}</span><Link href={demo ? "/admin/ai-studio" : "/register"}>Создать свой каталог на Dukenim →</Link><Link href="/legal/privacy">Конфиденциальность</Link></div></footer>{Boolean(yandexZone?.data?.length) && <YandexDeliveryNotice slug={slug} storeName={tenant.name}/>}</CartProvider></div>;
 }

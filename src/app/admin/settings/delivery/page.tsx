@@ -13,21 +13,22 @@ export default async function DeliverySettings() {
   const client = await createClient();
   const reservation = await reservationsClient(client).from("reservation_settings").select("*").eq("tenant_id",context.tenantId).maybeSingle();
   const [zones, settings] = await Promise.all([
-    client.from("delivery_zones").select("id,name,cost,free_from,eta_text,is_active").eq("tenant_id", context.tenantId).order("name"),
+    client.from("delivery_zones").select("id,name,cost,free_from,eta_text,is_active,provider").eq("tenant_id", context.tenantId).order("name"),
     client.from("tenant_settings").select("delivery_enabled,min_order,pickup_enabled,pickup_location").eq("tenant_id", context.tenantId).maybeSingle(),
   ]);
   if (zones.error || settings.error) return <p role="alert">Не удалось загрузить настройки. Обновите страницу — существующие зоны не изменены.</p>;
   return <main className="mx-auto max-w-3xl space-y-5">
     <Link href="/admin/settings" className="btn btn-secondary">← Настройки магазина</Link>
     <h1 className="text-3xl font-semibold">Доставка и самовывоз</h1>
-    <p>Укажите реальные условия. Стоимость проверяется сервером при оформлении заказа. Чтобы временно скрыть зону, снимите отметку доступности.</p>
+    <p>Выберите, кто доставит заказ, затем задайте цену по каждой зоне. Покупатель увидит точную сумму до подтверждения; сервер проверит её при заказе.</p>
+    <p className="rounded-2xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-950"><b>Яндекс Доставка:</b> покупатель не увидит цену доставки при заказе. После получения заказа менеджер сам вызовет курьера от двери до двери и сообщит покупателю стоимость по расстоянию. Оплата — наличными при получении. Автоматического вызова курьера нет; включайте способ только при наличии доступа к Яндекс Доставке. <a href="https://delivery.yandex.kz/ru/" target="_blank" rel="noopener noreferrer" className="font-bold underline">Официальный сайт Яндекс Доставки ↗</a></p>
     {settings.data && <DeliverySettingsForm enabled={settings.data.delivery_enabled} minOrder={settings.data.min_order}/>}
     {settings.data && <PickupForm enabled={settings.data.pickup_enabled} location={settings.data.pickup_location}/>}
     {reservation.error ? <p role="alert">Настройки брони не загрузились.</p> : <ReservationForm enabled={reservation.data?.enabled} hours={reservation.data?.hold_hours} location={reservation.data?.location??settings.data?.pickup_location}/>}
     {!settings.data?.delivery_enabled && <p role="status" className="rounded-xl border p-4">Доставка у магазина выключена. Зоны можно подготовить, но покупателям они пока не предлагаются.</p>}
     {zones.data?.map(zone => <ZoneForm key={zone.id} zone={zone}/>)}
     <h2 className="text-xl font-semibold">Добавить зону</h2>
-    <ZoneForm zone={{ id: crypto.randomUUID(), name: "", cost: 0, free_from: null, eta_text: null, is_active: false }}/>
+    <ZoneForm zone={{ id: crypto.randomUUID(), name: "", cost: 0, free_from: null, eta_text: null, is_active: false, provider: "own" }}/>
     <p className="text-sm text-neutral-500">Самовывоз с предоплатой требует отдельного подключения эквайринга. Сохранение зоны доставки не включает онлайн-оплату.</p>
   </main>;
 }

@@ -13,7 +13,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   if (!tenant) notFound();
 
   if (demoVerticalById(tenant.id)) {
-    return <><p className="container mt-6 rounded-xl bg-[var(--store-surface)] p-4 text-sm">Демонстрационный магазин: заказ не будет отправлен продавцу.</p><CheckoutClient demo slug={slug} deliveryEnabled pickupEnabled minOrder={0} zones={[{ id: "00000000-0000-4000-8000-000000000001", name: "По городу", cost: 1500, freeFrom: 50000, etaText: "1–2 дня" }]}/></>;
+    return <><p className="container mt-6 rounded-xl bg-[var(--store-surface)] p-4 text-sm">Демонстрационный магазин: заказ не будет отправлен продавцу.</p><CheckoutClient demo slug={slug} deliveryEnabled pickupEnabled minOrder={0} zones={[{ id: "00000000-0000-4000-8000-000000000001", name: "По городу", cost: 1500, freeFrom: 50000, etaText: "1–2 дня", provider: "own" }]}/></>;
   }
 
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -30,6 +30,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     cost: zone.cost,
     freeFrom: zone.free_from,
     etaText: zone.eta_text,
+    provider: zone.provider,
   }));
 
   const reservation=await reservationsClient(createAdminClient()).from("reservation_settings").select("enabled").eq("tenant_id",tenant.id).maybeSingle();

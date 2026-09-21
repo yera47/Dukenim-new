@@ -14,4 +14,9 @@ describe("pickup location", () => {
     expect(pickupLocationSchema.safeParse({...point,address:""}).success).toBe(false);
     expect(pickupLocationSchema.safeParse({...point,tenant_id:"victim"}).success).toBe(false);
   });
+  it("accepts an official pasted iframe by storing only its safe src", () => {
+    const point = {address:"Город, улица, дом",hours:"10–19",preparation:"После подтверждения",instructions:"",gisUrl:"",yandexUrl:"https://yandex.kz/maps",embedUrl:'<iframe src="https://api-maps.yandex.ru/frame/v1/-/example?lang=ru&amp;z=14"></iframe>'};
+    const parsed=pickupLocationSchema.safeParse(point);
+    expect(parsed.success&&parsed.data.embedUrl).toBe("https://api-maps.yandex.ru/frame/v1/-/example?lang=ru&z=14");
+  });
 });

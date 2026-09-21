@@ -10,7 +10,7 @@ import { FoodProductCard } from "./food-product-card";
 import { FoodStoryRail } from "./food-story-rail";
 import styles from "./food-quick-menu.module.css";
 
-export function FoodQuickMenu({ products, slug, name, curatedStories }: { products: Product[]; slug: string; name: string; curatedStories?: FoodStory[] }) {
+export function FoodQuickMenu({ products, slug, name, curatedStories, premium = false }: { products: Product[]; slug: string; name: string; curatedStories?: FoodStory[]; premium?: boolean }) {
   const [query, setQuery] = useState("");
   const [active, setActive] = useState(0);
   const { count, total } = useCart();
@@ -18,7 +18,7 @@ export function FoodQuickMenu({ products, slug, name, curatedStories }: { produc
   const visible = products.filter(product => `${product.title} ${product.description ?? ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()));
   const base = storefrontPath(slug);
 
-  return <div className={styles.root}>
+  return <div className={`${styles.root} ${premium ? styles.premium : ""}`}>
     <FoodStoryRail products={products} slug={slug} name={name} curatedStories={curatedStories} />
     <nav className={styles.categories} aria-label="Разделы меню">{categories.map((category, index) => <a key={category} href={`#food-section-${index}`} aria-current={active === index ? "true" : undefined} onClick={() => setActive(index)}>{category}</a>)}</nav>
     <div className={styles.menuHeading}><div><h1>Меню</h1><span>{products.length} позиций · {name}</span></div><label className={styles.search}><Search size={18} /><input type="search" aria-label="Найти блюдо" placeholder="Найти блюдо" value={query} onChange={event => setQuery(event.target.value)} /></label></div>

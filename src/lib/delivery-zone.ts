@@ -7,6 +7,11 @@ export const deliveryZoneSchema = z.object({
   free_from: amount.nullable(),
   eta_text: z.string().trim().max(200).nullable(),
   is_active: z.boolean(),
+  provider: z.enum(["own", "yandex"]),
+}).superRefine((zone, context) => {
+  if (zone.provider === "yandex" && (zone.cost !== 0 || zone.free_from !== null)) {
+    context.addIssue({ code: "custom", message: "Цена Яндекс Доставки определяется после заказа", path: ["cost"] });
+  }
 });
 
 export function parseDeliveryZone(form: FormData) {
@@ -17,5 +22,6 @@ export function parseDeliveryZone(form: FormData) {
     free_from: free ? Number(free) : null,
     eta_text: String(form.get("etaText") ?? "").trim() || null,
     is_active: form.get("active") === "on",
+    provider: form.get("provider"),
   });
 }

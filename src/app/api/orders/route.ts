@@ -23,6 +23,7 @@ type Body = {
   reward?:unknown;
   referralCode?:unknown;
   marketingConsent?:unknown;
+  yandexConsent?:unknown;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -100,6 +101,7 @@ export async function POST(request: Request) {
     if (deliveryMethod === "courier") {
       if (!options.settings?.delivery_enabled) return NextResponse.json({ error: "Доставка временно недоступна" }, { status: 400 });
       if (!zoneId || !options.zones.some((zone) => zone.id === zoneId)) return NextResponse.json({ error: "Выберите доступную зону доставки" }, { status: 400 });
+      if (options.zones.find((zone) => zone.id === zoneId)?.provider === "yandex" && body.yandexConsent !== true) return NextResponse.json({ error: "Прочитайте условия Яндекс Доставки и подтвердите согласие." }, { status: 400 });
     }
 
     const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;

@@ -40,9 +40,13 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
   const campaignImage = campaign?.image_url?.startsWith("https://") ? campaign.image_url : null;
   const food=tenant.business_vertical==="food";
 
-  if(food&&approach==="assortment")return <main className="storefront-theme bg-white" data-approach={approach} data-vertical="food">
+  if(food&&(approach==="assortment"||approach==="collection"))return <main className={`storefront-theme ${approach==="collection"?"bg-[#faf9f6]":"bg-white"}`} data-approach={approach} data-vertical="food">
+    {approach==="collection"&&<section className="container pb-8 pt-7" aria-label="Галерея кафе"><div className="rounded-3xl bg-[#182a37] p-5 text-white sm:p-8"><p className="text-xs font-bold uppercase tracking-[.2em] text-[#c9d6de]">{tenant.name}</p><h1 className="mt-3 max-w-lg text-3xl font-semibold leading-tight sm:text-5xl">{title}</h1><p className="mt-3 max-w-xl text-sm text-[#d4dce1] sm:text-base">{subtitle}</p><a href="#catalog" className="mt-5 inline-flex rounded-xl bg-white px-5 py-3 text-sm font-bold text-[#182a37]">Смотреть меню →</a><div className="mt-6 grid grid-cols-3 gap-2 sm:gap-4">{products.filter(product=>product.images?.[0]).slice(0,3).map((product,index)=><Link key={product.id} href={`${storefrontPath(slug)}/product/${product.id}`} className={`overflow-hidden rounded-lg border-2 border-[#c3b59a] bg-[#edf0ef] ${index===0?"col-span-2 row-span-2":""}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={product.images![0]} alt={product.title} className="aspect-square h-full w-full object-cover" loading={index===0?"eager":"lazy"}/>
+    </Link>)}</div></div></section>}
     {checkoutOptions&&<FoodFulfilmentGate slug={slug} deliveryEnabled={checkoutOptions.deliveryEnabled} pickupEnabled={checkoutOptions.pickupEnabled}/>}
-    <div id="catalog" style={{paddingTop:0}}><FoodQuickMenu products={products} slug={slug} name={tenant.catalog_name||tenant.name} curatedStories={foodStories}/></div>
+    <div id="catalog" style={{paddingTop:0}}><FoodQuickMenu products={products} slug={slug} name={tenant.catalog_name||tenant.name} curatedStories={foodStories} premium={approach==="collection"}/></div>
     {campaign&&<section className="container pb-8"><div className="rounded-3xl bg-[#eeeafa] p-6 text-[#352665]">{campaign.eyebrow&&<span className="text-sm">{campaign.eyebrow}</span>}<h2 className="mt-2 text-2xl font-bold">{campaign.title}</h2>{campaign.body&&<p className="mt-3">{campaign.body}</p>}<Link className="mt-4 inline-block font-semibold underline" href={campaign.cta_href||"#catalog"}>{campaign.cta_label||"Посмотреть меню"} →</Link></div></section>}
     {storePolicies?.delivery_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Доставка и самовывоз</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.delivery_policy}</p></section>}
     {storePolicies?.return_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Условия магазина</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.return_policy}</p></section>}

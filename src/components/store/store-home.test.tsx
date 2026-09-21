@@ -23,16 +23,17 @@ it.each(commerceConfigurations)("renders the configured block order for $id",con
  vi.stubGlobal("React",React);
  const html=renderToStaticMarkup(<CartProvider><StoreHome slug="example" tenant={{name:"Dukenim Shop",catalog_name:null,tagline:null,business_vertical:config.vertical}} products={demoProductsFor(config.vertical)} settings={null} campaign={null} storePolicies={null} approach={config.approach}/></CartProvider>);
  expect(html).toContain(`data-approach="${config.approach}"`);
- expect(html.includes("storefront-hero-grid")).toBe(config.approach==="collection");
+ expect(html.includes("storefront-hero-grid")).toBe(config.approach==="collection"&&config.vertical!=="food");
+ if(config.vertical==="food"&&config.approach==="collection"){expect(html).toContain('aria-label="Галерея кафе"');expect(html).toContain('href="#catalog"');expect(html).toContain("Выбрать состав: Круассан-сэндвич");}
  expect(html.includes('aria-label="Выбор раздела"')).toBe(config.approach==="guided");
 });
 it.each(launchVerticals)("renders real shared example imagery and readable CTA for $id",({id})=>{
   vi.stubGlobal("React",React);
   const html=renderToStaticMarkup(<CartProvider><StoreHome slug="example" tenant={{name:"Серик Шоп",catalog_name:null,tagline:null,business_vertical:id}} products={demoProductsFor(id)} settings={null} campaign={null} storePolicies={null}/></CartProvider>);
-  expect(html).toContain("Смотреть каталог");
-  expect(html).toContain('style="color:var(--store-accent-ink)"');
+  expect(html).toContain(id==="food"?"Смотреть меню":"Смотреть каталог");
+  if(id!=="food")expect(html).toContain('style="color:var(--store-accent-ink)"');
   expect(html).toContain("<img");
-  expect(html).toContain(`data-cover="${id}"`);
+  if(id!=="food")expect(html).toContain(`data-cover="${id}"`);
   expect(html).not.toContain("Каталог наполняется");
 });
 it.each(commerceConfigurations.filter(config=>config.approach==="assortment"&&config.vertical!=="food"))("offers real category shortcuts for $id",config=>{

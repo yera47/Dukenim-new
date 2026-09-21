@@ -28,7 +28,7 @@ describe("pickup settings", () => {
     expect((await savePickupSettings({},pickup())).success).toBeTruthy();
   });
 });
-function form() { const f = new FormData(); f.set("id",id); f.set("name","Центр"); f.set("cost","1000"); f.set("tenantId","other"); return f; }
+function form() { const f = new FormData(); f.set("id",id); f.set("name","Центр"); f.set("cost","1000"); f.set("provider","own"); f.set("tenantId","other"); return f; }
 describe("delivery zone authorisation", () => {
   beforeEach(() => vi.clearAllMocks());
   it("rejects demo sessions before DB access", async () => {
@@ -44,7 +44,7 @@ describe("delivery zone authorisation", () => {
     mocks.client.mockResolvedValue({from:vi.fn().mockReturnValue(chain)});
     expect((await saveDeliveryZone({},form())).error).toBeTruthy();
     expect(chain.eq).toHaveBeenCalledWith("tenant_id","mine");
-    expect(chain.update).toHaveBeenCalledWith({name:"Центр",cost:1000,free_from:null,eta_text:null,is_active:false});
+    expect(chain.update).toHaveBeenCalledWith({name:"Центр",cost:1000,free_from:null,eta_text:null,is_active:false,provider:"own"});
   });
 });
 

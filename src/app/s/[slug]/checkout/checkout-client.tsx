@@ -13,8 +13,9 @@ import { readPickupLocation } from "@/lib/pickup-location";
 import { formatCustomerDeliveryAddress, isCustomerDeliveryAddressReady, type CustomerDeliveryAddress } from "@/lib/customer-delivery-address";
 import {PhoneAuth} from "@/components/store/phone-auth";
 import {createClient} from "@/lib/supabase/client";
+import {yandexNoticeKey} from "@/components/store/yandex-delivery-notice";
 
-export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: number | null; etaText: string | null };
+export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: number | null; etaText: string | null; provider: "own" | "yandex" };
 type Result = { orderNumber: number; total: number };
 type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; pickupLocation?: unknown; minOrder: number; zones: CheckoutZone[]; demo?: boolean };
 
@@ -43,6 +44,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const [pending, setPending] = useState(false);
   const [marketingConsent,setMarketingConsent]=useState(false);
   const zone = useMemo(() => zones.find((item) => item.id === zoneId) ?? null, [zoneId, zones]);
+  const yandexDelivery = delivery === "courier" && zone?.provider === "yandex";
   const deliveryCost = delivery === "courier" && zone ? (zone.freeFrom !== null && total >= zone.freeFrom ? 0 : zone.cost) : 0;
   const methodsAvailable = deliveryEnabled || pickupEnabled;
   const contactsReady = (demo||authenticated) && name.trim().length >= 2 && phone.replace(/\D/g, "").length >= (demo?7:11);
@@ -67,7 +69,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
       return;
     }
     try {
-      const data = await submitCheckout({ marketingConsent,reward:reward?{ruleId:reward.ruleId,milestone:reward.milestone}:null, referralCode:window.localStorage.getItem(`dukenim:${slug}:referral`), slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty, selection:item.selection })) });
+      const data = await submitCheckout({ marketingConsent,yandexConsent:zone?.provider==="yandex" && window.localStorage.getItem(yandexNoticeKey(slug))==="yes",reward:reward?{ruleId:reward.ruleId,milestone:reward.milestone}:null, referralCode:window.localStorage.getItem(`dukenim:${slug}:referral`), slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty, selection:item.selection })) });
       clear();
       setResult(data);
       router.push(`/s/${slug}/orders`);
@@ -76,7 +78,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
     } finally { setPending(false); }
   }
 
-  if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58}/><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">Итог: {money(result.total)}. Магазин свяжется с вами для подтверждения.</p><Link href={`/s/${slug}`} className="btn btn-cta mt-7">Вернуться в магазин</Link></div></main>;
+  if (result) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-10 text-center"><CheckCircle2 className="mx-auto text-[var(--success)]" size={58}/><h1 className="mt-5 text-3xl font-semibold">Заказ №{result.orderNumber} принят</h1><p className="muted mt-3">{yandexDelivery?"Товары: ":"Итог: "}{money(result.total)}. {yandexDelivery?"Менеджер сообщит стоимость Яндекс Доставки отдельно.":"Магазин свяжется с вами для подтверждения."}</p><Link href={`/s/${slug}`} className="btn btn-cta mt-7">Вернуться в магазин</Link></div></main>;
 
   if (!methodsAvailable) return <main className="container grid min-h-[70vh] place-items-center py-12"><div className="card max-w-xl p-9 text-center"><Store className="mx-auto text-[var(--accent)]" size={44}/><h1 className="mt-5 text-3xl font-semibold">Оформление временно закрыто</h1><p className="muted mt-3">Магазин ещё не настроил способы получения заказа.</p><Link href={`/s/${slug}`} className="btn btn-secondary mt-7">Вернуться в каталог</Link></div></main>;
 
@@ -87,11 +89,11 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
       <section className="card p-6 md:p-9">
         {step === 1 && <><h1 className="text-3xl font-semibold">Ваш профиль</h1><p className="muted mt-2">{demo?"Демонстрация оформления: в реальном магазине номер подтверждается кодом из SMS.":"Подтвердите телефон один раз. К нему привяжутся история заказов и карта лояльности этого магазина."}</p>{!authenticated&&<div className="mt-6"><PhoneAuth slug={slug} onAuthenticated={user=>{setAuthenticated(true);setPhone(user.phone??"");setName(String(user.user_metadata?.full_name??user.user_metadata?.name??""));}}/></div>}<div className="mt-6 grid gap-4"><label className="text-sm font-bold">Ваше имя<input value={name} onChange={(event) => setName(event.target.value)} className="input mt-2" maxLength={80} autoComplete="name" aria-label="Ваше имя" placeholder="Например, Серик"/></label>{demo?<label className="text-sm font-bold">Телефон для демонстрации<input value={phone} onChange={event=>setPhone(event.target.value)} className="input mt-2" maxLength={30} type="tel" inputMode="tel" autoComplete="tel" placeholder="+7 777 000 00 00"/></label>:authenticated&&<label className="text-sm font-bold">Подтверждённый телефон<input value={phone} readOnly className="input mt-2 bg-[var(--surface-2)]" maxLength={30} type="tel" autoComplete="tel"/></label>}</div>{minOrder > 0 && <p className="muted mt-4 text-sm">Минимальная сумма заказа: {money(minOrder)}</p>}</>}
         {step === 2 && <><h1 className="text-3xl font-semibold">Способ получения</h1><div className="mt-7 grid gap-3">
-          {deliveryEnabled && <label className="card flex cursor-pointer gap-4 p-4"><input checked={delivery === "courier"} onChange={() => setDelivery("courier")} type="radio"/><Truck className="shrink-0"/><span><b>Доставка</b><small className="muted block">Стоимость рассчитывается по выбранной зоне</small></span></label>}
+          {deliveryEnabled && <label className="card flex cursor-pointer gap-4 p-4"><input checked={delivery === "courier"} onChange={() => setDelivery("courier")} type="radio"/><Truck className="shrink-0"/><span><b>Доставка</b><small className="muted block">Условия зависят от выбранного способа</small></span></label>}
           {pickupEnabled && <label className="card flex cursor-pointer gap-4 p-4"><input checked={delivery === "pickup"} onChange={() => setDelivery("pickup")} type="radio"/><Store className="shrink-0"/><span><b>Самовывоз — бесплатно</b><small className="muted block">{readPickupLocation(pickupLocation)?.address ?? "Адрес подтвердит магазин"}</small></span></label>}
           {delivery === "pickup" && <PickupLocationCard value={pickupLocation}/>}
           {delivery === "courier" && <>
-            <label className="text-sm font-extrabold">Зона доставки<select value={zoneId} onChange={(event) => setZoneId(event.target.value)} className="input mt-2"><option value="">Выберите зону</option>{zones.map((item) => <option key={item.id} value={item.id}>{item.name} · {money(item.cost)}</option>)}</select></label>
+            <label className="text-sm font-extrabold">Зона и служба доставки<select value={zoneId} onChange={(event) => setZoneId(event.target.value)} className="input mt-2"><option value="">Выберите зону</option>{zones.map((item) => <option key={item.id} value={item.id}>{item.name} · {item.provider==="yandex"?"Яндекс Доставка · цена после заказа":`Своя доставка · ${money(item.cost)}`}</option>)}</select></label>
             <div className="grid gap-4 sm:grid-cols-2">
               {([
                 ["street", "Город и улица", 180], ["house", "Дом / корпус", 30],
@@ -103,7 +105,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
                   onChange={event => setAddressFields(previous => ({ ...previous, [field]: event.target.value }))}/>
               </label>)}
             </div>
-            {zone && <div className="flex gap-3 rounded-[var(--r-card)] bg-[var(--surface-2)] p-4 text-sm"><MapPin className="shrink-0 text-[var(--accent)]" size={18}/><span><b>{zone.name}: {deliveryCost ? money(deliveryCost) : "бесплатно"}</b>{zone.freeFrom !== null && <small className="muted block">Бесплатно от {money(zone.freeFrom)}</small>}{zone.etaText && <small className="muted block">{zone.etaText}</small>}</span></div>}
+            {zone && <div className="flex gap-3 rounded-[var(--r-card)] bg-[var(--surface-2)] p-4 text-sm"><MapPin className="shrink-0 text-[var(--accent)]" size={18}/><span><b>{zone.provider==="yandex"?"Яндекс Доставка":"Доставка магазина"} · {zone.name}: {zone.provider==="yandex"?"стоимость сообщит менеджер":deliveryCost?money(deliveryCost):"бесплатно"}</b>{zone.provider==="own"&&zone.freeFrom !== null && <small className="muted block">Бесплатно от {money(zone.freeFrom)}</small>}{zone.etaText && <small className="muted block">{zone.etaText}</small>}{zone.provider==="yandex"&&<small className="muted block">После заказа менеджер оформит доставку от двери до двери и сообщит цену по расстоянию. Оплата наличными при получении.</small>}</span></div>}
           </>}
           <fieldset className="mt-3 grid gap-3 border-t pt-5">
             <legend className="mb-2 font-extrabold">Когда приготовить заказ?</legend>
@@ -112,7 +114,20 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
             {timingMode === "scheduled" && <label className="text-sm font-extrabold">Дата и время<input type="datetime-local" className="input mt-2" value={requestedFor} min={localDateTimeInput(new Date(Date.now() + 15 * 60_000))} max={localDateTimeInput(new Date(Date.now() + 14 * 86_400_000))} onChange={event => setRequestedFor(event.target.value)}/><small className="muted mt-2 block">Не раньше чем через 15 минут и не позже чем через 14 дней.</small></label>}
           </fieldset>
         </div></>}
-        {step === 3 && <>{rewards.length>0&&<label className="mb-6 block rounded-2xl bg-[var(--accent-soft)] p-4 text-sm font-semibold">Ваша награда<select className="input mt-2" value={selectedReward} onChange={e=>setSelectedReward(e.target.value)}><option value="">Сохранить на потом</option>{rewards.map(r=><option key={r.rule.id} value={r.rule.id} disabled={total<r.rule.minOrder}>{r.rule.label}{total<r.rule.minOrder?` · заказ от ${money(r.rule.minOrder)}`:""}</option>)}</select>{reward&&<p className="mt-2 text-xs">{reward.reward==="gift"?"Подарок автоматически добавится к заказу":"Скидка: −"+money(discount)}</p>}</label>}<h1 className="text-3xl font-semibold">Проверьте заказ</h1><div className="mt-6 space-y-3">{items.map((item) => <p key={item.lineId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.unitPrice * item.qty)}</b></p>)}<p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p><p className="flex justify-between"><span>Получение</span><b>{deliveryCost ? money(deliveryCost) : "Бесплатно"}</b></p><p className="flex justify-between"><span>Когда</span><b>{timingMode === "scheduled" && requestedDate ? new Intl.DateTimeFormat("ru-KZ", {dateStyle:"medium",timeStyle:"short"}).format(requestedDate) : "Как можно скорее"}</b></p><p className="flex justify-between border-t pt-4 text-xl font-bold"><span>Итого</span><span>{money(total + deliveryCost - discount)}</span></p></div><div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн.</small></div><label className="mt-4 flex items-start gap-3 rounded-2xl bg-[var(--surface-2)] p-4 text-sm"><input className="mt-1 accent-[var(--accent)]" type="checkbox" checked={marketingConsent} onChange={event=>setMarketingConsent(event.target.checked)}/><span><b>Получать акции этого магазина по SMS</b><small className="muted mt-1 block">Необязательно. Отписаться можно в профиле или через магазин.</small></span></label></>}
+        {step === 3 && <>
+          {rewards.length>0&&<label className="mb-6 block rounded-2xl bg-[var(--accent-soft)] p-4 text-sm font-semibold">Ваша награда<select className="input mt-2" value={selectedReward} onChange={e=>setSelectedReward(e.target.value)}><option value="">Сохранить на потом</option>{rewards.map(r=><option key={r.rule.id} value={r.rule.id} disabled={total<r.rule.minOrder}>{r.rule.label}{total<r.rule.minOrder?` · заказ от ${money(r.rule.minOrder)}`:""}</option>)}</select>{reward&&<p className="mt-2 text-xs">{reward.reward==="gift"?"Подарок автоматически добавится к заказу":"Скидка: −"+money(discount)}</p>}</label>}
+          <h1 className="text-3xl font-semibold">Проверьте заказ</h1>
+          <div className="mt-6 space-y-3">
+            {items.map((item) => <p key={item.lineId} className="flex justify-between gap-4 border-b py-3"><span>{item.product.title} × {item.qty}</span><b>{money(item.unitPrice * item.qty)}</b></p>)}
+            <p className="flex justify-between pt-3"><span>Товары</span><b>{money(total)}</b></p>
+            <p className="flex justify-between gap-4"><span>Получение</span><b className="text-right">{yandexDelivery?"Яндекс Доставка · цена после заказа":deliveryCost?money(deliveryCost):"Бесплатно"}</b></p>
+            <p className="flex justify-between"><span>Когда</span><b>{timingMode === "scheduled" && requestedDate ? new Intl.DateTimeFormat("ru-KZ", {dateStyle:"medium",timeStyle:"short"}).format(requestedDate) : "Как можно скорее"}</b></p>
+            <p className="flex justify-between border-t pt-4 text-xl font-bold"><span>{yandexDelivery?"Итого за товары":"Итого"}</span><span>{money(total + deliveryCost - discount)}</span></p>
+            {yandexDelivery&&<p className="rounded-xl bg-blue-50 p-3 text-sm text-blue-950">Доставка оплачивается отдельно: менеджер сообщит стоимость по расстоянию и согласует её с вами.</p>}
+          </div>
+          <div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">{yandexDelivery?"Наличными. Менеджер уточнит оплату товаров и доставки.":"Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн."}</small></div>
+          <label className="mt-4 flex items-start gap-3 rounded-2xl bg-[var(--surface-2)] p-4 text-sm"><input className="mt-1 accent-[var(--accent)]" type="checkbox" checked={marketingConsent} onChange={event=>setMarketingConsent(event.target.checked)}/><span><b>Получать акции этого магазина по SMS</b><small className="muted mt-1 block">Необязательно. Отписаться можно в профиле или через магазин.</small></span></label>
+        </>}
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-[var(--danger)]">{error}</p>}
         <div className="mt-8 flex justify-between"><button disabled={step === 1 || pending} onClick={() => setStep((value) => value - 1)} className="btn btn-secondary disabled:opacity-0">Назад</button>{step < 3 ? <button disabled={(step === 1 && !contactsReady) || (step === 2 && (!deliveryReady || !timingReady))} onClick={() => setStep((value) => value + 1)} className="btn btn-cta disabled:opacity-50">Продолжить</button> : <button disabled={pending || !items.length || total < minOrder || !timingReady} onClick={submit} className="btn btn-cta disabled:opacity-50">{pending ? "Оформляем…" : "Подтвердить заказ"}</button>}</div>
       </section>

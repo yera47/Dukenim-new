@@ -61,4 +61,12 @@ describe("order API fails safely before database writes", () => {
     vi.mocked(createAdminClient).mockReturnValue({auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:null,phone_confirmed_at:null}}})}}} as unknown as ReturnType<typeof createAdminClient>);
     expect((await POST(request(valid))).status).toBe(401);expect(createStorefrontOrder).not.toHaveBeenCalled();
   });
+  it("requires the Yandex delivery notice before any order write",async()=>{
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:false,delivery_enabled:true,pickup_location:null,payment_online:false,min_order:0},zones:[{id:"12345678-1234-4123-8123-123456789013",name:"Центр",cost:1800,free_from:null,eta_text:null,provider:"yandex"}],error:null});
+    vi.mocked(createAdminClient).mockReturnValue({} as ReturnType<typeof createAdminClient>);
+    const response=await POST(request({...valid,deliveryMethod:"courier",deliveryAddress:"Кызылорда, улица, дом 1",zoneId:"12345678-1234-4123-8123-123456789013"}));
+    expect(response.status).toBe(400);
+    expect(createStorefrontOrder).not.toHaveBeenCalled();
+  });
 });

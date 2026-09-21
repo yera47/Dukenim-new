@@ -8,7 +8,7 @@ it.each(launchVerticals)("shows labelled populated examples for $id",({id})=>{
  vi.stubGlobal("React",React);
  const editorial=renderToStaticMarkup(<TemplateIllustration vertical={id} compact={false}/>);
  const catalog=renderToStaticMarkup(<TemplateIllustration vertical={id} compact/>);
- expect(editorial).toContain("В центре внимания");
+ expect(editorial).toContain(id==="food"?"Блюда крупным планом":"В центре внимания");
  expect(catalog).toContain(id==="food"?"Круассан-сэндвич":"Найти товар");
  expect(editorial).toContain("не товары вашего магазина");
   expect((catalog.match(/<img /g)||[]).length).toBeGreaterThanOrEqual(3);

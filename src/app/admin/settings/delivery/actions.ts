@@ -60,7 +60,7 @@ export async function saveDeliverySettings(_: DeliveryState, form: FormData): Pr
 
 export async function saveDeliveryZone(_: DeliveryState, form: FormData): Promise<DeliveryState> {
   const parsed = parseDeliveryZone(form);
-  if (!parsed.success) return { error: "Укажите название зоны, целую неотрицательную стоимость в тенге и срок до 200 символов." };
+  if (!parsed.success) return { error: "Проверьте название и срок зоны. Для своей доставки укажите целую цену в тенге; цену Яндекса сообщают после заказа." };
   const id = String(form.get("id") ?? "");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) return { error: "Обновите страницу и повторите сохранение." };
   const context = await requireRole(["owner", "superadmin"]);

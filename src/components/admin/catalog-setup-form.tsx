@@ -32,7 +32,7 @@ const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:stri
 
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
-  const templates = useMemo(() => launchTemplatesForPlan(plan), [plan]);
+  const templates = useMemo(() => launchTemplatesForPlan(plan).filter(option => vertical!=="food" || approachForTemplate(option.key)!=="guided"), [plan,vertical]);
   const [step, setStep] = useState(0); const reviewStep=vertical==="food"?5:4; const [loyalty,setLoyalty]=useState(newLoyaltyProgram);
   const [designStage,setDesignStage]=useState<"brief"|"colors"|"examples">("brief");
   const [colorBrief,setColorBrief]=useState("");

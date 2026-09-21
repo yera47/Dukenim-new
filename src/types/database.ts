@@ -21,7 +21,7 @@ customers:Table<{id:string;tenant_id:string;phone:string;name:string|null;first_
 orders:Table<OrderRow>;
 order_items:Table<{options_snapshot?:Json;combo_parent?:number|null;id:string;order_id:string;tenant_id:string;variant_id:string|null;title_snapshot:string;price_snapshot:number;qty:number}>;
 stock_movements:Table<{id:string;tenant_id:string;variant_id:string;delta:number;reason:"sale"|"return"|"restock"|"correction"|"writeoff";order_id:string|null;staff_id:string|null;created_at:string}>;
-delivery_zones:Table<{id:string;tenant_id:string;name:string;cost:number;free_from:number|null;eta_text:string|null;is_active:boolean}>;
+delivery_zones:Table<{id:string;tenant_id:string;name:string;cost:number;free_from:number|null;eta_text:string|null;is_active:boolean;provider:"own"|"yandex"}>;
 tenant_settings:Table<{payment_setup_preference:string;tenant_id:string;delivery_enabled:boolean;pickup_enabled:boolean;pickup_location:Json|null;payment_online:boolean;payment_provider:string|null;merchant_id:string|null;merchant_key:string|null;min_order:number;delivery_policy:string|null;return_policy:string|null}>;
 storefront_templates:Table<{key:string;name:string;description:string;min_plan:"basic"|"standard"|"pro";preview_image_url:string|null;is_active:boolean;sort_order:number;created_at:string}>;
 tenant_storefront_settings:Table<{layout_config?:Json|null;color_theme:Json|null;tenant_id:string;template_key:string;palette_key:string;brand_color:string|null;hero_title:string|null;hero_subtitle:string|null;hero_image_url:string|null;hero_cta_label:string;updated_at:string}>;

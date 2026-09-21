@@ -10,6 +10,7 @@ import {createClient} from "@/lib/supabase/server";
 import {createAdminClient} from "@/lib/supabase/admin";
 import {PlanfixOrderSyncButton} from "./planfix-sync-button";
 import {LiveOrders} from "@/components/admin/live-orders";
+import {deliveryProviderFromSnapshot} from "@/lib/delivery-provider";
 
 export default async function Orders(){
   const {tenantId}=await requireRole(["owner","superadmin"]);
@@ -40,6 +41,7 @@ export default async function Orders(){
         <div>
           {benefit?.reward_label&&<p className="mb-2 rounded-xl bg-purple-50 p-3 text-sm font-semibold">Награда гостю: {benefit.reward_label}{benefit.discount>0?` · скидка ${money(benefit.discount)}`:" · выдайте вместе с заказом"}</p>}<b>{hold?"Бронь":"Заказ"} #{order.order_number}</b>
           <p className="muted mt-1 text-sm">Создан: {new Date(order.created_at).toLocaleString("ru-KZ")}</p>
+          {order.delivery_method==="courier"&&<div className="mt-2 rounded-xl bg-blue-50 p-3 text-sm text-blue-950"><b>{deliveryProviderFromSnapshot(order.fulfilment_snapshot)==="yandex"?"Яндекс Доставка · оформите курьера от двери до двери":"Своя доставка"}</b><p>Адрес: {order.delivery_address||"уточните у покупателя"}</p>{deliveryProviderFromSnapshot(order.fulfilment_snapshot)==="yandex"?<p>Рассчитайте доставку в кабинете Яндекса и сообщите покупателю цену до вызова курьера. Оплата наличными при получении.</p>:<p>Цена для покупателя: {money(order.delivery_cost)} · оплата при получении</p>}</div>}
           {!hold&&<p className="mt-2 text-sm font-semibold">{order.requested_for?`Ко времени: ${new Date(order.requested_for).toLocaleString("ru-KZ")}`:"Как можно скорее"}</p>}
           {!hold&&order.payment_method==="cash"&&["pending","paid"].includes(order.payment_status)&&order.status!=="cancelled"&&<CashPayment orderId={order.id} paid={order.payment_status==="paid"}/>}<div className="mt-4 space-y-2">{kitchen.data?.filter(i=>i.order_id===order.id).map((item,index)=><div key={index} className="rounded-xl bg-neutral-50 p-3 text-sm"><b>{item.title_snapshot} × {item.qty}</b>{item.combo_parent&&<small className="ml-2 text-neutral-500">В комбо</small>}{Array.isArray(item.options_snapshot)&&item.options_snapshot.map((label,i)=><p key={i} className="mt-1 text-xs text-purple-700">{String(label)}</p>)}</div>)}</div>{planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
         </div>
