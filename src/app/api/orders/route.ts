@@ -8,6 +8,7 @@ import {buyerIdentity,setBuyerCookie} from "@/lib/buyer-identity";
 import {z} from "zod";
 import {foodSelectionSchema,foodSelectionKey,emptyFoodSelection} from "@/lib/food-options";
 import {buyerClient} from "@/lib/buyer-db";
+import {phoneAuthReady} from "@/lib/phone-auth-ready";
 
 type Body = {
   slug?: unknown;
@@ -24,6 +25,7 @@ type Body = {
   referralCode?:unknown;
   marketingConsent?:unknown;
   yandexConsent?:unknown;
+  privacyConsent?:unknown;
 };
 
 const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -82,7 +84,7 @@ export async function POST(request: Request) {
     const extra=z.object({reward:z.object({ruleId:z.string().uuid(),milestone:z.number().int().positive()}).nullable().optional(),referralCode:z.string().uuid().nullable().optional()}).safeParse({reward:body.reward,referralCode:body.referralCode});
     if(!extra.success)return NextResponse.json({error:"Проверьте выбранную награду"},{status:400});
 
-    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || name.length < 2 || name.length > 80 || phone.length > 30 || phone.replace(/\D/g, "").length < 7 || !items) {
+    if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || name.length < 2 || name.length > 80 || phone.length > 30 || !/^\+7\d{10}$/.test(phone) || !items) {
       return NextResponse.json({ error: "Проверьте контакты и товары в заказе" }, { status: 400 });
     }
     if (deliveryMethod !== "pickup" && deliveryMethod !== "courier") return NextResponse.json({ error: "Выберите способ получения" }, { status: 400 });
@@ -106,11 +108,12 @@ export async function POST(request: Request) {
 
     const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const buyer=await buyerIdentity();
-    if(!buyer.userId)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
-    const account=await client.auth.admin.getUserById(buyer.userId);
-    const verifiedPhone=account.data.user?.phone_confirmed_at?account.data.user.phone:null;
-    if(!verifiedPhone)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
-    phone=`+${verifiedPhone.replace(/\D/g,"")}`;
+    const account=buyer.userId?await client.auth.admin.getUserById(buyer.userId):null;
+    const verifiedPhone=account?.data.user?.phone_confirmed_at?account.data.user.phone:null;
+    if(phoneAuthReady()&&!verifiedPhone)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
+    if(verifiedPhone)phone=`+${verifiedPhone.replace(/\D/g,"")}`;
+    else if(body.privacyConsent!==true)return NextResponse.json({error:"Подтвердите согласие с политикой и офертой."},{status:400});
+    const orderBuyer={...buyer,userId:verifiedPhone?buyer.userId:null};
     const previous=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
     const { data, error } = await createStorefrontOrder(client, {
       tenantId: tenant.id,
@@ -122,11 +125,11 @@ export async function POST(request: Request) {
       paymentMethod: "cash",
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
-      buyer,reward:extra.data.reward,referralCode:extra.data.referralCode,
+      buyer:orderBuyer,reward:verifiedPhone?extra.data.reward:null,referralCode:verifiedPhone?extra.data.referralCode:null,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];
-    if(body.marketingConsent===true){
+    if(body.marketingConsent===true&&verifiedPhone&&buyer.userId){
       await buyerClient(client).from("customers").update({marketing_sms_consent:true,marketing_sms_consent_at:new Date().toISOString()}).eq("tenant_id",tenant.id).eq("user_id",buyer.userId);
     }
     const response=NextResponse.json({ orderId: order.order_id, orderNumber: order.order_number, total: order.total });

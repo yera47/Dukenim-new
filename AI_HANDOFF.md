@@ -1,5 +1,15 @@
 # Dukenim — AI handoff
 
+## Guest checkout and manual courier — 2026-09-21 (current)
+
+Result: buyer checkout can take orders without SMS while platform phone auth is not live. Contact phone must be a valid Kazakhstan +7 number; privacy/offer consent and full address are required. The manual Yandex courier choice asks for an explicit final acknowledgement that the store will book the courier and agree its unknown price. Store owners see the buyer's phone and address on the order. The site no longer instructs them to use a Yandex business account; Yandex booking happens outside Dukenim. Guest history works only in the same browser until a verified account can claim it, and rewards require a verified account.
+
+Changed files: checkout page/client, orders API/tests, owner order list, buyer hub/orders page, manual courier notice/settings copy, `src/lib/phone-auth-ready.ts`, `docs/SMS_PLATFORM_SETUP.md`, `DECISIONS.md`, `PROJECT_STATE.md`, this handoff. SMS activation now additionally requires `BUYER_PHONE_AUTH_ENABLED=true` after a real OTP test.
+
+Checks: 455 tests pass with four live-AI skips, strict TypeScript and 78-route build pass. Transactional production SQL smoke created a guest courier order with provider `yandex`, goods-only total and zero delivery cost, then rolled back; no test zone remained. Order API tests cover guest consent and phone-gated mode. Browser end-to-end, production deployment and merchant screen verification remain in progress. Azure unchanged.
+
+Acceptance checklist: guest contact/consent and server order — verified by API tests and rolled-back database RPC; buyer-to-manager browser journey — in progress; owner sees contact/address — in progress pending authenticated browser; manual courier acknowledgement and goods-only total — code/tests verified, browser pending; SMS OTP and cross-device loyalty/history — externally blocked by missing carrier account/key and approved Sender ID. No real customer order or SMS sent.
+
 ## Delivery provider, food templates and Yandex pricing — 2026-09-21 (current)
 
 Result: added owner-configurable own/Yandex delivery zones without changing existing zones. For Yandex, the buyer must acknowledge a full-screen notice and can order without a displayed courier price; the manager receives the order, manually requests a door-to-door courier and tells the buyer the distance-based amount. The owner order card gives a direct Yandex link and labels its Dukenim total as goods-only. The order records the provider in its fulfilment snapshot. Own delivery keeps fixed zone prices. Food onboarding and public demo selection now show two choices: a premium restaurant gallery and a fast menu for doner shops, bakeries and coffee to go; both use the same cart, order, stories and loyalty components. Existing guided links remain functional for older stores. Pasted Yandex map URLs and safe iframe snippets normalize into the location setting. A signed HTTP Send SMS hook is prepared to deliver Supabase buyer OTP through the same platform Mobizon account as campaigns; it fails closed while the carrier account, key or OTP Sender ID are missing.

@@ -1,2 +1,3 @@
 import {MyOrders} from "./my-orders";
-export default async function OrdersPage({params}:{params:Promise<{slug:string}>}){return <MyOrders slug={(await params).slug}/>;}
+import {phoneAuthReady} from "@/lib/phone-auth-ready";
+export default async function OrdersPage({params}:{params:Promise<{slug:string}>}){return <MyOrders slug={(await params).slug} phoneAuthAvailable={phoneAuthReady()}/>;}

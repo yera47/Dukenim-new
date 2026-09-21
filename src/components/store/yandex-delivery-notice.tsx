@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Truck } from "lucide-react";
 
-export const yandexNoticeKey = (slug: string) => `dukenim:${slug}:yandex-delivery-notice:v2`;
+export const yandexNoticeKey = (slug: string) => `dukenim:${slug}:yandex-delivery-notice:v3`;
 
 export function YandexDeliveryNotice({ slug, storeName }: { slug: string; storeName: string }) {
   const [accepted, setAccepted] = useState(false);
@@ -21,14 +21,14 @@ export function YandexDeliveryNotice({ slug, storeName }: { slug: string; storeN
     <section className="w-full max-w-lg rounded-[2rem] bg-white p-6 text-[#17212d] shadow-2xl sm:p-9">
       <span className="grid size-14 place-items-center rounded-2xl bg-[#e8effa] text-[#284c7b]"><Truck size={27}/></span>
       <p className="mt-7 text-xs font-extrabold uppercase tracking-[.18em] text-[#60718a]">Перед просмотром меню</p>
-      <h2 id="yandex-notice-title" className="mt-2 text-3xl font-extrabold leading-tight">Доставка через Яндекс</h2>
-      <p className="mt-4 leading-7">{storeName} может передать ваш заказ курьеру Яндекс Доставки. Магазин сам оформляет вызов курьера после подтверждения заказа.</p>
+      <h2 id="yandex-notice-title" className="mt-2 text-3xl font-extrabold leading-tight">Курьера закажет магазин</h2>
+      <p className="mt-4 leading-7">{storeName} получит ваш адрес и телефон, подтвердит заказ и сам оформит доставку через Яндекс от двери до двери.</p>
       <div className="mt-5 space-y-2 rounded-2xl bg-[#f2f5fa] p-4 text-sm leading-6">
-        <p><b>Цена доставки:</b> заранее не показывается и зависит от расстояния. Менеджер сообщит её после заказа.</p>
-        <p><b>После заказа:</b> менеджер сам оформит доставку от двери до двери, подтвердит адрес и согласует стоимость с вами. Курьер не вызывается автоматически.</p>
-        <p><b>Оплата:</b> наличными при получении. Менеджер уточнит, кому оплатить товары и доставку.</p>
+        <p><b>Цена доставки:</b> зависит от расстояния и сейчас не входит в стоимость товаров. Менеджер сообщит её до вызова курьера.</p>
+        <p><b>После заказа:</b> магазин свяжется с вами, проверит адрес и сам закажет курьера. На сайте курьер не вызывается автоматически.</p>
+        <p><b>Оплата:</b> товары — наличными магазину при получении. Способ оплаты доставки согласуйте с менеджером.</p>
       </div>
-      <button type="button" onClick={() => { window.localStorage.setItem(yandexNoticeKey(slug), "yes"); setAccepted(true); }} className="mt-6 w-full rounded-2xl bg-[#183453] px-5 py-4 text-base font-extrabold text-white hover:bg-[#254a73]">Понятно, продолжить</button>
+      <button type="button" onClick={() => { window.localStorage.setItem(yandexNoticeKey(slug), "yes"); setAccepted(true); }} className="mt-6 w-full rounded-2xl bg-[#183453] px-5 py-4 text-base font-extrabold text-white hover:bg-[#254a73]">Понимаю условия · открыть магазин</button>
     </section>
   </div>;
 }

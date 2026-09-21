@@ -6,6 +6,7 @@ import { demoVerticalById } from "@/lib/demo-catalogs";
 import { CheckoutClient, type CheckoutZone } from "./checkout-client";
 import Link from "next/link";
 import { reservationsClient } from "@/lib/reservations";
+import { phoneAuthReady } from "@/lib/phone-auth-ready";
 
 export default async function CheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -39,6 +40,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
   }
   return <>{reservation.data?.enabled&&<aside className="container pt-5 text-sm"><Link href={`/s/${slug}/reserve`} className="underline">Хотите сначала прийти в магазин? Забронировать товар →</Link></aside>}<CheckoutClient
     slug={slug}
+    phoneAuthAvailable={phoneAuthReady()}
     deliveryEnabled={Boolean(options.settings?.delivery_enabled && zones.length)}
     pickupEnabled={options.settings?.pickup_enabled ?? false}
     pickupLocation={options.settings?.pickup_location}

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:async()=>({userId:"buyer-user",hash:"a".repeat(64),token:"b".repeat(64)}),setBuyerCookie:vi.fn()}));
+vi.mock("@/lib/buyer-identity",()=>({buyerIdentity:vi.fn(),setBuyerCookie:vi.fn()}));
+vi.mock("@/lib/phone-auth-ready",()=>({phoneAuthReady:vi.fn(()=>false)}));
 
 vi.mock("@/lib/supabase/admin", () => ({ createAdminClient: vi.fn() }));
 vi.mock("@/lib/queries/orders", () => ({ createStorefrontOrder: vi.fn(), getCheckoutOptions: vi.fn() }));
@@ -9,6 +10,8 @@ import { POST } from "./route";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getPublicTenantBySlug } from "@/lib/queries/tenants";
 import { getCheckoutOptions, createStorefrontOrder } from "@/lib/queries/orders";
+import {buyerIdentity} from "@/lib/buyer-identity";
+import {phoneAuthReady} from "@/lib/phone-auth-ready";
 
 const valid = { slug: "serik-shop", name: "Серик", phone: "+77000000000", deliveryMethod: "pickup", paymentMethod: "cash", items: [{ variantId: "12345678-1234-4123-8123-123456789012", qty: 1 }] };
 function request(body: unknown) { return new Request("https://example.test/api/orders", { method: "POST", body: JSON.stringify(body) }); }
@@ -18,6 +21,8 @@ describe("order API fails safely before database writes", () => {
     vi.clearAllMocks();
     vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://example.supabase.co");
     vi.stubEnv("SUPABASE_SERVICE_ROLE_KEY", "test-only");
+    vi.mocked(buyerIdentity).mockResolvedValue({userId:"buyer-user",hash:"a".repeat(64),token:"b".repeat(64)});
+    vi.mocked(phoneAuthReady).mockReturnValue(false);
   });
   afterEach(() => vi.unstubAllEnvs());
   it("does not accept pickup when settings are missing", async () => {
@@ -56,10 +61,24 @@ describe("order API fails safely before database writes", () => {
     expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({tenantId:"mine",requestedFor,phone:"+77000000000",buyer:expect.objectContaining({userId:"buyer-user"})}));
   });
   it("requires a verified phone account before creating the order",async()=>{
+    vi.mocked(phoneAuthReady).mockReturnValue(true);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
     vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
     vi.mocked(createAdminClient).mockReturnValue({auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:null,phone_confirmed_at:null}}})}}} as unknown as ReturnType<typeof createAdminClient>);
     expect((await POST(request(valid))).status).toBe(401);expect(createStorefrontOrder).not.toHaveBeenCalled();
+  });
+  it("creates a guest order with phone and consent when SMS is unavailable",async()=>{
+    vi.mocked(buyerIdentity).mockResolvedValue({userId:null,hash:"a".repeat(64),token:"b".repeat(64)});
+    const admin={auth:{admin:{getUserById:vi.fn()}}};
+    vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:8,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
+    expect((await POST(request(valid))).status).toBe(400);
+    expect(createStorefrontOrder).not.toHaveBeenCalled();
+    expect((await POST(request({...valid,privacyConsent:true}))).status).toBe(200);
+    expect(admin.auth.admin.getUserById).not.toHaveBeenCalled();
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,buyer:expect.objectContaining({userId:null,hash:"a".repeat(64)})}));
   });
   it("requires the Yandex delivery notice before any order write",async()=>{
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
