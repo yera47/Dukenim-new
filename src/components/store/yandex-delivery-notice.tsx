@@ -17,7 +17,7 @@ export function YandexDeliveryNotice({ slug, storeName }: { slug: string; storeN
     return () => { document.body.style.overflow = old; };
   }, [accepted]);
   if (accepted) return null;
-  return <div className="fixed inset-0 z-[100] grid place-items-center overflow-y-auto bg-[#101923] p-4 text-white" role="dialog" aria-modal="true" aria-labelledby="yandex-notice-title">
+  return <div className="fixed inset-0 z-[110] grid place-items-center overflow-y-auto bg-[#101923] p-4 text-white" role="dialog" aria-modal="true" aria-labelledby="yandex-notice-title">
     <section className="w-full max-w-lg rounded-[2rem] bg-white p-6 text-[#17212d] shadow-2xl sm:p-9">
       <span className="grid size-14 place-items-center rounded-2xl bg-[#e8effa] text-[#284c7b]"><Truck size={27}/></span>
       <p className="mt-7 text-xs font-extrabold uppercase tracking-[.18em] text-[#60718a]">Перед просмотром меню</p>
