@@ -56,6 +56,16 @@ export async function updateCrmIntegrationStatus(form:FormData){
 }
 
 const UUID_PATTERN=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+export async function setRootStaffAccess(form:FormData){
+ const {client,actorId}=await rootClient();
+ const access=String(form.get("accessId")??"");const email=String(form.get("confirmEmail")??"").trim().toLowerCase();
+ const active=String(form.get("active"))==="true";const revision=Number(form.get("revision"));const reason=String(form.get("reason")??"").trim();
+ if(!UUID_PATTERN.test(access)||!email||!Number.isInteger(revision)||revision<0||reason.length<3||reason.length>1000)throw new Error("Проверьте сотрудника, email и причину изменения.");
+ const rpc=client as unknown as {rpc:(name:"root_set_staff_access",args:{p_access:string;p_actor:string;p_email:string;p_active:boolean;p_expected_revision:number;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_set_staff_access",{p_access:access,p_actor:actorId,p_email:email,p_active:active,p_expected_revision:revision,p_reason:reason});
+ if(result.error||!result.data)throw new Error(result.error?.message??"Доступ сотрудника не изменён.");
+ revalidatePath("/root/accounts");revalidatePath("/admin/team");revalidatePath("/staff");
+}
 export async function updateRootProduct(form:FormData){
   const{client,actorId}=await rootClient();
   const tenantId=String(form.get("tenantId")??"");const productId=String(form.get("productId")??"");
