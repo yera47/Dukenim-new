@@ -4,8 +4,8 @@ export async function deleteEmptyStore(form:FormData){
  const {client,actorId}=await rootClient();
  const tenant=String(form.get("tenantId")??""),slug=String(form.get("confirmSlug")??"").trim(),reason=String(form.get("reason")??"").trim();
  if(!/^[0-9a-f-]{36}$/i.test(tenant)||!slug||reason.length<3||reason.length>1000)throw new Error("Проверьте адрес и причину удаления.");
- const rpc=client as unknown as {rpc:(name:"root_delete_empty_store",args:{p_tenant:string;p_actor:string;p_slug:string;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
- const result=await rpc.rpc("root_delete_empty_store",{p_tenant:tenant,p_actor:actorId,p_slug:slug,p_reason:reason});
+ const rpc=client as unknown as {rpc:(name:"root_delete_store",args:{p_tenant:string;p_actor:string;p_slug:string;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_delete_store",{p_tenant:tenant,p_actor:actorId,p_slug:slug,p_reason:reason});
  if(result.error||!result.data)throw new Error(result.error?.message??"Удаление не выполнено.");
  revalidatePath("/root");redirect("/root");
 }

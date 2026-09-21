@@ -135,7 +135,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
           <span>{storefrontLabel}</span>
           <ExternalLink size={16} />
         </Link>
-        <Link href="/admin/stores" className="admin-store-link mt-2"><span>Мои магазины</span><ChevronRight size={16}/></Link>
+        <Link href="/stores" className="admin-store-link mt-2"><span>Мои магазины</span><ChevronRight size={16}/></Link>
         <form action={logout} className="mt-2">
           <button className="admin-logout"><LogOut size={17} />Выйти</button>
         </form>
@@ -155,7 +155,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <Link href="/admin/stores" className="hidden rounded-xl border border-[var(--line)] px-3 py-2 text-sm font-bold sm:inline-flex">Магазины</Link>
+            <Link href="/stores" className="hidden rounded-xl border border-[var(--line)] px-3 py-2 text-sm font-bold sm:inline-flex">Магазины</Link>
             {role === "superadmin" && <Link href="/root" className="admin-root-chip"><ShieldCheck size={15} />Root</Link>}
             <span className="admin-avatar">{tenant.name.slice(0, 2).toUpperCase()}</span>
           </div>

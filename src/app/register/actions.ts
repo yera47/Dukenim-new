@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { isPublicPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -33,13 +34,9 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
     const client = await createClient();
     const { data: { user } } = await client.auth.getUser();
     if (!user?.email) return { error: "Сессия входа не найдена. Начните вход через Google или Apple ещё раз." };
-    const [existingMembership, existingProfile] = await Promise.all([
-      admin.from("tenant_users").select("tenant_id").eq("user_id", user.id).maybeSingle(),
-      admin.from("profiles").select("role").eq("user_id", user.id).maybeSingle(),
-    ]);
-    if (existingMembership.error || existingProfile.error) return { error: "Не удалось проверить существующий кабинет. Попробуйте ещё раз." };
+    const existingProfile = await admin.from("profiles").select("role").eq("user_id", user.id).maybeSingle();
+    if (existingProfile.error) return { error: "Не удалось проверить существующий кабинет. Попробуйте ещё раз." };
     if (existingProfile.data?.role === "superadmin") return { error: "Администраторский аккаунт уже настроен. Войдите в кабинет." };
-    if (existingMembership.data) return { error: "Для этого аккаунта магазин уже создан. Войдите в кабинет." };
     email = user.email.toLowerCase();
     userId = user.id;
   } else {
@@ -78,5 +75,6 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
     const { error: signInError } = await client.auth.signInWithPassword({ email, password });
     if (signInError) return { error: "Аккаунт создан. Войдите с указанными данными." };
   }
+  (await cookies()).set("dukenim_selected_tenant", tenant.id, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
   redirect(`/onboarding?billing=${billing}`);
 }

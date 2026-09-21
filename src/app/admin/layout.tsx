@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const { role, tenantId } = await requireRole(["owner", "superadmin"]);
-  if (role === "superadmin" && !tenantId) redirect("/root");
+  if (!tenantId) redirect(role === "superadmin" ? "/root" : "/stores");
   const tenant = !process.env.NEXT_PUBLIC_SUPABASE_URL
     ? {
         name: "Серик Шоп",

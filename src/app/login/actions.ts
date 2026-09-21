@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getProfileRole } from "@/lib/queries/auth";
 import { createStaffClient } from "@/lib/staff-server";
+import { getUserTenant } from "@/lib/queries/auth";
 export type LoginState = { error: string | null };
 export async function login(_: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -18,6 +19,10 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
     const memberships=await staff.from("staff_access").select("id").eq("user_id",data.user.id).eq("active",true).limit(1);
     if(memberships.data?.length)redirect("/staff");
   }
-  redirect(profile.role === "superadmin" ? "/root" : profile.role === "owner" ? "/admin" : "/");
+  if (profile.role === "owner") {
+    const membership = await getUserTenant(client, data.user.id);
+    redirect(membership.data ? "/admin" : "/stores");
+  }
+  redirect(profile.role === "superadmin" ? "/root" : "/");
 }
 export async function logout() { const client = await createClient(); await client.auth.signOut(); redirect("/login"); }

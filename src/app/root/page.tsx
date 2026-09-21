@@ -81,9 +81,7 @@ export default async function Root({
             </span>
             Dukenim Root
           </Link>
-          <span className="badge bg-white/9 text-[var(--accent-bright)]">
-            SUPERADMIN
-          </span>
+          <div className="flex items-center gap-3"><Link href="/root/management" className="rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white">Карта управления</Link><span className="badge bg-white/9 text-[var(--accent-bright)]">SUPERADMIN</span></div>
         </div>
       </header>
       <main className="container py-10">
