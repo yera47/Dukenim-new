@@ -24,19 +24,20 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
   async function finish() {
     setPending(true);
     setError(null);
-    const response = await fetch("/api/onboarding", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: billing === "year" ? "annual" : "monthly" }),
-    });
-    const data = await response.json() as { error?: string };
-    if (!response.ok) {
-      setError(data.error ?? "Не удалось сохранить выбор тарифа.");
+    try {
+      const response = await fetch("/api/onboarding", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: billing === "year" ? "annual" : "monthly" }),
+      });
+      const data = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(data.error ?? "Не удалось сохранить выбор тарифа.");
+      // AI Studio is the owner's first workspace; catalog creation is its first guided action.
+      location.href = "/admin/ai-studio";
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Не удалось сохранить настройку. Проверьте соединение и повторите попытку.");
       setPending(false);
-      return;
     }
-    // AI Studio is the owner's first workspace; catalog creation is its first guided action.
-    location.href = "/admin/ai-studio";
   }
 
   return <main className="onboarding-builder min-h-screen bg-[var(--surface)]">
@@ -56,7 +57,7 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
         <p className="onboarding-lead">Выберите сферу. Дальше соберём каталог и витрину по шагам. Первые 7 дней — бесплатно и без карты.</p>
         <div className="builder-niche-grid mt-8">{verticals.map((item) => <button type="button" key={item.id} onClick={() => setVertical(item.id)} className={vertical === item.id ? "is-selected" : ""}><span>{item.label}</span></button>)}</div>
         <p className="muted mt-4 text-sm">Сейчас — каталоги товаров и готовой еды. Запись на услуги и билеты мероприятий пока недоступны.</p>
-        {vertical === "food" && <p className="mt-3 text-sm" role="status">Для еды доступны блюда, варианты и дополнения, заказы ко времени и истории с фото или видео. Склад сырья пока не учитывается.</p>}
+        {vertical === "food" && <p className="mt-3 text-sm" role="status">Подходит для ресторана, донерной, пекарни, кондитерской, кофейни и столовой. На следующем этапе выберете пример своего формата и одно из двух оформлений меню. Доступны варианты блюд, заказы ко времени и истории; склад сырья пока не учитывается.</p>}
         <div className="onboarding-address"><span>Адрес вашей витрины</span><b>dukenim.kz/s/{tenant.slug}</b></div>
         <div className="onboarding-benefits">
           {[

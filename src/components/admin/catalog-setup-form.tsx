@@ -19,12 +19,11 @@ import { WorkingHours } from "./working-hours";
 import { LoyaltyEditor } from "./loyalty-editor";
 import {newLoyaltyProgram,loyaltyProgramSchema} from "@/lib/loyalty";
 import { TemplateIllustration } from "./template-illustration";
+import { foodConcepts } from "@/lib/food-concepts";
 
 const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:string}>>>={
   food:[
-    {label:"Кафе с доставкой",text:"Городское кафе с понятным меню, доставкой и самовывозом. Гости выбирают блюда по разделам и могут заказать как можно скорее или ко времени."},
-    {label:"Столовая в бизнес-центре",text:"Столовая в бизнес-центре с завтраками и обедами. Важно быстро выбрать блюда и оформить самовывоз ко времени, например к 13:00."},
-    {label:"Выпечка и кофе",text:"Небольшая кофейня с выпечкой и напитками. Простое меню, быстрый самовывоз и предзаказ ко времени."},
+    ...foodConcepts.map(concept=>({label:concept.label,text:concept.brief})),
   ],
   fashion:[{label:"Одежда и аксессуары",text:"Магазин одежды и аксессуаров с небольшими коллекциями. Покупателю важно быстро выбрать категорию, размер и цвет."}],
   beauty:[{label:"Уход и косметика",text:"Магазин косметики и средств ухода. Спокойная подача, понятные категории и акцент на составе и назначении товара."}],
@@ -153,7 +152,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":step===4&&vertical==="food"?"Как будете радовать постоянных гостей?":"Проверьте магазин перед добавлением товаров"}</h2>
         {step===1&&designStage==="brief"&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
           <label className="block text-sm font-semibold">Что продаёте и для кого?<textarea className="input mt-2" value={brief} maxLength={650} rows={3} onChange={event=>{setBrief(event.target.value);setGenerationId(undefined);setAiReason("");}} placeholder="Например, натуральная косметика для ежедневного ухода. Небольшой ассортимент, спокойная светлая подача."/></label>
-          {presets.length>0&&<div className="mt-4"><p className="text-xs font-semibold text-neutral-500">Можно начать с примера</p><div className="mt-2 flex flex-wrap gap-2">{presets.map(preset=><button key={preset.label} type="button" className="rounded-full border px-3 py-2 text-left text-xs hover:border-neutral-900" onClick={()=>{setBrief(preset.text);setGenerationId(undefined);setAiReason("");}}>{preset.label}</button>)}</div></div>}
+          {presets.length>0&&<div className="mt-4"><label htmlFor="business-example" className="text-xs font-semibold text-neutral-500">Начать с примера бизнеса</label><select id="business-example" className="input mt-2" value={presets.find(preset=>preset.text===brief)?.label??""} onChange={event=>{const preset=presets.find(item=>item.label===event.target.value);if(preset){setBrief(preset.text);setGenerationId(undefined);setAiReason("");}}}><option value="">Выберите пример или опишите свой</option>{presets.map(preset=><option key={preset.label} value={preset.label}>{preset.label}</option>)}</select>{vertical==="food"&&foodConcepts.find(concept=>concept.brief===brief)&&<p className="mt-2 text-xs leading-5 text-neutral-500">Пример разделов: {foodConcepts.find(concept=>concept.brief===brief)?.sections}. Подойдёт оформление «{foodConcepts.find(concept=>concept.brief===brief)?.layout}». Разделы и товары добавите сами.</p>}</div>}
           <p className="mt-3 text-xs leading-6 text-neutral-500">Следом покажем готовые варианты. Цвета и материалы можно уточнить позже.</p>
           {aiError&&<p role="alert" className="mt-3 text-sm text-red-700">{aiError}</p>}
           {aiReason&&<p role="status" className="mt-3 text-sm leading-6">{aiReason}</p>}
