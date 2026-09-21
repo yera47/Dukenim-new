@@ -1,4 +1,5 @@
 import {BuyerHub} from "@/components/store/buyer-hub";
+import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { configurationFor } from "@/lib/commerce-configurations";
@@ -18,7 +19,10 @@ export default async function DemoSubpage({params}:{params:Promise<{vertical:str
     const product=products.find(p=>p.id===path[1]);if(!product)notFound();
     return <ProductDetail product={product} slug={slug} deliveryPolicy={null} returnPolicy={null}/>;
   }
-  const category=path.length===2&&path[0]==="category"?path[1]:null;
+  let category:string|null=null;
+  if(path.length===2&&path[0]==="category") {
+    try { category=decodeURIComponent(path[1]); } catch { notFound(); }
+  }
   if(!(path.length===1&&path[0]==="catalog")&&!category)notFound();
   if(category&&!products.some(p=>p.category===category))notFound();
   return <main className="container py-10"><Link href={config.href} className="text-sm opacity-60">← Главная</Link><h1 className="my-8 text-4xl font-semibold">{category??"Все товары"}</h1><CatalogBrowser key={category??"all"} slug={slug} products={category?products.filter(p=>p.category===category):products}/></main>;
