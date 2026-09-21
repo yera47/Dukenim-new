@@ -1,10 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { pickupLocationSchema, safeMapUrl } from "./pickup-location";
 describe("pickup location", () => {
-  it.each(["javascript:alert(1)", "https://yandex.ru.evil.test/maps/", "https://user:pass@yandex.ru/maps/", "http://yandex.ru/maps/", "https://yandex.ru:4430/maps/"])("rejects unsafe link %s", url => expect(safeMapUrl(url,"yandex")).toBe(false));
+  it.each(["javascript:alert(1)", "https://yandex.ru.evil.test/maps/", "https://user:pass@yandex.ru/maps/", "http://yandex.ru/maps/", "https://yandex.ru:4430/maps/", "https://yandex.ru/search/?text=x"])("rejects unsafe link %s", url => expect(safeMapUrl(url,"yandex")).toBe(false));
   it("allows official shared URLs and narrow embed paths", () => {
     expect(safeMapUrl("https://2gis.kz/almaty/geo/123","gis")).toBe(true);
     expect(safeMapUrl("https://yandex.kz/maps/?rtext=~43,76","yandex")).toBe(true);
+    expect(safeMapUrl("https://yandex.ru/navi?whatshere%5Bzoom%5D=18","yandex")).toBe(true);
     expect(safeMapUrl("https://api-maps.yandex.ru/frame/v1/-/example","embed")).toBe(true);
     expect(safeMapUrl("https://yandex.ru/search/?text=x","embed")).toBe(false);
   });

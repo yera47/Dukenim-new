@@ -14,6 +14,9 @@ it("requires pickup address, schedule and map host validation",()=>{
  expect(fulfilmentCommitSchema.safeParse(value).success).toBe(true);
  expect(fulfilmentCommitSchema.safeParse({...value,gisUrl:"https://evil.test/"}).success).toBe(false);
  expect(fulfilmentCommitSchema.safeParse({...value,preparation:""}).success).toBe(false);
+ expect(fulfilmentCommitSchema.safeParse({...value,yandexUrl:"https://yandex.ru/navi?whatshere%5Bzoom%5D=18"}).success).toBe(true);
+ const invalid=fulfilmentCommitSchema.safeParse({...value,yandexUrl:"https://evil.test/"});
+ expect(invalid.success?"":invalid.error.issues[0].message).toContain("Яндекс Карт или Навигатора");
 });
 it("accepts deferral, never a client-supplied payment activation",()=>{
  expect(paymentPreferenceSchema.parse("later")).toBe("later");

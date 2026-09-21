@@ -6,7 +6,9 @@ it("offers seven explicit days without inventing opening hours",()=>{
   const html=renderToStaticMarkup(<WorkingHours value="" onChange={vi.fn()}/>);
   expect((html.match(/type="checkbox"/g)??[])).toHaveLength(7);
   expect(html).not.toContain("checked=");
-  expect(html).toContain("Отметьте рабочие дни");
+  expect(html).toContain("Каждый день · 10:00–20:00");
+  expect(html).toContain("выберите время из списка");
+  expect(html).not.toContain('type="time"');
 });
 it("preserves legacy saved hours until the owner chooses to edit",()=>{
   const change=vi.fn();

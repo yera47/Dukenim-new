@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## Pickup links and hours — 2026-09-21 (current)
+
+Result: the screenshot's official `https://yandex.ru/navi?...` link was rejected by the old Maps-only allowlist. The pickup/reservation schema now permits official HTTPS Yandex Navigator paths, still rejects unsafe hosts and schemes, and returns a field-specific validation error. The shared hours control now offers scrollable half-hour time options and one-click daily/weekday presets across catalog creation, pickup and reservation settings. Existing saved custom times remain selectable.
+
+Changed files: `src/lib/pickup-location.ts` and tests, `src/lib/catalog-fulfilment.ts` and tests, `src/components/admin/working-hours.tsx` and tests, catalog/pickup/reservation labels, `PROJECT_STATE.md` and this handoff. 456 tests pass with four live-AI skips; strict TypeScript and 78-route build pass. Production browser verification and release remain in progress.
+
 ## Guest checkout and manual courier — 2026-09-21 (current)
 
 Result: buyer checkout can take orders without SMS while platform phone auth is not live. Contact phone must be a valid Kazakhstan +7 number; privacy/offer consent and full address are required. The manual Yandex courier choice asks for an explicit final acknowledgement that the store will book the courier and agree its unknown price. Store owners see the buyer's phone and address on the order. The site no longer instructs them to use a Yandex business account; Yandex booking happens outside Dukenim. Guest history works only in the same browser until a verified account can claim it, and rewards require a verified account.

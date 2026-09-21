@@ -7,7 +7,7 @@ export function safeMapUrl(value: string, kind: "gis" | "yandex" | "embed") {
     const url = new URL(value);
     if (url.protocol !== "https:" || url.username || url.password || url.port) return false;
     if (kind === "gis") return ["2gis.kz", "2gis.ru", "2gis.com", "go.2gis.com"].includes(url.hostname);
-    if (kind === "yandex") return ["yandex.kz", "yandex.ru", "yandex.com", "yandex.uz"].includes(url.hostname) && (url.pathname === "/maps" || url.pathname.startsWith("/maps/"));
+    if (kind === "yandex") return ["yandex.kz", "yandex.ru", "yandex.com", "yandex.uz"].includes(url.hostname) && (["/maps", "/navi"].includes(url.pathname) || url.pathname.startsWith("/maps/") || url.pathname.startsWith("/navi/"));
     return (url.hostname === "api-maps.yandex.ru" && url.pathname.startsWith("/frame/v1/")) ||
       (url.hostname === "yandex.ru" && url.pathname === "/map-widget/v1/");
   } catch { return false; }

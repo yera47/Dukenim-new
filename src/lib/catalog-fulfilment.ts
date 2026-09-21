@@ -17,6 +17,12 @@ export const fulfilmentCommitSchema=fulfilmentDraftSchema.superRefine((value,ctx
     if(value.zone.trim().length<2||value.eta.trim().length<2)ctx.addIssue({code:"custom",message:"Укажите зону и срок доставки.",path:["zone"]});
     if(!/^\d+$/.test(value.cost)||!Number.isSafeInteger(Number(value.cost))||Number(value.cost)>2_000_000_000)ctx.addIssue({code:"custom",message:"Стоимость доставки — целое число тенге от 0.",path:["cost"]});
   }
-  if((value.pickup||value.reservation)&&!pickupLocationSchema.safeParse({address:value.address,hours:value.hours,preparation:value.preparation,gisUrl:value.gisUrl,yandexUrl:value.yandexUrl,instructions:"",embedUrl:""}).success)
-    ctx.addIssue({code:"custom",message:"Укажите адрес, часы, готовность самовывоза и корректные ссылки на карты.",path:["address"]});
+  if(value.pickup||value.reservation){
+    const point=pickupLocationSchema.safeParse({address:value.address,hours:value.hours,preparation:value.preparation,gisUrl:value.gisUrl,yandexUrl:value.yandexUrl,instructions:"",embedUrl:""});
+    if(!point.success){
+      const field=String(point.error.issues[0]?.path[0]??"address");
+      const messages:Record<string,string>={address:"Укажите адрес самовывоза: город, улицу и дом.",hours:"Выберите дни и часы работы.",preparation:"Укажите, когда покупатель сможет забрать заказ.",gisUrl:"Проверьте ссылку 2ГИС: вставьте HTTPS-ссылку на точку.",yandexUrl:"Проверьте ссылку Яндекс Карт или Навигатора: вставьте HTTPS-ссылку на точку."};
+      ctx.addIssue({code:"custom",message:messages[field]??"Проверьте условия самовывоза.",path:[field]});
+    }
+  }
 });
