@@ -4,7 +4,6 @@ import { requireRole } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { DeleteStoreForm } from "./delete-store-form";
 import { switchStore } from "./actions";
-import { ControlInventory } from "@/components/admin/control-inventory";
 
 export const dynamic = "force-dynamic";
 
@@ -30,7 +29,6 @@ export default async function StoresPage({ searchParams }: { searchParams: Promi
         </div>
         <DeleteStoreForm id={store.id} slug={store.slug} />
       </article>)}</div> : <section className="card mt-8 p-8 text-center"><Store className="mx-auto text-[var(--accent)]" size={36} /><h2 className="mt-4 text-xl font-bold">Пока нет магазинов</h2><p className="muted mt-2">Начните с нового магазина. Ваш аккаунт уже готов — повторно регистрироваться не нужно.</p><Link href="/register?social=1" className="btn btn-primary mt-5">Создать магазин <ArrowRight size={16} /></Link></section>}
-      <ControlInventory />
     </div>
   </main>;
 }
