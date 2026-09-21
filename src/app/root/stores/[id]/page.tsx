@@ -26,6 +26,10 @@ export default async function RootStorePage({
     ordersResult,
     auditResult,
     smsResult,
+    settingsResult,
+    zonesResult,
+    loyaltyResult,
+    storiesResult,
   ] = await Promise.all([
     client.from("tenants").select("*").eq("id", id).single(),
     client
@@ -51,6 +55,10 @@ export default async function RootStorePage({
       .order("created_at", { ascending: false })
       .limit(20),
     smsClient(client).from("tenant_sms_settings").select("*").eq("tenant_id", id).maybeSingle(),
+    client.from("tenant_settings").select("delivery_enabled,pickup_enabled,payment_online,payment_provider,min_order").eq("tenant_id",id).maybeSingle(),
+    client.from("delivery_zones").select("name,provider,cost,is_active").eq("tenant_id",id),
+    client.from("loyalty_programs").select("name,enabled").eq("tenant_id",id).maybeSingle(),
+    client.from("food_stories").select("id,status").eq("tenant_id",id),
   ]);
   if (tenantResult.error || !tenantResult.data) notFound();
   const tenant = tenantResult.data;
@@ -59,6 +67,8 @@ export default async function RootStorePage({
   const orders = ordersResult.data ?? [];
   const events = auditResult.data ?? [];
   const sms = smsResult.data;
+  if(settingsResult.error||zonesResult.error||loyaltyResult.error||storiesResult.error)throw new Error("Не удалось загрузить настройки магазина.");
+  const settings = settingsResult.data;
   const revenue = orders
     .filter((order) => order.status !== "cancelled")
     .reduce((sum, order) => sum + order.total, 0);
@@ -104,7 +114,7 @@ export default async function RootStorePage({
             ["Товары", products.length],
             ["Опубликовано", products.filter((p) => p.is_active).length],
             ["Заказы · последние 20", orders.length],
-            ["Выручка · последние 20", money(revenue)],
+            ["Сумма заказов · последние 20", money(revenue)],
           ].map(([label, value]) => (
             <article key={label} className="bg-[#11201a] p-5">
               <small className="text-white/40">{label}</small>
@@ -112,6 +122,7 @@ export default async function RootStorePage({
             </article>
           ))}
         </section>
+        <section className="mt-8 rounded-2xl bg-white/7 p-5"><h2 className="text-xl font-extrabold">Настройки и публикация</h2><p className="mt-1 text-sm text-white/55">Проверка состояния без изменения настроек владельца.</p><div className="mt-4 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4"><div><span className="text-white/50">Каталог</span><b className="mt-1 block">{tenant.catalog_published?"Опубликован":"Закрыт"}</b></div><div><span className="text-white/50">Доставка / самовывоз</span><b className="mt-1 block">{settings?.delivery_enabled?"Вкл.":"Выкл."} / {settings?.pickup_enabled?"Вкл.":"Выкл."}</b></div><div><span className="text-white/50">Онлайн-оплата</span><b className="mt-1 block">{settings?.payment_online?`Вкл. · ${settings.payment_provider??"провайдер не указан"}`:"Выкл."}</b></div><div><span className="text-white/50">Лояльность / истории</span><b className="mt-1 block">{loyaltyResult.data?.enabled?loyaltyResult.data.name:"Выкл."} / {(storiesResult.data??[]).filter(item=>item.status==="published").length} опубликовано</b></div></div><div className="mt-4 text-sm text-white/60">Зоны доставки: {(zonesResult.data??[]).filter(zone=>zone.is_active).map(zone=>`${zone.name} (${zone.provider}${zone.provider==="own"?`, ${money(zone.cost)}`:""})`).join(" · ")||"нет активных"}</div></section>
         <div className="mt-8 grid gap-7 xl:grid-cols-[1fr_330px]">
           <section className="overflow-hidden rounded-2xl bg-white text-[var(--ink)]">
             <div className="flex items-center justify-between border-b p-6">

@@ -11,6 +11,8 @@ catalog_builder_drafts:Table<{tenant_id:string;revision:number;state:Json;update
 tenant_brand_materials:Table<{tenant_id:string;revision:number;notes:string;logo_path:string|null;colors:Json;updated_at:string}>;
 profiles:Table<{user_id:string;role:"customer"|"owner"|"superadmin";created_at:string}>;
 tenant_users:Table<{id:string;tenant_id:string;user_id:string;role:"owner"|"admin"|"staff"}>;
+staff_access:Table<{id:string;tenant_id:string;user_id:string;title:string;permissions:Json;active:boolean;notify_orders:boolean;revision:number;created_at:string}>;
+loyalty_programs:Table<{tenant_id:string;name:string;enabled:boolean;terms:string|null;updated_at:string}>;
 categories:Table<{id:string;tenant_id:string;name:string;slug:string;sort_order:number;is_active:boolean}>;
 products:Table<ProductRow>;
 food_stories:Table<{id:string;tenant_id:string;title:string;caption:string|null;media_path:string;media_type:"image"|"video";product_id:string|null;status:"draft"|"published";sort_order:number;created_at:string;updated_at:string}>;

@@ -35,7 +35,25 @@ export async function replyToOwner(form:FormData){const text=String(form.get("te
 export async function completeRequest(form:FormData){const{client,actorId}=await rootClient();const requestId=String(form.get("requestId"));await setRequestStatus(client,requestId,"done");await createPlatformAuditEvent(client,{actorId,action:"support.request_completed",metadata:{requestId}});revalidatePath("/root")}
 export async function createPromotion(form:FormData){const{client,actorId}=await rootClient();const code=String(form.get("code")??"").trim().toUpperCase();const title=String(form.get("title")??"").trim();const type=String(form.get("type")??"");const value=Number(form.get("value"));const plan=String(form.get("plan")??"")||null;const maxRaw=String(form.get("maxRedemptions")??"").trim();if(!/^[A-Z0-9][A-Z0-9_-]{2,31}$/.test(code)||title.length<2||!Number.isInteger(value)||value<1||!["percent","fixed_kzt","free_days"].includes(type))throw new Error("Проверьте код, название и размер выгоды.");if(type==="percent"&&value>100)throw new Error("Скидка в процентах не может быть больше 100.");const{data,error}=await client.from("subscription_promotions").insert({code,title,plan:plan as Plan|null,discount_type:type as"percent"|"fixed_kzt"|"free_days",discount_value:value,max_redemptions:maxRaw?Number(maxRaw):null,created_by:actorId}).select("id").single();if(error)throw error;await createPlatformAuditEvent(client,{actorId,action:"promotion.created",reason:`${code}: ${title}`,metadata:{promotionId:data?.id}});revalidatePath("/root")}
 export async function togglePromotion(form:FormData){const{client,actorId}=await rootClient();const id=String(form.get("promotionId"));const active=String(form.get("active"))==="true";const{error}=await client.from("subscription_promotions").update({is_active:active,updated_at:new Date().toISOString()}).eq("id",id);if(error)throw error;await createPlatformAuditEvent(client,{actorId,action:active?"promotion.enabled":"promotion.disabled",metadata:{promotionId:id}});revalidatePath("/root")}
-export async function updateCrmIntegrationStatus(form:FormData){const{client,actorId}=await rootClient();const id=String(form.get("integrationId")??"");const status=String(form.get("status")??"");const summary=String(form.get("summary")??"").trim();const allowed=new Set(["credentials_needed","submitted","preflight","waiting_owner","connected","failed","revoked"]);if(!id||!allowed.has(status)||summary.length>1200)throw new Error("Некорректные данные очереди");const{data,error}=await client.from("crm_integration_requests").update({status:status as Database["public"]["Tables"]["crm_integration_requests"]["Row"]["status"],preflight_summary:summary||null,last_status_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id).select("tenant_id").single();if(error)throw error;await createPlatformAuditEvent(client,{actorId,tenantId:data.tenant_id,action:"crm_integration.status_changed",metadata:{integrationId:id,status}});revalidatePath("/root/integrations")}
+export async function updateCrmIntegrationStatus(form:FormData){
+ const{client,actorId}=await rootClient();
+ const id=String(form.get("integrationId")??"");const status=String(form.get("status")??"");const summary=String(form.get("summary")??"").trim();
+ const allowed=new Set(["credentials_needed","submitted","preflight","waiting_owner","connected","failed","revoked"]);
+ if(!UUID_PATTERN.test(id)||!allowed.has(status)||summary.length>1200)throw new Error("Некорректные данные очереди");
+ const request=await client.from("crm_integration_requests").select("tenant_id,provider,status").eq("id",id).single();
+ if(request.error||!request.data)throw new Error("Заявка не найдена.");
+ if(status==="connected"){
+  if(request.data.provider!=="planfix"&&request.data.provider!=="biznes_ru")throw new Error("Для этой CRM ещё нет действующего технического подключения.");
+  const connection=await client.from("integration_connections").select("id,last_sync_at").eq("tenant_id",request.data.tenant_id).eq("provider",request.data.provider).eq("status","active").limit(1).maybeSingle();
+  if(connection.error||!connection.data||!connection.data.last_sync_at)throw new Error("Нельзя отметить CRM подключённой без активного соединения и успешной синхронизации.");
+ }
+ const audit=await createPlatformAuditEvent(client,{actorId,tenantId:request.data.tenant_id,action:"crm_integration.status_change_requested",metadata:{integrationId:id,before:request.data.status,after:status}});
+ if(audit.error)throw new Error("Журнал аудита недоступен. Статус не изменён.");
+ const{error}=await client.from("crm_integration_requests").update({status:status as Database["public"]["Tables"]["crm_integration_requests"]["Row"]["status"],preflight_summary:summary||null,last_status_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id).eq("tenant_id",request.data.tenant_id);
+ if(error)throw new Error("Не удалось изменить статус CRM-заявки.");
+ await createPlatformAuditEvent(client,{actorId,tenantId:request.data.tenant_id,action:"crm_integration.status_changed",metadata:{integrationId:id,before:request.data.status,after:status}});
+ revalidatePath("/root/integrations");
+}
 
 const UUID_PATTERN=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 export async function updateRootProduct(form:FormData){

@@ -59,13 +59,13 @@ export default async function Root({
     if (selected)
       messages = (await getPlatformMessages(client, selected)).data ?? [];
   }
-  const revenue = orders
+  const orderVolume = orders
     .filter((o) => o.status !== "cancelled")
     .reduce((s, o) => s + o.total, 0);
   const metrics = [
     ["МАГАЗИНЫ", tenants.length, Building2],
-    ["ОБЩАЯ ВЫРУЧКА", money(revenue), CircleDollarSign],
-    ["ЗАКАЗЫ", orders.length, Activity],
+    ["СУММА ЗАКАЗОВ · ДО 500", money(orderVolume), CircleDollarSign],
+    ["ЗАКАЗЫ · ДО 500", orders.length, Activity],
     ["АКТИВНЫЕ", tenants.filter((t) => t.status === "active").length, Users],
   ] as const;
   return (
@@ -93,6 +93,12 @@ export default async function Root({
             Центр управления
           </h1>
         </div>
+        <nav className="mt-6 flex flex-wrap gap-2" aria-label="Управление платформой">
+          <Link href="/root/accounts" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Аккаунты</Link>
+          <Link href="/root/orders" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Все заказы</Link>
+          <Link href="/root/finance" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Платежи и тарифы</Link>
+          <Link href="/root/audit" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Аудит</Link>
+        </nav>
         <section className="mt-8 grid border-y border-white/10 sm:grid-cols-2 xl:grid-cols-4">
           {metrics.map(([t, v, I], i) => {
             const Icon = I as typeof Store;
@@ -426,7 +432,7 @@ export default async function Root({
                   title={`${t.name}: ${money(amount)}`}
                   className="flex-1 bg-[var(--accent-bright)]/75"
                   style={{
-                    height: `${Math.max(6, Math.min(100, (amount / Math.max(revenue, 1)) * 300))}%`,
+                    height: `${Math.max(6, Math.min(100, (amount / Math.max(orderVolume, 1)) * 300))}%`,
                   }}
                 />
               );

@@ -55,4 +55,18 @@ describe("root mutations", () => {
     await expect(updateRootProduct(form)).rejects.toThrow("целым количеством тенге");
     expect(from).not.toHaveBeenCalled();
   });
+  it("cannot mark a CRM connected without an active technical connection", async () => {
+    mocks.requireRole.mockResolvedValue({ user: { id: "actor" }, role: "superadmin" });
+    const from = vi.fn((table: string) => {
+      if (table === "crm_integration_requests") return { select: () => ({ eq: () => ({ single: async () => ({ data: { tenant_id: "22222222-2222-4222-8222-222222222222", provider: "biznes_ru", status: "preflight" }, error: null }) }) }) };
+      if (table === "integration_connections") return { select: () => ({ eq: () => ({ eq: () => ({ eq: () => ({ limit: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) }) }) }) };
+      throw new Error(`Unexpected table: ${table}`);
+    });
+    mocks.createAdminClient.mockReturnValue({ from });
+    const form = new FormData();
+    form.set("integrationId", "11111111-1111-4111-8111-111111111111");
+    form.set("status", "connected");
+    await expect(updateCrmIntegrationStatus(form)).rejects.toThrow("без активного соединения");
+    expect(from).not.toHaveBeenCalledWith("platform_audit_events");
+  });
 });
