@@ -76,6 +76,16 @@ export async function cancelRootUnpaidOrder(form:FormData){
  if(result.error||!result.data)throw new Error(result.error?.message??"Заказ не отменён. Обновите страницу.");
  revalidatePath("/root/orders");revalidatePath(`/root/orders/${order}`);revalidatePath("/admin/orders");revalidatePath("/admin/stock");
 }
+export async function setRootCatalogPublication(form:FormData){
+ const {client,actorId}=await rootClient();
+ const tenant=String(form.get("tenantId")??"");const slug=String(form.get("confirmSlug")??"").trim();
+ const expected=String(form.get("expected"));const publish=String(form.get("publish"));const reason=String(form.get("reason")??"").trim();
+ if(!UUID_PATTERN.test(tenant)||!slug||!["true","false"].includes(expected)||!["true","false"].includes(publish)||expected===publish||reason.length<3||reason.length>1000)throw new Error("Проверьте магазин, адрес и причину изменения.");
+ const rpc=client as unknown as {rpc:(name:"root_set_catalog_publication",args:{p_tenant:string;p_actor:string;p_slug:string;p_expected:boolean;p_publish:boolean;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_set_catalog_publication",{p_tenant:tenant,p_actor:actorId,p_slug:slug,p_expected:expected==="true",p_publish:publish==="true",p_reason:reason});
+ if(result.error||!result.data)throw new Error(result.error?.message??"Публикация не изменена. Обновите страницу.");
+ revalidatePath("/root");revalidatePath(`/root/stores/${tenant}`);revalidatePath(`/s/${slug}`);
+}
 export async function updateRootProduct(form:FormData){
   const{client,actorId}=await rootClient();
   const tenantId=String(form.get("tenantId")??"");const productId=String(form.get("productId")??"");
