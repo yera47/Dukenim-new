@@ -4,7 +4,7 @@
 
 Result: the screenshot's official `https://yandex.ru/navi?...` link was rejected by the old Maps-only allowlist. The pickup/reservation schema now permits official HTTPS Yandex Navigator paths, still rejects unsafe hosts and schemes, and returns a field-specific validation error. The shared hours control now offers scrollable half-hour time options and one-click daily/weekday presets across catalog creation, pickup and reservation settings. Existing saved custom times remain selectable.
 
-Changed files: `src/lib/pickup-location.ts` and tests, `src/lib/catalog-fulfilment.ts` and tests, `src/components/admin/working-hours.tsx` and tests, catalog/pickup/reservation labels, `PROJECT_STATE.md` and this handoff. 456 tests pass with four live-AI skips; strict TypeScript and 78-route build pass. Production browser verification and release remain in progress.
+Changed files: `src/lib/pickup-location.ts` and tests, `src/lib/catalog-fulfilment.ts` and tests, `src/components/admin/working-hours.tsx` and tests, catalog/pickup/reservation labels, `PROJECT_STATE.md` and this handoff. 456 tests pass with four live-AI skips; strict TypeScript and 78-route build pass. `414fd2e` is Ready on `www.dukenim.kz` as `dpl_8kbq3mq97PhAp4PRNY84EpYecLwJ`. Authenticated browser reopened the saved «Моё кафе» pickup step with the exact Navigator link, no validation message and an enabled Continue button. The new time choices are covered by component tests; a browser click through the step remains untested.
 
 ## Guest checkout and manual courier — 2026-09-21 (current)
 
@@ -12,7 +12,7 @@ Result: buyer checkout can take orders without SMS while platform phone auth is 
 
 Changed files: checkout page/client, orders API/tests, owner order list, buyer hub/orders page, manual courier notice/settings copy, `src/lib/phone-auth-ready.ts`, `docs/SMS_PLATFORM_SETUP.md`, `DECISIONS.md`, `PROJECT_STATE.md`, this handoff. SMS activation now additionally requires `BUYER_PHONE_AUTH_ENABLED=true` after a real OTP test.
 
-Checks: 455 tests pass with four live-AI skips, strict TypeScript and 78-route build pass. Transactional production SQL smoke created a guest courier order with provider `yandex`, goods-only total and zero delivery cost, then rolled back; no test zone remained. Order API tests cover guest consent and phone-gated mode. Browser end-to-end, production deployment and merchant screen verification remain in progress. Azure unchanged.
+Checks: 455 tests pass with four live-AI skips, strict TypeScript and 78-route build pass. Transactional production SQL smoke created a guest courier order with provider `yandex`, goods-only total and zero delivery cost, then rolled back; no test zone remained. Order API tests cover guest consent and phone-gated mode. Release `5979be8` is Ready and a fresh production browser checkout shows the guest contact/consent step without SMS. No real buyer-to-manager browser order was placed and merchant contact rendering is not yet browser-verified. Azure unchanged.
 
 Acceptance checklist: guest contact/consent and server order — verified by API tests and rolled-back database RPC; buyer-to-manager browser journey — in progress; owner sees contact/address — in progress pending authenticated browser; manual courier acknowledgement and goods-only total — code/tests verified, browser pending; SMS OTP and cross-device loyalty/history — externally blocked by missing carrier account/key and approved Sender ID. No real customer order or SMS sent.
 
