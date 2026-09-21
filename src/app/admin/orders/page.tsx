@@ -15,23 +15,28 @@ import {deliveryProviderFromSnapshot} from "@/lib/delivery-provider";
 export default async function Orders(){
   const {tenantId}=await requireRole(["owner","superadmin"]);
   const orders=await loadOwnerOrders(tenantId!);
+  const client=await createClient();
+  const admin=process.env.SUPABASE_SERVICE_ROLE_KEY?createAdminClient():null;
+  const orderIds=orders.map(order=>order.id);
   const customerIds=[...new Set(orders.map(order=>order.customer_id).filter((id):id is string=>Boolean(id)))];
-  const customerRows=customerIds.length?await (await createClient()).from("customers").select("id,name,phone").eq("tenant_id",tenantId!).in("id",customerIds):null;
+  const [customerRows,kitchen,holds,loyalty,connection]=await Promise.all([
+    customerIds.length?client.from("customers").select("id,name,phone").eq("tenant_id",tenantId!).in("id",customerIds):Promise.resolve(null),
+    orderIds.length?client.from("order_items").select("order_id,title_snapshot,qty,options_snapshot,combo_parent").eq("tenant_id",tenantId!).in("order_id",orderIds):Promise.resolve(null),
+    reservationsClient(client).from("merchandise_reservations").select("*").eq("tenant_id",tenantId!).order("created_at",{ascending:false}).limit(100),
+    admin&&orderIds.length?loyaltyClient(admin).from("buyer_order_access").select("order_id,discount,reward_label").eq("tenant_id",tenantId!).in("order_id",orderIds):Promise.resolve(null),
+    admin?admin.from("integration_connections").select("id").eq("tenant_id",tenantId!).eq("provider","planfix").eq("status","active").maybeSingle():Promise.resolve(null),
+  ]);
   const customers=new Map((customerRows?.data??[]).map(customer=>[customer.id,customer]));
-  const kitchen=await (await createClient()).from("order_items").select("order_id,title_snapshot,qty,options_snapshot,combo_parent").eq("tenant_id",tenantId!).in("order_id",orders.map(o=>o.id));
-  const holds=await reservationsClient(await createClient()).from("merchandise_reservations").select("*").eq("tenant_id",tenantId!).order("created_at",{ascending:false}).limit(100);
-  const loyalty=await loyaltyClient(createAdminClient()).from("buyer_order_access").select("order_id,discount,reward_label").eq("tenant_id",tenantId!).in("order_id",orders.map(o=>o.id));
   const byId=new Map((holds.data??[]).map(hold=>[hold.order_id,hold]));
-  let planfixConnected=false;
+  const benefits=new Map((loyalty?.data??[]).map(row=>[row.order_id,row]));
+  type KitchenItem=NonNullable<NonNullable<typeof kitchen>["data"]>[number];
+  const itemsByOrder=new Map<string,KitchenItem[]>();
+  for(const item of kitchen?.data??[])itemsByOrder.set(item.order_id,[...(itemsByOrder.get(item.order_id)??[]),item]);
+  const planfixConnected=Boolean(connection?.data);
   const planfixStates=new Map<string,string>();
-  if(process.env.SUPABASE_SERVICE_ROLE_KEY&&tenantId){
-    const admin=createAdminClient();
-    const connection=await admin.from("integration_connections").select("id").eq("tenant_id",tenantId).eq("provider","planfix").eq("status","active").maybeSingle();
-    planfixConnected=Boolean(connection.data);
-    if(connection.data){
-      const links=await admin.from("integration_entity_links").select("entity_id,status").eq("tenant_id",tenantId).eq("provider","planfix").eq("entity_type","order");
+  if(admin&&connection?.data){
+      const links=await admin.from("integration_entity_links").select("entity_id,status").eq("tenant_id",tenantId!).eq("provider","planfix").eq("entity_type","order");
       for(const link of links.data??[])planfixStates.set(link.entity_id,link.status);
-    }
   }
   return <>
     <h1 className="text-3xl font-semibold">Заказы и бронирования</h1>
@@ -39,7 +44,7 @@ export default async function Orders(){
     <LiveOrders/>
     {holds.error&&<p role="alert">Состояния брони не загрузились. Управление заказами временно скрыто.</p>}
     <div className="mt-6 grid gap-4">{orders.map(order=>{
-      const hold=byId.get(order.id); const benefit=loyalty.data?.find(row=>row.order_id===order.id);const customer=order.customer_id?customers.get(order.customer_id):null;
+      const hold=byId.get(order.id); const benefit=benefits.get(order.id);const customer=order.customer_id?customers.get(order.customer_id):null;
       const yandexDelivery=order.delivery_method==="courier"&&deliveryProviderFromSnapshot(order.fulfilment_snapshot)==="yandex";
       return <article key={order.id} className="card flex flex-wrap items-start justify-between gap-4 p-5">
         <div>
@@ -48,7 +53,7 @@ export default async function Orders(){
           {customer&&<p className="mt-2 text-sm"><b>Покупатель:</b> {customer.name||"Имя не указано"} · <a className="font-semibold underline" href={`tel:${customer.phone.replace(/[^+\d]/g,"")}`}>{customer.phone}</a></p>}
           {order.delivery_method==="courier"&&<div className="mt-2 rounded-xl bg-blue-50 p-3 text-sm text-blue-950"><b>{yandexDelivery?"Курьер через Яндекс · оформите вручную":"Своя доставка"}</b><p><b>Адрес от покупателя:</b> {order.delivery_address||"уточните у покупателя"}</p>{yandexDelivery?<><p>Свяжитесь с покупателем, проверьте адрес и телефон, согласуйте цену по расстоянию. После согласования сами закажите курьера от двери до двери и выберите доступный способ оплаты. Стоимость курьера не входит в сумму товаров и не рассчитана Dukenim.</p></>:<p>Цена для покупателя: {money(order.delivery_cost)} · оплата при получении</p>}</div>}
           {!hold&&<p className="mt-2 text-sm font-semibold">{order.requested_for?`Ко времени: ${new Date(order.requested_for).toLocaleString("ru-KZ")}`:"Как можно скорее"}</p>}
-          {!hold&&order.payment_method==="cash"&&["pending","paid"].includes(order.payment_status)&&order.status!=="cancelled"&&<CashPayment orderId={order.id} paid={order.payment_status==="paid"}/>}<div className="mt-4 space-y-2">{kitchen.data?.filter(i=>i.order_id===order.id).map((item,index)=><div key={index} className="rounded-xl bg-neutral-50 p-3 text-sm"><b>{item.title_snapshot} × {item.qty}</b>{item.combo_parent&&<small className="ml-2 text-neutral-500">В комбо</small>}{Array.isArray(item.options_snapshot)&&item.options_snapshot.map((label,i)=><p key={i} className="mt-1 text-xs text-purple-700">{String(label)}</p>)}</div>)}</div>{planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
+          {!hold&&order.payment_method==="cash"&&["pending","paid"].includes(order.payment_status)&&order.status!=="cancelled"&&<CashPayment orderId={order.id} paid={order.payment_status==="paid"}/>}<div className="mt-4 space-y-2">{itemsByOrder.get(order.id)?.map((item,index)=><div key={index} className="rounded-xl bg-neutral-50 p-3 text-sm"><b>{item.title_snapshot} × {item.qty}</b>{item.combo_parent&&<small className="ml-2 text-neutral-500">В комбо</small>}{Array.isArray(item.options_snapshot)&&item.options_snapshot.map((label,i)=><p key={i} className="mt-1 text-xs text-purple-700">{String(label)}</p>)}</div>)}</div>{planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
         </div>
         <span className="badge">{hold?"В магазине":order.source==="online"?"Онлайн":"В зале"}</span>
         <strong>{yandexDelivery?"Товары: ":""}{money(order.total)}</strong>

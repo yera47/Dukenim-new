@@ -9,6 +9,7 @@ import {z} from "zod";
 import {foodSelectionSchema,foodSelectionKey,emptyFoodSelection} from "@/lib/food-options";
 import {buyerClient} from "@/lib/buyer-db";
 import {phoneAuthReady} from "@/lib/phone-auth-ready";
+import {verifiedBuyer} from "@/lib/verified-buyer";
 
 type Body = {
   slug?: unknown;
@@ -109,11 +110,12 @@ export async function POST(request: Request) {
     const secret=process.env.SUPABASE_SERVICE_ROLE_KEY!;
     const buyer=await buyerIdentity();
     const account=buyer.userId?await client.auth.admin.getUserById(buyer.userId):null;
-    const verifiedPhone=account?.data.user?.phone_confirmed_at?account.data.user.phone:null;
-    if(phoneAuthReady()&&!verifiedPhone)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
+    const {accountVerified,phoneVerified}=verifiedBuyer(account?.data.user);
+    const verifiedPhone=phoneVerified?account?.data.user?.phone:null;
+    if(phoneAuthReady()&&!phoneVerified)return NextResponse.json({error:"Подтвердите номер телефона перед заказом."},{status:401});
     if(verifiedPhone)phone=`+${verifiedPhone.replace(/\D/g,"")}`;
     else if(body.privacyConsent!==true)return NextResponse.json({error:"Подтвердите согласие с политикой и офертой."},{status:400});
-    const orderBuyer={...buyer,userId:verifiedPhone?buyer.userId:null};
+    const orderBuyer={...buyer,userId:accountVerified?buyer.userId:null};
     const previous=readGuestOrders((await cookies()).get(guestOrdersCookie)?.value,secret);
     const { data, error } = await createStorefrontOrder(client, {
       tenantId: tenant.id,
@@ -125,7 +127,7 @@ export async function POST(request: Request) {
       paymentMethod: "cash",
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
-      buyer:orderBuyer,reward:verifiedPhone?extra.data.reward:null,referralCode:verifiedPhone?extra.data.referralCode:null,
+      buyer:orderBuyer,reward:accountVerified?extra.data.reward:null,referralCode:accountVerified?extra.data.referralCode:null,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });
     const order = data[0];

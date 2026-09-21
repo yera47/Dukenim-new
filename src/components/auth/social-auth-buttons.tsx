@@ -5,7 +5,7 @@ import { LoaderCircle } from "lucide-react";
 import type { Provider } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 
-type SocialAuthButtonsProps = { next: string; mode: "login" | "register" };
+type SocialAuthButtonsProps = { next: string; mode: "login" | "register" | "buyer" };
 
 const allProviders: Array<{ provider: Provider; label: string; enabled: boolean }> = [
   // Google is the primary owner sign-in. Supabase remains the authority; if its
@@ -50,7 +50,7 @@ export function SocialAuthButtons({ next, mode }: SocialAuthButtonsProps) {
         {pending === provider ? "Открываем…" : `Продолжить с ${label}`}
       </button>)}
     </div>
-    <p className="text-center text-xs leading-5 text-[var(--ink-60)]">{mode === "login" ? "Войдите тем способом, которым регистрировали аккаунт." : "Сначала подтвердите личность — затем создадите магазин."}</p>
+    <p className="text-center text-xs leading-5 text-[var(--ink-60)]">{mode === "buyer" ? "Заказы из этого браузера сохранятся в вашем аккаунте после входа." : mode === "login" ? "Войдите тем способом, которым регистрировали аккаунт." : "Сначала подтвердите личность — затем создадите магазин."}</p>
     {message && <p role="alert" className="rounded-xl bg-amber-50 p-3 text-sm font-semibold text-amber-900">{message}</p>}
   </div>;
 }

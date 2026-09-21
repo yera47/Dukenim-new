@@ -80,6 +80,15 @@ describe("order API fails safely before database writes", () => {
     expect(admin.auth.admin.getUserById).not.toHaveBeenCalled();
     expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,buyer:expect.objectContaining({userId:null,hash:"a".repeat(64)})}));
   });
+  it("links a confirmed email account while keeping its contact phone unverified",async()=>{
+    const admin={auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{email:"buyer@example.test",email_confirmed_at:"2026-09-21T00:00:00Z",phone:null}}})}}};
+    vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:9,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
+    expect((await POST(request({...valid,privacyConsent:true}))).status).toBe(200);
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,buyer:expect.objectContaining({userId:"buyer-user"})}));
+  });
   it("requires the Yandex delivery notice before any order write",async()=>{
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
     vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:false,delivery_enabled:true,pickup_location:null,payment_online:false,min_order:0},zones:[{id:"12345678-1234-4123-8123-123456789013",name:"Центр",cost:1800,free_from:null,eta_text:null,provider:"yandex"}],error:null});
