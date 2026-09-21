@@ -1,5 +1,10 @@
 # Dukenim — AI handoff
 
+## Merchant brief in AI context — 2026-09-22
+
+Release `276f0e5` adds the saved catalog-builder merchant description to AI Studio's bounded shop context. The AI now knows the owner's chosen food format and description after the builder reloads, while treating it as a plan rather than confirmed inventory. Four independent context reads run concurrently, each scoped to the authenticated tenant; a failed read returns an error instead of making up facts. Changed files: `src/app/api/ai-studio/draft/route.ts`, `src/lib/ai/shop-context.ts`, `src/lib/ai/consultation.ts`, `src/lib/ai/shop-context.test.ts`. TypeScript, production build and 468 tests pass (4 live-AI skips). The earlier production browser run exercised a real consultation and saved builder brief, but this additional context forwarding was verified by code/test, not a second model call. No Azure or database configuration changed. Preserve unrelated dirty integration/platform documents and untracked output. Next: verify model use of a specific saved brief on an isolated tenant if needed, and continue root-control gaps recorded in the audit.
+
+
 ## Demo category fix after project audit — 2026-09-22
 
 Release `978862b` is Vercel Production Ready. The audit's browser navigation found `/demo/fashion/collection/category/Аксессуары` returned 404 because the catch-all route compared encoded Cyrillic to decoded product categories. `src/app/demo/[vertical]/[approach]/[...path]/page.tsx` now decodes safely; a route test and updated `scripts/check-demo-navigation.cjs` cover the actual link. Production browser passed fashion category → product and food catalog at 390/1440 px. Food configuration browser checks also passed combo, quantity, edit, reload and no horizontal overflow. TypeScript and build passed sequentially (an initial simultaneous typecheck/build collided in `.next/types`; rerunning after build passed); 467 tests passed, 4 intentional live skips. No database or Azure configuration changed. Audit status updated in `docs/AUDIT_20260922_REGISTRATION_AI.md`. Next unresolved work remains root global controls, real provider finance/CRM, backups and field performance.
