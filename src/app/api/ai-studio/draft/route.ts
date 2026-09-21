@@ -58,14 +58,19 @@ export async function POST(request: Request) {
     }
     let shopContext:unknown=tenant.data;
     {
-      const fulfilment=await admin.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,min_order").eq("tenant_id",context.tenantId).maybeSingle();
+      const [fulfilment,brand,reservationSettings,builderDraft]=await Promise.all([
+        admin.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,min_order").eq("tenant_id",context.tenantId).maybeSingle(),
+        admin.from("tenant_brand_materials").select("notes,colors").eq("tenant_id",context.tenantId).maybeSingle(),
+        reservationsClient(admin).from("reservation_settings").select("enabled,hold_hours,location").eq("tenant_id",context.tenantId).maybeSingle(),
+        admin.from("catalog_builder_drafts").select("state").eq("tenant_id",context.tenantId).maybeSingle(),
+      ]);
       if(fulfilment.error) return NextResponse.json({error:"Не удалось прочитать условия магазина. Попробуйте позже."},{status:503});
-      shopContext={...tenant.data,fulfilment:fulfilment.data};
-      const brand=await admin.from("tenant_brand_materials").select("notes,colors").eq("tenant_id",context.tenantId).maybeSingle();
       if(brand.error)return NextResponse.json({error:"Не удалось прочитать правила бренда."},{status:503});
-      const reservationSettings=await reservationsClient(admin).from("reservation_settings").select("enabled,hold_hours,location").eq("tenant_id",context.tenantId).maybeSingle();
       if(reservationSettings.error)return NextResponse.json({error:"Не удалось прочитать условия бронирования."},{status:503});
-      shopContext={...tenant.data,fulfilment:fulfilment.data,reservation:reservationSettings.data??{enabled:false},brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
+      if(builderDraft.error)return NextResponse.json({error:"Не удалось прочитать описание магазина."},{status:503});
+      const state=builderDraft.data?.state;
+      const merchantBrief=state&&typeof state==="object"&&!Array.isArray(state)&&"brief" in state&&typeof state.brief==="string"?state.brief:null;
+      shopContext={...tenant.data,merchant_brief:merchantBrief,fulfilment:fulfilment.data,reservation:reservationSettings.data??{enabled:false},brand:brand.data?{notes:brand.data.notes.slice(0,6000),colors:brandColorsSchema.safeParse(brand.data.colors).data??[]}:null};
       if(input.data.intent==="consultation") {
       const previous = await admin.from("ai_studio_generations").select("id,input_summary,output").eq("tenant_id",context.tenantId).eq("intent","consultation").order("created_at",{ascending:false}).limit(8);
       if(previous.error) return NextResponse.json({error:"Не удалось восстановить контекст разговора. Попробуйте позже."},{status:503});
