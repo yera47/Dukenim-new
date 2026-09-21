@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Images } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { deleteFoodStory, saveFoodStory } from "./actions";
 
@@ -12,6 +13,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
   const [editing, setEditing] = useState<EditorStory | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
   const [title, setTitle] = useState("");
   const [caption, setCaption] = useState("");
   const [productId, setProductId] = useState("");
@@ -23,6 +25,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
 
   function select(item: EditorStory | null) {
     setEditing(item); setFile(null); setTitle(item?.title ?? ""); setCaption(item?.caption ?? "");
+    if (fileInput.current) fileInput.current.value = "";
     setProductId(item?.product_id ?? ""); setStatus(item?.status ?? "draft"); setMessage("");
   }
   function save() {
@@ -52,22 +55,20 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
     startTransition(async () => { const result = await deleteFoodStory(item.id); setMessage(result.error ?? "История удалена."); select(null); router.refresh(); });
   }
 
-  return <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)]">
-    <section className="space-y-3" aria-label="Сохранённые истории">
+  return <div className={`grid gap-6 ${stories.length ? "lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)]" : "max-w-xl"}`}>
+    {stories.length > 0 && <section className="space-y-3" aria-label="Сохранённые истории">
       <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Ваши истории</h2><button className="btn btn-primary" onClick={() => select(null)}>+ Новая история</button></div>
-      {stories.length ? stories.map(item => <button type="button" key={item.id} onClick={() => select(item)} className={`flex w-full items-center gap-4 rounded-2xl border bg-white p-3 text-left ${editing?.id === item.id ? "border-[var(--accent)]" : "border-[var(--line)]"}`}>
+      {stories.map(item => <button type="button" key={item.id} onClick={() => select(item)} className={`flex w-full items-center gap-4 rounded-2xl border bg-white p-3 text-left ${editing?.id === item.id ? "border-[var(--accent)]" : "border-[var(--line)]"}`}>
         {item.media_type === "image" ? <img src={item.url} alt="" className="h-24 w-20 rounded-xl object-cover" /> : <video src={item.url} muted preload="metadata" className="h-24 w-20 rounded-xl object-cover" />}
         <span className="min-w-0"><b className="block truncate">{item.title}</b><small className="mt-1 block text-[var(--ink-60)]">{item.status === "published" ? "На витрине" : "Черновик"}{item.product_id ? " · ссылка на блюдо" : ""}</small></span>
         <span className="ml-auto text-sm font-bold text-[var(--accent)]">Изменить</span>
-      </button>) : <div className="rounded-2xl border border-dashed border-[var(--line)] bg-white p-6 text-sm text-[var(--ink-60)]">Здесь появятся фото и видео вашего кафе. Создайте первую историю справа.</div>}
-    </section>
+      </button>)}
+    </section>}
     <section className="card h-fit p-5 sm:p-6" aria-label="Редактор истории">
       <h2 className="text-xl font-bold">{editing ? "Редактировать историю" : "Новая история"}</h2>
       <p className="muted mt-1 text-sm">Покажите блюдо, акцию или атмосферу кафе. Опубликуйте, когда всё готово.</p>
       <div className="mt-6 space-y-5">
-        <label className="block text-sm font-bold">1. Фото или видео
-          <input type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" onChange={event => setFile(event.target.files?.[0] ?? null)} className="mt-2 block w-full rounded-xl border border-[var(--line)] p-3 text-sm" />
-        </label>
+        <div><span className="block text-sm font-bold">1. Фото или видео</span><label className="mt-2 flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-sm font-bold text-[var(--accent)]"><Images size={20}/>{file ? file.name : editing ? "Заменить фото или видео" : "Добавить фото или видео"}<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" onChange={event => setFile(event.target.files?.[0] ?? null)} className="sr-only" /></label></div>
         {(filePreview || editing) && <div className="overflow-hidden rounded-2xl bg-[#14171f]">{filePreview ? file?.type.startsWith("video/") ? <video src={filePreview} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <img src={filePreview} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" /> : editing?.media_type === "video" ? <video src={editing.url} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <img src={editing?.url} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" />}</div>}
         <p className="muted text-xs">Вертикальный кадр 9:16 выглядит лучше. Фото JPG/PNG/WebP или видео MP4/WebM, до 20 МБ.</p>
         <label className="block text-sm font-bold">2. Заголовок<input className="input mt-2" value={title} onChange={event => setTitle(event.target.value)} maxLength={80} placeholder="Например: Что готовим к обеду" /></label>

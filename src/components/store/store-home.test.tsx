@@ -64,3 +64,9 @@ it("does not invent food stories for an empty merchant",()=>{
  expect(html).not.toContain("Открыть историю:");
  expect(html).toContain("Заведение добавляет первые блюда");
 });
+it.each(["collection", "assortment", "guided"] as const)("shows owner-published food stories in %s layout without demo products", approach => {
+ vi.stubGlobal("React", React);
+ const html=renderToStaticMarkup(<CartProvider><StoreHome slug="own" tenant={{name:"Кафе",catalog_name:null,tagline:null,business_vertical:"food"}} products={[]} settings={null} campaign={null} storePolicies={null} approach={approach} foodStories={[{id:"story-1",title:"Обед",caption:"Сегодня",mediaUrl:"https://example.com/lunch.jpg",mediaType:"image",productId:null}]}/></CartProvider>);
+ expect(html).toContain('aria-label="Открыть историю: Обед"');
+ expect(html).not.toContain("Круассан-сэндвич");
+});

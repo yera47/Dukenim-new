@@ -11,6 +11,7 @@ import { EditorialCover } from "./editorial-cover";
 import { personalStoreLayout } from "@/lib/personal-store-layout";
 import { FoodFulfilmentGate } from "./food-fulfilment-gate";
 import { FoodQuickMenu } from "./food-quick-menu";
+import { FoodStoryRail } from "./food-story-rail";
 import type { FoodStory } from "@/lib/food-stories";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
@@ -49,6 +50,7 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
 
   return <main className={`storefront-theme ${styles.root}`} data-personal={layout?"true":undefined} data-typography={layout?.typography} data-hero={layout?.hero} data-density={layout?.density} data-columns={layout?.columns} data-corners={layout?.corners} data-ratio={layout?.imageRatio} data-approach={approach} data-template={settings?.template_key ?? "atelier"} data-vertical={tenant.business_vertical ?? "other"}>
     {(layout?layout.hero==="editorial":approach==="collection")?<EditorialCover vertical={tenant.business_vertical??"other"} title={title} subtitle={subtitle} cta={settings?.hero_cta_label||"Смотреть каталог"} heroImage={heroImage} products={products} slug={slug}/>:<header className={`container ${styles.intro}`}><div><span className={styles.sectionCount}>{categories.length>0?`${categories.length} разделов · ${products.length} товаров`:"Каталог магазина"}</span><h1>{title}</h1><p>{subtitle}</p></div>{approach==="assortment"&&categories.length>0&&<nav className={styles.quickSections} aria-label="Быстрый выбор раздела">{categories.map(category=><Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`}>{category}<ArrowRight size={16}/></Link>)}</nav>}</header>}
+    {food&&<div className="container pt-6"><FoodStoryRail products={products} slug={slug} name={tenant.catalog_name||tenant.name} curatedStories={foodStories}/></div>}
 
     {approach==="guided"&&categories.length>0&&<section className="container pb-8" aria-label="Выбор раздела"><h2 className="mb-6 text-2xl font-semibold">{configuration?.title??"Выберите раздел"}</h2><div className="grid grid-cols-2 gap-4 md:grid-cols-3">{categories.map(category=>{const product=products.find(p=>p.category===category&&p.images?.[0]);return <Link key={category} href={`${storefrontPath(slug)}/category/${encodeURIComponent(category)}`} className="overflow-hidden rounded-2xl border border-black/10 bg-[var(--store-surface)]">
       {/* eslint-disable-next-line @next/next/no-img-element */}

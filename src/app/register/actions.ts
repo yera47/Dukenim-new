@@ -55,7 +55,7 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const existing = await admin.from("tenants").select("id").eq("slug", slug).maybeSingle();
   if (existing.data) slug = `${slug}-${userId.slice(0, 5)}`;
   const trialEnd = new Date(Date.now() + 7 * 86400000).toISOString();
-  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: nextPlan, preferred_billing_period: billing === "year" ? "annual" : "monthly", trial_ends_at: trialEnd, onboarding_completed: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
+  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: nextPlan, preferred_billing_period: billing === "year" ? "annual" : "monthly", trial_ends_at: trialEnd, onboarding_completed: false, catalog_published: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
   if (tenantError || !tenant) {
     if (shouldDeleteUserOnFailure) await admin.auth.admin.deleteUser(userId);
     return { error: "Не удалось создать магазин. Попробуйте другое название." };
