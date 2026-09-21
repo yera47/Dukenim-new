@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({ getUser: vi.fn(), profile: vi.fn(), tenant: vi.fn() }));
 vi.mock("next/navigation", () => ({ redirect: (url: string) => { throw new Error(`redirect:${url}`); } }));
+vi.mock("next/headers", () => ({ cookies: async () => ({ get: () => undefined }) }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: () => ({ auth: { getUser: mocks.getUser } }) }));
 vi.mock("@/lib/queries/auth", () => ({ getProfileRole: mocks.profile, getUserTenant: mocks.tenant }));
 import { getSessionContext, requireRole } from "./auth";
@@ -39,7 +40,7 @@ describe("server authorization fails closed", () => {
   });
   it("keeps owner tenant isolation", async () => {
     expect(await requireRole(["owner"])).toMatchObject({ role: "owner", tenantId: "own-shop" });
-    expect(mocks.tenant).toHaveBeenCalledWith(expect.anything(), "user");
+    expect(mocks.tenant).toHaveBeenCalledWith(expect.anything(), "user", undefined);
   });
   it("allows verified tenantless admin without inventing a shop", async () => {
     mocks.profile.mockResolvedValue({ data: { role: "superadmin" }, error: null });

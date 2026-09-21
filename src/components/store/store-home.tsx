@@ -11,6 +11,7 @@ import { EditorialCover } from "./editorial-cover";
 import { personalStoreLayout } from "@/lib/personal-store-layout";
 import { FoodFulfilmentGate } from "./food-fulfilment-gate";
 import { FoodQuickMenu } from "./food-quick-menu";
+import type { FoodStory } from "@/lib/food-stories";
 
 type Settings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 type Campaign = Pick<Database["public"]["Tables"]["storefront_campaigns"]["Row"],"title"|"eyebrow"|"body"|"cta_label"|"cta_href"|"image_url">;
@@ -23,9 +24,10 @@ export type StoreHomeProps = {
   storePolicies:{delivery_policy:string|null;return_policy:string|null}|null;
   approach?:CommerceApproach;
   checkoutOptions?:{deliveryEnabled:boolean;pickupEnabled:boolean};
+  foodStories?: FoodStory[];
 };
 // Same render tree for authenticated draft preview and the published homepage.
-export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach,checkoutOptions}:StoreHomeProps) {
+export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,approach:requestedApproach,checkoutOptions,foodStories}:StoreHomeProps) {
   const layout=personalStoreLayout(settings?.layout_config);
   const approach=requestedApproach??approachForTemplate(settings?.template_key??"atelier");
   const configuration=configurationFor(tenant.business_vertical??"other",approach);
@@ -39,7 +41,7 @@ export function StoreHome({slug,tenant,products,settings,campaign,storePolicies,
 
   if(food&&approach==="assortment")return <main className="storefront-theme bg-white" data-approach={approach} data-vertical="food">
     {checkoutOptions&&<FoodFulfilmentGate slug={slug} deliveryEnabled={checkoutOptions.deliveryEnabled} pickupEnabled={checkoutOptions.pickupEnabled}/>}
-    <div id="catalog" style={{paddingTop:0}}><FoodQuickMenu products={products} slug={slug} name={tenant.catalog_name||tenant.name}/></div>
+    <div id="catalog" style={{paddingTop:0}}><FoodQuickMenu products={products} slug={slug} name={tenant.catalog_name||tenant.name} curatedStories={foodStories}/></div>
     {campaign&&<section className="container pb-8"><div className="rounded-3xl bg-[#eeeafa] p-6 text-[#352665]">{campaign.eyebrow&&<span className="text-sm">{campaign.eyebrow}</span>}<h2 className="mt-2 text-2xl font-bold">{campaign.title}</h2>{campaign.body&&<p className="mt-3">{campaign.body}</p>}<Link className="mt-4 inline-block font-semibold underline" href={campaign.cta_href||"#catalog"}>{campaign.cta_label||"Посмотреть меню"} →</Link></div></section>}
     {storePolicies?.delivery_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Доставка и самовывоз</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.delivery_policy}</p></section>}
     {storePolicies?.return_policy&&<section className="container border-t py-8"><h2 className="font-semibold">Условия магазина</h2><p className="mt-3 whitespace-pre-line text-sm opacity-70">{storePolicies.return_policy}</p></section>}

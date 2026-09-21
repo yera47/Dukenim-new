@@ -54,7 +54,7 @@ it("presents food as a menu with fulfilment before ordering",()=>{
   expect(html).toContain("Выбрать получение");
   expect(html).toContain(">Меню<");
   expect(html).toContain("позиций");
-  expect(html).toContain('aria-label="Истории меню"');
+   expect(html).toContain('aria-label="Истории кафе"');
   expect(html).toContain('href="#food-section-0"');
   expect(html).toContain("Выбрать состав: Круассан-сэндвич");
 });

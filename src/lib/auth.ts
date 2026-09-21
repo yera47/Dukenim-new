@@ -1,4 +1,4 @@
-import{redirect}from"next/navigation";import type{User}from"@supabase/supabase-js";import{createClient}from"@/lib/supabase/server";import{getProfileRole,getUserTenant}from"@/lib/queries/auth";
+import{redirect}from"next/navigation";import type{User}from"@supabase/supabase-js";import{createClient}from"@/lib/supabase/server";import{getProfileRole,getUserTenant}from"@/lib/queries/auth";import{cookies}from"next/headers";
 export type AppRole="customer"|"owner"|"superadmin";
 export type SessionContext={user:User|null;role:AppRole;tenantId:string|null};
 export async function getSessionContext(): Promise<SessionContext | null> {
@@ -8,7 +8,8 @@ export async function getSessionContext(): Promise<SessionContext | null> {
   if (error || !user) return null;
   const { data: profile, error: profileError } = await getProfileRole(client, user.id);
   if (profileError || !profile || !["customer", "owner", "superadmin"].includes(profile.role)) return null;
-  const tenant = ["owner", "superadmin"].includes(profile.role) ? await getUserTenant(client, user.id) : null;
+  const selected=(await cookies()).get("dukenim_selected_tenant")?.value;
+  const tenant = ["owner", "superadmin"].includes(profile.role) ? await getUserTenant(client, user.id, selected) : null;
   return { user, role: profile.role as AppRole, tenantId: tenant?.error ? null : tenant?.data?.tenant_id ?? null };
 }
 export async function requireRole(roles: AppRole[]): Promise<SessionContext> {

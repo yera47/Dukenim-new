@@ -39,18 +39,19 @@ export async function middleware(request: NextRequest) {
   if (request.nextUrl.pathname.startsWith("/admin") && !["owner", "superadmin"].includes(profile?.role ?? "")) return redirect(new URL("/login", request.url));
 
   if (profile?.role === "owner") {
-    const { data: membership } = await getUserTenant(client, user.id);
+    const { data: membership } = await getUserTenant(client, user.id, request.cookies.get("dukenim_selected_tenant")?.value);
     if (membership) {
       const { data: tenant } = await getTenant(client, membership.tenant_id);
       const onOnboarding = request.nextUrl.pathname.startsWith("/onboarding");
 
       // Older production databases may not have onboarding_completed yet.
       // Only an explicit false should block the cabinet route.
-      if (tenant?.onboarding_completed === false && !onOnboarding) return redirect(new URL("/onboarding", request.url));
+      const onStoreSwitch = request.nextUrl.pathname.startsWith("/admin/stores");
+      if (tenant?.onboarding_completed === false && !onOnboarding && !onStoreSwitch) return redirect(new URL("/onboarding", request.url));
       if (tenant?.onboarding_completed === true && onOnboarding) return redirect(new URL("/admin", request.url));
 
       const entitlement = tenant ? computeEntitlement(tenant) : null;
-      if (entitlement && !entitlement.active && !request.nextUrl.pathname.startsWith("/admin/plan")) {
+      if (entitlement && !entitlement.active && !onStoreSwitch && !request.nextUrl.pathname.startsWith("/admin/plan")) {
         const target = new URL("/admin/plan", request.url);
         target.searchParams.set("expired", "1");
         return redirect(target);

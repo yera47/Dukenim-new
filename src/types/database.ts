@@ -13,6 +13,7 @@ profiles:Table<{user_id:string;role:"customer"|"owner"|"superadmin";created_at:s
 tenant_users:Table<{id:string;tenant_id:string;user_id:string;role:"owner"|"admin"|"staff"}>;
 categories:Table<{id:string;tenant_id:string;name:string;slug:string;sort_order:number;is_active:boolean}>;
 products:Table<ProductRow>;
+food_stories:Table<{id:string;tenant_id:string;title:string;caption:string|null;media_path:string;media_type:"image"|"video";product_id:string|null;status:"draft"|"published";sort_order:number;created_at:string;updated_at:string}>;
 product_variants:Table<VariantRow>;
 variant_costs:Table<{variant_id:string;tenant_id:string;unit_cost:number|null;updated_at:string}>;
 order_item_costs:Table<{order_item_id:string;tenant_id:string;order_id:string;unit_cost:number|null;qty:number;unit_price:number;captured_at:string}>;
