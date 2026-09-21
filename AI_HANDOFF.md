@@ -1,5 +1,15 @@
 # Dukenim — AI handoff
 
+## Food builder, referral and stock — 2026-09-21 (latest)
+
+Result: release `7577746` is pushed/Ready on the canonical site. Guest checkout forwards invite codes; food loyalty can be skipped at creation and added later; first-product form exposes structured nutrition, ingredients, additions and real-product combo controls; owner stock edits use a guarded atomic target RPC and show inline failures; Studio brand, delivery and preview actions are visible buttons. A 390px production browser inspection caught the chat composer covering the current step above the bottom navigation. A compact mobile composer follow-up is implemented locally and must be published/visually rechecked before closure.
+
+Changed files: see `docs/ACCEPTANCE_20260921_BUILDER.md`; source includes catalog setup/product editing, food options and storefront display, buyer referral checkout, Studio, SQL migrations `20260921095233` and `20260921102221`. Both migrations are applied to production. Unrelated dirty integration documentation and `output/*` remain untouched.
+
+Checks: 461 tests pass, 4 live-AI skips; strict TypeScript and 78-route build pass. Production SQL rollback created a brand-new food catalog without loyalty and left zero fixture stores; guest referral order/claim linked the invited buyer, then rolled back; stock 0→1 owner allowed/outsider denied, rolled back. Authenticated production browser on private «Моё кафе» changed stock 0→1→0 with catalog confirmation and saved/reopened/cleared 200 g/350 kcal; final SQL shows stock 0, nutrition null, catalog unpublished. Brand CTA opens logo controls; combo help and delivery/preview buttons render. Canonical 390/1440 food demo menu→cart has no horizontal overflow. AI Studio First Load JS fell 187→148 kB. Azure and SMS configuration unchanged.
+
+Unfinished: new-store onboarding skip still lacks a browser E2E; referral link→friend's paid/completed purchase→reward needs an isolated buyer journey; first-product creation with nutrition/combo needs browser E2E; new compact composer awaits release visual check. No external blocker for these. Live OTP and branded SMS remain deferred until provider account/key and approved Sender ID exist. Next: publish compact composer, check at 390px, then use a disposable private store/buyer journey without altering real merchants or claim only the tested layers.
+
 ## Live guest order and verified-account recovery — 2026-09-21 (latest)
 
 Result: published `385de91` makes a confirmed Google/email identity eligible to claim only signed guest receipts already held in the same browser, own subsequent orders and use its tenant loyalty/history on another device. The contact phone remains unverified and cannot independently unlock orders. With SMS disabled, a guest can still order after providing +7 phone, name and privacy consent. Storefront layout no longer loads the complete product/variant catalog for each header; owner orders queries are concurrent. Published `c93d0a9` fixes the 390px overlap between the mandatory courier acknowledgement and cookie banner. Both releases are pushed to `main` and Vercel Ready.
