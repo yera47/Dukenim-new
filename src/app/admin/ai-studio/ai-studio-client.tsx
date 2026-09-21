@@ -212,6 +212,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
       {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
     <details className="rounded-2xl border bg-white p-4" onToggle={event=>setBrandOpen(event.currentTarget.open)}><summary className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold"><span>Добавить логотип и настроить бренд<span className="mt-1 block text-xs font-normal text-slate-500">Загрузите логотип, PDF или опишите цвета — это необязательно.</span></span><span aria-hidden className="text-lg">＋</span></summary>{brandOpen&&<div className="mt-4 space-y-4"><BrandMaterials expandedInitially/><DesignHistory/></div>}</details>
+    {vertical==="food"&&step>0&&<Link href="/admin/settings/loyalty" className="btn btn-secondary min-h-14 justify-between text-left">Настроить лояльность и приглашения друзей <span aria-hidden>→</span></Link>}
     </StudioConversation>
   </div>;
 }
