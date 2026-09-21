@@ -45,6 +45,7 @@ export default async function CheckoutPage({ params }: { params: Promise<{ slug:
     pickupEnabled={options.settings?.pickup_enabled ?? false}
     pickupLocation={options.settings?.pickup_location}
     minOrder={options.settings?.min_order ?? 0}
+    kaspiRemoteEnabled={Boolean(options.settings?.kaspi_remote_enabled)}
     zones={zones}
   /></>;
 }

@@ -1,4 +1,5 @@
 import {CashPayment} from "./cash-payment";
+import {KaspiPayment} from "./kaspi-payment";
 import {loyaltyClient} from "@/lib/loyalty-db";
 import {requireRole} from "@/lib/auth";
 import {loadOwnerOrders} from "@/lib/owner-data";
@@ -53,6 +54,7 @@ export default async function Orders(){
           {customer&&<p className="mt-2 text-sm"><b>Покупатель:</b> {customer.name||"Имя не указано"} · <a className="font-semibold underline" href={`tel:${customer.phone.replace(/[^+\d]/g,"")}`}>{customer.phone}</a></p>}
           {order.delivery_method==="courier"&&<div className="mt-2 rounded-xl bg-blue-50 p-3 text-sm text-blue-950"><b>{yandexDelivery?"Курьер через Яндекс · оформите вручную":"Своя доставка"}</b><p><b>Адрес от покупателя:</b> {order.delivery_address||"уточните у покупателя"}</p>{yandexDelivery?<><p>Свяжитесь с покупателем, проверьте адрес и телефон, согласуйте цену по расстоянию. После согласования сами закажите курьера от двери до двери и выберите доступный способ оплаты. Стоимость курьера не входит в сумму товаров и не рассчитана Dukenim.</p></>:<p>Цена для покупателя: {money(order.delivery_cost)} · оплата при получении</p>}</div>}
           {!hold&&<p className="mt-2 text-sm font-semibold">{order.requested_for?`Ко времени: ${new Date(order.requested_for).toLocaleString("ru-KZ")}`:"Как можно скорее"}</p>}
+          {!hold&&order.payment_method==="kaspi"&&order.status!=="cancelled"&&<KaspiPayment orderId={order.id} paid={order.payment_status==="paid"} refunded={order.payment_status==="refunded"} invoiceSent={Boolean(order.kaspi_invoice_sent_at)} total={order.total}/>}
           {!hold&&order.payment_method==="cash"&&["pending","paid"].includes(order.payment_status)&&order.status!=="cancelled"&&<CashPayment orderId={order.id} paid={order.payment_status==="paid"}/>}<div className="mt-4 space-y-2">{itemsByOrder.get(order.id)?.map((item,index)=><div key={index} className="rounded-xl bg-neutral-50 p-3 text-sm"><b>{item.title_snapshot} × {item.qty}</b>{item.combo_parent&&<small className="ml-2 text-neutral-500">В комбо</small>}{Array.isArray(item.options_snapshot)&&item.options_snapshot.map((label,i)=><p key={i} className="mt-1 text-xs text-purple-700">{String(label)}</p>)}</div>)}</div>{planfixConnected&&!hold&&<PlanfixOrderSyncButton orderId={order.id} status={planfixStates.get(order.id)}/>}
         </div>
         <span className="badge">{hold?"В магазине":order.source==="online"?"Онлайн":"В зале"}</span>

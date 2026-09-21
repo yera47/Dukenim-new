@@ -53,7 +53,7 @@ describe("order API fails safely before database writes", () => {
     const admin={auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:"+77000000000",phone_confirmed_at:"2026-09-20T00:00:00Z"}}})}}};
     vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
-    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null},zones:[],error:null});
     vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:7,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
     const requestedFor=new Date(Date.now()+60*60_000).toISOString();
     const response=await POST(request({...valid,timingMode:"scheduled",requestedFor}));
@@ -63,7 +63,7 @@ describe("order API fails safely before database writes", () => {
   it("requires a verified phone account before creating the order",async()=>{
     vi.mocked(phoneAuthReady).mockReturnValue(true);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
-    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null},zones:[],error:null});
     vi.mocked(createAdminClient).mockReturnValue({auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{phone:null,phone_confirmed_at:null}}})}}} as unknown as ReturnType<typeof createAdminClient>);
     expect((await POST(request(valid))).status).toBe(401);expect(createStorefrontOrder).not.toHaveBeenCalled();
   });
@@ -72,7 +72,7 @@ describe("order API fails safely before database writes", () => {
     const admin={auth:{admin:{getUserById:vi.fn()}}};
     vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
-    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null},zones:[],error:null});
     vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:8,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
     expect((await POST(request(valid))).status).toBe(400);
     expect(createStorefrontOrder).not.toHaveBeenCalled();
@@ -85,17 +85,32 @@ describe("order API fails safely before database writes", () => {
     const admin={auth:{admin:{getUserById:vi.fn().mockResolvedValue({data:{user:{email:"buyer@example.test",email_confirmed_at:"2026-09-21T00:00:00Z",phone:null}}})}}};
     vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
-    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0},zones:[],error:null});
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null},zones:[],error:null});
     vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:9,total:1500}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
     expect((await POST(request({...valid,privacyConsent:true}))).status).toBe(200);
     expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({phone:valid.phone,buyer:expect.objectContaining({userId:"buyer-user"})}));
   });
   it("requires the Yandex delivery notice before any order write",async()=>{
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
-    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:false,delivery_enabled:true,pickup_location:null,payment_online:false,min_order:0},zones:[{id:"12345678-1234-4123-8123-123456789013",name:"Центр",cost:1800,free_from:null,eta_text:null,provider:"yandex"}],error:null});
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{pickup_enabled:false,delivery_enabled:true,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null},zones:[{id:"12345678-1234-4123-8123-123456789013",name:"Центр",cost:1800,free_from:null,eta_text:null,provider:"yandex"}],error:null});
     vi.mocked(createAdminClient).mockReturnValue({} as ReturnType<typeof createAdminClient>);
     const response=await POST(request({...valid,deliveryMethod:"courier",deliveryAddress:"Кызылорда, улица, дом 1",zoneId:"12345678-1234-4123-8123-123456789013"}));
     expect(response.status).toBe(400);
     expect(createStorefrontOrder).not.toHaveBeenCalled();
+  });
+  it("only accepts remote Kaspi orders after this tenant enables them",async()=>{
+    vi.mocked(buyerIdentity).mockResolvedValue({userId:null,hash:"a".repeat(64),token:"b".repeat(64)});
+    const admin={auth:{admin:{getUserById:vi.fn()}}};
+    vi.mocked(createAdminClient).mockReturnValue(admin as unknown as ReturnType<typeof createAdminClient>);
+    vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
+    const settings={pickup_enabled:true,delivery_enabled:false,pickup_location:null,payment_online:false,min_order:0,kaspi_remote_enabled:false,kaspi_remote_link:null};
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings,zones:[],error:null});
+    const body={...valid,paymentMethod:"kaspi",privacyConsent:true};
+    expect((await POST(request(body))).status).toBe(400);
+    expect(createStorefrontOrder).not.toHaveBeenCalled();
+    vi.mocked(getCheckoutOptions).mockResolvedValue({settings:{...settings,kaspi_remote_enabled:true},zones:[],error:null});
+    vi.mocked(createStorefrontOrder).mockResolvedValue({data:[{order_id:"order",order_number:10,total:21000}],error:null} as Awaited<ReturnType<typeof createStorefrontOrder>>);
+    expect((await POST(request(body))).status).toBe(200);
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({tenantId:"mine",paymentMethod:"kaspi"}));
   });
 });

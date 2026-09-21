@@ -16,7 +16,7 @@ import {createClient} from "@/lib/supabase/client";
 
 export type CheckoutZone = { id: string; name: string; cost: number; freeFrom: number | null; etaText: string | null; provider: "own" | "yandex" };
 type Result = { orderNumber: number; total: number };
-type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; pickupLocation?: unknown; minOrder: number; zones: CheckoutZone[]; demo?: boolean; phoneAuthAvailable?: boolean };
+type Props = { slug: string; deliveryEnabled: boolean; pickupEnabled: boolean; pickupLocation?: unknown; minOrder: number; zones: CheckoutZone[]; demo?: boolean; phoneAuthAvailable?: boolean; kaspiRemoteEnabled?:boolean };
 
 function localDateTimeInput(date:Date){
   const local=new Date(date.getTime()-date.getTimezoneOffset()*60_000);
@@ -28,7 +28,7 @@ function normalizeKzPhone(value:string){
   return national.length===11&&national.startsWith("7")?`+${national}`:value.trim();
 }
 
-export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLocation, minOrder, zones, demo = false, phoneAuthAvailable = false }: Props) {
+export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLocation, minOrder, zones, demo = false, phoneAuthAvailable = false, kaspiRemoteEnabled=false }: Props) {
   const router=useRouter();
   const { items, total, clear } = useCart();
   const firstMethod = deliveryEnabled ? "courier" : "pickup";
@@ -47,6 +47,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
   const [marketingConsent,setMarketingConsent]=useState(false);
+  const [paymentMethod,setPaymentMethod]=useState<"cash"|"kaspi">("cash");
   const [privacyConsent,setPrivacyConsent]=useState(false);
   const [invited,setInvited]=useState(false);
   useEffect(()=>{if(!demo)setInvited(Boolean(window.localStorage.getItem(`dukenim:${slug}:referral`)));},[demo,slug]);
@@ -78,7 +79,7 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
       return;
     }
     try {
-      const data = await submitCheckout({ marketingConsent:!guestCheckout&&marketingConsent,privacyConsent:guestCheckout?privacyConsent:true,yandexConsent:yandexDelivery&&deliveryConsent,reward:reward?{ruleId:reward.ruleId,milestone:reward.milestone}:null, referralCode:window.localStorage.getItem(`dukenim:${slug}:referral`), slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod: "cash", timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty, selection:item.selection })) });
+      const data = await submitCheckout({ marketingConsent:!guestCheckout&&marketingConsent,privacyConsent:guestCheckout?privacyConsent:true,yandexConsent:yandexDelivery&&deliveryConsent,reward:reward?{ruleId:reward.ruleId,milestone:reward.milestone}:null, referralCode:window.localStorage.getItem(`dukenim:${slug}:referral`), slug, name, phone, deliveryMethod: delivery, deliveryAddress: delivery === "courier" ? address : "", zoneId: delivery === "courier" ? zoneId : null, paymentMethod, timingMode, requestedFor: timingMode === "scheduled" ? requestedDate?.toISOString() : null, items: items.map((item) => ({ variantId: item.variantId, qty: item.qty, selection:item.selection })) });
       clear();
       setResult(data);
       router.push(`/s/${slug}/orders`);
@@ -134,7 +135,11 @@ export function CheckoutClient({ slug, deliveryEnabled, pickupEnabled, pickupLoc
             <p className="flex justify-between border-t pt-4 text-xl font-bold"><span>{yandexDelivery?"Итого за товары":"Итого"}</span><span>{money(total + deliveryCost - discount)}</span></p>
             {yandexDelivery&&<label className="flex items-start gap-3 rounded-xl bg-blue-50 p-4 text-sm text-blue-950"><input className="mt-1" type="checkbox" checked={deliveryConsent} onChange={event=>setDeliveryConsent(event.target.checked)}/><span>Понимаю, что магазин сам закажет курьера от двери до двери. Цена доставки зависит от расстояния, сейчас не входит в итог и будет согласована со мной до отправки.</span></label>}
           </div>
-          <div className="mt-6 rounded-[var(--r-card)] border border-[var(--line)] p-4"><b>Оплата при получении</b><small className="muted block">{yandexDelivery?"Товары — наличными магазину. Способ оплаты доставки менеджер согласует с вами до вызова курьера.":"Наличными или Kaspi QR у продавца. Dukenim не списывает деньги онлайн."}</small></div>
+          <fieldset className="mt-6 space-y-3 rounded-[var(--r-card)] border border-[var(--line)] p-4"><legend className="px-1 font-bold">Как оплатите товары?</legend>
+            <label className="flex cursor-pointer items-start gap-3 rounded-xl border p-3 text-sm"><input type="radio" name="payment" checked={paymentMethod==="cash"} onChange={()=>setPaymentMethod("cash")}/><span><b>При получении</b><small className="muted block">Наличными или Kaspi QR у продавца.</small></span></label>
+            {kaspiRemoteEnabled&&<label className="flex cursor-pointer items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm"><input type="radio" name="payment" checked={paymentMethod==="kaspi"} onChange={()=>setPaymentMethod("kaspi")}/><span><b>Удалённо через Kaspi Pay</b><small className="mt-1 block text-sky-950">После оформления откройте «Мои заказы»: магазин выставит счёт на ваш телефон или вы откроете его ссылку и введёте указанную сумму в Kaspi. Магазин подтвердит оплату после проверки. Dukenim деньги не списывает.</small></span></label>}
+            {yandexDelivery&&<small className="muted block">Стоимость курьера менеджер согласует отдельно до вызова.</small>}
+          </fieldset>
           {!guestCheckout&&<label className="mt-4 flex items-start gap-3 rounded-2xl bg-[var(--surface-2)] p-4 text-sm"><input className="mt-1 accent-[var(--accent)]" type="checkbox" checked={marketingConsent} onChange={event=>setMarketingConsent(event.target.checked)}/><span><b>Получать акции этого магазина по SMS</b><small className="muted mt-1 block">Необязательно. Отписаться можно в профиле или через магазин.</small></span></label>}
         </>}
         {error && <p role="alert" className="mt-5 rounded-xl bg-red-50 p-3 text-sm text-[var(--danger)]">{error}</p>}

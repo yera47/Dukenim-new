@@ -11,7 +11,7 @@ export type CheckoutInput = {
   deliveryMethod: "pickup" | "courier";
   deliveryAddress: string;
   zoneId: string | null;
-  paymentMethod: "cash";
+  paymentMethod: "cash" | "kaspi";
   requestedFor: string | null;
   items: CheckoutItem[];
   buyer?:{userId:string|null;hash:string};
@@ -38,7 +38,7 @@ export async function createStorefrontOrder(client: SupabaseClient<Database>, in
 
 export async function getCheckoutOptions(client: SupabaseClient<Database>, tenantId: string) {
   const [settings, zones] = await Promise.all([
-    client.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,payment_online,min_order").eq("tenant_id", tenantId).maybeSingle(),
+    client.from("tenant_settings").select("delivery_enabled,pickup_enabled,pickup_location,payment_online,min_order,kaspi_remote_enabled,kaspi_remote_link").eq("tenant_id", tenantId).maybeSingle(),
     client.from("delivery_zones").select("id,name,cost,free_from,eta_text,provider").eq("tenant_id", tenantId).eq("is_active", true).order("cost"),
   ]);
   return { settings: settings.data, zones: zones.data ?? [], error: settings.error ?? zones.error };

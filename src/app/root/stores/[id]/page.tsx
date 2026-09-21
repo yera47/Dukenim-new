@@ -75,7 +75,7 @@ export default async function RootStorePage({
   if(settingsResult.error||zonesResult.error||loyaltyResult.error||storiesResult.error)throw new Error("Не удалось загрузить настройки магазина.");
   const settings = settingsResult.data;
   const revenue = orders
-    .filter((order) => order.status !== "cancelled")
+    .filter((order) => order.status !== "cancelled" && order.payment_status === "paid")
     .reduce((sum, order) => sum + order.total, 0);
   return (
     <main className="min-h-screen bg-[#0c1713] pb-16 text-white">
@@ -119,7 +119,7 @@ export default async function RootStorePage({
             ["Товары", products.length],
             ["Опубликовано", products.filter((p) => p.is_active).length],
             ["Заказы · последние 20", orders.length],
-            ["Сумма заказов · последние 20", money(revenue)],
+            ["Оплачено · последние 20", money(revenue)],
           ].map(([label, value]) => (
             <article key={label} className="bg-[#11201a] p-5">
               <small className="text-white/40">{label}</small>

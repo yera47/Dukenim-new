@@ -93,13 +93,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Выберите время не раньше чем через 15 минут и не позже чем через 14 дней." }, { status: 400 });
     }
     if (deliveryMethod === "courier" && (deliveryAddress.length < 4 || deliveryAddress.length > 500)) return NextResponse.json({ error: "Укажите полный адрес доставки" }, { status: 400 });
-    if ((body.paymentMethod ?? "cash") !== "cash") return NextResponse.json({ error: "Сейчас доступна только оплата при получении" }, { status: 400 });
+    const paymentMethod=body.paymentMethod??"cash";
+    if(paymentMethod!=="cash"&&paymentMethod!=="kaspi")return NextResponse.json({error:"Выберите доступный способ оплаты"},{status:400});
 
     const client = createAdminClient();
     const { data: tenant } = await getPublicTenantBySlug(client, slug);
     if (!tenant) return NextResponse.json({ error: "Магазин недоступен" }, { status: 404 });
     const options = await getCheckoutOptions(client, tenant.id);
     if (options.error || !options.settings) return NextResponse.json({ error: "Не удалось загрузить способы получения" }, { status: 503 });
+    if(paymentMethod==="kaspi"&&!options.settings.kaspi_remote_enabled)return NextResponse.json({error:"Удалённая оплата Kaspi сейчас недоступна"},{status:400});
     if (deliveryMethod === "pickup" && !options.settings.pickup_enabled) return NextResponse.json({ error: "Самовывоз временно недоступен" }, { status: 400 });
     if (deliveryMethod === "courier") {
       if (!options.settings?.delivery_enabled) return NextResponse.json({ error: "Доставка временно недоступна" }, { status: 400 });
@@ -124,7 +126,7 @@ export async function POST(request: Request) {
       deliveryMethod,
       deliveryAddress,
       zoneId: deliveryMethod === "courier" ? zoneId : null,
-      paymentMethod: "cash",
+      paymentMethod,
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
       buyer:orderBuyer,reward:accountVerified?extra.data.reward:null,referralCode:extra.data.referralCode,

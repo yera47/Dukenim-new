@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/server";
 import { saveCrmIntegrationRequest } from "./actions";
 import { connectBusinessRu } from "./business-ru-actions";
 import { CrmSetupPayment } from "@/components/admin/crm-setup-payment";
+import { KaspiRemoteSettings } from "@/components/admin/kaspi-remote-settings";
 
 const statuses: Record<string, { title: string; description: string }> = {
   not_selected: { title: "Система не выбрана", description: "Выберите нужную CRM, учётную систему или POS из каталога ниже." },
@@ -63,6 +64,8 @@ export default async function IntegrationsPage({
       && process.env.INTEGRATION_TOKEN_ENCRYPTION_KEY,
   );
   let paymentPreference = "later";
+  let kaspiRemoteEnabled=false;
+  let kaspiRemoteLink:string|null=null;
   let requests: IntegrationRequest[] = [];
   let charges: Array<{id:string;integration_request_id:string;status:string}> = [];
   let requestsUnavailable = false;
@@ -70,7 +73,7 @@ export default async function IntegrationsPage({
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const client = await createClient();
     const [settings, requestResult, chargeResult] = await Promise.all([
-      client.from("tenant_settings").select("payment_setup_preference").eq("tenant_id", tenantId!).maybeSingle(),
+      client.from("tenant_settings").select("payment_setup_preference,kaspi_remote_enabled,kaspi_remote_link").eq("tenant_id", tenantId!).maybeSingle(),
       client.from("crm_integration_requests")
         .select("id,provider,account_url,admin_contact,sync_direction,notes,status,updated_at,preflight_summary")
         .eq("tenant_id", tenantId!)
@@ -78,6 +81,8 @@ export default async function IntegrationsPage({
       client.from("crm_setup_charges").select("id,integration_request_id,status").eq("tenant_id",tenantId!),
     ]);
     paymentPreference = settings.data?.payment_setup_preference ?? "later";
+    kaspiRemoteEnabled=Boolean(settings.data?.kaspi_remote_enabled);
+    kaspiRemoteLink=settings.data?.kaspi_remote_link??null;
     requests = requestResult.data ?? [];
     charges = chargeResult.data ?? [];
     requestsUnavailable = Boolean(requestResult.error);
@@ -110,6 +115,17 @@ export default async function IntegrationsPage({
     {params.crmPayment === "success" && <div className="mt-6 rounded-2xl border border-emerald-300 bg-emerald-50 px-5 py-4 text-sm font-bold text-emerald-900">Оплата принята провайдером. Статус обновится после защищённого подтверждения платежа.</div>}
 
     <PaymentConnectionGuide preference={paymentPreference}/>
+
+    <section className="card mt-6 p-5" id="kaspi-remote"><div className="flex flex-wrap items-center justify-between gap-3"><div><p className="data-label">КАССА МАГАЗИНА</p><h2 className="mt-1 text-2xl font-extrabold">Удалённая оплата Kaspi Pay</h2></div><span className="badge">{kaspiRemoteEnabled?"Ручное подтверждение":"Не включена"}</span></div>
+      <p className="mt-3 max-w-3xl text-sm leading-6 text-neutral-600">Настройте без заявки в Dukenim. Заказ поступит сюда, а деньги — непосредственно вашему бизнесу через Kaspi Pay. Dukenim не создаёт счёт и не видит поступление автоматически.</p>
+      <div className="mt-5 grid gap-3 md:grid-cols-3">{[
+        ["1", "Откройте Kaspi Pay", "Удалённая оплата → Ссылка для оплаты. Скопируйте ссылку своей точки продаж."],
+        ["2", "Вставьте ссылку", "Покупатель увидит точную сумму заказа и откроет Kaspi. Там он введёт сумму сам."],
+        ["3", "Сверьте поступление", "Или выставьте счёт на телефон покупателя. После оплаты проверьте её в Kaspi POS и отметьте заказ оплаченным."],
+      ].map(([number,title,body])=><div key={number} className="rounded-2xl border border-sky-200 bg-white p-4"><span className="grid size-9 place-items-center rounded-xl bg-sky-950 text-sm font-bold text-white">{number}</span><b className="mt-4 block">{title}</b><p className="mt-2 text-sm leading-5 text-neutral-600">{body}</p></div>)}</div>
+      <a href="https://guide.kaspi.kz/partner/ru/pos/payments/remote/q2019" target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm font-semibold text-sky-900 underline">Официальная инструкция Kaspi Pay ↗</a>
+      <KaspiRemoteSettings enabled={kaspiRemoteEnabled} link={kaspiRemoteLink}/>
+    </section>
 
     {requestsUnavailable && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось загрузить сохранённые статусы интеграций. Каталог доступен, но перед изменением заявки обновите страницу.</div>}
 

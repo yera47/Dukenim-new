@@ -15,6 +15,7 @@ const CatalogSetupForm=dynamic(()=>import("@/components/admin/catalog-setup-form
 const ProductForm=dynamic(()=>import("@/components/admin/product-form").then(module=>module.ProductForm));
 const BrandMaterials=dynamic(()=>import("@/components/admin/brand-materials").then(module=>module.BrandMaterials));
 const DesignHistory=dynamic(()=>import("@/components/admin/design-history").then(module=>module.DesignHistory));
+const HolidayIdeas=dynamic(()=>import("@/components/admin/holiday-ideas").then(module=>module.HolidayIdeas));
 
 type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "store_design" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
@@ -181,6 +182,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
 
   return <div className={styles.workspace}>
     {!catalogPublished&&<CatalogPublication/>}
+    {step>=2&&<HolidayIdeas disabled={!enabled||pending} onDesign={holidayBrief=>{setIntent("store_design");setBrief(holidayBrief);void createDraft({intent:"store_design",brief:holidayBrief});}} onPromotion={holidayBrief=>{setIntent("promotion");setBrief(holidayBrief);void createDraft({intent:"promotion",brief:holidayBrief});}}/>}
     <StudioConversation working={pending} enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}

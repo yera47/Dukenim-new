@@ -7,6 +7,27 @@ import {loyaltyClient} from '@/lib/loyalty-db';
 const status=z.enum(['new','confirmed','assembled','delivering','done','cancelled']);
 const input=z.object({orderId:z.string().uuid(),status,expected:status});
 export type OrderStatusState={error?:string;success?:string};
+export async function manageRemoteKaspiPayment(_:OrderStatusState,form:FormData):Promise<OrderStatusState>{
+ const context=await getSessionContext();
+ if(!context?.user||!['owner','superadmin'].includes(context.role))return{error:'Войдите как владелец магазина.'};
+ const orderId=z.string().uuid().safeParse(form.get('orderId'));
+ const action=z.enum(['invoice_sent','paid','refunded']).safeParse(form.get('action'));
+ const reference=String(form.get('reference')??'').trim();
+ if(!orderId.success||!action.success)return{error:'Проверьте заказ и действие.'};
+ if(form.get('confirmed')!=='on')return{error:'Подтвердите проверку в Kaspi Pay.'};
+ if(action.data!=='invoice_sent'&&(reference.length<4||reference.length>100))return{error:'Укажите номер операции или чека из Kaspi Pay.'};
+ try{
+  const client=await createClient();
+  let scoped=client.from('orders').select('id,tenant_id,payment_method').eq('id',orderId.data).eq('payment_method','kaspi');
+  if(context.role!=='superadmin')scoped=scoped.eq('tenant_id',context.tenantId??'');
+  const order=await scoped.maybeSingle();if(order.error||!order.data)return{error:'Заказ недоступен.'};
+  const rpc=client as unknown as {rpc:(name:string,args:{p_order:string;p_action:string;p_reference:string|null})=>Promise<{data:string|null;error:{message:string}|null}>};
+  const result=await rpc.rpc('manage_kaspi_remote_order',{p_order:orderId.data,p_action:action.data,p_reference:reference||null});
+  if(result.error||!result.data)return{error:'Операция не сохранена. Проверьте текущий статус заказа.'};
+  revalidatePath('/admin/orders');revalidatePath('/root/orders');revalidatePath(`/root/orders/${orderId.data}`);
+  return{success:action.data==='invoice_sent'?'Отправка счёта отмечена. Покупатель увидит подсказку в «Моих заказах».':action.data==='paid'?'Оплата отмечена после вашей проверки в Kaspi Pay.':'Возврат отмечен после вашей проверки в Kaspi Pay.'};
+ }catch{return{error:'Нет связи. Обновите заказ перед повторным действием.'};}
+}
 export async function confirmCashPayment(_:OrderStatusState,form:FormData):Promise<OrderStatusState>{
  const context=await getSessionContext();
  if(!context?.tenantId||!['owner','superadmin'].includes(context.role)||form.get('confirmed')!=='on')return {error:'Подтвердите получение или возврат наличных.'};

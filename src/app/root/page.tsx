@@ -1,445 +1,61 @@
 import Link from "next/link";
-import { PromotionValue } from "@/components/admin/promotion-value";
-import {
-  Activity,
-  BarChart3,
-  Building2,
-  CircleDollarSign,
-  MessageSquare,
-  Plus,
-  Store,
-  Users,
-} from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import {
-  getPlatformMessages,
-  getPlatformOrders,
-  getPlatformRequests,
-  getPlatformTenants,
-  getSubscriptionPromotions,
-} from "@/lib/queries/root";
-import {
-  completeRequest,
-  createPromotion,
-  createStore,
-  replyToOwner,
-  togglePromotion,
-  updateStore,
-} from "./actions";
-import { money } from "@/lib/demo-data";
-import type { Database } from "@/types/database";
-type Tenant = Database["public"]["Tables"]["tenants"]["Row"];
-type Order = Database["public"]["Tables"]["orders"]["Row"];
-type RequestRow = Database["public"]["Tables"]["change_requests"]["Row"];
-type Message = Database["public"]["Tables"]["messages"]["Row"];
-export default async function Root({
-  searchParams,
-}: {
-  searchParams: Promise<{ tenant?: string }>;
-}) {
-  let tenants: Tenant[] = [],
-    orders: Order[] = [],
-    requests: RequestRow[] = [],
-    messages: Message[] = [],
-    promotions: Database["public"]["Tables"]["subscription_promotions"]["Row"][] =
-      [];
-  const selected = (await searchParams).tenant;
-  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-    const client = await createClient();
-    const [t, o, r, p] = await Promise.all([
-      getPlatformTenants(client),
-      getPlatformOrders(client),
-      getPlatformRequests(client),
-      getSubscriptionPromotions(client),
-    ]);
-    tenants = t.data ?? [];
-    orders = o.data ?? [];
-    requests = r.data ?? [];
-    promotions = p.data ?? [];
-    if (selected)
-      messages = (await getPlatformMessages(client, selected)).data ?? [];
+import {Activity, ArrowRight, ArrowUpRight, BarChart3, Building2, CircleDollarSign, ClipboardList, Headphones, Megaphone, MessageSquare, Plus, Settings2, ShieldCheck, Users} from "lucide-react";
+import {createClient} from "@/lib/supabase/server";
+import {DukenimLogo} from "@/components/dukenim-logo";
+import {PromotionValue} from "@/components/admin/promotion-value";
+import {getPlatformMessages,getPlatformOrders,getPlatformRequests,getPlatformTenants,getSubscriptionPromotions} from "@/lib/queries/root";
+import {completeRequest,createPromotion,createStore,replyToOwner,togglePromotion,updateStore} from "./actions";
+import {money} from "@/lib/demo-data";
+import type {Database} from "@/types/database";
+
+type Tenant=Database["public"]["Tables"]["tenants"]["Row"];
+type Order=Database["public"]["Tables"]["orders"]["Row"];
+type RequestRow=Database["public"]["Tables"]["change_requests"]["Row"];
+type Message=Database["public"]["Tables"]["messages"]["Row"];
+const destinations=[
+  {href:"/root/accounts",label:"Аккаунты и доступ",detail:"Владельцы, сотрудники, права",icon:Users},
+  {href:"/root/orders",label:"Заказы и возвраты",detail:"Проверка заказов и оплат",icon:ClipboardList},
+  {href:"/root/finance",label:"Финансы и тарифы",detail:"Подписки и платежи",icon:CircleDollarSign},
+  {href:"/root/integrations",label:"Интеграции",detail:"CRM и подключения",icon:Settings2},
+  {href:"/root/audit",label:"Аудит действий",detail:"Кто и что изменил",icon:ShieldCheck},
+  {href:"/root/diagnostics",label:"Состояние системы",detail:"Ошибки и AI",icon:Activity},
+  {href:"/root/marketing",label:"Маркетинг",detail:"Кампании и сигналы",icon:Megaphone},
+  {href:"/root/management",label:"Карта возможностей",detail:"Что готово и что требуется",icon:BarChart3},
+] as const;
+const statusLabel:Record<string,string>={active:"Активен",trial:"Пробный период",paused:"Приостановлен"};
+
+export default async function Root({searchParams}:{searchParams:Promise<{tenant?:string}>}){
+  const selected=(await searchParams).tenant;
+  let tenants:Tenant[]=[],orders:Order[]=[],requests:RequestRow[]=[],messages:Message[]=[],promotions:Database["public"]["Tables"]["subscription_promotions"]["Row"][]=[];
+  if(process.env.NEXT_PUBLIC_SUPABASE_URL){
+    const client=await createClient();
+    const [t,o,r,p]=await Promise.all([getPlatformTenants(client),getPlatformOrders(client),getPlatformRequests(client),getSubscriptionPromotions(client)]);
+    tenants=t.data??[];orders=o.data??[];requests=r.data??[];promotions=p.data??[];
+    if(selected&&tenants.some(tenant=>tenant.id===selected))messages=(await getPlatformMessages(client,selected)).data??[];
   }
-  const orderVolume = orders
-    .filter((o) => o.status !== "cancelled")
-    .reduce((s, o) => s + o.total, 0);
-  const metrics = [
-    ["МАГАЗИНЫ", tenants.length, Building2],
-    ["СУММА ЗАКАЗОВ · ДО 500", money(orderVolume), CircleDollarSign],
-    ["ЗАКАЗЫ · ДО 500", orders.length, Activity],
-    ["АКТИВНЫЕ", tenants.filter((t) => t.status === "active").length, Users],
-  ] as const;
-  return (
-    <div className="min-h-screen bg-[#0c1713] text-white">
-      <header className="border-b border-white/10">
-        <div className="container flex h-20 items-center justify-between">
-          <Link
-            href="/root"
-            className="flex items-center gap-3 text-xl font-extrabold"
-          >
-            <span className="grid size-10 place-items-center rounded-[10px] bg-[var(--accent-bright)] text-[var(--accent-dark)]">
-              <Store size={20} />
-            </span>
-            Dukenim Root
-          </Link>
-          <div className="flex items-center gap-3"><Link href="/root/management" className="rounded-xl border border-white/20 px-3 py-2 text-sm font-bold text-white">Карта управления</Link><span className="badge bg-white/9 text-[var(--accent-bright)]">SUPERADMIN</span></div>
-        </div>
-      </header>
-      <main className="container py-10">
-        <div>
-          <div className="data-label text-white/38">
-            DUKENIM.KZ · СОСТОЯНИЕ ПЛАТФОРМЫ
-          </div>
-          <h1 className="mt-2 text-4xl font-extrabold md:text-5xl">
-            Центр управления
-          </h1>
-        </div>
-        <nav className="mt-6 flex flex-wrap gap-2" aria-label="Управление платформой">
-          <Link href="/root/accounts" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Аккаунты</Link>
-          <Link href="/root/orders" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Все заказы</Link>
-          <Link href="/root/finance" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Платежи и тарифы</Link>
-          <Link href="/root/audit" className="rounded-xl border border-white/20 px-4 py-2 text-sm font-bold text-white">Аудит</Link>
-        </nav>
-        <section className="mt-8 grid border-y border-white/10 sm:grid-cols-2 xl:grid-cols-4">
-          {metrics.map(([t, v, I], i) => {
-            const Icon = I as typeof Store;
-            return (
-              <div
-                key={t}
-                className={`p-5 ${i < 3 ? "xl:border-r xl:border-white/10" : ""}`}
-              >
-                <div className="flex items-center justify-between">
-                  <span className="data-label text-white/38">{t}</span>
-                  <Icon size={19} className="text-[var(--accent-bright)]" />
-                </div>
-                <b className="tabular mt-7 block text-3xl">{String(v)}</b>
-              </div>
-            );
-          })}
-        </section>
-        <div className="mt-7 grid gap-6 xl:grid-cols-[1fr_390px]">
-          <section className="rounded-[14px] bg-white text-[var(--ink)]">
-            <div className="flex justify-between border-b border-[var(--line)] p-6">
-              <div>
-                <h2 className="text-xl font-extrabold">Все магазины</h2>
-                <p className="mt-1 text-sm text-[var(--ink-60)]">
-                  Тарифы, статусы и связь с владельцами
-                </p>
-              </div>
-              <span className="badge">{tenants.length} ВСЕГО</span>
-            </div>
-            <div className="overflow-x-auto px-6">
-              <table className="w-full min-w-[760px] text-left text-sm">
-                <thead className="text-[var(--ink-60)]">
-                  <tr>
-                    <th className="py-4">Магазин</th>
-                    <th>Продажи</th>
-                    <th>Управление</th>
-                    <th>Связь</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {tenants.map((t) => (
-                    <tr key={t.id} className="border-t">
-                      <td className="py-5">
-                        <b>{t.name}</b>
-                        <small className="block text-[var(--ink-60)]">
-                          /s/{t.slug}
-                        </small>
-                      </td>
-                      <td className="tabular font-bold">
-                        {money(
-                          orders
-                            .filter(
-                              (o) =>
-                                o.tenant_id === t.id &&
-                                o.status !== "cancelled",
-                            )
-                            .reduce((s, o) => s + o.total, 0),
-                        )}
-                      </td>
-                      <td>
-                        <form action={updateStore} className="grid gap-2">
-                          <input type="hidden" name="tenantId" value={t.id} />
-                          <div className="flex gap-2">
-                            <select
-                              name="plan"
-                              defaultValue={t.plan}
-                              className="rounded-[8px] border border-[var(--line)] bg-white p-2"
-                            >
-                              <option value="basic">Старт</option>
-                              <option value="standard">Бренд</option>
-                              <option value="pro">Бренд (legacy)</option>
-                            </select>
-                            <select
-                              name="status"
-                              defaultValue={t.status}
-                              className="rounded-[8px] border border-[var(--line)] bg-white p-2"
-                            >
-                              <option value="active">active</option>
-                              <option value="paused">paused</option>
-                              <option value="trial">trial</option>
-                            </select>
-                          </div>
-                          <div className="flex gap-2">
-                            <input
-                              name="reason"
-                              required
-                              minLength={3}
-                              className="w-full rounded-[8px] border border-[var(--line)] px-2 text-xs"
-                              placeholder="Причина изменения"
-                            />
-                            <button
-                              aria-label="Сохранить"
-                              className="font-extrabold text-[var(--accent)]"
-                            >
-                              OK
-                            </button>
-                          </div>
-                        </form>
-                      </td>
-                      <td>
-                        <div className="grid gap-2">
-                          <Link
-                            href={`/root/stores/${t.id}`}
-                            className="font-extrabold text-[var(--accent)]"
-                          >
-                            Управлять →
-                          </Link>
-                          <Link
-                            href={`/root?tenant=${t.id}`}
-                            className="text-xs font-bold text-[var(--ink-60)]"
-                          >
-                            Поддержка
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-          <aside className="rounded-[14px] bg-white/7 p-6">
-            <div className="flex items-center gap-3">
-              <Plus className="text-[var(--accent-bright)]" />
-              <h2 className="text-xl font-extrabold">Новый магазин</h2>
-            </div>
-            <p className="mt-2 text-sm leading-6 text-white/48">
-              Создайте пространство и сразу привяжите владельца.
-            </p>
-            <form action={createStore} className="mt-5 space-y-3">
-              <input
-                name="name"
-                required
-                className="input text-black"
-                placeholder="Название"
-              />
-              <input
-                name="slug"
-                required
-                className="input text-black"
-                placeholder="slug-магазина"
-              />
-              <input
-                name="email"
-                type="email"
-                required
-                className="input text-black"
-                placeholder="Email владельца"
-              />
-              <input
-                name="password"
-                type="text"
-                required
-                minLength={8}
-                className="input text-black"
-                placeholder="Временный пароль"
-              />
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  aria-label="Цвет магазина"
-                  name="color"
-                  type="color"
-                  defaultValue="#16a36a"
-                  className="h-12 w-full rounded-[10px] bg-white p-1"
-                />
-                <select name="plan" className="input text-black">
-                  <option value="basic">Старт</option>
-                  <option value="standard">Бренд</option>
-                </select>
-              </div>
-              <button className="btn w-full bg-[var(--accent-bright)] text-[var(--accent-dark)]">
-                Создать магазин
-              </button>
-            </form>
-          </aside>
-        </div>
-        <div className="mt-6 grid gap-6 xl:grid-cols-2">
-          <section className="rounded-[14px] bg-white/7 p-6">
-            <div className="flex items-center gap-3">
-              <MessageSquare className="text-[var(--accent-bright)]" />
-              <h2 className="text-xl font-extrabold">Заявки владельцев</h2>
-            </div>
-            {requests.length ? (
-              requests.map((r) => (
-                <div key={r.id} className="mt-4 border-t border-white/10 pt-4">
-                  <p>{r.text}</p>
-                  <Link href={`/root/requests/${r.id}`} className="mt-2 inline-block underline">Открыть диалог · {r.subject}</Link>
-                  <div className="mt-3 flex justify-between text-xs text-white/42">
-                    <span>
-                      {tenants.find((t) => t.id === r.tenant_id)?.name}
-                    </span>
-                    {r.status !== "done" && (
-                      <form action={completeRequest}>
-                        <input type="hidden" name="requestId" value={r.id} />
-                        <button className="font-bold text-[var(--accent-bright)]">
-                          Отметить готовой
-                        </button>
-                      </form>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="mt-5 text-white/45">Новых заявок нет.</p>
-            )}
-          </section>
-          <section className="rounded-[14px] bg-white/7 p-6">
-            <h2 className="text-xl font-extrabold">Чат с владельцем</h2>
-            {selected ? (
-              <>
-                <div className="mt-4 h-56 space-y-3 overflow-auto rounded-[10px] bg-black/18 p-3">
-                  {messages.map((m) => (
-                    <div
-                      key={m.id}
-                      className={`max-w-[80%] rounded-[10px] p-3 text-sm ${m.from_role === "superadmin" ? "ml-auto bg-[var(--accent)]" : "bg-white/10"}`}
-                    >
-                      {m.text}
-                    </div>
-                  ))}
-                </div>
-                <form action={replyToOwner} className="mt-3 flex gap-2">
-                  <input type="hidden" name="tenantId" value={selected} />
-                  <input
-                    name="text"
-                    required
-                    className="input text-black"
-                    placeholder="Ответ владельцу"
-                  />
-                  <button className="btn bg-[var(--accent-bright)] text-black">
-                    →
-                  </button>
-                </form>
-              </>
-            ) : (
-              <p className="mt-5 text-white/45">Выберите магазин в таблице.</p>
-            )}
-          </section>
-        </div>
-        <section className="mt-6 grid gap-6 xl:grid-cols-[.9fr_1.1fr]">
-          <article className="rounded-[14px] bg-white/7 p-6">
-            <h2 className="text-xl font-extrabold">Новый промокод</h2>
-            <p className="mt-2 text-sm text-white/48">
-              Код всегда проверяется на сервере и не суммируется с другими.
-            </p>
-            <form action={createPromotion} className="mt-5 grid gap-3">
-              <input
-                name="code"
-                required
-                minLength={3}
-                maxLength={32}
-                className="input text-black"
-                placeholder="BRAND30"
-              />
-              <input
-                name="title"
-                required
-                className="input text-black"
-                placeholder="Название кампании"
-              />
-              <PromotionValue/>
-              <div className="grid grid-cols-2 gap-2">
-                <select name="plan" className="input text-black">
-                  <option value="">Оба тарифа</option>
-                  <option value="basic">Старт</option>
-                  <option value="standard">Бренд</option>
-                </select>
-                <input
-                  name="maxRedemptions"
-                  type="number"
-                  min={1}
-                  className="input text-black"
-                  placeholder="Лимит, необязательно"
-                />
-              </div>
-              <button className="btn bg-[var(--accent-bright)] text-[var(--accent-dark)]">
-                Создать промокод
-              </button>
-            </form>
-          </article>
-          <article className="rounded-[14px] bg-white/7 p-6">
-            <h2 className="text-xl font-extrabold">Активные и прошлые коды</h2>
-            <div className="mt-4 space-y-3">
-              {promotions.length ? (
-                promotions.map((p) => (
-                  <div
-                    key={p.id}
-                    className="flex items-center justify-between gap-4 border-t border-white/10 pt-3"
-                  >
-                    <div>
-                      <b>{p.code}</b>
-                      <p className="text-sm text-white/55">
-                        {p.title} ·{" "}
-                        {p.discount_type === "percent"
-                          ? `${p.discount_value}%`
-                          : p.discount_type === "fixed_kzt"
-                            ? `${p.discount_value.toLocaleString("ru-KZ")} ₸`
-                            : `${p.discount_value} дн.`}
-                      </p>
-                    </div>
-                    <form action={togglePromotion}>
-                      <input type="hidden" name="promotionId" value={p.id} />
-                      <input
-                        type="hidden"
-                        name="active"
-                        value={String(!p.is_active)}
-                      />
-                      <button className="text-sm font-bold text-[var(--accent-bright)]">
-                        {p.is_active ? "Отключить" : "Включить"}
-                      </button>
-                    </form>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-white/45">Промокодов пока нет.</p>
-              )}
-            </div>
-          </article>
-        </section>
-        <section className="mt-6 rounded-[14px] bg-white/7 p-6">
-          <div className="flex items-center gap-3">
-            <BarChart3 className="text-[var(--accent-bright)]" />
-            <h2 className="text-xl font-extrabold">Продажи платформы</h2>
-          </div>
-          <div className="mt-8 flex h-40 items-end gap-3">
-            {tenants.slice(0, 12).map((t) => {
-              const amount = orders
-                .filter((o) => o.tenant_id === t.id)
-                .reduce((s, o) => s + o.total, 0);
-              return (
-                <div
-                  key={t.id}
-                  title={`${t.name}: ${money(amount)}`}
-                  className="flex-1 bg-[var(--accent-bright)]/75"
-                  style={{
-                    height: `${Math.max(6, Math.min(100, (amount / Math.max(orderVolume, 1)) * 300))}%`,
-                  }}
-                />
-              );
-            })}
-          </div>
-        </section>
-      </main>
+  const paid=orders.filter(order=>order.payment_status==="paid"&&order.status!=="cancelled");
+  const paidTotal=paid.reduce((sum,order)=>sum+order.total,0);
+  const openRequests=requests.filter(request=>request.status!=="done");
+  const selectedTenant=tenants.find(tenant=>tenant.id===selected);
+  return <main className="min-h-screen bg-[#f3f7fa] pb-20 text-[#142334]">
+    <header className="bg-[#101e30] text-white"><div className="container flex min-h-20 flex-wrap items-center justify-between gap-3 py-4"><Link href="/root" className="rounded-xl bg-white px-3 py-2"><DukenimLogo compact/></Link><div className="flex items-center gap-3"><span className="text-sm font-semibold text-white/75">Центр владельца платформы</span><span className="rounded-full border border-sky-300/30 bg-sky-300/10 px-3 py-1 text-xs font-bold text-sky-200">ERSAT · SUPERADMIN</span></div></div></header>
+    <div className="container py-8 md:py-12"><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="text-xs font-extrabold uppercase tracking-[.18em] text-[#416888]">DUKENIM · УПРАВЛЕНИЕ</p><h1 className="mt-2 text-4xl font-extrabold tracking-tight md:text-5xl">Вся платформа перед вами</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-600">Магазины, оплаченные заказы, обращения и действия в одном рабочем месте. Сумма заказов учитывает только подтверждённую оплату.</p></div><a href="#stores" className="inline-flex items-center gap-2 rounded-xl bg-[#173b57] px-5 py-3 text-sm font-bold text-white">Открыть магазины <ArrowRight size={16}/></a></div>
+      <section className="mt-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Показатели платформы">{[
+        ["Магазинов",String(tenants.length),Building2,"Все аккаунты магазинов"],
+        ["Активных",String(tenants.filter(tenant=>tenant.status==="active").length),Activity,"Доступ сейчас открыт"],
+        ["Оплачено",money(paidTotal),CircleDollarSign,"Среди последних 500 заказов"],
+        ["Обращений в работе",String(openRequests.length),MessageSquare,"Среди последних 100 заявок"],
+      ].map(([label,value,Icon,note])=>{const Symbol=Icon as typeof Building2;return <article key={String(label)} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center justify-between text-slate-500"><span className="text-xs font-bold uppercase tracking-wider">{String(label)}</span><Symbol size={19} className="text-[#366f99]"/></div><b className="mt-6 block text-3xl tabular-nums">{String(value)}</b><p className="mt-2 text-xs text-slate-500">{String(note)}</p></article>})}</section>
+      <section className="mt-10"><div className="flex items-center justify-between"><h2 className="text-2xl font-extrabold">Разделы управления</h2><Link href="/root/management" className="text-sm font-bold text-[#173b57] underline">Все возможности</Link></div><div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{destinations.map(({href,label,detail,icon:Icon})=><Link key={href} href={href} className="group flex min-h-32 flex-col justify-between rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-sky-400 hover:shadow-md"><div className="flex items-start justify-between"><Icon size={22} className="text-[#366f99]"/><ArrowUpRight size={17} className="text-slate-400 group-hover:text-[#173b57]"/></div><div><b className="block text-base">{label}</b><small className="mt-1 block text-slate-500">{detail}</small></div></Link>)}</div></section>
+      <div className="mt-10 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(290px,.65fr)]">
+        <section id="stores" className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm md:p-6"><div className="flex flex-wrap items-end justify-between gap-3"><div><p className="text-xs font-bold uppercase tracking-wider text-[#416888]">МАГАЗИНЫ</p><h2 className="mt-1 text-2xl font-extrabold">Список магазинов</h2></div><span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-bold text-[#173b57]">{tenants.length} всего</span></div><div className="mt-5 divide-y divide-slate-100">{tenants.length?tenants.map(tenant=>{const tenantPaid=paid.filter(order=>order.tenant_id===tenant.id);return <article key={tenant.id} className="grid gap-3 py-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-center"><div><div className="flex flex-wrap items-center gap-2"><b className="text-base">{tenant.name}</b><span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-600">{statusLabel[tenant.status]??tenant.status}</span></div><p className="mt-1 text-xs text-slate-500">/s/{tenant.slug} · {tenant.plan==="basic"?"Старт":"Бренд"} · оплачено {money(tenantPaid.reduce((sum,order)=>sum+order.total,0))} среди последних 500 заказов</p></div><div className="flex flex-wrap gap-2"><Link href={`/root/stores/${tenant.id}`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-sky-200 px-4 py-2 text-sm font-bold text-[#173b57] hover:bg-sky-50">Управлять <ArrowRight size={15}/></Link><Link href={`/root?tenant=${tenant.id}#support`} className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 px-4 py-2 text-sm font-bold text-[#173b57] hover:bg-slate-50">Чат</Link></div><details className="md:col-span-2"><summary className="cursor-pointer text-xs font-semibold text-slate-500">Тариф и состояние магазина</summary><form action={updateStore} className="mt-3 flex flex-wrap items-end gap-2 rounded-xl bg-slate-50 p-3"><input type="hidden" name="tenantId" value={tenant.id}/><label className="text-xs font-semibold">Тариф<select name="plan" defaultValue={tenant.plan} className="input mt-1 min-w-32"><option value="basic">Старт</option><option value="standard">Бренд</option><option value="pro">Бренд (legacy)</option></select></label><label className="text-xs font-semibold">Состояние<select name="status" defaultValue={tenant.status} className="input mt-1 min-w-36"><option value="active">Активен</option><option value="paused">Пауза</option><option value="trial">Пробный период</option></select></label><label className="min-w-44 flex-1 text-xs font-semibold">Причина<input name="reason" required minLength={3} className="input mt-1" placeholder="Причина изменения"/></label><button className="btn btn-cta">Сохранить</button></form></details></article>}) : <p className="py-8 text-sm text-slate-500">Магазинов пока нет.</p>}</div></section>
+        <aside className="space-y-6"><section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><div className="flex items-center gap-2"><Headphones className="text-[#366f99]" size={22}/><h2 className="text-xl font-extrabold">Обращения</h2></div><p className="mt-2 text-sm text-slate-500">Каждое обращение открывается как отдельный диалог.</p><div className="mt-4 divide-y divide-slate-100">{openRequests.slice(0,6).map(request=><Link key={request.id} href={`/root/requests/${request.id}`} className="block py-3 hover:text-[#173b57]"><b className="line-clamp-1 text-sm">{request.subject}</b><small className="mt-1 block text-slate-500">{tenants.find(tenant=>tenant.id===request.tenant_id)?.name??"Магазин"} · {request.status==="new"?"Новое":"В работе"}</small></Link>)}{!openRequests.length&&<p className="py-4 text-sm text-slate-500">Новых обращений нет.</p>}</div></section>
+        {selectedTenant&&<section id="support" className="rounded-2xl border border-sky-200 bg-white p-5 shadow-sm"><h2 className="text-lg font-extrabold">Общий чат · {selectedTenant.name}</h2><p className="mt-1 text-xs text-slate-500">Для заявок с этапами откройте конкретное обращение выше.</p><div className="mt-4 max-h-72 space-y-2 overflow-auto rounded-xl bg-slate-50 p-3">{messages.map(message=><div key={message.id} className={`max-w-[88%] rounded-xl p-3 text-sm ${message.from_role==="superadmin"?"ml-auto bg-[#173b57] text-white":"bg-white"}`}>{message.text}</div>)}</div><form action={replyToOwner} className="mt-3 flex gap-2"><input type="hidden" name="tenantId" value={selectedTenant.id}/><input name="text" required maxLength={3000} className="input" placeholder="Ответ владельцу"/><button className="btn btn-cta">Ответить</button></form></section>}
+        </aside>
+      </div>
+      <section className="mt-8 grid gap-5 lg:grid-cols-2"><details className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><summary className="flex cursor-pointer items-center gap-2 font-extrabold"><Plus size={19} className="text-[#366f99]"/> Создать магазин вручную</summary><p className="mt-3 text-sm text-slate-500">Обычно владелец создаёт магазин сам. Здесь доступно ручное создание для особых случаев.</p><form action={createStore} className="mt-4 grid gap-3"><input name="name" required className="input" placeholder="Название"/><input name="slug" required className="input" placeholder="Адрес магазина"/><input name="email" type="email" required className="input" placeholder="Email владельца"/><input name="password" type="password" required minLength={8} className="input" placeholder="Временный пароль"/><div className="grid grid-cols-2 gap-2"><input aria-label="Цвет магазина" name="color" type="color" defaultValue="#173b57" className="h-12 w-full rounded-xl border p-1"/><select name="plan" className="input"><option value="basic">Старт</option><option value="standard">Бренд</option></select></div><button className="btn btn-cta">Создать магазин</button></form></details>
+      <details className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"><summary className="flex cursor-pointer items-center gap-2 font-extrabold"><Megaphone size={19} className="text-[#366f99]"/> Промокоды платформы</summary><form action={createPromotion} className="mt-4 grid gap-3"><input name="code" required minLength={3} maxLength={32} className="input" placeholder="Код"/><input name="title" required className="input" placeholder="Название кампании"/><PromotionValue/><select name="plan" className="input"><option value="">Оба тарифа</option><option value="basic">Старт</option><option value="standard">Бренд</option></select><input name="maxRedemptions" type="number" min={1} className="input" placeholder="Лимит применений, необязательно"/><button className="btn btn-cta">Создать промокод</button></form><div className="mt-4 divide-y divide-slate-100">{promotions.map(promotion=><div key={promotion.id} className="flex items-center justify-between gap-3 py-3 text-sm"><span><b>{promotion.code}</b><small className="block text-slate-500">{promotion.title}</small></span><form action={togglePromotion}><input type="hidden" name="promotionId" value={promotion.id}/><input type="hidden" name="active" value={String(!promotion.is_active)}/><button className="font-bold text-[#173b57]">{promotion.is_active?"Отключить":"Включить"}</button></form></div>)}</div></details></section>
+      {openRequests.length>6&&<section className="mt-8 rounded-2xl border border-slate-200 bg-white p-5"><h2 className="font-extrabold">Остальные обращения</h2><div className="mt-3 grid gap-2 sm:grid-cols-2">{openRequests.slice(6,20).map(request=><div key={request.id} className="flex items-center justify-between gap-2 rounded-xl border p-3 text-sm"><span className="line-clamp-1">{request.subject}</span><Link href={`/root/requests/${request.id}`} className="font-bold text-[#173b57]">Открыть</Link><form action={completeRequest}><input type="hidden" name="requestId" value={request.id}/><button className="text-xs text-slate-500 underline">Готово</button></form></div>)}</div></section>}
     </div>
-  );
+  </main>;
 }
