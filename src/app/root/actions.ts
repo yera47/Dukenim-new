@@ -66,6 +66,16 @@ export async function setRootStaffAccess(form:FormData){
  if(result.error||!result.data)throw new Error(result.error?.message??"Доступ сотрудника не изменён.");
  revalidatePath("/root/accounts");revalidatePath("/admin/team");revalidatePath("/staff");
 }
+export async function cancelRootUnpaidOrder(form:FormData){
+ const {client,actorId}=await rootClient();
+ const order=String(form.get("orderId")??"");const number=Number(form.get("confirmNumber"));
+ const expected=String(form.get("expectedStatus")??"");const reason=String(form.get("reason")??"").trim();
+ if(!UUID_PATTERN.test(order)||!Number.isSafeInteger(number)||number<1||!["new","confirmed","assembled","delivering"].includes(expected)||reason.length<3||reason.length>1000)throw new Error("Проверьте заказ, номер и причину отмены.");
+ const rpc=client as unknown as {rpc:(name:"root_cancel_unpaid_order",args:{p_order:string;p_actor:string;p_number:number;p_expected_status:string;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_cancel_unpaid_order",{p_order:order,p_actor:actorId,p_number:number,p_expected_status:expected,p_reason:reason});
+ if(result.error||!result.data)throw new Error(result.error?.message??"Заказ не отменён. Обновите страницу.");
+ revalidatePath("/root/orders");revalidatePath(`/root/orders/${order}`);revalidatePath("/admin/orders");revalidatePath("/admin/stock");
+}
 export async function updateRootProduct(form:FormData){
   const{client,actorId}=await rootClient();
   const tenantId=String(form.get("tenantId")??"");const productId=String(form.get("productId")??"");
