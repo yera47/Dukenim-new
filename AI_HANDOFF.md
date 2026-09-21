@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## Demo category fix after project audit — 2026-09-22
+
+Release `978862b` is Vercel Production Ready. The audit's browser navigation found `/demo/fashion/collection/category/Аксессуары` returned 404 because the catch-all route compared encoded Cyrillic to decoded product categories. `src/app/demo/[vertical]/[approach]/[...path]/page.tsx` now decodes safely; a route test and updated `scripts/check-demo-navigation.cjs` cover the actual link. Production browser passed fashion category → product and food catalog at 390/1440 px. Food configuration browser checks also passed combo, quantity, edit, reload and no horizontal overflow. TypeScript and build passed sequentially (an initial simultaneous typecheck/build collided in `.next/types`; rerunning after build passed); 467 tests passed, 4 intentional live skips. No database or Azure configuration changed. Audit status updated in `docs/AUDIT_20260922_REGISTRATION_AI.md`. Next unresolved work remains root global controls, real provider finance/CRM, backups and field performance.
+
 ## Registration, food concepts and AI audit — 2026-09-22
 
 Release `4d32118` is Vercel Production Ready on `www.dukenim.kz`. Seven food examples now fill an editable merchant brief and suggest sample sections while preserving two real layouts. AI Studio has an honest capability explanation, validated navigation to catalog/orders/loyalty/stories, and a stage-aware consultation prompt. Onboarding catches network/JSON errors without leaving its button stuck. Changed code: `src/lib/food-concepts.ts`, `src/components/admin/catalog-setup-form.tsx`, `src/app/onboarding/onboarding-flow.tsx`, `src/components/admin/studio-conversation.tsx`, `src/lib/ai/consultation.ts`, `src/lib/ai/consultation-schema.ts`, `src/lib/ai/commerce-guidance.ts`.
