@@ -52,8 +52,8 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
     <div className="container max-w-6xl py-10 md:py-14">
       {step === 1 && <section className="builder-step onboarding-welcome">
         <p className="data-label">ШАГ 1 ИЗ 3</p>
-        <h1>Сначала настроим AI Studio под ваш бизнес.</h1>
-        <p className="onboarding-lead">Первые 7 дней — доступ к выбранному тарифу без карты. До оплаты вы сможете спокойно собрать каталог, проверить витрину и изменить тариф.</p>
+        <h1>Соберём ваш магазин.</h1>
+        <p className="onboarding-lead">Выберите сферу. Дальше соберём каталог и витрину по шагам. Первые 7 дней — бесплатно и без карты.</p>
         <div className="builder-niche-grid mt-8">{verticals.map((item) => <button type="button" key={item.id} onClick={() => setVertical(item.id)} className={vertical === item.id ? "is-selected" : ""}><span>{item.label}</span></button>)}</div>
         <p className="muted mt-4 text-sm">Сейчас — каталоги товаров и готовой еды. Запись на услуги и билеты мероприятий пока недоступны.</p>
         {vertical === "food" && <p className="mt-3 text-sm" role="status">Для еды доступны блюда, варианты и дополнения, заказы ко времени и истории с фото или видео. Склад сырья пока не учитывается.</p>}
