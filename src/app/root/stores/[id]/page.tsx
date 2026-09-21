@@ -10,7 +10,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { money } from "@/lib/demo-data";
 import { smsClient } from "@/lib/sms-db";
-import { updateRootProduct,deleteEmptyStore,reviewSmsSender,setRootCatalogPublication } from "../../actions";
+import { updateRootProduct,deleteEmptyStore,reviewSmsSender,setRootCatalogPublication,correctRootStock } from "../../actions";
 
 export default async function RootStorePage({
   params,
@@ -22,6 +22,7 @@ export default async function RootStorePage({
   const [
     tenantResult,
     productsResult,
+    variantsResult,
     categoriesResult,
     ordersResult,
     auditResult,
@@ -37,6 +38,7 @@ export default async function RootStorePage({
       .select("*")
       .eq("tenant_id", id)
       .order("created_at", { ascending: false }),
+    client.from("product_variants").select("id,product_id,size,color,sku,stock_qty").eq("tenant_id",id).order("id"),
     client
       .from("categories")
       .select("id,name")
@@ -63,6 +65,9 @@ export default async function RootStorePage({
   if (tenantResult.error || !tenantResult.data) notFound();
   const tenant = tenantResult.data;
   const products = productsResult.data ?? [];
+  const productNames = new Map(products.map(product=>[product.id,product.title]));
+  if(variantsResult.error)throw new Error("Не удалось загрузить остатки магазина.");
+  const variants = variantsResult.data ?? [];
   const categories = categoriesResult.data ?? [];
   const orders = ordersResult.data ?? [];
   const events = auditResult.data ?? [];
@@ -231,6 +236,7 @@ export default async function RootStorePage({
             </div>
           </section>
           <aside className="space-y-6">
+            <details className="rounded-2xl bg-white/7 p-5"><summary className="cursor-pointer font-extrabold">Остатки товаров · {variants.length}</summary><p className="mt-3 text-sm text-white/60">Корректировка проходит через складской журнал и сохраняет причину в аудите. При изменении остатка другим сотрудником обновите страницу.</p><div className="mt-4 max-h-[520px] space-y-4 overflow-y-auto">{variants.map(variant=><form key={variant.id} action={correctRootStock} className="rounded-xl border border-white/15 p-3"><b className="text-sm">{productNames.get(variant.product_id)??"Товар"}</b><p className="mt-1 text-xs text-white/60">{[variant.size,variant.color,variant.sku].filter(Boolean).join(" · ")||"Основной вариант"} · сейчас {variant.stock_qty}</p><input type="hidden" name="tenantId" value={tenant.id}/><input type="hidden" name="variantId" value={variant.id}/><input type="hidden" name="expectedStock" value={variant.stock_qty}/><label className="mt-3 block text-xs font-semibold">Новый остаток<input name="targetStock" type="number" min={0} max={1000000} step={1} required defaultValue={variant.stock_qty} className="input mt-1 text-black"/></label><label className="mt-2 block text-xs font-semibold">Причина<input name="reason" required minLength={3} maxLength={1000} className="input mt-1 text-black"/></label><button className="btn mt-3 bg-white text-black">Сохранить остаток</button></form>)}</div>{!variants.length&&<p className="mt-3 text-sm text-white/60">Вариантов товаров пока нет.</p>}</details>
             <section className="rounded-2xl bg-white/7 p-5">
               <h2 className="font-extrabold">SMS от имени магазина</h2>
               {sms?.sender_id ? <>

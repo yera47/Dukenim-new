@@ -86,6 +86,16 @@ export async function setRootCatalogPublication(form:FormData){
  if(result.error||!result.data)throw new Error(result.error?.message??"Публикация не изменена. Обновите страницу.");
  revalidatePath("/root");revalidatePath(`/root/stores/${tenant}`);revalidatePath(`/s/${slug}`);
 }
+export async function correctRootStock(form:FormData){
+ const {client,actorId}=await rootClient();
+ const tenant=String(form.get("tenantId")??"");const variant=String(form.get("variantId")??"");
+ const expected=Number(form.get("expectedStock"));const target=Number(form.get("targetStock"));const reason=String(form.get("reason")??"").trim();
+ if(!UUID_PATTERN.test(tenant)||!UUID_PATTERN.test(variant)||!Number.isInteger(expected)||expected<0||!Number.isInteger(target)||target<0||target>1000000||expected===target||reason.length<3||reason.length>1000)throw new Error("Проверьте вариант, остаток и причину корректировки.");
+ const rpc=client as unknown as {rpc:(name:"root_correct_stock",args:{p_tenant:string;p_variant:string;p_actor:string;p_expected:number;p_target:number;p_reason:string})=>Promise<{data:boolean|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_correct_stock",{p_tenant:tenant,p_variant:variant,p_actor:actorId,p_expected:expected,p_target:target,p_reason:reason});
+ if(result.error||!result.data)throw new Error(result.error?.message??"Остаток не изменён. Обновите страницу.");
+ revalidatePath(`/root/stores/${tenant}`);revalidatePath("/admin/stock");revalidatePath("/s/[slug]","page");
+}
 export async function updateRootProduct(form:FormData){
   const{client,actorId}=await rootClient();
   const tenantId=String(form.get("tenantId")??"");const productId=String(form.get("productId")??"");
