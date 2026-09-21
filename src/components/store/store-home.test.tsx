@@ -24,7 +24,7 @@ it.each(commerceConfigurations)("renders the configured block order for $id",con
  const html=renderToStaticMarkup(<CartProvider><StoreHome slug="example" tenant={{name:"Dukenim Shop",catalog_name:null,tagline:null,business_vertical:config.vertical}} products={demoProductsFor(config.vertical)} settings={null} campaign={null} storePolicies={null} approach={config.approach}/></CartProvider>);
  expect(html).toContain(`data-approach="${config.approach}"`);
  expect(html.includes("storefront-hero-grid")).toBe(config.approach==="collection"&&config.vertical!=="food");
- if(config.vertical==="food"&&config.approach==="collection"){expect(html).toContain('aria-label="Галерея кафе"');expect(html).toContain('href="#catalog"');expect(html).toContain("Выбрать состав: Круассан-сэндвич");}
+ if(config.vertical==="food"&&config.approach==="collection"){expect(html).toContain('aria-label="Галерея кафе"');expect(html).toContain('href="#catalog"');expect(html).toContain('style="color:#182a37"');expect(html).toContain("Выбрать состав: Круассан-сэндвич");}
  expect(html.includes('aria-label="Выбор раздела"')).toBe(config.approach==="guided");
 });
 it.each(launchVerticals)("renders real shared example imagery and readable CTA for $id",({id})=>{
