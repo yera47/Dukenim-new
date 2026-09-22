@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -28,13 +28,14 @@ type Props = {
   enabled: boolean; imageEnabled: boolean; brand: boolean;
   catalogStatus: "not_started" | "building" | "ready";
   catalogPublished?: boolean;
+  deliveryConfigured?: boolean;
   storeName: string; slug: string; plan: "basic" | "standard" | "pro";
   vertical: BusinessVertical;
   initialDesign?: {generationId:string;design:Design};
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, deliveryConfigured=false, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
   const router = useRouter();
   const storefrontHref = catalogPublished ? `/s/${slug}` : "/store-preview";
   const [intent, setIntent] = useState<Intent>("catalog_structure");
@@ -60,6 +61,9 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
   const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [brandOpen,setBrandOpen]=useState(false);
+  const [brandDone,setBrandDone]=useState(false);
+  useEffect(()=>{if(catalogStatus!=="ready")return;const controller=new AbortController();void fetch("/api/brand-materials",{cache:"no-store",signal:controller.signal}).then(response=>response.ok?response.json():null).then(data=>{if(!controller.signal.aborted&&data?.logoUrl)setBrandDone(true);}).catch(()=>{});return()=>controller.abort();},[catalogStatus]);
+  const [pickerRequest,setPickerRequest]=useState<{kind:"photo"|"file"|"camera";id:number}|null>(null);
   const [copied, setCopied] = useState(false);
   const suggestedBrief = "";
   const step = catalogStatus === "not_started" ? 0 : catalogStatus === "building" ? 1 : 2;
@@ -162,15 +166,23 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     {designSaved && <Link href={storefrontHref} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}
   </section> : null;
 
-  if (catalogStatus === "not_started") return <div className={styles.workspace}>
-    <section className={styles.welcome} aria-label="Начало создания магазина"><p className="data-label">5 КОРОТКИХ ШАГОВ</p><h2>Соберём магазин без лишних настроек</h2><p>Ответьте по одному вопросу. Каждый ответ сохранится, а перед добавлением товара вы увидите готовый результат.</p></section>
-    <section id="catalog-setup-workspace" className={styles.setupFlow}>
+  const brandTask=<details className="rounded-2xl border bg-white p-4" open={brandOpen} onToggle={event=>setBrandOpen(event.currentTarget.open)}><summary className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold"><span>Добавить логотип и настроить бренд<span className="mt-1 block text-xs font-normal text-slate-500">Загрузите логотип, PDF или опишите цвета — это необязательно.</span></span><span aria-hidden className="text-lg">＋</span></summary>{brandOpen&&<div className="mt-4 space-y-4"><BrandMaterials expandedInitially requestPicker={pickerRequest} onSaved={()=>setBrandDone(true)}/><DesignHistory/></div>}</details>;
+  const earlyResponse=(structure||draft)?<section className={styles.optionalTask} aria-label="Предложение AI"><b>Предложение AI</b>{structure?.sections.map((item,index)=><p key={index}>{item.name}: {item.description}</p>)}{draft&&<><h3>{draft.title}</h3><p>{draft.body}</p></>}<button type="button" className="btn btn-secondary" onClick={copyResult}>{copied?"Скопировано":"Скопировать предложение"}</button></section>:null;
+  const attach=(kind:"photo"|"file"|"camera")=>{setBrandOpen(true);setPickerRequest({kind,id:Date.now()});};
+
+  if (catalogStatus === "not_started") return <div className={`${styles.workspace} ${styles.conversationWorkspace}`}>
+    <StudioConversation enabled={enabled} brandDone={brandDone} deliveryDone={deliveryConfigured} builderStage="setup" onAttachment={attach} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+    <section id="catalog-setup-workspace" className={styles.setupFlow} aria-label="Создание магазина"><p className="data-label">5 КОРОТКИХ ШАГОВ</p><h2>Соберём магазин без лишних настроек</h2><p>Ответьте по одному вопросу. Каждый ответ сохранится, а перед добавлением товара вы увидите готовый результат.</p>
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
     </section>
+    {pending&&<p role="status">Готовлю предложение…</p>}{error&&<p role="alert" className={styles.error}>{error}</p>}{designPanel}{earlyResponse}
+    {brandTask}
+    </StudioConversation>
   </div>;
 
-  if (catalogStatus === "building") return <div className={styles.workspace}>
-    <section className={styles.guidedHeader}><p className="data-label">СЛЕДУЮЩИЙ ШАГ</p><h2>Добавьте первый товар</h2><p>Заполняйте по одному экрану. Чат и дополнительные настройки здесь не нужны.</p></section>
+  if (catalogStatus === "building") return <div className={`${styles.workspace} ${styles.conversationWorkspace}`}>
+    <StudioConversation enabled={enabled} brandDone={brandDone} deliveryDone={deliveryConfigured} builderStage="product" onAttachment={attach} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+    <section className={styles.guidedHeader}><p className="data-label">СЛЕДУЮЩИЙ ШАГ</p><h2>Добавьте первый товар</h2><p>Заполняйте по одному экрану. Товар сохранится только после вашей проверки.</p></section>
     {pending&&<p role="status">Готовлю персональное оформление…</p>}
     {error&&<p role="alert" className={styles.error}>{error}</p>}
     {designPanel}
@@ -178,17 +190,20 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     <section hidden={Boolean(design||pending)} className={styles.setupFlow} aria-label="Добавление первого товара">
       <ProductForm fromStudio categories={categories} vertical={vertical}/>
     </section>
+    {earlyResponse}
+    {brandTask}
+    </StudioConversation>
   </div>;
 
-  return <div className={styles.workspace}>
-    {!catalogPublished&&<CatalogPublication/>}
-    {step>=2&&<HolidayIdeas disabled={!enabled||pending} onDesign={holidayBrief=>{setIntent("store_design");setBrief(holidayBrief);void createDraft({intent:"store_design",brief:holidayBrief});}} onPromotion={holidayBrief=>{setIntent("promotion");setBrief(holidayBrief);void createDraft({intent:"promotion",brief:holidayBrief});}}/>}
-    <StudioConversation working={pending} enabled={enabled&&!pending} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+  return <div className={`${styles.workspace} ${styles.conversationWorkspace}`}>
+    <StudioConversation working={pending} enabled={enabled&&!pending} brandDone={brandDone} deliveryDone={deliveryConfigured} onAttachment={attach} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
+      {!catalogPublished&&<CatalogPublication/>}
+      {step>=2&&<details className={styles.optionalTask}><summary>Идеи к праздникам и акциям</summary><HolidayIdeas disabled={!enabled||pending} onDesign={holidayBrief=>{setIntent("store_design");setBrief(holidayBrief);void createDraft({intent:"store_design",brief:holidayBrief});}} onPromotion={holidayBrief=>{setIntent("promotion");setBrief(holidayBrief);void createDraft({intent:"promotion",brief:holidayBrief});}}/></details>}
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}
       {pending && <p role="status">Готовлю предложение…</p>}
       {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
-      <aside className={styles.preview} aria-label="Результат и создание магазина">
+      <details className={styles.optionalTask} open={Boolean(submitted||structure||design||draft||banner)}><summary>Предпросмотр и предложения AI</summary><aside className={styles.preview} aria-label="Результат и создание магазина">
         <div className={styles.previewHeading}><span>Ваш магазин</span><small>{step === 0 ? "Основа ещё не сохранена" : step === 1 ? "Ожидает первый товар" : "Каталог создан"}</small></div>
         <h2>{storeName}</h2>
         <p className={styles.address}>dukenim.kz/s/{slug}</p>
@@ -207,13 +222,13 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
           {(draft || structure || design) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
         </div>
         <Link className={styles.support} href={supportHref}>Не получается? Передать вопрос команде Dukenim →</Link>
-      </aside>
+      </aside></details>
     {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
       <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
       <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
       {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
     </section>}
-    <details className="rounded-2xl border bg-white p-4" onToggle={event=>setBrandOpen(event.currentTarget.open)}><summary className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold"><span>Добавить логотип и настроить бренд<span className="mt-1 block text-xs font-normal text-slate-500">Загрузите логотип, PDF или опишите цвета — это необязательно.</span></span><span aria-hidden className="text-lg">＋</span></summary>{brandOpen&&<div className="mt-4 space-y-4"><BrandMaterials expandedInitially/><DesignHistory/></div>}</details>
+    {brandTask}
     {vertical==="food"&&step>0&&<Link href="/admin/settings/loyalty" className="btn btn-secondary min-h-14 justify-between text-left">Настроить лояльность и приглашения друзей <span aria-hidden>→</span></Link>}
     </StudioConversation>
   </div>;

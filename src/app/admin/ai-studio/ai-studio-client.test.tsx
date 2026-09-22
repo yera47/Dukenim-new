@@ -36,7 +36,7 @@ describe("AI Studio first-run access", () => {
     expect(html).not.toContain("Логотип и правила бренда");
     expect(html).not.toContain("История оформления");
     expect(html).not.toContain("Посмотреть мой каталог");
-    expect(html).not.toContain("textarea");
+    expect(html).toContain('id="studio-conversation"');
     expect(html).not.toContain('id="studio-message"');
     expect(html).not.toContain("0/800");
     expect(html).not.toContain("5 кредитов");
@@ -44,9 +44,9 @@ describe("AI Studio first-run access", () => {
   it("shows only the first-product stage while building", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="building" catalogPublished={false}/>);
     expect(html).toContain("Добавление первого товара");
-    for (const label of ["Свернуть редактор", "Опубликовать магазин", "История оформления", "Логотип и правила бренда", "Создать фон баннера"]) expect(html).not.toContain(label);
-    expect(html).not.toContain('id="studio-conversation"');
-    expect(html).toContain("Чат и дополнительные настройки здесь не нужны");
+    for (const label of ["Свернуть редактор", "Опубликовать магазин", "История оформления", "Создать фон баннера"]) expect(html).not.toContain(label);
+    expect(html).toContain('id="studio-conversation"');
+    expect(html).toContain("Товар сохранится только после вашей проверки");
   });
   it("does not call a ready catalog published", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready"/>);

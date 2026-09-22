@@ -1,19 +1,25 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { ArrowUp, Camera, Check, ChevronRight, FileText, ImagePlus, Mic, Plus, Store, Truck, X } from "lucide-react";
 import { AiRequestCard } from "./ai-request-card";
 import { consultationSchema, type Consultation, type ConsultationTurn } from "@/lib/ai/consultation-schema";
 import styles from "./studio-conversation.module.css";
 
 const labels={hero:"Подготовить текст",store_design:"Подготовить оформление",catalog_structure:"Подготовить разделы",promotion:"Подготовить акцию"};
 const helpLinks={payments:["/admin/requests?source=integrations&intent=card-payments","Заявка на онлайн-оплату"],kaspi:["/admin/integrations#kaspi-remote","Настроить Kaspi Pay"],integrations:["/admin/integrations","Выбрать подключение"],delivery:["/admin/settings/delivery","Настроить получение заказа"],team:["/admin/team","Открыть сотрудников"],analytics:["/admin/analytics","Открыть аналитику"],campaigns:["/admin/catalog/campaigns","Открыть акции"],catalog:["/admin/catalog","Открыть каталог"],orders:["/admin/orders","Открыть заказы"],loyalty:["/admin/settings/loyalty","Настроить лояльность"],stories:["/admin/catalog/stories","Открыть истории"],support:["/admin/requests?source=ai-studio","Написать в поддержку"]} as const;
-export function StudioConversation({enabled,onTask,children,onBanner,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false,working=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean;working?:boolean}) {
+export function StudioConversation({enabled,onTask,children,onBanner,onAttachment,brandDone=false,deliveryDone=false,builderStage,stageHint,endpoint="/api/ai-studio/draft",staff=false,designOnly=false,working=false}:{enabled:boolean;onTask?:(task:NonNullable<Consultation["task"]>)=>void;children?:React.ReactNode;onBanner?:(brief:string)=>void;onAttachment?:(kind:"photo"|"file"|"camera")=>void;brandDone?:boolean;deliveryDone?:boolean;builderStage?:"setup"|"product";stageHint?:string;endpoint?:string;staff?:boolean;designOnly?:boolean;working?:boolean}) {
   const [turns,setTurns]=useState<ConsultationTurn[]>([]);
   const [message,setMessage]=useState("");
   const [includeBrandLogo,setIncludeBrandLogo]=useState(false);
   const [loading,setLoading]=useState(true);
   const [pending,setPending]=useState(false);
   const [error,setError]=useState("");
+  const [menuOpen,setMenuOpen]=useState(false);
+  const scroller=useRef<HTMLDivElement>(null);
+  const textarea=useRef<HTMLTextAreaElement>(null);
+  useEffect(()=>{const node=scroller.current;if(node&&(turns.length>0||pending))node.scrollTo({top:node.scrollHeight,behavior:"smooth"});},[turns,pending,children]);
+  useEffect(()=>{const node=textarea.current;if(node){node.style.height="24px";node.style.height=`${Math.min(node.scrollHeight,144)}px`;}},[message]);
   useEffect(()=>{
     const controller=new AbortController();
     void fetch(endpoint,{cache:"no-store",signal:controller.signal}).then(async response=>{
@@ -36,10 +42,21 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
     } catch(cause){setError(cause instanceof Error?cause.message:"Связь прервалась. Проверьте историю перед повторной отправкой.");}
     finally{setPending(false);}
   }
-  return <section className={`${styles.workspace} mx-auto w-full max-w-3xl space-y-5`} aria-label="Диалог с AI Studio">
-    <header><h2 className="text-2xl font-semibold">Помощник вашего магазина</h2><p className="mt-2 text-sm text-neutral-500">Опишите задачу своими словами. AI предложит текст, разделы или оформление; вы увидите результат и сами решите, применять ли его. Предложения не публикуются без вашего решения.</p><details className="mt-3 text-sm"><summary className="cursor-pointer font-medium text-slate-700">Что умеет AI Studio?</summary><div className="mt-3 rounded-2xl border bg-white p-4 leading-6 text-neutral-600"><p>Подсказывает структуру меню и витрины под ваш ассортимент, готовит тексты и варианты оформления. Помогает найти настройки заказов, получения, лояльности и историй. Kaspi Pay ведёт к самостоятельной настройке ручной оплаты; для оплаты картой и CRM поможет открыть заявку.</p><p className="mt-2">Товары, цены, остатки и правила задаёт владелец. AI не подключает провайдера, не меняет права и не публикует магазин сообщением.</p></div></details></header>
-    <div className="space-y-5" aria-live="polite" aria-busy={loading||pending}>
-      {loading?<p>Загружаю разговор…</p>:turns.length===0?<p className="rounded-2xl border p-5">{stageHint??"Что изменим в вашем магазине?"}</p>:null}
+  function revealAttachment(kind:"photo"|"file"|"camera"){
+    if(!onAttachment)return;
+    setMenuOpen(false);
+    onAttachment(kind);
+    window.setTimeout(()=>scroller.current?.scrollTo({top:scroller.current.scrollHeight,behavior:"smooth"}),80);
+  }
+  return <section className={styles.workspace} aria-label="Диалог с AI Studio">
+    <div ref={scroller} className={styles.chatScroll} aria-live="polite" aria-busy={loading||pending}>
+     <div className={styles.chatContent}>
+      {loading?<p role="status">Загружаю разговор…</p>:turns.length===0?<div className={styles.greeting}><h1>Здравствуйте!</h1><h2>Я помощник вашего магазина.</h2><p>{stageHint??"Помогу настроить магазин, оформить бренд, добавить товары и привлечь покупателей. С чего начнём?"}</p><div className={styles.quickTasks}>
+        {builderStage?<button type="button" onClick={()=>scroller.current?.scrollTo({top:scroller.current.scrollHeight,behavior:"smooth"})}><span className={styles.taskIcon}><Store size={23}/></span><span><b>{builderStage==="setup"?"Создать магазин":"Добавить первый товар"}</b><small>{builderStage==="setup"?"Ответьте на короткие вопросы по одному шагу.":"Название, фото и цену добавите в удобном мастере."}</small></span><ChevronRight size={21}/></button>:!staff&&<button type="button" onClick={()=>revealAttachment("photo")}><span className={styles.taskIcon}><ImagePlus size={23}/></span><span><b>Добавить логотип</b><small>Загрузите логотип и настройте цвета бренда.</small></span>{brandDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</button>}
+        <Link href="/admin/settings/delivery"><span className={styles.taskIcon}><Truck size={23}/></span><span><b>Настроить доставку</b><small>Укажите способы доставки, зоны и условия.</small></span>{deliveryDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</Link>
+        <Link href="/store-preview" target="_blank"><span className={styles.taskIcon}><Store size={23}/></span><span><b>Посмотреть магазин</b><small>Проверьте витрину глазами покупателя.</small></span><ChevronRight size={21}/></Link>
+      </div><p className={styles.disclaimer}>Предложения не публикуются без вашего решения.</p></div>:null}
+      {children && <div className={styles.steps} aria-label="Действия AI Studio">{children}</div>}
       {stageHint&&turns.length>1&&<details className="text-sm"><summary className="cursor-pointer text-neutral-500">Ранние сообщения · {turns.length-1}</summary>{turns.slice(0,-1).map(turn=><article key={turn.id} className="mt-3 space-y-2"><p className="font-medium">{turn.message}</p><p>{turn.response.reply}</p></article>)}</details>}
       {(stageHint?turns.slice(-1):turns).map(turn=><article key={turn.id} className="space-y-3">
         <p className={`${styles.userMessage} ml-8 whitespace-pre-wrap break-words rounded-2xl p-4`}><span className="sr-only">Вы: </span>{turn.message}</p>
@@ -49,18 +66,21 @@ export function StudioConversation({enabled,onTask,children,onBanner,stageHint,e
           {!staff&&turn.response.help&&(turn.response.help==="payments"||turn.response.help==="integrations"||turn.response.help==="support")&&<AiRequestCard kind={turn.response.help} message={turn.message} generationId={turn.id}/>}
         </div>
       </article>)}
-      {pending&&<p>Обдумываю ваш ответ…</p>}
+      {pending&&<p role="status" className={styles.thinking}>Обдумываю ваш ответ…</p>}
+      {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
+      {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
+     </div>
     </div>
-    {children && <div className={`${styles.steps} space-y-4`} aria-label="Текущий шаг создания магазина">{children}</div>}
-    {!enabled&&!working&&<p className="text-sm text-neutral-500">{staff?"Владелец разрешил только просмотр разговора.":"AI сейчас недоступен. Можно продолжить настройку вручную."}</p>}
-    {!stageHint&&<nav aria-label="Настройки магазина" className="grid gap-3 text-sm sm:grid-cols-2"><Link href="/admin/settings/delivery" className="btn btn-secondary min-h-14 justify-between text-left">Настроить доставку и самовывоз <span aria-hidden>→</span></Link><Link href="/store-preview" target="_blank" className="btn btn-secondary min-h-14 justify-between text-left">Посмотреть магазин глазами покупателя <span aria-hidden>↗</span></Link></nav>}
-    {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
-    <form onSubmit={event=>{event.preventDefault();void send();}} className={`${styles.composer} sticky z-10 rounded-2xl border bg-white p-4 shadow-sm`}>
+    <div className={styles.composerDock}>
+    {menuOpen&&<div className={styles.attachmentMenu} role="menu" aria-label="Добавить материал"><button type="button" role="menuitem" onClick={()=>revealAttachment("photo")}><ImagePlus size={18}/>Фото / логотип</button><button type="button" role="menuitem" onClick={()=>revealAttachment("file")}><FileText size={18}/>Файл PDF</button><button type="button" role="menuitem" onClick={()=>revealAttachment("camera")}><Camera size={18}/>Камера</button></div>}
+    <form onSubmit={event=>{event.preventDefault();void send();}} className={styles.composer}>
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>
-      {!stageHint&&<details className="mb-3 text-sm"><summary className="cursor-pointer text-neutral-500">Добавить контекст бренда</summary><label className="mt-2 flex items-center gap-2"><input type="checkbox" checked={includeBrandLogo} disabled={pending} onChange={event=>setIncludeBrandLogo(event.target.checked)}/>Проанализировать сохранённый логотип в этом сообщении</label></details>}
-      <textarea id="studio-conversation" className="w-full resize-y bg-transparent outline-none" rows={3} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} placeholder="Опишите, что хотите изменить…"/>
-      <div className="flex flex-wrap items-center justify-between gap-3">{staff?<span className="text-sm">Права меняет владелец магазина.</span>:<Link href="/admin/requests?source=ai-studio" className="text-sm underline">Написать в поддержку</Link>}<button className="btn btn-primary" disabled={!enabled||loading||pending||message.trim().length<2}>{pending?"Отправляю…":"Отправить"}</button></div>
-      {onBanner&&<details className="mt-3 text-sm"><summary className="cursor-pointer text-neutral-500">Дополнительные действия</summary><button type="button" className="mt-3 underline" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать фон баннера по этому сообщению</button></details>}
+      <button type="button" className={styles.iconButton} onClick={()=>setMenuOpen(value=>!value)} aria-label={menuOpen?"Закрыть вложения":"Добавить файл"} aria-expanded={menuOpen} disabled={!onAttachment}>{menuOpen?<X size={22}/>:<Plus size={24}/>}</button>
+      <textarea ref={textarea} id="studio-conversation" rows={1} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} onKeyDown={event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}} placeholder="Сообщение..."/>
+      <button type="button" className={styles.iconButton} aria-label="Голосовой ввод недоступен в этом браузере" title="Голосовой ввод будет доступен после подключения" disabled><Mic size={21}/></button>
+      <button type="submit" className={styles.sendButton} aria-label="Отправить сообщение" disabled={!enabled||loading||pending||message.trim().length<2}><ArrowUp size={21}/></button>
     </form>
+    <div className={styles.composerOptions}><label><input type="checkbox" checked={includeBrandLogo} disabled={pending} onChange={event=>setIncludeBrandLogo(event.target.checked)}/>Учесть логотип</label>{onBanner&&<button type="button" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать баннер по сообщению</button>}<Link href="/admin/requests?source=ai-studio">Написать в поддержку</Link><span className="sr-only">Предложения не публикуются без вашего решения</span></div>
+    </div>
   </section>;
 }

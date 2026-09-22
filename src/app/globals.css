@@ -383,3 +383,11 @@ section.bg-\[\#a24a34\] h2{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.02}
 .niche-preview-content article>b,.niche-preview-content article>strong{display:block;font-size:11px;margin-top:9px}.niche-preview-content article>strong{margin-top:3px}
 @media(max-width:640px){.niche-preview{min-height:0;padding:18px}.niche-preview-content{grid-template-columns:1fr}.niche-preview-content article{max-width:260px}.niche-preview-content h3{font-size:32px}}
 .quantity-control{display:inline-flex;align-items:center;justify-content:space-between;gap:4px;min-width:116px;border-radius:12px;background:#f1eefb;color:#514093;overflow:hidden}.quantity-control button{display:grid!important;place-items:center;width:40px!important;min-width:40px;min-height:40px;padding:0!important;border:0!important;background:transparent!important;color:inherit!important}.quantity-control button:disabled{opacity:.3}.quantity-control output{min-width:22px;text-align:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums}.food-menu-bottom .quantity-control{background:var(--food-accent,#6c50d9);color:white}@media(max-width:640px){.food-menu-bottom .quantity-control{width:100%}}
+/* AI Studio keeps the conversation in a fixed chat shell; the catalog wizard still scrolls normally. */
+body:has(.ai-studio-page){overflow:hidden}
+@media(max-width:767px){
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav{background:#fff;color:#667085;border-color:#e5e7eb;box-shadow:0 4px 24px #11182714}
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav>a,
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav>button{color:#667085}
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav .is-active{background:#e8f3ff;color:#173b57;box-shadow:none}
+}

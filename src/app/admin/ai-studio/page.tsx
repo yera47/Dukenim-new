@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { MessageSquare } from "lucide-react";
 import { requireRole } from "@/lib/auth";
 import { tenantEntitlement } from "@/lib/plan-access";
 import { hasPlan } from "@/lib/plans";
@@ -8,6 +7,7 @@ import { AiStudioClient } from "./ai-studio-client";
 import { createClient } from "@/lib/supabase/server";
 import { getTenant } from "@/lib/queries/owner";
 import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
+import styles from "./studio.module.css";
 
 export default async function AiStudioPage() {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
@@ -21,11 +21,12 @@ export default async function AiStudioPage() {
   const catalogStatus = tenant?.catalog_status ?? "not_started";
   const wallet = tenant as ({ai_credit_balance?:number;ai_credits_reset_at?:string}) | null;
   const lowUsage = typeof wallet?.ai_credit_balance === "number" && wallet.ai_credit_balance <= 12 && Boolean(wallet.ai_credits_reset_at && new Date(wallet.ai_credits_reset_at).getTime() > Date.now());
-  const [latestResult, savedDesign, categoriesResult] = client && tenant ? await Promise.all([
+  const [latestResult, savedDesign, categoriesResult, deliveryResult] = client && tenant ? await Promise.all([
     client.from("ai_studio_generations").select("id,output").eq("tenant_id", tenantId!).eq("intent", "catalog_structure").order("created_at", { ascending: false }).limit(1).maybeSingle(),
     client.from("ai_studio_generations").select("id,output").eq("tenant_id", tenantId!).eq("intent", "store_design").order("created_at", {ascending:false}).order("id", {ascending:false}).limit(1).maybeSingle(),
     client.from("categories").select("id,name").eq("tenant_id", tenantId!).eq("is_active", true).order("sort_order"),
-  ]) : [null, null, null];
+    client.from("tenant_settings").select("delivery_enabled,pickup_enabled").eq("tenant_id",tenantId!).maybeSingle(),
+  ]) : [null, null, null, null];
   const latest = latestResult?.data ?? null;
   const parsed = aiStudioStructureSchema.safeParse(latest?.output);
   const initialStructure = latest && parsed.success ? { generationId: latest.id, structure: parsed.data } : undefined;
@@ -33,13 +34,9 @@ export default async function AiStudioPage() {
   const parsedDesign = aiStudioDesignSchema.safeParse(savedDesign?.data?.output);
   const initialDesign = savedDesign?.data && parsedDesign.success ? {generationId:savedDesign.data.id,design:parsedDesign.data} : undefined;
   const categories = categoriesResult?.data ?? [];
-  return <section className="ai-studio-page">
+  return <section data-catalog-status={catalogStatus} className={`ai-studio-page ${styles.page}`}>
     {savedDesign?.error&&<p role="alert">Не удалось восстановить последнее оформление. Оно не удалено — обновите страницу.</p>}
     {lowUsage&&<p role="status" className="mb-4 rounded-xl border bg-white p-3 text-sm">Доступный объём AI заканчивается. <Link className="underline" href="/admin/settings/usage">Посмотреть использование</Link></p>}
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <div><p className="muted text-sm">Ваш помощник в магазине</p><h1 className="mt-1 text-2xl font-bold">AI Studio</h1></div>
-      <Link href="/admin/requests?source=ai-studio" className="btn btn-secondary"><MessageSquare size={16}/> Написать в поддержку</Link>
-    </div>
-    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} catalogPublished={tenant?.catalog_published??true} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialDesign={initialDesign} initialStructure={initialStructure} categories={categories} />
+    <AiStudioClient enabled={entitlement.active && status.configured} imageEnabled={brand && status.imageConfigured} brand={brand} catalogStatus={catalogStatus} catalogPublished={tenant?.catalog_published??true} deliveryConfigured={Boolean(deliveryResult?.data?.delivery_enabled||deliveryResult?.data?.pickup_enabled)} storeName={tenant?.catalog_name ?? tenant?.name ?? "Мой магазин"} slug={tenant?.slug ?? "my-store"} plan={entitlement.plan} vertical={tenant?.business_vertical ?? "other"} initialDesign={initialDesign} initialStructure={initialStructure} categories={categories} />
   </section>;
 }
