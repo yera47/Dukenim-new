@@ -7,7 +7,7 @@ import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 import styles from "./niche-showcase.module.css";
 
-const order = ["fashion", "beauty", "food", "flowers", "home"] as const satisfies readonly BusinessVertical[];
+const order = ["fashion", "beauty", "food", "flowers", "home", "other"] as const satisfies readonly BusinessVertical[];
 
 export function NicheShowcase() {
   const [vertical, setVertical] = useState<(typeof order)[number]>("fashion");

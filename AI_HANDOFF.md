@@ -12,6 +12,8 @@ The reset review found that the homepage niche cards linked to DB-backed demo te
 
 Follow-up browser read on canonical production confirmed the new card-processing copy and the fashion link to `/demo/fashion/assortment`; food and generic product demos opened. The service tab, however, led to a generic product example while registration says service booking is unavailable. Removed the unsupported service tab from homepage marketing in source; build/deployment verification follows. Supabase connector reports this organization is on the Free plan, so it has no automatic daily database backups; an independent export is required even after Dashboard login, and Storage files still need their own copy.
 
+The supported `other` goods example now replaces the service tab in `NicheShowcase`, linking to the already-opened `/demo/other/assortment` route. This preserves six meaningful homepage examples without claiming service bookings.
+
 Public demo CTAs at `/demo`, `/demo/{vertical}`, `/demo/{vertical}/{approach}` and the shared demo storefront header previously linked to protected `/admin/ai-studio`, diverting new visitors to login. They now link to `/register`; test a production demo→registration click after release. Files: the three demo route components plus `src/components/store/store-header.tsx`.
 
 ## Production reset preflight and blocker — 2026-09-22
