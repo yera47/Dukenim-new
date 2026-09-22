@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowRight, Home } from "lucide-react";
+import { DukenimLogo } from "@/components/dukenim-logo";
 
 export const metadata: Metadata = {
   title: "Страница не найдена",
@@ -11,7 +12,7 @@ export default function NotFound() {
   return (
     <main className="grid min-h-screen place-items-center bg-[#071B17] px-6 py-16 text-[#F4F0E8]">
       <div className="w-full max-w-[34rem] text-center">
-        <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#B08A50]">Dukenim</p>
+        <div className="flex justify-center"><DukenimLogo inverse/></div>
         <p className="mt-6 text-[clamp(4rem,18vw,7rem)] font-extrabold leading-none tracking-[-0.06em]">404</p>
         <h1 className="mt-4 text-[clamp(1.5rem,5vw,2.1rem)] font-bold leading-tight tracking-[-0.03em]">
           Такой страницы нет

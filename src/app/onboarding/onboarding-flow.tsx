@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store, Play, Images } from "lucide-react";
+import { DukenimLogo } from "@/components/dukenim-logo";
 import { planAnnualPrice, planAnnualSaving, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
 import type { BusinessVertical } from "@/types/database";
 import { launchVerticals as verticals } from "@/lib/launch-verticals";
@@ -43,7 +44,7 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
   return <main className="onboarding-builder min-h-screen bg-[var(--surface)]">
     <header className="border-b border-[var(--line)] bg-[var(--surface)]">
       <div className="container flex h-20 items-center gap-4">
-        <span className="tumar-mark"><Store size={18} /></span><b className="text-xl">Dukenim</b>
+        <DukenimLogo />
         <div className="ml-auto hidden text-right sm:block">
           <span className="data-label">БЕСПЛАТНО ДО {trialDate.toUpperCase()}</span>
           <div className="mt-1 flex gap-1">{[1, 2, 3].map((item) => <span key={item} className={`h-1.5 w-10 ${item <= step ? "bg-[var(--accent)]" : "bg-[var(--line)]"}`} />)}</div>

@@ -9,6 +9,14 @@ it("requires a valid delivery price, zone and actual time",()=>{
  expect(fulfilmentCommitSchema.safeParse(value).success).toBe(true);
  for(const cost of ["","-1","1.5","2e4","2000000001"])expect(fulfilmentCommitSchema.safeParse({...value,cost}).success).toBe(false);
 });
+it("keeps a manually arranged Yandex courier unpriced and restores old drafts as own delivery",()=>{
+ const oldDraft={...emptyFulfilment,deliveryProvider:undefined,delivery:true,zone:"Алматы",cost:"1500",eta:"Сегодня"};
+ expect(fulfilmentDraftSchema.parse(oldDraft).deliveryProvider).toBe("own");
+ const yandex={...oldDraft,deliveryProvider:"yandex",cost:"0"};
+ expect(fulfilmentCommitSchema.safeParse(yandex).success).toBe(true);
+ expect(fulfilmentCommitSchema.safeParse({...yandex,cost:"1500"}).success).toBe(false);
+ expect(fulfilmentCommitSchema.safeParse({...yandex,deliveryProvider:"other"}).success).toBe(false);
+});
 it("requires pickup address, schedule and map host validation",()=>{
  const value={...emptyFulfilment,pickup:true,address:"Алматы, улица 10",hours:"10–20",preparation:"Через 2 часа",gisUrl:"https://2gis.kz/almaty"};
  expect(fulfilmentCommitSchema.safeParse(value).success).toBe(true);

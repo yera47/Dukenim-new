@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight, RotateCcw } from "lucide-react";
+import { DukenimLogo } from "@/components/dukenim-logo";
 
 // Route-level error boundary for the (marketing / storefront / cabinet) tree.
 // Kept usable and on-brand without depending on globals being loaded correctly.
@@ -15,7 +16,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
   return (
     <main className="grid min-h-screen place-items-center bg-[#071B17] px-6 py-16 text-[#F4F0E8]">
       <div className="w-full max-w-[34rem] text-center">
-        <p className="text-[0.72rem] font-black uppercase tracking-[0.16em] text-[#B08A50]">Dukenim</p>
+        <div className="flex justify-center"><DukenimLogo inverse/></div>
         <h1 className="mt-6 text-[clamp(1.7rem,5vw,2.4rem)] font-bold leading-tight tracking-[-0.03em]">
           Что-то пошло не так
         </h1>

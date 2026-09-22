@@ -1,12 +1,13 @@
 import Image from "next/image";
 import styles from "./purchase-flow-preview.module.css";
+import { DukenimLogo } from "@/components/dukenim-logo";
 
 const productPhoto = "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260902_100009_9eea2fd0-eeae-4319-b198-50e29d34ada0.png";
 const setPhoto = "https://d8j0ntlcm91z4.cloudfront.net/user_3IiQlgoGNOZecy2pHManEfSn5Xj/hf_20260902_100009_587520f3-d4b8-4fd7-ad05-e086a433a0dd.png";
 
 export function PurchaseFlowPreview() {
   return <main className={styles.page}>
-    <header className={styles.header}><div className={styles.logo}><span>D</span>dukenim<i>.</i></div><p>Демо-иллюстрации · путь покупки через Dukenim</p></header>
+    <header className={styles.header}><DukenimLogo inverse/><p>Демо-иллюстрации · путь покупки через Dukenim</p></header>
     <section className={styles.intro}><p>ПОКУПАТЕЛЬ ПОКУПАЕТ САМ</p><h1>От ссылки в Instagram<br />до заказа в кабинете.</h1><span>Три блока для главной страницы или презентации клиенту.</span></section>
     <section className={styles.grid}>
       <article className={styles.block}>
