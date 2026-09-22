@@ -1380,3 +1380,19 @@ Not completed: actual Kaspi payment, receipt and owner paid-confirmation require
 Required owner action: for a real money acceptance run, use the merchant's Kaspi Pay to issue an invoice or provide an active merchant payment link and confirm the receipt before marking any order paid. No action is needed for the already verified browser order paths.
 
 Where to verify: production `/admin/ai-studio` under an owner with a completed catalog; production food storefront checkout and `/admin/orders` for a merchant-managed Kaspi order. Checklist: `docs/ACCEPTANCE_20260922_AI_STUDIO_KASPI.md`.
+
+### Manual Kaspi confirmation and final owner setup pass — 2026-09-22
+
+Result: `902f409` is pushed to `main`; Vercel `dpl_DkwruQ29DDTSouFbjibw4YeoioW1` is Ready/current on `www.dukenim.kz`. The buyer-facing Kaspi card now states that the order already exists, shows the exact amount and uses an external Kaspi link only as a transition where the buyer enters that amount manually. The owner action is now «Подтвердить оплату и заказ»: after the merchant independently sees the receipt, production RPC atomically sets payment to `paid` and advances a `new` order to `confirmed`. Existing authorization, audit, refund and unpaid-fulfilment guards remain.
+
+Implemented and verified: migration `20260922185500_confirm_kaspi_order_on_payment.sql` is applied and its rollback acceptance verified paid+confirmed state plus audit with zero fixture remnants. Two buyer-card render tests cover pending/link and paid/confirmed copy. A fresh production owner passed registration → food onboarding → AI Studio at 390×844, uploaded `public/brand/dukenim-flat-symbol.png`, saw it restored, then enabled and saved a valid Kaspi transition link in `/admin/integrations`; database inspection confirmed revision 1, exactly one private Storage object and the exact enabled link. The file was removed through the real Storage API, then exact tenant/user cleanup returned zero QA users/tenants/storage. Final shared totals remain 24 users / 21 tenants / 5 orders / 18 Storage objects. Migration `20260922193000_brand_material_owner_delete.sql` adds tenant-isolated owner deletion for private brand files and is applied to production.
+
+Checks: 482 standard tests pass with four explicit live-AI skips; `npx tsc --noEmit`, targeted ESLint and `npm run build` pass. Production browser owner writes and direct database reads agree. Temporary credentials, auth state, scripts and captures are deleted after cleanup. Existing unrelated dirty docs/output files remain untouched.
+
+Azure: unchanged; no inference, resource, key, quota or expense change.
+
+Not completed: no real Kaspi transfer was made and Dukenim still does not inspect Kaspi receipts automatically. A physical iPhone was not used. SMS remains deferred; older provider/backup/CRM/session-revocation gaps remain outside this focused follow-up.
+
+Required owner action: paste the real merchant Kaspi link. For the first live acceptance order, pay a small exact amount and press the owner confirmation only after Kaspi Pay shows the receipt.
+
+Where to verify: production `/admin/integrations#kaspi-remote`, a live storefront checkout and My Orders, then production `/admin/orders`. Detailed evidence: `docs/ACCEPTANCE_20260922_AI_STUDIO_KASPI.md`.
