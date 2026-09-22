@@ -1,5 +1,5 @@
 "use client";
-import {useEffect,useState} from "react";
+import React,{useEffect,useState} from "react";
 import Link from "next/link";
 import {Gift,ShoppingBag,ArrowRight,Check,Copy} from "lucide-react";
 import {PickupLocationCard} from "./pickup-location";
@@ -13,13 +13,13 @@ type Order={id:string;order_number:number;status:string;payment_status:string;pa
 export type BuyerHistory={orders:Order[];kaspiRemoteLink?:string|null;signedIn:boolean;phoneVerified:boolean;smsConsent:boolean;program:{name:string;enabled:boolean;terms:string}|null;rules:LoyaltyProgress[];referralCode:string|null};
 const empty:BuyerHistory={orders:[],kaspiRemoteLink:null,signedIn:false,phoneVerified:false,smsConsent:false,program:null,rules:[],referralCode:null};
 const demoHistory:BuyerHistory={...empty,program:{name:"Клуб гостей",enabled:true,terms:"Пример программы. В своём кафе вы зададите собственные условия."},rules:[{rule:{id:"demo",trigger:"product",threshold:6,category:"Кофе",reward:"gift",label:"Седьмой кофе — наш",value:1,minOrder:0,expiryDays:0,repeat:true,earnOnReward:false},progress:0,active:true,available:null}]};
-function RemoteKaspiPayment({order,link}:{order:Order;link:string|null}){
+export function RemoteKaspiPayment({order,link}:{order:Order;link:string|null}){
  const[ready,setReady]=useState(false);
  if(order.payment_method!=="kaspi"||(order.status==="cancelled"&&order.payment_status!=="refunded"))return null;
  return <div className="mt-3 rounded-2xl border border-sky-200 bg-sky-50 p-4 text-sm text-sky-950">
-  <b>{order.payment_status==="paid"?"Магазин подтвердил оплату":order.payment_status==="refunded"?"Возврат подтверждён магазином":"Ожидает оплаты"}</b>
+  <b>{order.payment_status==="paid"?"Оплата и заказ подтверждены магазином":order.payment_status==="refunded"?"Возврат подтверждён магазином":"Ожидает оплаты"}</b>
   {order.payment_status==="pending"&&<><p className="mt-2">{order.kaspi_invoice_sent_at?"Магазин отправил счёт на ваш номер. Откройте Kaspi.kz → Сообщения → Удалённая оплата.":"Магазин может отправить счёт на ваш номер. После оплаты он проверит поступление и подтвердит заказ."}</p>
-   {link&&<div className="mt-3"><p>К оплате за товары: <strong>{money(order.total)}</strong>. Откройте Kaspi и введите эту сумму вручную. В комментарии укажите «Заказ №{order.order_number}».</p>{ready?<><p className="mt-2 font-semibold">Проверьте сумму в Kaspi перед подтверждением. Возврат в магазин сам по себе не подтверждает оплату.</p><a href={link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex rounded-xl bg-sky-950 px-4 py-3 font-bold text-white">Перейти в Kaspi и ввести {money(order.total)} ↗</a></>:<button type="button" onClick={()=>setReady(true)} className="mt-3 rounded-xl border border-sky-900 px-4 py-3 font-bold">Оплатить {money(order.total)}</button>}</div>}
+   {link&&<div className="mt-3"><p>К оплате за товары: <strong>{money(order.total)}</strong>. Заказ №{order.order_number} уже создан. По ссылке откроется Kaspi, где сумму нужно ввести вручную.</p>{ready?<><p className="mt-2 font-semibold">Введите ровно {money(order.total)} и проверьте данные перед оплатой. Возврат на сайт сам по себе не подтверждает поступление денег.</p><a href={link} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex rounded-xl bg-sky-950 px-4 py-3 font-bold text-white">Открыть Kaspi ↗</a></>:<button type="button" onClick={()=>setReady(true)} className="mt-3 rounded-xl border border-sky-900 px-4 py-3 font-bold">Показать сумму и перейти в Kaspi</button>}</div>}
   </>}
  </div>;
 }

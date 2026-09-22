@@ -25,7 +25,7 @@ export async function manageRemoteKaspiPayment(_:OrderStatusState,form:FormData)
   const result=await rpc.rpc('manage_kaspi_remote_order',{p_order:orderId.data,p_action:action.data,p_reference:reference||null});
   if(result.error||!result.data)return{error:'Операция не сохранена. Проверьте текущий статус заказа.'};
   revalidatePath('/admin/orders');revalidatePath('/root/orders');revalidatePath(`/root/orders/${orderId.data}`);
-  return{success:action.data==='invoice_sent'?'Отправка счёта отмечена. Покупатель увидит подсказку в «Моих заказах».':action.data==='paid'?'Оплата отмечена после вашей проверки в Kaspi Pay.':'Возврат отмечен после вашей проверки в Kaspi Pay.'};
+  return{success:action.data==='invoice_sent'?'Отправка счёта отмечена. Покупатель увидит подсказку в «Моих заказах».':action.data==='paid'?'Оплата и заказ подтверждены после вашей проверки в Kaspi Pay. Покупатель увидит новый статус.':'Возврат отмечен после вашей проверки в Kaspi Pay.'};
  }catch{return{error:'Нет связи. Обновите заказ перед повторным действием.'};}
 }
 export async function confirmCashPayment(_:OrderStatusState,form:FormData):Promise<OrderStatusState>{
