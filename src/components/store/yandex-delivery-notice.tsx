@@ -1,11 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Truck } from "lucide-react";
 
-export const yandexNoticeKey = (slug: string) => `dukenim:${slug}:yandex-delivery-notice:v3`;
+export const yandexNoticeKey = (slug: string) => `dukenim:${slug}:yandex-delivery-notice:v4`;
 
-export function YandexDeliveryNotice({ slug, storeName }: { slug: string; storeName: string }) {
+export function YandexDeliveryNotice({ slug, storeName, kaspiRemoteEnabled }: { slug: string; storeName: string; kaspiRemoteEnabled: boolean }) {
   const [accepted, setAccepted] = useState(false);
   useEffect(() => {
     setAccepted(window.localStorage.getItem(yandexNoticeKey(slug)) === "yes");
@@ -26,7 +26,7 @@ export function YandexDeliveryNotice({ slug, storeName }: { slug: string; storeN
       <div className="mt-5 space-y-2 rounded-2xl bg-[#f2f5fa] p-4 text-sm leading-6">
         <p><b>Цена доставки:</b> зависит от расстояния и сейчас не входит в стоимость товаров. Менеджер сообщит её до вызова курьера.</p>
         <p><b>После заказа:</b> магазин свяжется с вами, проверит адрес и сам закажет курьера. На сайте курьер не вызывается автоматически.</p>
-        <p><b>Оплата:</b> товары — наличными магазину при получении. Способ оплаты доставки согласуйте с менеджером.</p>
+        <p><b>Оплата:</b> товары — {kaspiRemoteEnabled ? "через Kaspi Pay после оформления заказа" : "магазину при получении"}. Способ оплаты доставки согласуйте с менеджером.</p>
       </div>
       <button type="button" onClick={() => { window.localStorage.setItem(yandexNoticeKey(slug), "yes"); setAccepted(true); }} className="mt-6 w-full rounded-2xl bg-[#183453] px-5 py-4 text-base font-extrabold text-white hover:bg-[#254a73]">Понимаю условия · открыть магазин</button>
     </section>

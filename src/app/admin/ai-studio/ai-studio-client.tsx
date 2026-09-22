@@ -172,7 +172,7 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
 
   if (catalogStatus === "not_started") return <div className={`${styles.workspace} ${styles.conversationWorkspace}`}>
     <StudioConversation enabled={enabled} brandDone={brandDone} deliveryDone={deliveryConfigured} builderStage="setup" onAttachment={attach} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
-    <section id="catalog-setup-workspace" className={styles.setupFlow} aria-label="Создание магазина"><p className="data-label">5 КОРОТКИХ ШАГОВ</p><h2>Соберём магазин без лишних настроек</h2><p>Ответьте по одному вопросу. Каждый ответ сохранится, а перед добавлением товара вы увидите готовый результат.</p>
+    <section id="catalog-setup-workspace" className={styles.setupFlow} aria-label="Создание магазина"><p className="data-label">КОРОТКИЕ ШАГИ</p><h2>Соберём магазин без лишних настроек</h2><p>Ответьте по одному вопросу. Каждый ответ сохранится, а перед добавлением товара вы увидите готовый результат.</p>
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
     </section>
     {pending&&<p role="status">Готовлю предложение…</p>}{error&&<p role="alert" className={styles.error}>{error}</p>}{designPanel}{earlyResponse}
