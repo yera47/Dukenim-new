@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { demoSlug } from "@/lib/demo-catalogs";
 import { ArrowRight } from "lucide-react";
 import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
@@ -19,7 +18,7 @@ export function NicheShowcase() {
       <header><b>{preset.storeName}</b><span>Поиск · Корзина</span></header>
       <nav>{preset.sections.map((section) => <span key={section}>{section}</span>)}</nav>
       <div className={styles.body}>
-        <div><small>ПРИМЕР ВИТРИНЫ</small><h3>{preset.headline}</h3><p>{preset.guidance}</p><Link href={`/s/${demoSlug(vertical)}`}>Смотреть каталог <ArrowRight size={15}/></Link></div>
+        <div><small>ПРИМЕР ВИТРИНЫ</small><h3>{preset.headline}</h3><p>{preset.guidance}</p><Link href={`/demo/${vertical === "services" ? "other" : vertical}/assortment`}>Смотреть каталог <ArrowRight size={15}/></Link></div>
         <article><div className={styles.photo} style={preset.imageUrl ? { backgroundImage: `url("${preset.imageUrl}")` } : undefined}/><b>{preset.product}</b><span>{preset.price}</span></article>
       </div>
     </div>
