@@ -13,7 +13,7 @@ export default async function DemoLayout({params,children}:{params:Promise<{vert
   const config=configurationFor(vertical,approach);if(!config)notFound();
   const products=demoProductsFor(config.vertical);
   return <div className={`storefront-theme ${styles.root}`} data-approach={approach} data-vertical={vertical} style={storefrontStyle(null,"standard","#171717")}>
-    <div className="border-b bg-neutral-100 px-6 py-4 text-sm"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3"><Link href={`/demo/${vertical}`}>← Выбрать другой вариант</Link><span>{config.title} · Демо</span><Link href="/admin/ai-studio">Создать свой магазин →</Link></div></div>
+    <div className="border-b bg-neutral-100 px-6 py-4 text-sm"><div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3"><Link href={`/demo/${vertical}`}>← Выбрать другой вариант</Link><span>{config.title} · Демо</span><Link href="/register">Создать свой магазин →</Link></div></div>
     <CartProvider key={config.id} storageKey={`demo:${config.id}`}><StoreHeader slug={configurationSlug(vertical,approach)} name={`Dukenim ${vertical[0].toUpperCase()+vertical.slice(1)} Shop`} categories={Array.from(new Set(products.map(p=>p.category)))} food={vertical==="food"} quickFood={vertical==="food"&&approach==="assortment"} demo={vertical==="food"&&approach==="assortment"}/>{children}</CartProvider>
   </div>;
 }
