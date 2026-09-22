@@ -7,10 +7,10 @@ import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 import styles from "./niche-showcase.module.css";
 
-const order: BusinessVertical[] = ["fashion", "beauty", "food", "flowers", "home", "services"];
+const order = ["fashion", "beauty", "food", "flowers", "home"] as const satisfies readonly BusinessVertical[];
 
 export function NicheShowcase() {
-  const [vertical, setVertical] = useState<BusinessVertical>("fashion");
+  const [vertical, setVertical] = useState<(typeof order)[number]>("fashion");
   const preset = nichePresets[vertical];
   return <div className={styles.shell}>
     <div className={styles.tabs}>{order.map((key) => <button type="button" key={key} aria-pressed={key === vertical} onClick={() => setVertical(key)}>{nichePresets[key].label}</button>)}</div>
@@ -18,7 +18,7 @@ export function NicheShowcase() {
       <header><b>{preset.storeName}</b><span>Поиск · Корзина</span></header>
       <nav>{preset.sections.map((section) => <span key={section}>{section}</span>)}</nav>
       <div className={styles.body}>
-        <div><small>ПРИМЕР ВИТРИНЫ</small><h3>{preset.headline}</h3><p>{preset.guidance}</p><Link href={`/demo/${vertical === "services" ? "other" : vertical}/assortment`}>Смотреть каталог <ArrowRight size={15}/></Link></div>
+        <div><small>ПРИМЕР ВИТРИНЫ</small><h3>{preset.headline}</h3><p>{preset.guidance}</p><Link href={`/demo/${vertical}/assortment`}>Смотреть каталог <ArrowRight size={15}/></Link></div>
         <article><div className={styles.photo} style={preset.imageUrl ? { backgroundImage: `url("${preset.imageUrl}")` } : undefined}/><b>{preset.product}</b><span>{preset.price}</span></article>
       </div>
     </div>
