@@ -8,6 +8,7 @@ import { resolveTenant } from "@/lib/tenant";
 import { loadStoreCategories } from "@/lib/storefront-data";
 import { demoVerticalById } from "@/lib/demo-catalogs";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getStorefrontSettings } from "@/lib/queries/owner";
 import { storefrontStyle } from "@/lib/storefront-style";
 import {approachForTemplate} from "@/lib/commerce-configurations";
@@ -22,10 +23,11 @@ export default async function StoreLayout({ children, params }: { children: Reac
   const { slug } = await params; const tenant = await resolveTenant(slug); if (!tenant) notFound();
   const demo = Boolean(demoVerticalById(tenant.id));
   const client = !demo && process.env.NEXT_PUBLIC_SUPABASE_URL ? await createClient() : null;
+  const settingsClient = !demo && process.env.SUPABASE_SERVICE_ROLE_KEY ? createAdminClient() : null;
   const [settingsResult, yandexZone, paymentResult, categories] = await Promise.all([
     client ? getStorefrontSettings(client, tenant.id) : Promise.resolve(null),
     client ? client.from("delivery_zones").select("id").eq("tenant_id", tenant.id).eq("is_active", true).eq("provider", "yandex").limit(1) : Promise.resolve(null),
-    client ? client.from("tenant_settings").select("delivery_enabled,kaspi_remote_enabled").eq("tenant_id",tenant.id).maybeSingle() : Promise.resolve(null),
+    settingsClient ? settingsClient.from("tenant_settings").select("delivery_enabled,kaspi_remote_enabled").eq("tenant_id",tenant.id).maybeSingle() : Promise.resolve(null),
     tenant.business_vertical === "food" ? Promise.resolve([]) : loadStoreCategories(tenant.id),
   ]);
   const settings = settingsResult?.data ?? null;
