@@ -4,5 +4,11 @@
     "preview": { "distribution": "internal", "environment": "preview" },
     "production": { "distribution": "store", "environment": "production", "autoIncrement": true }
   },
-  "submit": { "production": {} }
+  "submit": {
+    "production": {
+      "ios": {
+        "ascAppId": "6808542651"
+      }
+    }
+  }
 }

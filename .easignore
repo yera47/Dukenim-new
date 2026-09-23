@@ -1,0 +1,24 @@
+# EAS archives the monorepo because the mobile workspace depends on the root lockfile.
+# Keep source and workspace metadata, but exclude generated and review artifacts.
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+.expo/
+**/.expo/
+.expo-export-check/
+**/.expo-export-check/
+.git/
+.vercel/
+.playwright-cli/
+coverage/
+**/coverage/
+output/
+tmp/
+supabase/.temp/
+.npm-cache/
+.pnpm-store/
+.env*
+!.env.example
+*.log
+*.tsbuildinfo

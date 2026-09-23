@@ -1426,3 +1426,17 @@ Not completed: real Polar card collection and a signed webhook still require mer
 Required owner action: activate Polar live merchant payments, create live products/webhook and perform one real charge before enabling `POLAR_LIVE_CHECKOUT_ENABLED=true`. No owner action is required for AI Studio publication or staff invitations.
 
 Where to verify: production `/admin/ai-studio`, `/admin/catalog/new`, `/admin/team`, a generated `/staff/join?token=...`, `/staff`, and `/admin/plan`. Detailed checklist: `docs/ACCEPTANCE_20260923_AI_STUDIO_RELEASE.md`.
+
+## 2026-09-23 — First signed Dukenim iOS owner build
+
+Result: advanced `apps/mobile` from a shell to the first usable owner MVP. Added a native RLS-scoped order feed with store names, new/active/completed filters, pull-to-refresh, controlled error/empty states and links to the existing order detail. The home screen now opens real orders and scanner routes, prevents empty login submissions and avoids exposing raw Supabase authentication errors. Expo SDK 57 packages were aligned to current compatible patches; the app is iPhone-only and declares standard HTTPS encryption usage for App Store export compliance.
+
+Production mobile configuration: added the public Supabase URL, publishable key and EAS project ID to the EAS `production` environment. No service-role key, Apple password, OTP or private provider credential was stored in source or EAS public variables. Added the known App Store Connect app ID `6808542651` to the production submit profile. Root `.easignore` now excludes generated screenshots, Next/Expo output and caches from future mobile archives.
+
+Apple/EAS: EAS account `yersat47` and existing Apple signing assets were reused. Production build `90742768-52d6-4837-9608-0181d0e7977f` finished successfully as Dukenim `1.0.0` build `3`, bundle `kz.dukenim.app`, signed for Team `NW7BN297KZ`; the IPA exists on the EAS build page. TestFlight submission was prepared but not completed: the stored Apple CLI session is expired and non-interactive EAS Submit cannot create an App Store Connect API key. The App Store Connect login page is left open for the owner; do not request or store the password/2FA in chat. No App Review or public release was attempted.
+
+Checks: `npx expo-doctor` 21/21, `npx tsc --noEmit`, `npx expo lint`, and an iOS Metro export pass. EAS iOS production build completed. Physical-iPhone sign-in, RLS order display, APNs delivery/deep link and camera scan remain device acceptance items. Detailed checklist: `docs/ACCEPTANCE_20260923_IOS_OWNER_APP.md`.
+
+Azure: unchanged; no model inference, resource, key, quota or spend change.
+
+Next recommended action: owner signs in to App Store Connect in the open browser tab. Then rerun EAS Submit for build `90742768-52d6-4837-9608-0181d0e7977f`, wait for Apple processing, install through TestFlight and perform the device checklist before adding native Apple/Google OAuth and order-management mutations.
