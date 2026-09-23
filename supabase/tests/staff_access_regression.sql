@@ -19,6 +19,7 @@ begin
  begin perform public.accept_staff_invitation(repeat('a',64));raise exception 'TEST FAILED: wrong email accepted';exception when insufficient_privilege then null;end;
  perform set_config('request.jwt.claim.sub',staff_id::text,true);
  membership:=public.accept_staff_invitation(repeat('a',64));
+ if (select accepted_by from public.staff_invitations where id=invitation) is distinct from staff_id then raise exception 'TEST FAILED: accepting account not recorded';end if;
  if exists(select 1 from public.tenant_users where user_id=staff_id) then raise exception 'TEST FAILED: broad membership';end if;
  if public.staff_orders(membership)<>'[]'::jsonb then raise exception 'TEST FAILED: cross tenant orders';end if;
  begin perform public.staff_create_product(membership,created_id,'{"title":"Denied product","price":100,"stock":0,"images":[]}');raise exception 'TEST FAILED: product without permission';exception when insufficient_privilege then null;end;
@@ -46,6 +47,10 @@ begin
  perform set_config('request.jwt.claim.sub',staff_id::text,true);
  begin perform public.staff_orders(membership);raise exception 'TEST FAILED: revoked member read';exception when insufficient_privilege then null;end;
  begin perform public.staff_create_product(membership,gen_random_uuid(),'{"title":"Revoked","price":100,"stock":0,"images":[]}');raise exception 'TEST FAILED: revoked creation';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claim.sub',owner_id::text,true);
+ perform public.manage_staff(tenant,'remove',jsonb_build_object('id',membership));
+ if exists(select 1 from public.staff_access where id=membership) then raise exception 'TEST FAILED: removed membership survived';end if;
+ if not exists(select 1 from public.platform_audit_events where tenant_id=tenant and action='staff.remove' and metadata->>'id'=membership::text) then raise exception 'TEST FAILED: removal audit missing';end if;
  if has_table_privilege('authenticated','public.staff_access','INSERT') or has_table_privilege('authenticated','public.staff_access','UPDATE') then raise exception 'TEST FAILED: direct write grant';end if;
  if has_function_privilege('anon','public.manage_staff(uuid,text,jsonb)','EXECUTE') then raise exception 'TEST FAILED: anonymous execute';end if;
 end $$;

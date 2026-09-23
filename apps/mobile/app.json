@@ -4,17 +4,11 @@
     "slug": "dukenim",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "../../public/icon-512.png",
+    "icon": "./assets/images/icon-1024.png",
     "scheme": "dukenim",
     "userInterfaceStyle": "light",
     "ios": {
       "bundleIdentifier": "kz.dukenim.app",
-      "usesAppleSignIn": true,
-      "entitlements": {
-        "com.apple.developer.applesignin": [
-          "Default"
-        ]
-      },
       "supportsTablet": false,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -22,10 +16,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "../../public/icon-512.png",
+        "backgroundColor": "#F4F0E8",
+        "foregroundImage": "./assets/images/logo-mark.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
-        "monochromeImage": "../../public/icon-512.png"
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "package": "kz.dukenim.app",
       "predictiveBackGestureEnabled": false,
@@ -44,21 +38,42 @@
         "expo-camera",
         {
           "cameraPermission": "Dukenim использует камеру только для сканирования штрихкода товара.",
-          "recordAudioAndroid": false
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
         }
       ],
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#071B17",
-          "image": "../../public/icon-512.png",
+          "backgroundColor": "#F4F0E8",
+          "image": "./assets/images/logo-mark.png",
           "imageWidth": 76
         }
       ],
       "expo-sqlite",
       "expo-font",
       "expo-image",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "kz.dukenim.app.widgets",
+          "groupIdentifier": "group.kz.dukenim.app",
+          "widgets": [
+            {
+              "name": "DukenimOrdersWidget",
+              "displayName": "Заказы Dukenim",
+              "description": "Новые заказы и заказы в работе без данных покупателей.",
+              "ios": {
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ]
+              }
+            }
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

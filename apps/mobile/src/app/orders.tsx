@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
+import { updateOrdersWidget } from "@/widgets/orders-widget";
 
 type Filter = "all" | "new" | "active" | "done";
 type MobileOrder = {
@@ -73,6 +74,7 @@ export default function OrdersScreen() {
       const tenantIds = [...new Set((memberships ?? []).map((item) => item.tenant_id as string))];
       if (tenantIds.length === 0) {
         setOrders([]);
+        updateOrdersWidget([]);
         setStoreNames({});
         setMessage("У этого аккаунта пока нет магазина. Создайте его на dukenim.kz.");
         return;
@@ -90,7 +92,9 @@ export default function OrdersScreen() {
       if (tenantError || orderError) throw new Error("Не удалось обновить заказы. Проверьте интернет.");
 
       setStoreNames(Object.fromEntries((tenants ?? []).map((tenant) => [tenant.id as string, tenant.name as string])));
-      setOrders((orderRows ?? []) as MobileOrder[]);
+      const nextOrders = (orderRows ?? []) as MobileOrder[];
+      setOrders(nextOrders);
+      updateOrdersWidget(nextOrders);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Не удалось открыть заказы.");
     } finally {

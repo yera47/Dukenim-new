@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Dukenim">
-  <rect width="512" height="512" rx="116" fill="#071B17"/>
-  <path fill="#F4F0E8" fill-rule="evenodd" d="M138 116h150c81 0 142 61 142 140s-61 140-142 140H138V116Zm74 66v148h72c46 0 78-31 78-74s-32-74-78-74h-72Z"/>
-  <path fill="#B08A50" d="M212 330h150l-26-40H238l-26 40Z"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="Dukenim">
+  <rect width="1080" height="1080" fill="#F4F0E8"/>
+  <path fill="#111820" fill-rule="evenodd" d="M286 252H470C676 252 794 365 794 540S676 828 470 828H286V252Zm116 96V727H493C552 727 584 687 584 628V469C584 421 564 394 520 381L402 348Z"/>
+  <path fill="#6FB9E8" d="M402 727H584V828H402Z"/>
 </svg>

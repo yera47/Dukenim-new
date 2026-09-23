@@ -4,6 +4,18 @@ import { StatusBar } from "expo-status-bar";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { notificationTarget } from "@/lib/notification-target";
+import { listenForPushTokenChanges } from "@/lib/notifications";
+
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}
 
 export default function RootLayout() {
   const handled = useRef<string | null>(null);
@@ -20,9 +32,10 @@ export default function RootLayout() {
       void Notifications.clearLastNotificationResponseAsync().catch(() => undefined);
     }
     const subscription = Notifications.addNotificationResponseReceivedListener(open);
+    const tokenSubscription = listenForPushTokenChanges();
     const initial = Notifications.getLastNotificationResponse();
     if (initial) open(initial);
-    return () => subscription.remove();
+    return () => { subscription.remove(); tokenSubscription?.remove(); };
   }, []);
   return <><StatusBar style="dark" /><Stack screenOptions={{ headerShown: false, animation: "fade" }} /></>;
 }

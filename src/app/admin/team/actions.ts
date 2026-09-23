@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { getSessionContext } from "@/lib/auth";
 import { createStaffClient } from "@/lib/staff-server";
 import { staffPermissionsSchema } from "@/lib/staff-permissions";
+import { staffInvitationPath } from "@/lib/staff-invitation";
 export type TeamState={error?:string;success?:string;invitation?:string};
 export async function manageTeam(_:TeamState,form:FormData):Promise<TeamState>{
  const context=await getSessionContext();
@@ -24,11 +25,15 @@ export async function manageTeam(_:TeamState,form:FormData):Promise<TeamState>{
    if(!id.success||!revision.success)return {error:"Обновите список сотрудников."};
    data={...data,id:id.data,revision:revision.data,active:form.get("active")==="on",notify_orders:form.get("notify_orders")==="on"};
   }
- }else if(action==="revoke_invite"){
-  const id=z.string().uuid().safeParse(form.get("id"));if(!id.success)return {error:"Приглашение не найдено."};data={id:id.data};
+ }else if(action==="revoke_invite"||action==="remove"){
+  const id=z.string().uuid().safeParse(form.get("id"));if(!id.success)return {error:action==="remove"?"Сотрудник не найден.":"Приглашение не найдено."};data={id:id.data};
  }else return {error:"Неизвестное действие."};
  const client=await createStaffClient();const result=await client.rpc("manage_staff",{p_tenant:context.tenantId,p_action:action,p_data:data});
- if(result.error)return {error:"Не удалось сохранить. Проверьте права владельца и обновите страницу: запись могла измениться."};
+ if(result.error){
+  if(result.error.code==="23505")return {error:"Этот человек уже есть в команде или для него уже создан аккаунт. Откройте его карточку и измените доступ."};
+  if(result.error.code==="54000")return {error:"Создано слишком много ссылок за короткое время. Подождите час и повторите."};
+  return {error:"Не удалось сохранить. Проверьте права владельца и обновите страницу: запись могла измениться."};
+ }
  revalidatePath("/admin/team");revalidatePath("/staff");
- return token?{success:"Приглашение действует 7 дней. Передайте ссылку сотруднику: она сохранит приглашение при входе и регистрации.",invitation:`/staff/join?token=${token}`}:{success:"Сохранено. Новые права применяются при следующем запросе."};
+ return token?{success:"Ссылка действует 48 часов и используется один раз. Отправьте её только этому сотруднику — она привязана к указанному email.",invitation:staffInvitationPath(token)}:{success:action==="remove"?"Сотрудник удалён из команды. Доступ к магазину закрыт.":"Сохранено. Новые права применяются сразу при следующем запросе."};
 }

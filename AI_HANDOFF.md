@@ -1,5 +1,53 @@
 # Dukenim — AI handoff
 
+## 2026-09-24 — Staff access security and UX (local, awaiting release authorization)
+
+Result: completed a focused owner/employee access audit and prepared a local hardening release. `/admin/team` now explains the model, offers a visible copy-link button with fallback selection, shows accepted employee email for new/backfilled invitations, supports editing permissions, immediate disable/restore, revoking a pending link and audited membership removal. `/staff/join` now explains both new/existing account paths, requires a 15–128 character non-obvious password and preserves the invitation across login without placing new raw tokens in server request URLs.
+
+Database change: `20260924003000_staff_access_security_and_removal.sql` changes new invitation expiry to 48 hours, records `accepted_by`, indexes staff lookup keys, limits invitation creation, revokes earlier pending links for the same email, rejects owner/existing-member invitations, validates all RPC input again in Postgres, constrains notifications to active order access and adds tenant-scoped audited removal. Existing staff RPCs continue to check current active membership and module permission on every request, so disable/removal takes effect independently of JWT expiry.
+
+Supply chain and headers: patched the transitive Expo CLI `js-yaml` high advisory through a workspace override to 4.3.2; `pnpm audit --prod` now reports zero known vulnerabilities. Added GitHub Dependabot, CodeQL and dependency-audit workflows, `SECURITY.md`, HSTS, COOP and disabled DNS prefetch. Staff routes retain private/no-store and no-referrer headers after the final header-order fix.
+
+Changed files: `.github/dependabot.yml`, `.github/workflows/security.yml`, `SECURITY.md`, `next.config.ts`, `pnpm-workspace.yaml`, `pnpm-lock.yaml`, team/join components and actions, `src/lib/staff-invitation.ts` plus tests, `src/lib/staff-server.ts`, staff migration/regression test, `docs/ACCEPTANCE_20260924_STAFF_SECURITY.md`, `PROJECT_STATE.md`, this handoff. Existing iOS/logo/docs changes in the dirty worktree were preserved.
+
+Checks: 97 test files / 488 tests pass with four intentional live-AI skips; targeted ESLint passes; sequential TypeScript passes; production build generates 79 pages; GitHub YAML parses; dependency audit is clean. Production Supabase advisors and linked DB lint were reviewed read-only. No production database/app/user data changed.
+
+Azure: unchanged; no model inference, resource, key, quota or cost change.
+
+Not completed: migration/release and a disposable two-browser production journey require explicit deployment authorization under repository rules. Supabase leaked-password protection is disabled and is documented by Supabase as Pro-only. Mandatory TOTP MFA, WAF/rate limits at the edge, GitHub branch rules and secret-scanning settings require separate product/account configuration and are not claimed complete.
+
+Required owner action: explicitly authorize applying the migration and publishing this release. After that, run owner → copied fragment link → employee registration → staff use → permission edit → disable/denied request → restore → removal/denied request and clean up disposable records.
+
+Where to verify: local `/admin/team` and `/staff/join`; detailed evidence and exact boundary in `docs/ACCEPTANCE_20260924_STAFF_SECURITY.md`.
+
+## 2026-09-23 — exact brandbook logo and signed iOS build 7
+
+Result: corrected the logo without redesigning the application form. The earlier mobile icon used a separately drawn SVG whose doorway geometry differed from the brandbook. All current light/reversed web and native assets now derive from the alpha mask of `public/brand/dukenim-flat-symbol.png`; the main D is dark/white and only the original lower threshold is blue `#6FB9E8`. The native login header no longer renders a text `D`.
+
+Implemented and verified: generated `public/brand/dukenim-symbol-current.png`, its reversed variant, square system asset `apps/mobile/assets/images/logo-mark.png`, compact in-app mark and the 1024 px iOS icon. A raw-pixel comparison found zero alpha mismatches across 41,748 source pixels and only the two intended output colours. Mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS export pass. The Next production build generated 79 pages; local homepage and both logo assets returned HTTP 200. Final EAS production build `d8f33f37-081d-4f99-b37d-fe92462218e8` finished successfully as Dukenim `1.0.0 (7)` and produced `https://expo.dev/artifacts/eas/I8FaJYpd2u4ex6e0RNMiUN5lR1JTIcF7NyzSBPBaOMk.ipa`.
+
+Changed files: brand current/decision documentation, current light/reversed logo assets, shared `DukenimLogo`, mobile app configuration, native login, PNG asset typing, app icon and mobile logo mark, project state and iOS acceptance checklist. No unrelated existing dirty files were staged or changed by this correction.
+
+Azure: unchanged; no resource, model, key, quota, inference or cost change.
+
+Not completed: TestFlight upload remains externally blocked by the expired App Store Connect session and absence of an ASC API key. The corrected app still needs physical-iPhone visual, APNs/deep-link and camera acceptance. Source changes and the new `/support` route are locally verified but not committed, pushed or deployed in this continuation.
+
+Next recommended action: authenticate once in App Store Connect or save an ASC API key in EAS, submit build 7 through the validated workflow and perform the physical-iPhone checklist. Do not use builds 4 or 6 for TestFlight because build 7 contains the owner-approved exact logo geometry and corrected compact in-app spacing.
+
+## 2026-09-23 — iOS release-preparation follow-up
+
+Result: prepared the current native owner app for a repeatable App Store/TestFlight path while the owner is away from the computer. The iOS app now uses a 1024 px icon generated from the approved Dukenim mark, presents foreground notifications, handles Expo token rotation, and provides registration/recovery plus web cabinet, support, privacy and offer links. A public `/support` page is included in the web build.
+
+Implemented and verified: `apps/mobile/store.config.json` passes EAS Metadata validation for RU/en-US; `.eas/workflows/submit-latest-ios.yml` passes workflow validation and uses latest-production-build → approval → TestFlight submission. Mobile `tsc`, Expo lint, Expo Doctor 21/21 and iOS export pass. Root `tsc` and the 79-page production build pass; local production `/support` returns 200. EAS production build `d6c54c96-597a-43e0-b3f5-e8246b49eacd` finished successfully as Dukenim `1.0.0 (4)` and produced the signed IPA at `https://expo.dev/artifacts/eas/u9p9q9UlV75a7J13jRaoKshWXbuGbNG9BV7ai7T-2Fo.ipa`.
+
+Changed files: `apps/mobile/app.json`, `apps/mobile/eas.json`, `apps/mobile/store.config.json`, `apps/mobile/.eas/workflows/submit-latest-ios.yml`, `apps/mobile/assets/images/icon-1024.png`, mobile layout/login/settings/notification helper, `apps/mobile/README.md`, `src/app/support/page.tsx`, this handoff, project state and the iOS acceptance checklist.
+
+Azure: unchanged; no resource, key, model, quota, inference or spend change.
+
+Not completed: TestFlight upload is externally blocked by the expired Apple CLI session and absence of an App Store Connect API key. Physical-iPhone sign-in, APNs foreground/background/terminated delivery, order deep link and scanner acceptance remain device work. App Privacy answers, review contact phone, screenshots and review credentials require approved owner/business facts. The new web support route is locally verified but not deployed.
+
+Next recommended action: when Apple access is available, authenticate once or save an ASC API key in EAS, run the validated workflow for build 4, install from TestFlight and execute the physical-device checklist. Do not collect Apple passwords or OTPs in chat.
+
 ## AI Studio chat shell and buyer payment journey — 2026-09-22
 
 Owner supplied the AI Studio visual package and requested a single manual Kaspi Pay buyer path, staged order history, map links and Yandex courier after price agreement. Current source now renders AI Studio as a full-height white chat shell in all catalog stages. The existing admin top bar and mobile navigation remain fixed; only chat history scrolls. Composer has an attachment menu connected to existing brand photo/PDF/camera inputs, one-line auto-grow text, a disabled microphone placeholder and an arrow-up send button. Initial quick tasks are capped at three. Catalog/first-product wizards remain inside the scroll area. Consultations, draft previews and explicit apply actions remain on existing APIs. The brand task shows completion after a successful logo upload; delivery completion reflects saved settings.

@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Link, router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import type { User } from "@supabase/supabase-js";
 import { isSupabaseConfigured, supabase } from "@/lib/supabase";
 import { notificationTarget } from "@/lib/notification-target";
 import { disableCurrentDevicePush } from "@/lib/notifications";
+import { clearOrdersWidget } from "@/widgets/orders-widget";
+import logoMark from "../../assets/images/logo-mark-compact.png";
 
 type Role = "customer" | "owner" | "superadmin";
 const jade = "#071B17", gold = "#B08A50", stone = "#F4F0E8";
+const site = "https://www.dukenim.kz";
 
 function Button({ label, onPress, muted = false }: { label: string; onPress: () => void; muted?: boolean }) {
   return <Pressable onPress={onPress} style={[styles.button, muted && styles.buttonMuted]}><Text style={[styles.buttonText, muted && styles.buttonMutedText]}>{label}</Text></Pressable>;
@@ -74,6 +77,7 @@ export default function HomeScreen() {
       await disableCurrentDevicePush();
       const result = await supabase?.auth.signOut();
       if (result?.error) throw result.error;
+      clearOrdersWidget();
       setUser(null); setRole("customer");
     } catch {
       Alert.alert("Не удалось завершить выход", "Нужно отключить уведомления этого аккаунта на устройстве. Проверьте интернет и повторите выход.");
@@ -82,7 +86,7 @@ export default function HomeScreen() {
 
   if (loading) return <View style={styles.loader}><ActivityIndicator color={gold} /></View>;
   return <SafeAreaView style={styles.screen}><ScrollView contentContainerStyle={styles.content}>
-    <View style={styles.brand}><View style={styles.mark}><Text style={styles.markText}>D</Text></View><Text style={styles.title}>Dukenim</Text></View>
+    <View style={styles.brand}><View style={styles.mark}><Image accessibilityIgnoresInvertColors alt="" source={logoMark} resizeMode="contain" style={styles.markImage} /></View><Text style={styles.title}>Dukenim</Text></View>
     {!isSupabaseConfigured ? <View style={styles.card}><Text style={styles.cardTitle}>Нужна настройка среды</Text><Text style={styles.muted}>Добавьте публичный URL и publishable key Supabase в EXPO_PUBLIC_* переменные. Секреты и service-role ключи в приложение не попадают.</Text></View> : user ? <>
       <Text style={styles.eyebrow}>{role === "superadmin" ? "СУПЕРАДМИНИСТРАТОР" : role === "owner" ? "ВЛАДЕЛЕЦ" : "АККАУНТ"}</Text>
       <Text style={styles.welcome}>Здравствуйте</Text><Text style={styles.muted}>{user.email}</Text>
@@ -90,8 +94,8 @@ export default function HomeScreen() {
       {role === "superadmin" && <View style={styles.adminCard}><Text style={styles.cardTitle}>Центр платформы</Text><Text style={styles.muted}>Ваш уровень доступа к Root сохранён. Мобильные root-операции будут включаться только с серверным аудитом.</Text></View>}
       <Link href="/settings" asChild><Pressable style={styles.secondary}><Text style={styles.secondaryText}>Уведомления и настройки →</Text></Pressable></Link>
       <Button label="Выйти" onPress={signOut} muted />
-    </> : <View style={styles.card}><Text style={styles.cardTitle}>Вход в рабочее приложение</Text><Text style={styles.muted}>Используйте тот же аккаунт Dukenim, что и в веб-кабинете.</Text><TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="#69736D" style={styles.input} /><TextInput secureTextEntry autoComplete="current-password" value={password} onChangeText={setPassword} placeholder="Пароль" placeholderTextColor="#69736D" style={styles.input} />{signingIn ? <ActivityIndicator color={jade} /> : <Button label="Войти" onPress={signIn} />}<Text style={styles.help}>Для первой сборки доступен безопасный вход по email. Apple и Google добавим после регистрации мобильных OAuth-клиентов.</Text></View>}
+    </> : <View style={styles.card}><Text style={styles.cardTitle}>Вход в рабочее приложение</Text><Text style={styles.muted}>Используйте тот же аккаунт Dukenim, что и в веб-кабинете.</Text><TextInput autoCapitalize="none" autoComplete="email" keyboardType="email-address" value={email} onChangeText={setEmail} placeholder="Email" placeholderTextColor="#69736D" style={styles.input} /><TextInput secureTextEntry autoComplete="current-password" value={password} onChangeText={setPassword} onSubmitEditing={()=>{void signIn();}} returnKeyType="go" placeholder="Пароль" placeholderTextColor="#69736D" style={styles.input} />{signingIn ? <ActivityIndicator color={jade} /> : <Button label="Войти" onPress={signIn} />}<Pressable onPress={()=>{void Linking.openURL(`${site}/login`);}}><Text style={styles.helpLink}>Забыли пароль? Восстановить на сайте ↗</Text></Pressable><Pressable onPress={()=>{void Linking.openURL(`${site}/register`);}}><Text style={styles.helpLink}>Создать магазин бесплатно ↗</Text></Pressable><Text style={styles.help}>В приложении доступны заказы, уведомления и сканер. Полная настройка магазина открывается в веб-кабинете.</Text></View>}
   </ScrollView></SafeAreaView>;
 }
 
-const styles = StyleSheet.create({ screen:{flex:1,backgroundColor:stone}, content:{padding:24,gap:16}, loader:{flex:1,alignItems:"center",justifyContent:"center",backgroundColor:stone}, brand:{flexDirection:"row",alignItems:"center",gap:10,marginTop:8}, mark:{width:36,height:36,borderRadius:12,backgroundColor:jade,alignItems:"center",justifyContent:"center"},markText:{color:gold,fontSize:21,fontWeight:"800"},title:{fontSize:25,fontWeight:"800",color:jade},eyebrow:{color:"#7A6040",fontSize:11,fontWeight:"800",letterSpacing:1.4,marginTop:20},welcome:{fontSize:34,fontWeight:"800",color:jade,marginTop:4},muted:{fontSize:14,lineHeight:20,color:"#56625B"},card:{backgroundColor:"#FFFDF8",borderWidth:1,borderColor:"#E0D7C8",borderRadius:22,padding:20,gap:12,flex:1},adminCard:{backgroundColor:"#E8DFD0",borderRadius:22,padding:20,gap:8},cardTitle:{fontSize:18,fontWeight:"800",color:jade},cardAction:{color:"#0E3854",fontSize:13,fontWeight:"900",marginTop:4},grid:{flexDirection:"row",gap:12},button:{backgroundColor:jade,borderRadius:14,paddingVertical:15,alignItems:"center",marginTop:4},buttonText:{color:"#FFFDF8",fontWeight:"800",fontSize:15},buttonMuted:{backgroundColor:"transparent",borderWidth:1,borderColor:"#B9B1A4"},buttonMutedText:{color:jade},input:{backgroundColor:"#F7F2E9",borderRadius:12,borderWidth:1,borderColor:"#DDD2C1",padding:14,color:jade,fontSize:16},help:{color:"#69736D",fontSize:12,lineHeight:17},secondary:{padding:17,borderRadius:16,backgroundColor:"#E8DFD0"},secondaryText:{color:jade,fontWeight:"800",textAlign:"center"} });
+const styles = StyleSheet.create({ screen:{flex:1,backgroundColor:stone}, content:{padding:24,gap:16}, loader:{flex:1,alignItems:"center",justifyContent:"center",backgroundColor:stone}, brand:{flexDirection:"row",alignItems:"center",gap:10,marginTop:8}, mark:{width:36,height:36,borderRadius:12,backgroundColor:"#FFFDF8",borderWidth:1,borderColor:"#DED8CD",alignItems:"center",justifyContent:"center"},markImage:{width:21,height:23},title:{fontSize:25,fontWeight:"800",color:jade},eyebrow:{color:"#7A6040",fontSize:11,fontWeight:"800",letterSpacing:1.4,marginTop:20},welcome:{fontSize:34,fontWeight:"800",color:jade,marginTop:4},muted:{fontSize:14,lineHeight:20,color:"#56625B"},card:{backgroundColor:"#FFFDF8",borderWidth:1,borderColor:"#E0D7C8",borderRadius:22,padding:20,gap:12,flex:1},adminCard:{backgroundColor:"#E8DFD0",borderRadius:22,padding:20,gap:8},cardTitle:{fontSize:18,fontWeight:"800",color:jade},cardAction:{color:"#0E3854",fontSize:13,fontWeight:"900",marginTop:4},grid:{flexDirection:"row",gap:12},button:{backgroundColor:jade,borderRadius:14,paddingVertical:15,alignItems:"center",marginTop:4},buttonText:{color:"#FFFDF8",fontWeight:"800",fontSize:15},buttonMuted:{backgroundColor:"transparent",borderWidth:1,borderColor:"#B9B1A4"},buttonMutedText:{color:jade},input:{backgroundColor:"#F7F2E9",borderRadius:12,borderWidth:1,borderColor:"#DDD2C1",padding:14,color:jade,fontSize:16},help:{color:"#69736D",fontSize:12,lineHeight:17},helpLink:{color:"#0E3854",fontSize:13,fontWeight:"800",textDecorationLine:"underline"},secondary:{padding:17,borderRadius:16,backgroundColor:"#E8DFD0"},secondaryText:{color:jade,fontWeight:"800",textAlign:"center"} });

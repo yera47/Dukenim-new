@@ -1,0 +1,52 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "categories": ["BUSINESS"],
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE",
+      "gambling": false,
+      "unrestrictedWebAccess": false,
+      "kidsAgeBand": null,
+      "ageRatingOverride": "NONE",
+      "koreaAgeRatingOverride": "NONE"
+    },
+    "info": {
+      "ru": {
+        "title": "Dukenim для бизнеса",
+        "subtitle": "Заказы и каталог магазина",
+        "description": "Рабочее приложение владельца Dukenim. Получайте и просматривайте заказы своих магазинов, следите за их статусом, подключайте push-уведомления и сканируйте штрихкоды товаров. Для входа используется тот же защищённый аккаунт, что и в веб-кабинете Dukenim. Настройки каталога, сотрудников, доставки и оплаты открываются в полном кабинете на dukenim.kz.",
+        "keywords": ["магазин", "заказы", "каталог", "бизнес", "остатки", "продавец"],
+        "releaseNotes": "Первая версия приложения владельца: безопасный вход, список заказов, push-уведомления, переход к заказу и сканер штрихкодов.",
+        "promoText": "Заказы Dukenim и важные действия владельца всегда под рукой.",
+        "marketingUrl": "https://www.dukenim.kz",
+        "supportUrl": "https://www.dukenim.kz/support",
+        "privacyPolicyUrl": "https://www.dukenim.kz/legal/privacy"
+      },
+      "en-US": {
+        "title": "Dukenim for Business",
+        "subtitle": "Store orders and catalog",
+        "description": "The owner app for Dukenim. View orders for your stores, track their status, enable push notifications, and scan product barcodes. Sign in with the same secure account you use in the Dukenim web dashboard. Catalog, team, delivery, and payment settings remain available in the full dashboard at dukenim.kz.",
+        "keywords": ["store", "orders", "catalog", "business", "inventory", "merchant"],
+        "releaseNotes": "First owner release with secure sign-in, order list, push notifications, order deep links, and barcode scanning.",
+        "promoText": "Dukenim orders and essential owner tools in one place.",
+        "marketingUrl": "https://www.dukenim.kz",
+        "supportUrl": "https://www.dukenim.kz/support",
+        "privacyPolicyUrl": "https://www.dukenim.kz/legal/privacy"
+      }
+    },
+    "release": {
+      "automaticRelease": false
+    }
+  }
+}

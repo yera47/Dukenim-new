@@ -4,11 +4,11 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database, Json } from "@/types/database";
 import type { StaffPermissions } from "./staff-permissions";
-export type StaffAccess = {id:string;tenant_id:string;user_id:string;title:string;permissions:StaffPermissions;active:boolean;notify_orders:boolean;revision:number};
+export type StaffAccess = {id:string;tenant_id:string;user_id:string;title:string;permissions:StaffPermissions;active:boolean;notify_orders:boolean;revision:number;created_at:string};
 type StaffDatabase = {public: Omit<Database["public"],"Tables"|"Functions"> & {
  Tables: Database["public"]["Tables"] & {
   staff_access:{Row:StaffAccess;Insert:Partial<StaffAccess>;Update:Partial<StaffAccess>;Relationships:[]};
-  staff_invitations:{Row:{id:string;tenant_id:string;email:string;title:string;permissions:Json;token_hash:string;expires_at:string;accepted_at:string|null;revoked_at:string|null;created_at:string};Insert:never;Update:never;Relationships:[]};
+  staff_invitations:{Row:{id:string;tenant_id:string;email:string;title:string;permissions:Json;token_hash:string;expires_at:string;accepted_at:string|null;accepted_by:string|null;revoked_at:string|null;created_at:string};Insert:never;Update:never;Relationships:[]};
  };
  Functions: Database["public"]["Functions"] & {
   manage_staff:{Args:{p_tenant:string;p_action:string;p_data:Json};Returns:string};

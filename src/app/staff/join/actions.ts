@@ -3,10 +3,12 @@ import { createHash } from "node:crypto";
 import { createStaffAdminClient, createStaffClient } from "@/lib/staff-server";
 import { redirect } from "next/navigation";
 import {z} from "zod";
+import {isStaffPasswordAllowed,STAFF_INVITATION_TOKEN,STAFF_PASSWORD_MIN_LENGTH} from "@/lib/staff-invitation";
 export async function registerStaff(_: {error?:string;success?:string},form:FormData):Promise<{error?:string;success?:string}>{
- const input=z.object({email:z.string().trim().email().max(254),password:z.string().min(10).max(128),token:z.string().regex(/^[a-f0-9]{64}$/)}).safeParse({email:form.get("email"),password:form.get("password"),token:form.get("token")});
- if(!input.success)return {error:"Введите email приглашения и пароль не короче 10 символов."};
+ const input=z.object({email:z.string().trim().email().max(254),password:z.string().min(STAFF_PASSWORD_MIN_LENGTH).max(128),token:z.string().regex(STAFF_INVITATION_TOKEN)}).safeParse({email:form.get("email"),password:form.get("password"),token:form.get("token")});
+ if(!input.success)return {error:`Введите email приглашения и пароль не короче ${STAFF_PASSWORD_MIN_LENGTH} символов.`};
  const email=input.data.email.toLowerCase();
+ if(!isStaffPasswordAllowed(input.data.password,email))return {error:"Выберите более надёжную длинную фразу без email, названия Dukenim и распространённых комбинаций."};
  const hash=createHash("sha256").update(input.data.token).digest("hex");
  const admin=createStaffAdminClient();
  const invitation=await admin.from("staff_invitations").select("id,email,expires_at,accepted_at,revoked_at").eq("token_hash",hash).maybeSingle();
@@ -22,7 +24,7 @@ export async function registerStaff(_: {error?:string;success?:string},form:Form
  redirect("/staff");
 }
 export async function acceptInvitation(_: {error?:string}, form:FormData):Promise<{error?:string}>{
- const token=String(form.get("token")??"");if(!/^[a-f0-9]{64}$/.test(token))return {error:"Ссылка приглашения неполная. Попросите владельца прислать новую."};
+ const token=String(form.get("token")??"");if(!STAFF_INVITATION_TOKEN.test(token))return {error:"Ссылка приглашения неполная. Попросите владельца прислать новую."};
  const client=await createStaffClient();const {data:{user}}=await client.auth.getUser();
  if(!user)return {error:"Сначала войдите в аккаунт с email из приглашения, затем откройте эту ссылку снова."};
  const result=await client.rpc("accept_staff_invitation",{p_hash:createHash("sha256").update(token).digest("hex")});

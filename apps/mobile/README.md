@@ -1,30 +1,27 @@
 # Dukenim Mobile
 
-Native iOS/Android client for Dukenim, sharing Supabase Auth and RLS with the web platform.
+Native iPhone owner app for Dukenim. It uses the same Supabase Auth, tenant membership and RLS rules as the web platform.
 
 ## Local setup
 
 1. Copy `.env.example` to `.env.local` and provide only the public Supabase URL and publishable key.
 2. Run `pnpm start` from this directory.
-3. Use Expo Go for device development. Store builds and APNs need a linked Expo/EAS project and Apple signing setup.
+3. Use Expo Go for development. App Store builds, APNs and TestFlight use the linked EAS project.
 
-The app never accepts a Supabase service-role key, Polar credential, or other server secret.
+The app never accepts a Supabase service-role key, Apple password, Polar credential or another server secret.
 
 ## Current scope
 
-Updated 2026-09-08: EAS project linked; Apple distribution certificate and active App Store provisioning profile created. No signed build or TestFlight upload verified. Production public environment and physical-device QA remain required. Expo Go does not replace signed-build/APNs validation.
-
-- Email/password sign-in with the existing Supabase account.
-- Owner/superadmin role recognition; root actions stay server-audited.
+- Email/password sign-in with the existing Dukenim account.
+- Owner and superadmin role recognition.
+- Native home, RLS-scoped order list and order detail.
 - Camera barcode scanning.
-- Local notification permission and Android notification channel setup.
+- Push-token registration, rotation handling and order deep links.
+- Foreground notification banners, list entries and sound.
+- Settings with notification control and links to the web cabinet, support, privacy policy and public offer.
 
-Push token registration and server outbox/delivery code exist, but production migrations/scheduling and delivery E2E are not confirmed. Widgets and native Apple/Google OAuth remain incomplete.
+The signed production app uses bundle ID `kz.dukenim.app`. Build 7 uses the exact approved D geometry with only its lower threshold coloured blue and keeps the compact in-app mark at its original visual size. EAS Metadata is kept in `store.config.json`, and `.eas/workflows/submit-latest-ios.yml` can upload the latest production build after an explicit workflow approval. The upload still requires a one-time App Store Connect authentication or API key.
 
-## Required order notifications (not yet delivered)
+## Release verification
 
-- Distinguish delivery, paid pickup and in-store reservation; payment status comes from verified backend events, never notification copy.
-- Show order/reference number and fulfilment type; sensitive customer contact/address stays inside the authenticated app, not on the lock screen.
-- Tap opens the correct order/reservation, rechecking current membership/permissions. Logout, revoked membership and disabled tokens must stop delivery.
-- Notify from committed server events; deduplicate retries. Reservation confirmation/expiry/cancellation requires actual reservation lifecycle first.
-- Check foreground/background/terminated states, denied permission, expired token, duplicate event and cross-tenant access on physical devices before release.
+Before App Review, install through TestFlight on a physical iPhone and verify sign-in, tenant isolation, order list/detail, notification delivery in foreground/background/terminated states, deep links, camera permission and scanner behavior. App privacy answers, review contact details, screenshots and a review demo account must use approved owner/business information.

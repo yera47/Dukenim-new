@@ -1,0 +1,30 @@
+name: Submit latest signed iOS build
+
+jobs:
+  latest_ios:
+    name: Find latest production build
+    type: get-build
+    params:
+      platform: ios
+      profile: production
+      distribution: store
+      wait_for_in_progress: true
+
+  confirm:
+    name: Confirm TestFlight upload
+    type: require-approval
+    needs: [latest_ios]
+
+  testflight:
+    name: Upload to TestFlight
+    type: testflight
+    needs: [latest_ios, confirm]
+    params:
+      build_id: ${{ needs.latest_ios.outputs.build_id }}
+      profile: production
+      changelog: |
+        Первая версия приложения владельца Dukenim:
+        - безопасный вход;
+        - список и карточка заказов;
+        - push-уведомления и переход к заказу;
+        - сканер штрихкодов.
