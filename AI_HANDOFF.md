@@ -1408,3 +1408,21 @@ Where to verify: production `/admin/integrations#kaspi-remote`, a live storefron
 - A disposable production owner completed real registration/onboarding. Its finished-catalog AI Studio passed at 390×844 and 1440×844 with three quick actions, the fixed composer, the `+` menu and zero document scroll/overflow. The exact QA user, tenant, local auth state and possible Storage remnants were removed; verified remaining QA counts are 0 users, 0 tenants and 0 objects.
 - Azure was not called or changed. No existing store, user, order, payment or production file was changed.
 - External limits remain physical-phone measurement, approved legal identity details and live SMS/payment/CRM provider credentials.
+
+## 2026-09-23 — AI Studio, publication and employee production acceptance
+
+Result: commits `9d71e42`, `56c1805` and `5ef387a` are pushed to `main`; Vercel deployment `dpl_BcXFxhkPUTJVDvdtoAwizNooSdDP` is Ready/current on `www.dukenim.kz`. AI Studio now uses the owner-supplied bounded mobile structure: one light conversation, three contextual quick tasks, fixed composer, full-width light navigation and a compact publication dock above the composer. The nested storefront iframe and long ready-state settings stack were removed. Catalog pages keep an 80 px mobile reserve; the first product variant starts with stock 1 and quantity inputs show `шт.`.
+
+Implemented and verified: a disposable production owner completed the real onboarding/catalog route, created `QA завтрак` for 1,500 ₸ with one stock movement, received the ready publication dock and published. Database state changed to `catalog_published=true`; the resulting `/s/...` route returned HTTP 200 and contained the product. Production AI Studio passed 390×844 and 1440×844 with three quick actions, zero document scroll and zero overflow. The public audit opened 31 routes at 390/1440 px: 62/62 HTTP 200, zero page errors and zero overflow.
+
+Employee registration was failing because public Supabase email sign-up was rejected in Production. A valid invitation now hashes and verifies its token, email, expiry and state server-side, creates a confirmed Auth account through the service role, signs it in and atomically accepts scoped access. A disposable owner created an invitation; a separate browser registered, landed on `/staff`, saw `QA менеджер` and `Заказы`, while the owner team page showed the member. Database inspection confirmed the verified user and active manager permissions. Exact guarded cleanup removed the three disposable Auth users, tenant, 13 test invitations and two staff rows; follow-up counts are all zero, with zero matching Storage objects.
+
+Checks: 96 test files / 484 tests pass, four live-AI tests skipped; `npx tsc --noEmit`, targeted ESLint and the 78-route production build pass. Deployment aliases include `www.dukenim.kz` and `dukenim.kz`. Existing unrelated dirty docs/output files were not staged or changed by this work.
+
+Azure: unchanged; no model deployment, key, quota, inference or cost change.
+
+Not completed: real Polar card collection and a signed webhook still require merchant/business/payout activation and live provider credentials. Physical iPhone performance remains unmeasured; the verified phone layout used a 390×844 browser viewport. SMS remains deferred. No legacy customer/store/order cleanup was attempted.
+
+Required owner action: activate Polar live merchant payments, create live products/webhook and perform one real charge before enabling `POLAR_LIVE_CHECKOUT_ENABLED=true`. No owner action is required for AI Studio publication or staff invitations.
+
+Where to verify: production `/admin/ai-studio`, `/admin/catalog/new`, `/admin/team`, a generated `/staff/join?token=...`, `/staff`, and `/admin/plan`. Detailed checklist: `docs/ACCEPTANCE_20260923_AI_STUDIO_RELEASE.md`.
