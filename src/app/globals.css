@@ -9,7 +9,7 @@
   color-scheme:light;
 }
 *{box-sizing:border-box}html{max-width:100%;overflow-x:clip;scroll-behavior:smooth}body{max-width:100%;margin:0;overflow-x:clip;background:var(--bg);color:var(--ink);font-family:var(--font-manrope),Arial,sans-serif;text-rendering:optimizeLegibility}
-h1,h2,h3,h4,h5,h6{font-family:var(--font-manrope),Arial,sans-serif;letter-spacing:-.03em;text-wrap:balance}p{text-wrap:pretty}button,a,input,textarea,select{font:inherit}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:not-allowed}
+h1,h2,h3,h4,h5,h6{font-family:var(--font-manrope),Arial,sans-serif;letter-spacing:-.03em;text-wrap:balance;overflow-wrap:anywhere}p{text-wrap:pretty}button,a,input,textarea,select{font:inherit}a{color:inherit;text-decoration:none}button{cursor:pointer}button:disabled{cursor:not-allowed}
 :focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent);outline-offset:3px}::selection{background:var(--accent-dark);color:white}
 .container{width:min(1220px,calc(100% - 48px));margin-inline:auto}.card{border:0;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-sm)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 19px;border-radius:var(--r-btn);border:1px solid transparent;font-weight:780;white-space:nowrap;transition:transform 180ms cubic-bezier(.2,.8,.2,1),background-color 180ms,border-color 180ms,color 180ms,box-shadow 180ms}
@@ -386,8 +386,9 @@ section.bg-\[\#a24a34\] h2{font-size:clamp(2.5rem,5vw,4.7rem);line-height:1.02}
 /* AI Studio keeps the conversation in a fixed chat shell; the catalog wizard still scrolls normally. */
 body:has(.ai-studio-page){overflow:hidden}
 @media(max-width:767px){
-  .admin-frame:has(.ai-studio-page) .admin-mobile-nav{background:#fff;color:#667085;border-color:#e5e7eb;box-shadow:0 4px 24px #11182714}
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav{right:0;bottom:0;left:0;max-width:none;margin:0;padding:5px 8px max(5px,env(safe-area-inset-bottom));border-width:1px 0 0;border-radius:0;background:#fff;color:#667085;border-color:#e5e7eb;box-shadow:0 -4px 24px #1118270d}
   .admin-frame:has(.ai-studio-page) .admin-mobile-nav>a,
-  .admin-frame:has(.ai-studio-page) .admin-mobile-nav>button{color:#667085}
+  .admin-frame:has(.ai-studio-page) .admin-mobile-nav>button{min-height:57px;color:#667085}
   .admin-frame:has(.ai-studio-page) .admin-mobile-nav .is-active{background:#e8f3ff;color:#173b57;box-shadow:none}
 }
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}

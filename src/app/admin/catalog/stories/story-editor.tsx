@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useTransition } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Images } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -66,7 +67,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
     {stories.length > 0 && <section className="space-y-3" aria-label="Сохранённые истории">
       <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Ваши истории</h2><button className="btn btn-primary" onClick={() => select(null)}>+ Новая история</button></div>
       {stories.map(item => <button type="button" key={item.id} onClick={() => select(item)} className={`flex w-full items-center gap-4 rounded-2xl border bg-white p-3 text-left ${editing?.id === item.id ? "border-[var(--accent)]" : "border-[var(--line)]"}`}>
-        {item.media_type === "image" ? <img src={item.url} alt="" className="h-24 w-20 rounded-xl object-cover" /> : <video src={item.url} muted preload="metadata" className="h-24 w-20 rounded-xl object-cover" />}
+        {item.media_type === "image" ? <Image unoptimized width={160} height={192} src={item.url} alt="" className="h-24 w-20 rounded-xl object-cover" /> : <video src={item.url} muted preload="metadata" className="h-24 w-20 rounded-xl object-cover" />}
         <span className="min-w-0"><b className="block truncate">{item.title}</b><small className="mt-1 block text-[var(--ink-60)]">{item.status === "published" ? "На витрине" : "Черновик"}{item.product_id ? " · ссылка на блюдо" : ""}</small></span>
         <span className="ml-auto text-sm font-bold text-[var(--accent)]">Изменить</span>
       </button>)}
@@ -76,7 +77,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
       <p className="muted mt-1 text-sm">Покажите блюдо, акцию или атмосферу кафе. Опубликуйте, когда всё готово.</p>
       <div className="mt-6 space-y-5">
         <div><span className="block text-sm font-bold">1. Фото или видео</span><label className="mt-2 flex min-h-14 cursor-pointer items-center gap-3 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-4 text-sm font-bold text-[var(--accent)]"><Images size={20}/>{file ? file.name : editing ? "Заменить фото или видео" : "Добавить фото или видео"}<input ref={fileInput} type="file" accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" onChange={event => setFile(event.target.files?.[0] ?? null)} className="sr-only" /></label></div>
-        {(filePreview || editing) && <div className="overflow-hidden rounded-2xl bg-[#14171f]">{filePreview ? file?.type.startsWith("video/") ? <video src={filePreview} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <img src={filePreview} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" /> : editing?.media_type === "video" ? <video src={editing.url} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <img src={editing?.url} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" />}</div>}
+        {(filePreview || editing) && <div className="overflow-hidden rounded-2xl bg-[#14171f]">{filePreview ? file?.type.startsWith("video/") ? <video src={filePreview} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <Image unoptimized width={720} height={960} src={filePreview} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" /> : editing?.media_type === "video" ? <video src={editing.url} controls className="aspect-[9/12] max-h-72 w-full object-contain" /> : <Image unoptimized width={720} height={960} src={editing!.url} alt="Предпросмотр" className="aspect-[9/12] max-h-72 w-full object-contain" />}</div>}
         <p className="muted text-xs">Вертикальный кадр 9:16 выглядит лучше. Фото JPG/PNG/WebP или видео MP4/WebM, до 20 МБ.</p>
         <label className="block text-sm font-bold">2. Заголовок<input className="input mt-2" value={title} onChange={event => setTitle(event.target.value)} maxLength={80} placeholder="Например: Что готовим к обеду" /></label>
         <label className="block text-sm font-bold">Короткий текст · необязательно<textarea className="input mt-2 min-h-24 py-3" value={caption} onChange={event => setCaption(event.target.value)} maxLength={300} placeholder="Пара слов о блюде или предложении" /></label>

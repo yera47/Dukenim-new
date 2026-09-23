@@ -1396,3 +1396,13 @@ Not completed: no real Kaspi transfer was made and Dukenim still does not inspec
 Required owner action: paste the real merchant Kaspi link. For the first live acceptance order, pay a small exact amount and press the owner confirmation only after Kaspi Pay shows the receipt.
 
 Where to verify: production `/admin/integrations#kaspi-remote`, a live storefront checkout and My Orders, then production `/admin/orders`. Detailed evidence: `docs/ACCEPTANCE_20260922_AI_STUDIO_KASPI.md`.
+# 2026-09-23 — Site and AI Studio visual audit (release verification in progress)
+
+- Rebuilt the production `StudioConversation` presentation against the owner-supplied render: subtle grey single workspace, three status-aware quick actions, fixed 56 px ChatGPT-style composer, advanced logo/banner/support actions under `+`, outside-click/Escape close and full-width light mobile navigation on AI Studio.
+- Fixed a verified 390 px horizontal-overflow defect in long legal headings and the cookie action row. Added reduced-motion handling for global smooth scrolling and the Studio loading indicator.
+- Replaced three raw story-editor images with sized lazy `next/image` usage; the production build now has no `no-img-element` warnings.
+- Local production browser audit opened 31 public routes at 390 and 1440 px (62 page renders): all HTTP 200, zero page errors and zero horizontal overflow. Food assortment → menu → add → cart passed at both widths.
+- Visual evidence: `output/audit-ai-studio-390-20260923.png`, `output/audit-ai-studio-menu-390-20260923.png`, `output/audit-ai-studio-1440-20260923.png`. Detailed checklist: `docs/AUDIT_20260923_SITE_AI_STUDIO.md`.
+- Checks: 482 tests passed, four live-AI tests intentionally skipped; production build generated 78 pages; sequential `npx tsc --noEmit` passed. The earlier concurrent `tsc` attempt collided with Next clearing `.next/types`; it was rerun successfully after build and was not a source failure.
+- Azure was not called or changed. No store, user, order, payment or production data was mutated.
+- Remaining action: publish, then verify authenticated production AI Studio at 390/1440 px and rerun the network audit. External limits remain physical-phone measurement, approved legal identity details and live SMS/payment/CRM provider credentials.

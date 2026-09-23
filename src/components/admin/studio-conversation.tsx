@@ -18,8 +18,17 @@ export function StudioConversation({enabled,onTask,children,onBanner,onAttachmen
   const [menuOpen,setMenuOpen]=useState(false);
   const scroller=useRef<HTMLDivElement>(null);
   const textarea=useRef<HTMLTextAreaElement>(null);
+  const composerDock=useRef<HTMLDivElement>(null);
   useEffect(()=>{const node=scroller.current;if(node&&(turns.length>0||pending))node.scrollTo({top:node.scrollHeight,behavior:"smooth"});},[turns,pending,children]);
   useEffect(()=>{const node=textarea.current;if(node){node.style.height="24px";node.style.height=`${Math.min(node.scrollHeight,144)}px`;}},[message]);
+  useEffect(()=>{
+    if(!menuOpen)return;
+    const close=(event:PointerEvent)=>{if(!composerDock.current?.contains(event.target as Node))setMenuOpen(false);};
+    const escape=(event:KeyboardEvent)=>{if(event.key==="Escape")setMenuOpen(false);};
+    document.addEventListener("pointerdown",close);
+    document.addEventListener("keydown",escape);
+    return()=>{document.removeEventListener("pointerdown",close);document.removeEventListener("keydown",escape);};
+  },[menuOpen]);
   useEffect(()=>{
     const controller=new AbortController();
     void fetch(endpoint,{cache:"no-store",signal:controller.signal}).then(async response=>{
@@ -51,10 +60,10 @@ export function StudioConversation({enabled,onTask,children,onBanner,onAttachmen
   return <section className={styles.workspace} aria-label="Диалог с AI Studio">
     <div ref={scroller} className={styles.chatScroll} aria-live="polite" aria-busy={loading||pending}>
      <div className={styles.chatContent}>
-      {loading?<p role="status">Загружаю разговор…</p>:turns.length===0?<div className={styles.greeting}><h1>Здравствуйте!</h1><h2>Я помощник вашего магазина.</h2><p>{stageHint??"Помогу настроить магазин, оформить бренд, добавить товары и привлечь покупателей. С чего начнём?"}</p><div className={styles.quickTasks}>
-        {builderStage?<button type="button" onClick={()=>scroller.current?.scrollTo({top:scroller.current.scrollHeight,behavior:"smooth"})}><span className={styles.taskIcon}><Store size={23}/></span><span><b>{builderStage==="setup"?"Создать магазин":"Добавить первый товар"}</b><small>{builderStage==="setup"?"Ответьте на короткие вопросы по одному шагу.":"Название, фото и цену добавите в удобном мастере."}</small></span><ChevronRight size={21}/></button>:!staff&&<button type="button" onClick={()=>revealAttachment("photo")}><span className={styles.taskIcon}><ImagePlus size={23}/></span><span><b>Добавить логотип</b><small>Загрузите логотип и настройте цвета бренда.</small></span>{brandDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</button>}
-        <Link href="/admin/settings/delivery"><span className={styles.taskIcon}><Truck size={23}/></span><span><b>Настроить доставку</b><small>Укажите способы доставки, зоны и условия.</small></span>{deliveryDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</Link>
-        <Link href="/store-preview" target="_blank"><span className={styles.taskIcon}><Store size={23}/></span><span><b>Посмотреть магазин</b><small>Проверьте витрину глазами покупателя.</small></span><ChevronRight size={21}/></Link>
+      {loading?<div role="status" className={styles.loadingState}><span aria-hidden="true"/><span>Загружаю разговор…</span></div>:turns.length===0?<div className={styles.greeting}><h1>Здравствуйте!</h1><h2>Я помощник вашего магазина.</h2><p>{stageHint??"Помогу настроить магазин, оформить бренд, добавить товары и привлечь покупателей. С чего начнём?"}</p><div className={styles.quickTasks}>
+        {builderStage?<button type="button" onClick={()=>scroller.current?.scrollTo({top:scroller.current.scrollHeight,behavior:"smooth"})}><span className={styles.taskIcon}><Store size={23}/></span><span><b>{builderStage==="setup"?"Создать магазин":"Добавить первый товар"}</b><small>{builderStage==="setup"?"Ответьте на короткие вопросы по одному шагу.":"Название, фото и цену добавите в удобном мастере."}</small><em>Сейчас</em></span><ChevronRight size={21}/></button>:!staff&&<button type="button" onClick={()=>revealAttachment("photo")}><span className={styles.taskIcon}><ImagePlus size={23}/></span><span><b>Добавить логотип</b><small>Загрузите логотип и настройте цвета бренда.</small><em>{brandDone?"Готово":"Можно позже"}</em></span>{brandDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</button>}
+        <Link href="/admin/settings/delivery"><span className={styles.taskIcon}><Truck size={23}/></span><span><b>Настроить доставку</b><small>Укажите способы доставки, зоны и условия.</small><em>{deliveryDone?"Готово":"Нужно настроить"}</em></span>{deliveryDone?<Check size={21} className="text-emerald-600" aria-label="Готово"/>:<ChevronRight size={21}/>}</Link>
+        <Link href="/store-preview" target="_blank"><span className={styles.taskIcon}><Store size={23}/></span><span><b>Посмотреть магазин</b><small>Проверьте витрину глазами покупателя.</small><em>Предпросмотр</em></span><ChevronRight size={21}/></Link>
       </div><p className={styles.disclaimer}>Предложения не публикуются без вашего решения.</p></div>:null}
       {children && <div className={styles.steps} aria-label="Действия AI Studio">{children}</div>}
       {stageHint&&turns.length>1&&<details className="text-sm"><summary className="cursor-pointer text-neutral-500">Ранние сообщения · {turns.length-1}</summary>{turns.slice(0,-1).map(turn=><article key={turn.id} className="mt-3 space-y-2"><p className="font-medium">{turn.message}</p><p>{turn.response.reply}</p></article>)}</details>}
@@ -71,16 +80,16 @@ export function StudioConversation({enabled,onTask,children,onBanner,onAttachmen
       {error&&<p role="alert" className="text-sm text-red-700">{error}</p>}
      </div>
     </div>
-    <div className={styles.composerDock}>
-    {menuOpen&&<div className={styles.attachmentMenu} role="menu" aria-label="Добавить материал"><button type="button" role="menuitem" onClick={()=>revealAttachment("photo")}><ImagePlus size={18}/>Фото / логотип</button><button type="button" role="menuitem" onClick={()=>revealAttachment("file")}><FileText size={18}/>Файл PDF</button><button type="button" role="menuitem" onClick={()=>revealAttachment("camera")}><Camera size={18}/>Камера</button></div>}
+    <div ref={composerDock} className={styles.composerDock}>
+    {menuOpen&&<div id="studio-attachment-menu" className={styles.attachmentMenu} aria-label="Добавить материал"><button type="button" onClick={()=>revealAttachment("photo")}><ImagePlus size={18}/>Фото / логотип</button><button type="button" onClick={()=>revealAttachment("file")}><FileText size={18}/>Файл PDF</button><button type="button" onClick={()=>revealAttachment("camera")}><Camera size={18}/>Камера</button><div className={styles.menuDivider} aria-hidden="true"/><label className={styles.menuToggle}><input type="checkbox" checked={includeBrandLogo} disabled={pending} onChange={event=>setIncludeBrandLogo(event.target.checked)}/><span><b>Учесть логотип</b><small>Использовать фирменный стиль в ответе</small></span></label>{onBanner&&<button type="button" disabled={!enabled||pending||message.trim().length<8} onClick={()=>{onBanner(message.trim());setMenuOpen(false);}}>Создать баннер из сообщения</button>}<Link href="/admin/requests?source=ai-studio">Написать в поддержку</Link></div>}
     <form onSubmit={event=>{event.preventDefault();void send();}} className={styles.composer}>
       <label htmlFor="studio-conversation" className="sr-only">Сообщение AI Studio</label>
-      <button type="button" className={styles.iconButton} onClick={()=>setMenuOpen(value=>!value)} aria-label={menuOpen?"Закрыть вложения":"Добавить файл"} aria-expanded={menuOpen} disabled={!onAttachment}>{menuOpen?<X size={22}/>:<Plus size={24}/>}</button>
-      <textarea ref={textarea} id="studio-conversation" rows={1} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} onKeyDown={event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}} placeholder="Сообщение..."/>
+      <button type="button" className={styles.iconButton} onClick={()=>setMenuOpen(value=>!value)} aria-label={menuOpen?"Закрыть вложения":"Добавить файл"} aria-expanded={menuOpen} aria-controls="studio-attachment-menu" disabled={!onAttachment}>{menuOpen?<X size={22}/>:<Plus size={24}/>}</button>
+      <textarea ref={textarea} id="studio-conversation" rows={1} value={message} maxLength={800} disabled={pending} onChange={event=>setMessage(event.target.value)} onKeyDown={event=>{if(event.key==="Enter"&&!event.shiftKey&&!event.nativeEvent.isComposing){event.preventDefault();void send();}}} placeholder="Сообщение…"/>
       <button type="button" className={styles.iconButton} aria-label="Голосовой ввод недоступен в этом браузере" title="Голосовой ввод будет доступен после подключения" disabled><Mic size={21}/></button>
       <button type="submit" className={styles.sendButton} aria-label="Отправить сообщение" disabled={!enabled||loading||pending||message.trim().length<2}><ArrowUp size={21}/></button>
     </form>
-    <div className={styles.composerOptions}><label><input type="checkbox" checked={includeBrandLogo} disabled={pending} onChange={event=>setIncludeBrandLogo(event.target.checked)}/>Учесть логотип</label>{onBanner&&<button type="button" disabled={!enabled||pending||message.trim().length<8} onClick={()=>onBanner(message.trim())}>Создать баннер по сообщению</button>}<Link href="/admin/requests?source=ai-studio">Написать в поддержку</Link><span className="sr-only">Предложения не публикуются без вашего решения</span></div>
+    <span className="sr-only">Предложения не публикуются без вашего решения</span>
     </div>
   </section>;
 }

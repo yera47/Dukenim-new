@@ -22,6 +22,8 @@
 
 This is an append-only decision log. New entries must reflect an explicit owner decision or an unavoidable verified constraint.
 
+- 2026-09-23: AI Studio должен следовать приложенному владельцем рендеру: компактная шапка, единая светлая рабочая область, отдельная прокрутка разговора, не больше трёх быстрых действий, закреплённый снизу ChatGPT-подобный composer и светлая нижняя навигация. Дополнительные действия сохраняются под кнопкой `+`; визуальное упрощение не должно удалять загрузку материалов, баннеры, поддержку или явное подтверждение применения AI-результата.
+
 - 2026-09-08: Owner requests native mobile notifications for incoming delivery orders, prepaid pickup and reservations, identifying the type and linking to the item. This is required work, not a claim that push or all fulfilment modes are already live. Keep customer-sensitive information out of default lock-screen text and recheck permissions on open.
 
 - 2026-09-08: Owner requests three independently configurable customer options during AI-led setup and later editing: delivery, prepaid pickup, and unpaid in-store reservation. Prefer purchase in presentation; explain reservation tradeoffs to merchant. Buyer must still see truthful payment/hold-expiry terms before confirmation. Prepaid pickup requires a verified tenant payment integration; never mark unpaid orders paid. Reservation needs actual inventory holds, expiry/release and cancellation, not merely a renamed delivery method. Owner requests no-cost Azure option and no paid upgrade.

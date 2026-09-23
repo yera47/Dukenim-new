@@ -1,20 +1,20 @@
-.workspace{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;background:#fff;color:#111827;overflow:hidden}
+.workspace{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;background:#f8f9fb;color:#111827;overflow:hidden}
 .chatScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
-.chatContent{width:min(100%,840px);margin:0 auto;padding:clamp(24px,5vw,48px) clamp(16px,4vw,32px) 40px;display:grid;gap:24px}
+.chatContent{width:min(100%,860px);margin:0 auto;padding:clamp(24px,5vw,48px) clamp(16px,4vw,32px) 42px;display:grid;gap:24px}
 .greeting{padding-top:clamp(12px,5vh,76px)}
 .greeting h1{font-size:clamp(29px,3vw,39px);font-weight:700;letter-spacing:-.045em;line-height:1.15}
 .greeting h2{font-size:clamp(24px,2.5vw,33px);font-weight:600;line-height:1.2;color:#667085;letter-spacing:-.04em;margin-top:5px}
 .greeting>p{max-width:650px;margin-top:20px;color:#667085;font-size:clamp(15px,1.6vw,18px);line-height:1.55}
 .quickTasks{display:grid;gap:12px;margin-top:34px}
 .disclaimer{margin-top:16px;color:#8992a3;font-size:12px}
-.quickTasks>a,.quickTasks>button{display:grid;grid-template-columns:48px minmax(0,1fr) 22px;align-items:center;gap:16px;width:100%;min-height:92px;text-align:left;padding:16px 18px;border:1px solid #e5e7eb;border-radius:20px;background:#fff;color:#111827}
-.quickTasks>a:hover,.quickTasks>button:hover{border-color:#a8bed9;background:#fbfdff}
-.quickTasks>a:focus-visible,.quickTasks>button:focus-visible,.composer button:focus-visible,.composerOptions a:focus-visible,.attachmentMenu button:focus-visible{outline:2px solid #173b57;outline-offset:2px}
-.quickTasks b{display:block;font-size:16px;font-weight:650;line-height:1.3}.quickTasks small{display:block;margin-top:4px;color:#667085;font-size:14px;line-height:1.4}
+.quickTasks>a,.quickTasks>button{display:grid;grid-template-columns:48px minmax(0,1fr) 22px;align-items:center;gap:16px;width:100%;min-height:92px;text-align:left;padding:16px 18px;border:1px solid #e2e6ec;border-radius:20px;background:#fff;color:#111827;box-shadow:0 1px 2px #11182708}
+.quickTasks>a:hover,.quickTasks>button:hover{border-color:#a8bed9;background:#fbfdff;box-shadow:0 8px 24px #173b570d;transform:translateY(-1px)}
+.quickTasks>a:focus-visible,.quickTasks>button:focus-visible,.composer button:focus-visible,.attachmentMenu button:focus-visible,.attachmentMenu a:focus-visible{outline:2px solid #173b57;outline-offset:2px}
+.quickTasks b{display:block;font-size:16px;font-weight:650;line-height:1.3}.quickTasks small{display:block;margin-top:4px;color:#667085;font-size:14px;line-height:1.4}.quickTasks em{display:inline-flex;margin-top:9px;border-radius:999px;background:#f1f4f7;padding:3px 8px;color:#667085;font-size:10px;font-style:normal;font-weight:700}
 .quickTasks>a>svg,.quickTasks>button>svg{color:#667085}.taskIcon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#eef5ff;color:#235ca1}.quickTasks>a:nth-child(2) .taskIcon{background:#ecfaf4;color:#178767}
 .userMessage{margin-left:auto;max-width:90%;width:fit-content;border-radius:18px 18px 4px 18px;background:#f2f4f7;color:#111827;padding:12px 16px;overflow-wrap:anywhere}
 .thinking{color:#667085;font-size:14px}.steps{display:grid;gap:16px;min-width:0}.steps:empty{display:none}
-.composerDock{position:relative;z-index:2;flex:none;width:min(100%,840px);margin:0 auto;padding:12px clamp(14px,4vw,32px) max(14px,env(safe-area-inset-bottom));background:#fff}
+.composerDock{position:relative;z-index:2;flex:none;width:min(100%,860px);margin:0 auto;padding:12px clamp(14px,4vw,32px) max(14px,env(safe-area-inset-bottom));background:linear-gradient(180deg,#f8f9fb00,#f8f9fb 28%)}
 .composer{display:flex;align-items:flex-end;gap:6px;min-height:56px;padding:5px 7px;border:1px solid #d8dde5;border-radius:28px;background:#fff;box-shadow:0 2px 8px #1118270a}
 .composer:focus-within{border-color:#8fa9c9;box-shadow:0 0 0 3px #cfe4fb66}
 .composer textarea{flex:1;min-width:0;height:24px;max-height:144px;overflow-y:auto;resize:none;outline:0;border:0;background:transparent;padding:10px 0;font-size:16px;line-height:24px;color:#111827}
@@ -22,7 +22,9 @@
 .iconButton,.sendButton{display:grid;place-items:center;flex:none;width:44px;height:44px;border:0;border-radius:50%}
 .iconButton{color:#111827;background:transparent}.iconButton:hover:not(:disabled){background:#f2f4f7}.iconButton:disabled{color:#aab1bd}
 .sendButton{background:#111827;color:#fff}.sendButton:disabled{background:#d5d9df;color:#fff}
-.attachmentMenu{position:absolute;bottom:100%;left:clamp(14px,4vw,32px);display:grid;gap:3px;min-width:190px;padding:7px;border:1px solid #e5e7eb;border-radius:17px;background:#fff;box-shadow:0 12px 32px #1118271a}
-.attachmentMenu button{display:flex;align-items:center;gap:12px;padding:11px;border-radius:10px;text-align:left;font-size:14px}.attachmentMenu button:hover{background:#f2f4f7}
-.composerOptions{display:flex;align-items:center;gap:14px;overflow-x:auto;white-space:nowrap;margin-top:7px;padding:0 7px;color:#667085;font-size:11px}.composerOptions label{display:flex;align-items:center;gap:5px}.composerOptions button,.composerOptions a{text-decoration:underline;text-underline-offset:2px}.composerOptions button:disabled{opacity:.5}
-@media(max-width:600px){.chatContent{padding-top:24px}.greeting{padding-top:clamp(12px,5vh,46px)}.quickTasks{margin-top:27px}.quickTasks>a,.quickTasks>button{min-height:82px;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;padding:12px}.taskIcon{width:42px;height:42px}.quickTasks b{font-size:15px}.quickTasks small{font-size:13px}.composerDock{padding-bottom:10px}.composerOptions{flex-wrap:wrap;gap:6px 12px;overflow:visible;white-space:normal;font-size:11px}}
+.attachmentMenu{position:absolute;bottom:calc(100% - 4px);left:clamp(14px,4vw,32px);display:grid;gap:3px;width:min(290px,calc(100% - 28px));padding:7px;border:1px solid #e5e7eb;border-radius:17px;background:#fff;box-shadow:0 18px 44px #11182724}
+.attachmentMenu button,.attachmentMenu>a{display:flex;align-items:center;gap:12px;padding:11px;border-radius:10px;text-align:left;font-size:14px}.attachmentMenu button:hover,.attachmentMenu>a:hover{background:#f2f4f7}.attachmentMenu button:disabled{cursor:not-allowed;opacity:.42}.menuDivider{height:1px;margin:4px;background:#e5e7eb}.menuToggle{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border-radius:10px}.menuToggle input{margin-top:3px}.menuToggle b,.menuToggle small{display:block}.menuToggle b{font-size:14px}.menuToggle small{margin-top:2px;color:#667085;font-size:11px;line-height:1.4}
+.loadingState{display:flex;align-items:center;gap:10px;margin:auto;color:#667085;font-size:14px}.loadingState>span:first-child{width:18px;height:18px;border:2px solid #d5dce5;border-top-color:#173b57;border-radius:50%;animation:studioSpin .7s linear infinite}@keyframes studioSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:no-preference){.quickTasks>a,.quickTasks>button{transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s}}
+@media(prefers-reduced-motion:reduce){.loadingState>span:first-child{animation:none}.quickTasks>a,.quickTasks>button{transform:none!important}}
+@media(max-width:600px){.chatContent{padding-top:20px;padding-bottom:30px}.greeting{padding-top:clamp(4px,3vh,28px)}.greeting h1{font-size:30px}.greeting h2{font-size:25px}.greeting>p{margin-top:14px;font-size:14px}.quickTasks{margin-top:22px}.quickTasks>a,.quickTasks>button{min-height:78px;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;padding:12px}.taskIcon{width:42px;height:42px}.quickTasks b{font-size:15px}.quickTasks small{font-size:12px}.quickTasks em{margin-top:6px}.composerDock{padding-top:8px;padding-bottom:9px}}
