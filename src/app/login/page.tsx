@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function LoginPage() {
+export default async function LoginPage({searchParams}:{searchParams:Promise<{next?:string}>}) {
+  const {next=""}=await searchParams;
   return <main className="grid min-h-screen bg-[var(--surface)] lg:grid-cols-[1.06fr_.94fr]">
     <section className="panel-dark relative hidden overflow-hidden p-12 lg:flex lg:flex-col lg:justify-between">
       <Link href="/" className="relative flex items-center gap-3 text-xl font-extrabold"><DukenimLogo inverse/></Link>
@@ -26,7 +27,7 @@ export default function LoginPage() {
       <Link href="/" className="mb-12 flex items-center gap-2 text-sm font-bold text-[var(--ink-60)]"><ArrowLeft size={16}/> На главную</Link>
       <div className="data-label">ЗАЩИЩЁННЫЙ ВХОД</div><h2 className="mt-3 text-4xl font-extrabold">Добро пожаловать</h2>
       <p className="mt-3 leading-7 text-[var(--ink-60)]">Войдите в кабинет владельца магазина или в центр управления платформой.</p>
-      <LoginForm/>
+      <LoginForm next={next}/>
       <p className="mt-7 text-center text-sm text-[var(--ink-60)]">Ещё нет аккаунта? <Link href="/register" className="font-extrabold text-[var(--accent)]">Начать бесплатно →</Link></p>
     </div></section>
   </main>;

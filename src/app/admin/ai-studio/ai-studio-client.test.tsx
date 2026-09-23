@@ -24,7 +24,6 @@ describe("AI Studio first-run access", () => {
     expect(html).toMatch(/class="[^"]*workspace[^"]*" aria-label="Диалог с AI Studio"/);
     expect(html).not.toContain('id="studio-message"');
     expect((html.match(/id="studio-conversation"/g) ?? []).length).toBe(1);
-    expect(html).toContain("Передать вопрос команде");
     expect(html).toContain('aria-controls="studio-attachment-menu"');
     expect(html).toContain("Предложения не публикуются без вашего решения");
     expect(html).not.toContain("после этого AI Studio откроет");
@@ -50,11 +49,12 @@ describe("AI Studio first-run access", () => {
   });
   it("does not call a ready catalog published", () => {
     const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready"/>);
-    expect(html).toContain("Посмотрите глазами покупателя");
-    expect(html).toContain("НЕ ОПУБЛИКОВАНО");
+    expect(html).toContain('id="studio-conversation"');
+    expect(html).not.toContain("Завершите запуск магазина");
+    expect(html).not.toContain("iframe");
   });
   it("keeps unpublished catalog navigation inside private preview", () => {
-    const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready" catalogPublished={false}/>);
+    const html = renderToStaticMarkup(<AiStudioClient {...props} catalogStatus="ready" catalogPublished={false} publicationChecks={{product:true,fulfilment:true,tariff:true}}/>);
     expect(html).toContain("Опубликовать магазин");
     expect(html).toContain('href="/store-preview"');
     expect(html).not.toContain('href="/s/shop"');

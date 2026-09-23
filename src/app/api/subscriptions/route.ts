@@ -37,7 +37,7 @@ export async function POST(request: Request) {
       requestId: checkout.id,
       finalAmount: checkout.final_amount,
       bonusDays: checkout.bonus_days,
-      message: quote.message ?? "Тариф выбран. Мы подключим оплату после настройки официального провайдера.",
+      message: quote.message ?? `Заявка №${checkout.id.slice(0, 8)} создана на ${Number(checkout.final_amount).toLocaleString("ru-KZ")} ₸. Оплата не списана. Команда Dukenim свяжется с вами для выставления счёта.`,
     });
   } catch (error) {
     return NextResponse.json({ error: error instanceof Error ? error.message : "Не удалось подготовить подключение тарифа" }, { status: 400 });

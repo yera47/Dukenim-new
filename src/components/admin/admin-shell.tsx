@@ -72,6 +72,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   const nav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
   const mobilePrimary = nav.slice(0, 3);
   const pathname = usePathname();
+  const aiStudio = pathname.startsWith("/admin/ai-studio");
   const [menuOpen, setMenuOpen] = useState(false);
   const sheetRef = useRef<HTMLElement>(null);
 
@@ -141,7 +142,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
         </form>
       </aside>
 
-      <div className="pb-24 md:pl-72 md:pb-0">
+      <div className={`${aiStudio ? "admin-ai-column" : "pb-32"} md:pl-72 md:pb-0`}>
         <header className="admin-topbar sticky top-0 z-20 flex h-18 items-center justify-between border-b border-[var(--line)] px-5 md:px-8">
           <div className={styles.heading}>
             <span className={styles.mark} aria-hidden="true"><DukenimLogo compact/></span>
@@ -160,7 +161,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             <span className="admin-avatar">{tenant.name.slice(0, 2).toUpperCase()}</span>
           </div>
         </header>
-        <main className="p-5 md:p-8">{children}</main>
+        <main className={aiStudio ? "admin-ai-main" : "p-5 pb-10 md:p-8"}>{children}</main>
       </div>
 
       <nav aria-label="Основная навигация" className="admin-mobile-nav md:hidden" style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>

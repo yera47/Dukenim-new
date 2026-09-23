@@ -30,5 +30,5 @@ export async function manageTeam(_:TeamState,form:FormData):Promise<TeamState>{
  const client=await createStaffClient();const result=await client.rpc("manage_staff",{p_tenant:context.tenantId,p_action:action,p_data:data});
  if(result.error)return {error:"Не удалось сохранить. Проверьте права владельца и обновите страницу: запись могла измениться."};
  revalidatePath("/admin/team");revalidatePath("/staff");
- return token?{success:"Приглашение действует 7 дней. Передайте ссылку сотруднику лично; письмо автоматически не отправляется.",invitation:`/staff/join#${token}`}:{success:"Сохранено. Новые права применяются при следующем запросе."};
+ return token?{success:"Приглашение действует 7 дней. Передайте ссылку сотруднику: она сохранит приглашение при входе и регистрации.",invitation:`/staff/join?token=${token}`}:{success:"Сохранено. Новые права применяются при следующем запросе."};
 }

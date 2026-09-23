@@ -26,6 +26,11 @@ export function planFromPolarProductId(productId: string): Plan | null {
 // The webhook route additionally needs POLAR_WEBHOOK_SECRET, checked separately, so a
 // misconfigured webhook never blocks a correctly configured checkout and vice versa.
 export function isPolarConfigured(plan?: Plan, period?: BillingPeriod): boolean {
+  // A configured SDK is not proof that the merchant account can accept money.
+  // Production checkout stays closed until one real payment and webhook have
+  // been verified and the release owner deliberately enables this gate.
+  if (process.env.NODE_ENV === "production" && process.env.POLAR_LIVE_CHECKOUT_ENABLED?.trim().toLowerCase() !== "true") return false;
+  if (process.env.POLAR_SERVER?.trim().toLowerCase() === "sandbox" && process.env.NODE_ENV === "production") return false;
   if (!process.env.POLAR_ACCESS_TOKEN?.trim()) return false;
   if (plan && period) return Boolean(getPolarProductId(plan, period));
   return Boolean(

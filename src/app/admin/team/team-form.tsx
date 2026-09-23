@@ -1,11 +1,14 @@
 "use client";
 import { useActionState, useState } from "react";
+import { Check, Copy } from "lucide-react";
 import { manageTeam } from "./actions";
 import { noStaffPermissions,staffModules,staffPresets,type StaffPermissions } from "@/lib/staff-permissions";
 import type { StaffAccess } from "@/lib/staff-server";
 export function TeamForm({member}:{member?:StaffAccess}){
  const [state,action,pending]=useActionState(manageTeam,{});
  const [permissions,setPermissions]=useState<StaffPermissions>(member?.permissions??noStaffPermissions);
+ const [copied,setCopied]=useState(false);
+ const invitation=state.invitation?(typeof window!=="undefined"?window.location.origin+state.invitation:state.invitation):"";
  return <form action={action} className="space-y-4 rounded-2xl border bg-white p-5">
   <h2 className="text-xl font-semibold">{member?member.title:"Пригласить сотрудника"}</h2>
   <input type="hidden" name="action" value={member?"update":"invite"}/>
@@ -18,7 +21,7 @@ export function TeamForm({member}:{member?:StaffAccess}){
   <p className="text-sm text-neutral-500">Оплата, тариф, права команды и управление владельцем сотруднику недоступны.</p>
   <button disabled={pending} className="rounded-xl bg-neutral-900 px-5 py-3 text-white">{pending?"Сохраняем…":member?"Сохранить права":"Создать приглашение"}</button>
   {state.error&&<p role="alert">{state.error}</p>}{state.success&&<p role="status">{state.success}</p>}
-  {state.invitation&&<label className="block">Ссылка приглашения<input readOnly value={typeof window!=="undefined"?window.location.origin+state.invitation:state.invitation} onFocus={e=>e.target.select()} className="block w-full rounded-xl border p-3"/></label>}
+  {state.invitation&&<div className="rounded-xl border bg-[var(--accent-soft)] p-3"><b className="text-sm">Ссылка приглашения</b><p className="mt-1 text-xs leading-5 text-[var(--ink-60)]">Сотрудник откроет ссылку, войдёт или создаст аккаунт и вернётся к принятию приглашения автоматически.</p><div className="mt-3 flex gap-2"><input aria-label="Ссылка приглашения" readOnly value={invitation} onFocus={e=>e.target.select()} className="input min-w-0 flex-1"/><button type="button" className="btn btn-secondary shrink-0 px-3" onClick={async()=>{await navigator.clipboard.writeText(invitation);setCopied(true);}}>{copied?<Check size={17}/>:<Copy size={17}/>}<span className="sr-only">{copied?"Скопировано":"Копировать ссылку"}</span></button></div></div>}
  </form>;
 }
 export function RevokeInvitation({id}:{id:string}){const[state,action,pending]=useActionState(manageTeam,{});return <form action={action}><input type="hidden" name="action" value="revoke_invite"/><input type="hidden" name="id" value={id}/><button disabled={pending} className="underline">Отозвать приглашение</button>{state.error&&<p role="alert">{state.error}</p>}</form>;}

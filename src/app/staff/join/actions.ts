@@ -4,11 +4,13 @@ import { createStaffClient } from "@/lib/staff-server";
 import { redirect } from "next/navigation";
 import {z} from "zod";
 export async function registerStaff(_: {error?:string;success?:string},form:FormData):Promise<{error?:string;success?:string}>{
- const input=z.object({email:z.string().trim().email().max(254),password:z.string().min(10).max(128)}).safeParse({email:form.get("email"),password:form.get("password")});
+ const input=z.object({email:z.string().trim().email().max(254),password:z.string().min(10).max(128),token:z.string().regex(/^[a-f0-9]{64}$/)}).safeParse({email:form.get("email"),password:form.get("password"),token:form.get("token")});
  if(!input.success)return {error:"Введите email приглашения и пароль не короче 10 символов."};
- const client=await createStaffClient();const result=await client.auth.signUp({email:input.data.email,password:input.data.password,options:{emailRedirectTo:"https://www.dukenim.kz/auth/callback?next=/staff/join"}});
+ const site=(process.env.NEXT_PUBLIC_SITE_URL??"https://www.dukenim.kz").replace(/\/$/,"");
+ const next=`/staff/join?token=${input.data.token}`;
+ const client=await createStaffClient();const result=await client.auth.signUp({email:input.data.email,password:input.data.password,options:{emailRedirectTo:`${site}/auth/callback?next=${encodeURIComponent(next)}`}});
  if(result.error)return {error:"Не удалось создать аккаунт. Попробуйте вход или повторите регистрацию позже."};
- return {success:"Проверьте почту и подтвердите email, затем снова откройте ссылку приглашения. Магазин и права владельца не создаются."};
+ return {success:result.data.session?"Аккаунт создан. Нажмите «Принять приглашение».":"Проверьте почту и подтвердите email. После подтверждения вы вернётесь к этому приглашению."};
 }
 export async function acceptInvitation(_: {error?:string}, form:FormData):Promise<{error?:string}>{
  const token=String(form.get("token")??"");if(!/^[a-f0-9]{64}$/.test(token))return {error:"Ссылка приглашения неполная. Попросите владельца прислать новую."};

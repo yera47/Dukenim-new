@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { getPolarProductId, isPolarConfigured, isPolarWebhookConfigured, planFromPolarProductId } from "./polar-plan";
 
-const ENV_KEYS = ["POLAR_ACCESS_TOKEN", "POLAR_WEBHOOK_SECRET", "POLAR_BASIC_MONTHLY_PRODUCT_ID", "POLAR_BASIC_ANNUAL_PRODUCT_ID", "POLAR_STANDARD_MONTHLY_PRODUCT_ID", "POLAR_STANDARD_ANNUAL_PRODUCT_ID"] as const;
+const ENV_KEYS = ["POLAR_ACCESS_TOKEN", "POLAR_WEBHOOK_SECRET", "POLAR_SERVER", "POLAR_LIVE_CHECKOUT_ENABLED", "POLAR_BASIC_MONTHLY_PRODUCT_ID", "POLAR_BASIC_ANNUAL_PRODUCT_ID", "POLAR_STANDARD_MONTHLY_PRODUCT_ID", "POLAR_STANDARD_ANNUAL_PRODUCT_ID"] as const;
 let saved: Record<string, string | undefined>;
 
 beforeEach(() => {
@@ -39,6 +39,35 @@ describe("polar configuration helpers", () => {
     expect(isPolarConfigured()).toBe(false);
     process.env.POLAR_STANDARD_ANNUAL_PRODUCT_ID = "d";
     expect(isPolarConfigured()).toBe(true);
+  });
+
+  it("never exposes a sandbox checkout in a production build", () => {
+    const nodeEnv = process.env.NODE_ENV;
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+    process.env.POLAR_SERVER = "sandbox";
+    process.env.POLAR_LIVE_CHECKOUT_ENABLED = "true";
+    process.env.POLAR_ACCESS_TOKEN = "token";
+    process.env.POLAR_BASIC_MONTHLY_PRODUCT_ID = "a";
+    process.env.POLAR_BASIC_ANNUAL_PRODUCT_ID = "b";
+    process.env.POLAR_STANDARD_MONTHLY_PRODUCT_ID = "c";
+    process.env.POLAR_STANDARD_ANNUAL_PRODUCT_ID = "d";
+    expect(isPolarConfigured()).toBe(false);
+    (process.env as Record<string, string | undefined>).NODE_ENV = nodeEnv;
+  });
+
+  it("keeps production checkout closed until a live payment is verified", () => {
+    const nodeEnv = process.env.NODE_ENV;
+    (process.env as Record<string, string | undefined>).NODE_ENV = "production";
+    process.env.POLAR_SERVER = "production";
+    process.env.POLAR_ACCESS_TOKEN = "token";
+    process.env.POLAR_BASIC_MONTHLY_PRODUCT_ID = "a";
+    process.env.POLAR_BASIC_ANNUAL_PRODUCT_ID = "b";
+    process.env.POLAR_STANDARD_MONTHLY_PRODUCT_ID = "c";
+    process.env.POLAR_STANDARD_ANNUAL_PRODUCT_ID = "d";
+    expect(isPolarConfigured()).toBe(false);
+    process.env.POLAR_LIVE_CHECKOUT_ENABLED = "true";
+    expect(isPolarConfigured()).toBe(true);
+    (process.env as Record<string, string | undefined>).NODE_ENV = nodeEnv;
   });
 
   it("maps plan + period to the matching env-configured product id", () => {

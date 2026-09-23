@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowRight } from "lucide-react";
+import { CheckCircle2, ExternalLink, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 import { StudioConversation } from "@/components/admin/studio-conversation";
 import { CatalogPublication } from "@/components/admin/catalog-publication";
@@ -15,7 +15,6 @@ const CatalogSetupForm=dynamic(()=>import("@/components/admin/catalog-setup-form
 const ProductForm=dynamic(()=>import("@/components/admin/product-form").then(module=>module.ProductForm));
 const BrandMaterials=dynamic(()=>import("@/components/admin/brand-materials").then(module=>module.BrandMaterials));
 const DesignHistory=dynamic(()=>import("@/components/admin/design-history").then(module=>module.DesignHistory));
-const HolidayIdeas=dynamic(()=>import("@/components/admin/holiday-ideas").then(module=>module.HolidayIdeas));
 
 type Intent = "hero" | "promotion" | "catalog_copy" | "catalog_structure" | "store_design" | "banner";
 type Draft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
@@ -29,13 +28,14 @@ type Props = {
   catalogStatus: "not_started" | "building" | "ready";
   catalogPublished?: boolean;
   deliveryConfigured?: boolean;
+  publicationChecks?: { product: boolean; fulfilment: boolean; tariff: boolean };
   storeName: string; slug: string; plan: "basic" | "standard" | "pro";
   vertical: BusinessVertical;
   initialDesign?: {generationId:string;design:Design};
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, deliveryConfigured=false, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, deliveryConfigured=false, publicationChecks={product:false,fulfilment:false,tariff:false}, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
   const router = useRouter();
   const storefrontHref = catalogPublished ? `/s/${slug}` : "/store-preview";
   const [intent, setIntent] = useState<Intent>("catalog_structure");
@@ -59,7 +59,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   const [draftTarget, setDraftTarget] = useState<"storefront" | "campaign" | null>(null);
   const [banner, setBanner] = useState<Banner | null>(null);
   const [creditsRemaining, setCreditsRemaining] = useState<number | null>(null);
-  const [workspaceOpen, setWorkspaceOpen] = useState(false);
   const [brandOpen,setBrandOpen]=useState(false);
   const [brandDone,setBrandDone]=useState(false);
   useEffect(()=>{if(catalogStatus!=="ready")return;const controller=new AbortController();void fetch("/api/brand-materials",{cache:"no-store",signal:controller.signal}).then(response=>response.ok?response.json():null).then(data=>{if(!controller.signal.aborted&&data?.logoUrl)setBrandDone(true);}).catch(()=>{});return()=>controller.abort();},[catalogStatus]);
@@ -158,12 +157,10 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   }
 
   const designPanel = design ? <section className={styles.designPanel} aria-label="Предложение оформления">
-    {initialDesign?.generationId===generationId&&<p role="status">Последнее предложение восстановлено.</p>}
-    {generationId && <iframe title="Предпросмотр предложения AI" className="h-[620px] w-full rounded-xl border" src={`/store-preview?generation=${encodeURIComponent(generationId)}`}/>}
-    <details><summary>Почему такой дизайн?</summary><p>{design.rationale}</p><p>{design.heroTitle} · {design.heroSubtitle}</p><div className={styles.designMeta}>{design.colorTheme && Object.entries(design.colorTheme).map(([key,color])=><span key={key}><i aria-hidden="true" style={{display:"inline-block",width:12,height:12,borderRadius:12,background:color,border:"1px solid #aaa",marginRight:6}}/>{color}</span>)}</div></details>
-    <p>{designSaved ? "Оформление применено." : "Предпросмотр · изменения ещё не применены."}</p>
-    <button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button>
-    {designSaved && <Link href={storefrontHref} target="_blank" rel="noopener noreferrer">Открыть обновлённую витрину →</Link>}
+    <div className={styles.resultHeading}><span className={styles.resultIcon}>{designSaved?<CheckCircle2 size={19}/>:<Sparkles size={19}/>}</span><span><b>{designSaved?"Оформление применено":"Готово новое оформление"}</b><small>{initialDesign?.generationId===generationId?"Последнее предложение восстановлено":"Изменения ждут вашего подтверждения"}</small></span></div>
+    <div className={styles.designHero}><small>{templateNames[design.templateKey]??"ВИТРИНА"}</small><h3>{design.heroTitle}</h3><p>{design.heroSubtitle}</p><b>{design.heroCtaLabel}</b></div>
+    <details><summary>Почему AI предложил этот вариант?</summary><p>{design.rationale}</p><div className={styles.designMeta}>{design.colorTheme && Object.entries(design.colorTheme).map(([key,color])=><span key={key}><i aria-hidden="true" style={{display:"inline-block",width:12,height:12,borderRadius:12,background:color,border:"1px solid #aaa",marginRight:6}}/>{color}</span>)}</div></details>
+    <div className={styles.resultActions}><Link className="btn btn-secondary" href={generationId?`/store-preview?generation=${encodeURIComponent(generationId)}`:storefrontHref} target="_blank" rel="noopener noreferrer">Открыть предпросмотр <ExternalLink size={15}/></Link><button type="button" className="btn btn-primary" disabled={!generationId || designSaving || designSaved || pending} onClick={saveDesign}>{designSaving ? "Применяем…" : designSaved ? "Оформление применено" : "Применить оформление"}</button></div>
   </section> : null;
 
   const brandTask=<details className="rounded-2xl border bg-white p-4" open={brandOpen} onToggle={event=>setBrandOpen(event.currentTarget.open)}><summary className="flex cursor-pointer items-center justify-between gap-4 rounded-xl bg-slate-50 p-4 text-sm font-semibold"><span>Добавить логотип и настроить бренд<span className="mt-1 block text-xs font-normal text-slate-500">Загрузите логотип, PDF или опишите цвета — это необязательно.</span></span><span aria-hidden className="text-lg">＋</span></summary>{brandOpen&&<div className="mt-4 space-y-4"><BrandMaterials expandedInitially requestPicker={pickerRequest} onSaved={()=>setBrandDone(true)}/><DesignHistory/></div>}</details>;
@@ -196,40 +193,24 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   </div>;
 
   return <div className={`${styles.workspace} ${styles.conversationWorkspace}`}>
-    <StudioConversation working={pending} enabled={enabled&&!pending} brandDone={brandDone} deliveryDone={deliveryConfigured} onAttachment={attach} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
-      {!catalogPublished&&<CatalogPublication/>}
-      {step>=2&&<details className={styles.optionalTask}><summary>Идеи к праздникам и акциям</summary><HolidayIdeas disabled={!enabled||pending} onDesign={holidayBrief=>{setIntent("store_design");setBrief(holidayBrief);void createDraft({intent:"store_design",brief:holidayBrief});}} onPromotion={holidayBrief=>{setIntent("promotion");setBrief(holidayBrief);void createDraft({intent:"promotion",brief:holidayBrief});}}/></details>}
+    <StudioConversation dock={!catalogPublished?<CatalogPublication checks={publicationChecks}/>:undefined} working={pending} enabled={enabled&&!pending} brandDone={brandDone} deliveryDone={deliveryConfigured} onAttachment={attach} onBanner={imageEnabled?message=>{setIntent("banner");setBrief(message);void createDraft({intent:"banner",brief:message});}:undefined} onTask={task=>{setIntent(task.intent);setBrief(task.brief);void createDraft(task);}}>
       {submitted && <p className="text-sm text-neutral-500">Задача: {submitted}</p>}
       {creditsRemaining !== null && creditsRemaining <= 12 && <p>Лимит AI почти использован. <Link href="/admin/settings/usage">Использование</Link></p>}
       {pending && <p role="status">Готовлю предложение…</p>}
       {error && <p role="alert" className={styles.error}>{error} <Link href={supportHref}>Написать в поддержку</Link></p>}
-      <details className={styles.optionalTask} open={Boolean(submitted||structure||design||draft||banner)}><summary>Предпросмотр и предложения AI</summary><aside className={styles.preview} aria-label="Результат и создание магазина">
-        <div className={styles.previewHeading}><span>Ваш магазин</span><small>{step === 0 ? "Основа ещё не сохранена" : step === 1 ? "Ожидает первый товар" : "Каталог создан"}</small></div>
-        <h2>{storeName}</h2>
-        <p className={styles.address}>dukenim.kz/s/{slug}</p>
-        <div className={styles.nextStep}>
-          <b>{step === 0 ? "Создайте основу каталога" : step === 1 ? "Добавьте первый товар" : "Посмотрите глазами покупателя"}</b>
-          <p>{step === 0 ? "Название и оформление сохранятся в вашем магазине. Товары добавляются следующим шагом." : step === 1 ? "Используйте фотографии реального товара. Проверьте цену, варианты и доступность перед сохранением." : "Проверьте товары, контакты и способы получения заказа, прежде чем делиться ссылкой."}</p>
-          {step < 2 ? <button type="button" className="btn btn-primary" aria-expanded={workspaceOpen} aria-controls="studio-setup" onClick={() => setWorkspaceOpen(!workspaceOpen)}>{workspaceOpen ? "Свернуть редактор" : step === 0 ? "Создать каталог здесь" : "Добавить товар здесь"} <ArrowRight size={16}/></button> : <Link className="btn btn-primary" href={storefrontHref} target="_blank" rel="noopener noreferrer">{catalogPublished ? "Открыть витрину" : "Предпросмотр магазина"} <ArrowRight size={16}/></Link>}
-        </div>
+      {(structure||design||draft||banner)&&<aside className={styles.preview} aria-label="Результат AI">
         <div className={styles.result}>
-          <small>ПРЕДЛОЖЕНИЕ AI · НЕ ОПУБЛИКОВАНО</small>
+          <small>ПРЕДЛОЖЕНИЕ AI · ТРЕБУЕТ ВАШЕГО РЕШЕНИЯ</small>
           {banner ? <><Image unoptimized width={1600} height={900} src={banner.imageUrl} alt="Предложенный фон для баннера"/><button className="btn btn-secondary" type="button" disabled={campaignPending || Boolean(campaignId)} onClick={addBannerToCampaigns}>{campaignPending ? "Сохраняем…" : campaignId ? "Сохранено в кампании" : "Сохранить в кампании"}</button>{campaignId && <Link href="/admin/catalog/campaigns">Проверить и опубликовать кампанию →</Link>}</> :
           structure ? <>{structure.sections.map((section, index) => <div key={index} className={styles.category}><h3>{section.name}</h3><p>{section.description}</p></div>)}<p>{structureSaved ? "Разделы сохранены. Теперь при добавлении товара выберите нужный раздел." : step === 0 ? "Сохраните основу каталога ниже. Это предложение останется доступным после сохранения." : "Добавим названия разделов в ваш каталог. Существующие товары и разделы не изменятся."}</p><button type="button" className="btn btn-primary" disabled={step === 0 || !generationId || structureSaving || structureSaved || pending} onClick={saveStructure}>{structureSaving ? "Сохраняем…" : structureSaved ? "Разделы сохранены" : "Добавить разделы в каталог"}</button></> :
           design ? designPanel :
           draft ? <><span>{draft.eyebrow}</span><h3>{draft.title}</h3><p>{draft.body}</p><b>{draft.ctaLabel}</b><p>{draftSaved ? draftTarget === "campaign" ? "Черновик кампании сохранён. Проверьте текст и условия перед публикацией." : "Текст применён к главному экрану витрины." : resultIntent === "promotion" && !brand ? "Скопируйте текст или перейдите на «Бренд», чтобы сохранить его кампанией." : resultIntent === "hero" ? "AI подготовил текст, но ещё не изменил витрину." : "Текст готов для копирования и ручного использования."}</p>{(resultIntent === "hero" || (resultIntent === "promotion" && brand)) && <button type="button" className="btn btn-primary" disabled={!generationId || draftSaving || draftSaved || pending} onClick={saveDraft}>{draftSaving ? "Сохраняем…" : draftSaved ? draftTarget === "campaign" ? "Кампания сохранена" : "Текст применён" : resultIntent === "promotion" ? "Сохранить кампанию черновиком" : "Применить к главному экрану"}</button>}{draftSaved && <Link href={draftTarget === "campaign" ? "/admin/catalog/campaigns" : storefrontHref} target={draftTarget === "storefront" ? "_blank" : undefined} rel={draftTarget === "storefront" ? "noopener noreferrer" : undefined}>{draftTarget === "campaign" ? "Открыть кампании →" : "Открыть обновлённую витрину →"}</Link>}</> :
-          <p>Напишите пожелания в сообщении ниже. Предложение появится здесь, внутри разговора.</p>}
+          null}
           {(draft || structure || design) && <button className="btn btn-secondary" type="button" onClick={copyResult}>{copied ? "Скопировано" : "Скопировать текст"}</button>}
         </div>
         <Link className={styles.support} href={supportHref}>Не получается? Передать вопрос команде Dukenim →</Link>
-      </aside></details>
-    {workspaceOpen && step < 2 && <section id="studio-setup" className={styles.editor}>
-      <div className={styles.previewHeading}><h2>{step === 0 ? "Создание каталога" : "Первый товар"}</h2><button type="button" onClick={() => setWorkspaceOpen(false)}>Свернуть</button></div>
-      <p>Сохранение выполняется только по вашей кнопке. Редактор не заменяет фотографии и данные товара выдуманными.</p>
-      {step === 0 ? <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled}/> : <ProductForm fromStudio categories={categories} vertical={vertical}/>}
-    </section>}
-    {brandTask}
-    {vertical==="food"&&step>0&&<Link href="/admin/settings/loyalty" className="btn btn-secondary min-h-14 justify-between text-left">Настроить лояльность и приглашения друзей <span aria-hidden>→</span></Link>}
+      </aside>}
+    {brandOpen&&brandTask}
     </StudioConversation>
   </div>;
 }

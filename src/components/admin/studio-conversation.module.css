@@ -1,4 +1,4 @@
-.workspace{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;background:#f8f9fb;color:#111827;overflow:hidden}
+.workspace{display:flex;flex-direction:column;flex:1;min-height:0;width:100%;background:#fff;color:#111827;overflow:hidden}
 .chatScroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 .chatContent{width:min(100%,860px);margin:0 auto;padding:clamp(24px,5vw,48px) clamp(16px,4vw,32px) 42px;display:grid;gap:24px}
 .greeting{padding-top:clamp(12px,5vh,76px)}
@@ -14,7 +14,7 @@
 .quickTasks>a>svg,.quickTasks>button>svg{color:#667085}.taskIcon{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:#eef5ff;color:#235ca1}.quickTasks>a:nth-child(2) .taskIcon{background:#ecfaf4;color:#178767}
 .userMessage{margin-left:auto;max-width:90%;width:fit-content;border-radius:18px 18px 4px 18px;background:#f2f4f7;color:#111827;padding:12px 16px;overflow-wrap:anywhere}
 .thinking{color:#667085;font-size:14px}.steps{display:grid;gap:16px;min-width:0}.steps:empty{display:none}
-.composerDock{position:relative;z-index:2;flex:none;width:min(100%,860px);margin:0 auto;padding:12px clamp(14px,4vw,32px) max(14px,env(safe-area-inset-bottom));background:linear-gradient(180deg,#f8f9fb00,#f8f9fb 28%)}
+.composerDock{position:relative;z-index:2;flex:none;width:min(100%,860px);margin:0 auto;padding:8px clamp(14px,4vw,32px) max(10px,env(safe-area-inset-bottom));background:linear-gradient(180deg,#ffffff00,#fff 24%)}
 .composer{display:flex;align-items:flex-end;gap:6px;min-height:56px;padding:5px 7px;border:1px solid #d8dde5;border-radius:28px;background:#fff;box-shadow:0 2px 8px #1118270a}
 .composer:focus-within{border-color:#8fa9c9;box-shadow:0 0 0 3px #cfe4fb66}
 .composer textarea{flex:1;min-width:0;height:24px;max-height:144px;overflow-y:auto;resize:none;outline:0;border:0;background:transparent;padding:10px 0;font-size:16px;line-height:24px;color:#111827}
@@ -27,4 +27,4 @@
 .loadingState{display:flex;align-items:center;gap:10px;margin:auto;color:#667085;font-size:14px}.loadingState>span:first-child{width:18px;height:18px;border:2px solid #d5dce5;border-top-color:#173b57;border-radius:50%;animation:studioSpin .7s linear infinite}@keyframes studioSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:no-preference){.quickTasks>a,.quickTasks>button{transition:border-color .16s,background-color .16s,box-shadow .16s,transform .16s}}
 @media(prefers-reduced-motion:reduce){.loadingState>span:first-child{animation:none}.quickTasks>a,.quickTasks>button{transform:none!important}}
-@media(max-width:600px){.chatContent{padding-top:20px;padding-bottom:30px}.greeting{padding-top:clamp(4px,3vh,28px)}.greeting h1{font-size:30px}.greeting h2{font-size:25px}.greeting>p{margin-top:14px;font-size:14px}.quickTasks{margin-top:22px}.quickTasks>a,.quickTasks>button{min-height:78px;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;padding:12px}.taskIcon{width:42px;height:42px}.quickTasks b{font-size:15px}.quickTasks small{font-size:12px}.quickTasks em{margin-top:6px}.composerDock{padding-top:8px;padding-bottom:9px}}
+@media(max-width:600px){.chatContent{padding-top:20px;padding-bottom:24px}.greeting{padding-top:clamp(4px,3vh,28px)}.greeting h1{font-size:30px}.greeting h2{font-size:25px}.greeting>p{margin-top:14px;font-size:14px}.quickTasks{margin-top:22px}.quickTasks>a,.quickTasks>button{min-height:78px;grid-template-columns:42px minmax(0,1fr) 20px;gap:12px;padding:12px}.taskIcon{width:42px;height:42px}.quickTasks b{font-size:15px}.quickTasks small{font-size:12px}.quickTasks em{display:none}.composerDock{padding-top:7px;padding-bottom:7px}.composer{min-height:54px}.iconButton,.sendButton{width:42px;height:42px}}
