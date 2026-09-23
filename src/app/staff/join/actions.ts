@@ -1,16 +1,25 @@
 "use server";
 import { createHash } from "node:crypto";
-import { createStaffClient } from "@/lib/staff-server";
+import { createStaffAdminClient, createStaffClient } from "@/lib/staff-server";
 import { redirect } from "next/navigation";
 import {z} from "zod";
 export async function registerStaff(_: {error?:string;success?:string},form:FormData):Promise<{error?:string;success?:string}>{
  const input=z.object({email:z.string().trim().email().max(254),password:z.string().min(10).max(128),token:z.string().regex(/^[a-f0-9]{64}$/)}).safeParse({email:form.get("email"),password:form.get("password"),token:form.get("token")});
  if(!input.success)return {error:"Введите email приглашения и пароль не короче 10 символов."};
- const site=(process.env.NEXT_PUBLIC_SITE_URL??"https://www.dukenim.kz").replace(/\/$/,"");
- const next=`/staff/join?token=${input.data.token}`;
- const client=await createStaffClient();const result=await client.auth.signUp({email:input.data.email,password:input.data.password,options:{emailRedirectTo:`${site}/auth/callback?next=${encodeURIComponent(next)}`}});
- if(result.error)return {error:"Не удалось создать аккаунт. Попробуйте вход или повторите регистрацию позже."};
- return {success:result.data.session?"Аккаунт создан. Нажмите «Принять приглашение».":"Проверьте почту и подтвердите email. После подтверждения вы вернётесь к этому приглашению."};
+ const email=input.data.email.toLowerCase();
+ const hash=createHash("sha256").update(input.data.token).digest("hex");
+ const admin=createStaffAdminClient();
+ const invitation=await admin.from("staff_invitations").select("id,email,expires_at,accepted_at,revoked_at").eq("token_hash",hash).maybeSingle();
+ if(invitation.error||!invitation.data||invitation.data.accepted_at||invitation.data.revoked_at||Date.parse(invitation.data.expires_at)<=Date.now())return {error:"Приглашение недействительно. Попросите владельца создать новую ссылку."};
+ if(invitation.data.email.toLowerCase()!==email)return {error:"Введите тот же email, для которого владелец создал приглашение."};
+ const created=await admin.auth.admin.createUser({email,password:input.data.password,email_confirm:true});
+ if(created.error||!created.data.user)return {error:created.error?.message.toLowerCase().includes("already")?"Аккаунт с этим email уже есть. Выберите «Войти и продолжить».":"Не удалось создать аккаунт сотрудника. Повторите попытку."};
+ const client=await createStaffClient();
+ const signedIn=await client.auth.signInWithPassword({email,password:input.data.password});
+ if(signedIn.error){await admin.auth.admin.deleteUser(created.data.user.id);return {error:"Аккаунт не удалось открыть. Повторите регистрацию."};}
+ const accepted=await client.rpc("accept_staff_invitation",{p_hash:hash});
+ if(accepted.error){await client.auth.signOut();await admin.auth.admin.deleteUser(created.data.user.id);return {error:"Не удалось принять приглашение. Попросите владельца создать новую ссылку."};}
+ redirect("/staff");
 }
 export async function acceptInvitation(_: {error?:string}, form:FormData):Promise<{error?:string}>{
  const token=String(form.get("token")??"");if(!/^[a-f0-9]{64}$/.test(token))return {error:"Ссылка приглашения неполная. Попросите владельца прислать новую."};

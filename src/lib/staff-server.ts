@@ -8,7 +8,7 @@ export type StaffAccess = {id:string;tenant_id:string;user_id:string;title:strin
 type StaffDatabase = {public: Omit<Database["public"],"Tables"|"Functions"> & {
  Tables: Database["public"]["Tables"] & {
   staff_access:{Row:StaffAccess;Insert:Partial<StaffAccess>;Update:Partial<StaffAccess>;Relationships:[]};
-  staff_invitations:{Row:{id:string;tenant_id:string;email:string;title:string;permissions:Json;expires_at:string;accepted_at:string|null;revoked_at:string|null;created_at:string};Insert:never;Update:never;Relationships:[]};
+  staff_invitations:{Row:{id:string;tenant_id:string;email:string;title:string;permissions:Json;token_hash:string;expires_at:string;accepted_at:string|null;revoked_at:string|null;created_at:string};Insert:never;Update:never;Relationships:[]};
  };
  Functions: Database["public"]["Functions"] & {
   manage_staff:{Args:{p_tenant:string;p_action:string;p_data:Json};Returns:string};
