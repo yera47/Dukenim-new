@@ -1488,3 +1488,18 @@ Checks: `npx expo-doctor` 21/21, `npx tsc --noEmit`, `npx expo lint`, and an iOS
 Azure: unchanged; no model inference, resource, key, quota or spend change.
 
 Next recommended action: owner signs in to App Store Connect in the open browser tab. Then rerun EAS Submit for build `90742768-52d6-4837-9608-0181d0e7977f`, wait for Apple processing, install through TestFlight and perform the device checklist before adding native Apple/Google OAuth and order-management mutations.
+# 2026-09-24 — Staff security production release and widget preparation
+
+Result: owner authorization was received. Commit `f24a20c` is pushed to `main`; Vercel production deployment `dpl_4ToSgt3JxbUs8P1Ycj6evujXf79D` is Ready/current on `www.dukenim.kz` and `dukenim.kz`. Production migrations `staff_access_security_and_removal` and `staff_invitation_accepted_by_index` are applied to `gklgbesydbottkqilihb`. The complete transactional staff regression passed and rolled back all fixtures. Supabase Performance Advisor no longer reports `staff_invitations.accepted_by` as an unindexed foreign key; older unrelated findings remain.
+
+Implemented and verified: the production owner team page now shows explicit 48-hour one-time invitation guidance, copy-link UX, scoped permissions and empty state. An authenticated existing owner completed onboarding and opened `/admin/team`. `/staff/join`, `/support` and the corrected icon return 200; unauthenticated `/admin/team` redirects to login; production headers include HSTS and SAMEORIGIN. The approved D alpha geometry is unchanged and only the flat inner door threshold is blue. Mobile push token persistence moved from browser-only `localStorage` to native AsyncStorage. A privacy-minimal small/medium iOS order-count widget is configured with deep link `dukenim://orders` and no buyer data.
+
+Checks: 97 test files / 488 tests passed with four intentional live-AI skips; strict root and mobile TypeScript pass; root production build generated 79 pages; mobile lint, Expo Doctor 21/21, iOS export and production dependency audit pass. EAS account `yersat47` is available and App Store Connect/Apple Developer browser sessions are authenticated.
+
+Azure: unchanged; no model inference, resource, key, quota or expense change.
+
+Not completed: EAS cannot sign the new widget target until Apple has Bundle ID `kz.dukenim.app.widgets` and its App Store provisioning profile. Apple currently lists only the main `kz.dukenim.app` identifier/profile. Creating persistent Apple credentials through the browser and creating a temporary employee invitation both require an action-time confirmation under the computer-use policy. Live APNs delivery and home-screen widget rendering still require the physical iPhone/TestFlight build.
+
+Required owner action: confirm the two concrete UI mutations: create the Apple widget Bundle ID/provisioning profile for Team `NW7BN297KZ`, and create a temporary production staff invitation for the post-release two-browser test. No password or OTP should be sent in chat.
+
+Where to verify: production `/admin/team` and `/staff/join`; Apple Developer Certificates, Identifiers & Profiles; Expo project `@yersat47/dukenim`. Detailed evidence: `docs/ACCEPTANCE_20260924_STAFF_SECURITY.md` and `docs/ACCEPTANCE_20260923_IOS_OWNER_APP.md`.

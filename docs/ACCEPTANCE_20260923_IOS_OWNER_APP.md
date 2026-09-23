@@ -13,6 +13,8 @@ The native owner application is prepared as an App Store production build. Final
 | Owner sign-in and recovery | verified in source/build | Existing Supabase email/password flow, controlled Russian errors, Enter submission, registration and recovery links are included. Physical-device acceptance remains pending. |
 | Native owner orders | verified in source/build | `/orders` loads the signed-in user's tenant memberships and last 100 RLS-filtered orders, with filters, refresh, empty/error states and detail links. |
 | Push lifecycle | verified in source/build | Device tokens are owner-scoped, token rotation disables the previous token, foreground notifications render banners/list/sound, and taps route to the requested order after auth. Live APNs delivery still requires an iPhone. |
+| Native push-token persistence | verified in source/export | The app now persists Expo push registration through native `expo-sqlite/kv-store` AsyncStorage instead of browser-only `localStorage`; lint, TypeScript and iOS export pass. |
+| iOS orders widget | verified in source/export | `expo-widgets` configures `kz.dukenim.app.widgets` with app group `group.kz.dukenim.app`. The small/medium widget exposes only new/active order counts and updated time, deep-links to `dukenim://orders`, and omits buyer data. A newly signed native build is still required. |
 | Barcode scanner | verified in source/build | Expo Camera scanner and camera permission are enabled in the iOS configuration. Physical camera acceptance remains pending. |
 | App icon and launch assets | verified in source and signed build 7 | The previous redrawn SVG was removed. The 1024 px iOS icon, transparent splash/adaptive mark, compact in-app login mark and shared web logo now use the exact alpha/geometry of `dukenim-flat-symbol.png`; only the lower threshold is blue. An automated pixel comparison reports 0 alpha-mask mismatches. |
 | Public support URL | verified locally | `/support` exists, passed the production build and returned HTTP 200 from the local production server. Publishing the web change still requires a web release. |
@@ -21,6 +23,7 @@ The native owner application is prepared as an App Store production build. Final
 | Static and bundle checks | verified | Mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS Metro export pass. Root TypeScript and the 79-page production web build pass. |
 | Signed App Store IPA | verified | Final production build `d8f33f37-081d-4f99-b37d-fe92462218e8` finished successfully as app `1.0.0`, build `7`, bundle `kz.dukenim.app`, and produced the signed IPA. |
 | TestFlight upload | externally blocked | The saved Apple CLI session expired. Non-interactive EAS Submit needs an App Store Connect API key or one interactive Apple authentication. |
+| Widget-enabled signed build | in progress | EAS detected both `Dukenim` and `ExpoWidgetsTarget`. The main app credentials exist; Apple has no Bundle ID/provisioning profile yet for `kz.dukenim.app.widgets`. Creating those persistent Apple credentials requires the final confirmed UI action, after which EAS build can resume. |
 
 ## Apple and TestFlight
 

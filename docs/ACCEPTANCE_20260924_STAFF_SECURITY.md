@@ -16,7 +16,8 @@
 | Known production dependency vulnerabilities | verified locally | `pnpm audit --prod` reports 0 after overriding vulnerable transitive `js-yaml` to 4.3.2. |
 | Continuous security scanning | verified as configuration | Weekly Dependabot, weekly/push/PR CodeQL and production dependency audit workflows were added; YAML parsed locally. They begin running after push. |
 | Production database migration | verified | Owner authorized publication. `staff_access_security_and_removal` and the covering `staff_invitation_accepted_by_index` migration are applied to project `gklgbesydbottkqilihb`; the complete SQL regression ran inside a transaction and rolled back all fixtures. |
-| Live two-browser journey | in progress | The application release still has to reach production before the owner/employee browser acceptance can run against the published UI. |
+| Production application release | verified | Commit `f24a20c` is deployed as Vercel production deployment `dpl_4ToSgt3JxbUs8P1Ycj6evujXf79D`, Ready and aliased to `www.dukenim.kz` and `dukenim.kz`. `/admin/team` redirects unauthenticated requests, while `/staff/join` and `/support` return HTTP 200 with HSTS and same-origin frame protection. |
+| Live two-browser journey | in progress | An authenticated production owner completed onboarding and opened the redesigned zero-member `/admin/team` page. Creating the temporary invitation changes account access and therefore waits at the UI confirmation boundary before the employee browser acceptance. |
 | Supabase leaked-password protection | externally blocked | The current Supabase Security Advisor reports it disabled; Supabase documents this control as a Pro-plan feature. Local staff passwords still receive length and obvious-password screening. |
 | Mandatory MFA for owners and staff | not started | TOTP enrollment/challenge UI and AAL2 database enforcement are a separate product flow and are not represented as complete. |
 
@@ -41,4 +42,4 @@
 
 ## Production boundary
 
-The database part is live and the application release is prepared. After the application deployment, acceptance must use disposable owner and employee accounts in two independent browser sessions, then verify edit, disable, denied request, restore, remove and exact cleanup.
+The database and application release are live. The remaining browser acceptance must create a temporary invitation, then use a second session to verify employee registration, edit, disable, denied request, restore, remove and exact cleanup.
