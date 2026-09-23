@@ -1503,3 +1503,17 @@ Not completed: EAS cannot sign the new widget target until Apple has Bundle ID `
 Required owner action: confirm the two concrete UI mutations: create the Apple widget Bundle ID/provisioning profile for Team `NW7BN297KZ`, and create a temporary production staff invitation for the post-release two-browser test. No password or OTP should be sent in chat.
 
 Where to verify: production `/admin/team` and `/staff/join`; Apple Developer Certificates, Identifiers & Profiles; Expo project `@yersat47/dukenim`. Detailed evidence: `docs/ACCEPTANCE_20260924_STAFF_SECURITY.md` and `docs/ACCEPTANCE_20260923_IOS_OWNER_APP.md`.
+
+## 2026-09-24 — Apple widget signing, build 12 and staff two-browser acceptance
+
+Result: Apple App Group `group.kz.dukenim.app` and widget App ID `kz.dukenim.app.widgets` were registered for Team `NW7BN297KZ`; both the main app and widget are associated with the group. New active App Store provisioning profiles were created for both targets. EAS build `87d46e65-87cd-4847-9a93-b5039519bc85` finished successfully as Dukenim `1.0.0 (12)` and produced a signed widget-enabled IPA. The local multi-target signing files are ignored from Git; `apps/mobile/eas.json` intentionally uses local credentials for production signing.
+
+Implemented and verified: Expo Doctor passes 21/21, mobile strict TypeScript passes, and `eas config --platform ios --profile production --non-interactive` resolves both the widget plugin and the local production credentials source. A production owner created a disposable staff invitation; a separate Edge session registered and opened `/staff`. The initial modules were Orders, Catalog, Stock and Customers. Changing the role to Content Manager changed the employee view to Catalog and AI Studio. Revoking access showed `Активного доступа нет`; restoring returned the two modules.
+
+Azure: unchanged. No Azure resource, model, key, quota, inference or expense changed.
+
+Not completed: EAS Submit cannot upload build 12 until App Store Connect organization API access is enabled and a persistent API key is created. App Store Connect is already authenticated and stopped at the `Запросить доступ` button. The destructive production staff removal and exact synthetic Auth/invitation cleanup also require an action-time deletion confirmation. Live push delivery, widget rendering and performance still require a physical iPhone after TestFlight processing. No App Review or public release was attempted.
+
+Required owner action: confirm creation of App Store Connect API access/key and, separately, deletion of the exact disposable QA employee. No Apple password, OTP or private key should be sent through chat.
+
+Where to verify: Apple Developer identifiers/profiles; EAS build `87d46e65-87cd-4847-9a93-b5039519bc85`; App Store Connect Users and Access → Integrations; production `/admin/team` and the separate employee `/staff` session.

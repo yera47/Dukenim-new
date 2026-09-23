@@ -2,7 +2,7 @@
 
 ## Result
 
-The native owner application is prepared as an App Store production build. Final build `7` completed successfully with the exact brandbook D geometry, a dark main form and blue lower threshold. It preserves the system-icon safe area while using an unpadded compact mark at the original visual size inside the app.
+The native owner application is prepared as an App Store production build. Widget-enabled build `12` completed successfully with the exact brandbook D geometry, a dark main form and blue lower threshold. It preserves the system-icon safe area while using an unpadded compact mark at the original visual size inside the app.
 
 ## Acceptance checklist
 
@@ -22,8 +22,8 @@ The native owner application is prepared as an App Store production build. Final
 | Repeatable TestFlight upload | verified in configuration | `.eas/workflows/submit-latest-ios.yml` validates and selects the latest production iOS build, requires approval, then submits it with release notes. |
 | Static and bundle checks | verified | Mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS Metro export pass. Root TypeScript and the 79-page production web build pass. |
 | Signed App Store IPA | verified | Final production build `d8f33f37-081d-4f99-b37d-fe92462218e8` finished successfully as app `1.0.0`, build `7`, bundle `kz.dukenim.app`, and produced the signed IPA. |
-| TestFlight upload | externally blocked | The saved Apple CLI session expired. Non-interactive EAS Submit needs an App Store Connect API key or one interactive Apple authentication. |
-| Widget-enabled signed build | in progress | EAS detected both `Dukenim` and `ExpoWidgetsTarget`. The main app credentials exist; Apple has no Bundle ID/provisioning profile yet for `kz.dukenim.app.widgets`. Creating those persistent Apple credentials requires the final confirmed UI action, after which EAS build can resume. |
+| TestFlight upload | externally blocked | Widget build `12` is complete. App Store Connect is authenticated, but organization API access has not yet been enabled; creating its persistent API key requires the final confirmed UI action before EAS Submit can upload the IPA. |
+| Widget-enabled signed build | verified | Apple App Group `group.kz.dukenim.app`, widget App ID `kz.dukenim.app.widgets`, App Group associations for both targets and active App Store profiles were created. EAS build `87d46e65-87cd-4847-9a93-b5039519bc85` signed both `Dukenim` and `ExpoWidgetsTarget` and finished as build `12`. |
 
 ## Apple and TestFlight
 
@@ -34,11 +34,13 @@ The native owner application is prepared as an App Store production build. Final
 - Corrected-logo fallback build 6: `https://expo.dev/accounts/yersat47/projects/dukenim/builds/04eb158c-4d37-45f7-817b-8fccd06c3578`.
 - Final build 7: `https://expo.dev/accounts/yersat47/projects/dukenim/builds/d8f33f37-081d-4f99-b37d-fe92462218e8`.
 - Final signed IPA artifact: `https://expo.dev/artifacts/eas/I8FaJYpd2u4ex6e0RNMiUN5lR1JTIcF7NyzSBPBaOMk.ipa`.
+- Widget-enabled build 12: `https://expo.dev/accounts/yersat47/projects/dukenim/builds/87d46e65-87cd-4847-9a93-b5039519bc85`.
+- Widget-enabled IPA artifact: `https://expo.dev/artifacts/eas/DVYoaUODCjGgaZnLjxZnkSH6fsa4EI_G944N-14rZQQ.ipa`.
 - No App Review or public App Store release was performed.
 
 ## Required owner action
 
-When access to Apple is available, authenticate once in App Store Connect or create an App Store Connect API key and save it in EAS. Do not send passwords or two-factor codes in chat. Then run the validated EAS workflow, wait for Apple processing and install the build through TestFlight.
+Approve the one-time App Store Connect API-access request and creation of a least-privilege upload key. The browser session is already authenticated; no password or two-factor code should be sent in chat. Then save the key outside Git, run EAS Submit for build `12`, wait for Apple processing and install through TestFlight.
 
 Before App Review, provide approved business/legal data for App Privacy, review contact phone, screenshots and a review account. Run the device checklist for sign-in, RLS order visibility, push delivery/deep link and camera scanning.
 
