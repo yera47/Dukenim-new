@@ -1537,3 +1537,19 @@ Where to verify: App Store Connect → Dukenim → TestFlight → `Dukenim Inter
 Owner confirmation was received. The browser session expired immediately after the final Add action, so no password or 2FA was requested or handled. The already-created App Store Connect API key was used instead. Apple created beta tester `yersat47@gmail.com`, and a follow-up API read returned exactly one member in `Dukenim Internal`. Build 12 remains the group's automatically distributed build.
 
 No App Review submission or public release occurred. The remaining work requires the physical iPhone: accept the TestFlight invitation, install Dukenim 1.0.0 (12), and verify sign-in, owner-scoped orders, APNs notification/deep link, home-screen widget and barcode camera.
+
+## 2026-09-24 — Expanded owner app, navy identity and TestFlight build 13
+
+Result: commit `4abe6c6` is pushed to `main`. Vercel deployment `dpl_7d9bVjFPQ7Rj3R2giEv44WRCBf8G` is Ready/current on `dukenim.kz` and `www.dukenim.kz`. The minimal two-card iOS shell was replaced with a complete owner dashboard showing store metrics and direct access to Catalog, Orders, AI Studio, Stock, Customers, Team, Analytics, Scanner, Delivery/Payment, Store Preview, Settings and the superadmin centre. Catalog listing and simple product creation are native; creation uses the existing tenant-guarded `create_product_with_variants` RPC, so opening stock remains a `stock_movements` mutation.
+
+Brand: the approved D alpha geometry and all proportions remain unchanged. Only the flat threshold inside the doorway and the wordmark accent changed from cyan to dark navy `#173B57`. Web/mobile icons and current light/reversed symbols were regenerated from the approved silhouette. Production `/icon.svg` was read back and contains the expected unchanged path and navy threshold.
+
+Release: signed EAS build `9772b695-ddeb-41f9-be6f-b2e5b9098c2f` completed as Dukenim `1.0.0 (13)`, commit `4abe6c6`, with IPA `https://expo.dev/artifacts/eas/ha8KYj9KoIKIoVhro6pcHm7yGKmeLBtc-J9bepKYbkI.ipa`. Submission `5ab4fb56-4ec6-406d-86f7-e25cfd53e894` is `VALID`, `IN_BETA_TESTING` and automatically distributed to the existing internal group. Build 12 remains available as rollback.
+
+Checks: mobile strict TypeScript, Expo lint, Expo Doctor 21/21 and iOS Metro export pass. Root strict TypeScript and the 79-route Next.js production build pass. The exact generated 1024 px icon was visually inspected. The full checklist is `docs/ACCEPTANCE_20260924_OWNER_APP_13.md`.
+
+Azure: unchanged; no model, deployment, key, quota, inference or cost change.
+
+Not completed: no real product was created because the owner previously asked to add real products and sales only after his own fresh-store walkthrough. The new authenticated screens, product save, push, widget and camera still require acceptance on the owner's physical iPhone. The complex AI Studio, staff, delivery and payment editors open their mature protected web routes from the mobile dashboard; only catalog creation, orders, scanner and notification settings are native in build 13.
+
+Next recommended action: update Dukenim to build 13 in TestFlight, sign in, open Catalog, add one real product and confirm it appears on the web storefront. Then verify an order notification/deep link, widget and camera scan on the same iPhone.
