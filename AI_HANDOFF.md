@@ -1576,3 +1576,16 @@ Checks: mobile strict TypeScript and Expo lint pass; Expo Doctor passes 21/21; f
 Azure: unchanged; no Azure model, resource, key, quota, inference or expense change.
 
 Remaining release work: commit/push, Vercel production verification, EAS iOS production build and TestFlight submission. Physical iPhone acceptance is still required for camera, APNs, widget and real account flows. Staff AI design application, story uploads, campaigns, loyalty editor and superadmin tools remain web-only. Detailed evidence: `docs/ACCEPTANCE_20260924_NATIVE_WORKSPACE_BUILD_16.md`.
+## 2026-09-24 — synchronized native launch flow and TestFlight build 17
+
+Result: commits `5dfa6bf` and `612cab4` are pushed to `main`. The owner app now resumes the selected store from production `onboarding_completed` and `catalog_status` instead of always opening AI Studio. New native `/onboarding` and `/catalog-builder` routes cover direction/plan/billing plus catalog name, two presentation modes, curated palette, pickup/Yandex delivery, manual remote Kaspi choice and final review. The builder reads and saves the existing owner-only `catalog_builder_drafts` row, so web and app share the persisted catalog step. After the shared setup RPC succeeds, the app opens native first-product creation; its successful save advances the catalog to `ready` while stock still enters through `stock_movements`.
+
+AI Studio is now a standalone chat screen: the persistent main navigation is absent, a compact Telegram-style back capsule is top-left, and a Liquid Glass composer stays at the bottom without the previous overlap/empty-space layout. The shared main bottom navigation also uses `expo-glass-effect`. All owner work cards remain native; only legal/support documents open external URLs.
+
+Production database: `20260924090337_mobile_registration_stage_sync.sql` was applied directly to linked project `gklgbesydbottkqilihb` because historical local/remote migration versions remain divergent. A follow-up `pg_get_functiondef` check proves `create_mobile_owner_store` now inserts `onboarding_completed=false`. Production also reports `catalog_builder_drafts` RLS enabled with only `builder_draft_owner`, and the shared catalog setup RPC exists. No existing tenant, account, product or order was changed.
+
+Checks: mobile strict TypeScript passed; iOS Metro export completed at `output/mobile-native-owner-export-build17`; root strict TypeScript and the 81-route Next.js production build passed. Signed EAS build `1084c33d-bdab-43dd-99ba-006a0b21c0e0`, Dukenim `1.0.0 (17)`, commit `5dfa6bf`, produced the IPA and submission `b07331bd-b23c-4dca-b05e-0f83278bbfe1` completed. App Store Connect visibly reports upload complete, build status ready, internal group `Dukenim Internal`, one invitation. Detailed route/requirement evidence: `docs/MOBILE_APP_AUDIT_20260924.md`.
+
+Azure: unchanged; no model, deployment, key, quota, inference or cost change.
+
+Not completed: physical-iPhone acceptance of build 17 is still external. Open build 17 from TestFlight and walk through sign-in/resume, the six catalog steps, first product, AI keyboard/composer, camera, APNs/deep link and widget. Real Kaspi money movement remains manual and was not executed. SMS remains deferred by owner decision.
