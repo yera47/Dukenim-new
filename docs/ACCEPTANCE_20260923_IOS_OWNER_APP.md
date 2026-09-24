@@ -37,12 +37,12 @@ The native owner application is prepared as an App Store production build. Widge
 - Widget-enabled build 12: `https://expo.dev/accounts/yersat47/projects/dukenim/builds/87d46e65-87cd-4847-9a93-b5039519bc85`.
 - Widget-enabled IPA artifact: `https://expo.dev/artifacts/eas/DVYoaUODCjGgaZnLjxZnkSH6fsa4EI_G944N-14rZQQ.ipa`.
 - TestFlight submission: `https://expo.dev/accounts/yersat47/projects/dukenim/submissions/7ba4603d-0db5-417d-a6ad-b12f072b20b1`.
-- Internal group `Dukenim Internal` exists with build `12` and automatic distribution. No tester notification has been sent yet.
+- Internal group `Dukenim Internal` exists with build `12` and automatic distribution. `yersat47@gmail.com` is the single internal tester and has been invited through the App Store Connect API.
 - No App Review or public App Store release was performed.
 
 ## Required owner action
 
-Confirm adding `yersat47@gmail.com` to the `Dukenim Internal` TestFlight group. This sends an Apple notification and grants access to build `12`; the action is intentionally left at the final confirmation boundary.
+Install Apple's TestFlight app on the iPhone using `yersat47@gmail.com`, accept the Dukenim invitation and open build `12`. Then run the physical-device checklist for sign-in, RLS order visibility, push delivery/deep link, widget rendering and camera scanning.
 
 Before App Review, provide approved business/legal data for App Privacy, review contact phone, screenshots and a review account. Run the device checklist for sign-in, RLS order visibility, push delivery/deep link and camera scanning.
 

@@ -1531,3 +1531,9 @@ Not completed: no TestFlight notification has been sent because adding `yersat47
 Required owner action: confirm adding `yersat47@gmail.com` to `Dukenim Internal`; then install TestFlight on the iPhone and open build 12.
 
 Where to verify: App Store Connect → Dukenim → TestFlight → `Dukenim Internal`; Expo submission `7ba4603d-0db5-417d-a6ad-b12f072b20b1`; production `/admin/team` and the old employee `/staff` tab.
+
+### TestFlight internal invitation completion
+
+Owner confirmation was received. The browser session expired immediately after the final Add action, so no password or 2FA was requested or handled. The already-created App Store Connect API key was used instead. Apple created beta tester `yersat47@gmail.com`, and a follow-up API read returned exactly one member in `Dukenim Internal`. Build 12 remains the group's automatically distributed build.
+
+No App Review submission or public release occurred. The remaining work requires the physical iPhone: accept the TestFlight invitation, install Dukenim 1.0.0 (12), and verify sign-in, owner-scoped orders, APNs notification/deep link, home-screen widget and barcode camera.
