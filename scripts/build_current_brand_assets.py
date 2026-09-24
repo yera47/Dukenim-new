@@ -9,10 +9,10 @@ MOBILE = ROOT / "apps" / "mobile" / "assets" / "images"
 
 INK = (17, 24, 32, 255)
 WHITE = (255, 255, 255, 255)
-# The owner chose a dark navy threshold. Keep the approved D silhouette and
-# restrict colour to the small doorway threshold only.
-BLUE = (23, 59, 87, 255)
-STONE = (244, 240, 232, 255)
+# The owner chose a white doorway threshold and white icon background. Keep
+# the approved D silhouette and restrict the change to that threshold only.
+THRESHOLD = WHITE
+ICON_BACKGROUND = WHITE
 
 # The approved 196x213 alpha silhouette is the geometry source. The accent is
 # deliberately restricted to the flat threshold directly inside the doorway.
@@ -27,7 +27,7 @@ def current_symbol(body: tuple[int, int, int, int]) -> Image.Image:
     threshold_mask = Image.new("L", SOURCE.size, 0)
     ImageDraw.Draw(threshold_mask).rectangle((55, 186, 125, 212), fill=255)
     threshold_mask = ImageChops.multiply(threshold_mask, alpha)
-    accent = Image.new("RGBA", SOURCE.size, BLUE)
+    accent = Image.new("RGBA", SOURCE.size, THRESHOLD)
     image.paste(accent, (0, 0), threshold_mask)
     return image
 
@@ -43,7 +43,7 @@ def transparent_mark(symbol: Image.Image, size: int, box: tuple[int, int, int, i
 def square_icon(symbol: Image.Image, size: int, mark_height: int | None = None) -> Image.Image:
     height = mark_height or round(size * 0.535)
     width = round(height * symbol.width / symbol.height)
-    canvas = Image.new("RGBA", (size, size), STONE)
+    canvas = Image.new("RGBA", (size, size), ICON_BACKGROUND)
     mark = symbol.resize((width, height), Image.Resampling.LANCZOS)
     canvas.alpha_composite(mark, ((size - width) // 2, (size - height) // 2))
     return canvas

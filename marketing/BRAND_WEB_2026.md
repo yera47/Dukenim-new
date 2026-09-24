@@ -4,7 +4,7 @@ This digital specification supersedes the old gold/room direction for platform i
 
 ## Identity
 
-Use the original doorway D geometry from `public/brand/dukenim-flat-symbol.png` through the current light/reversed exports. The web component displays the main form in dark ink or white and colours only the exact lower threshold `#173B57`. Preserve its proportions and transparent negative space. Align the 25 px symbol optically with the 23 px, 800-weight Manrope wordmark; use 8 px separation and one shared line height. Do not enlarge the symbol independently of the wordmark. At compact sizes show only D.
+Use the original doorway D geometry from `public/brand/dukenim-flat-symbol.png` through the current light/reversed exports. The web component displays the main form in dark ink or white; the exact lower doorway threshold is white. Preserve its proportions and transparent negative space. Align the 25 px symbol optically with the 23 px, 800-weight Manrope wordmark; use 8 px separation and one shared line height. Do not enlarge the symbol independently of the wordmark. At compact sizes show only D.
 
 ## Colour and hierarchy
 

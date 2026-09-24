@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" role="img" aria-label="Dukenim">
-  <rect width="1080" height="1080" fill="#F4F0E8"/>
+  <rect width="1080" height="1080" fill="#FFFFFF"/>
   <path fill="#111820" fill-rule="evenodd" d="M286 252H470C676 252 794 365 794 540S676 828 470 828H286V252Zm116 96V727H493C552 727 584 687 584 628V469C584 421 564 394 520 381L402 348Z"/>
-  <path fill="#173B57" d="M402 727H584V828H402Z"/>
+  <path fill="#FFFFFF" d="M402 727H584V828H402Z"/>
 </svg>

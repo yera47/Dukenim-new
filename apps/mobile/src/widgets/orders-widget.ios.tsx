@@ -25,7 +25,7 @@ const DukenimOrdersWidgetView = (props: OrdersWidgetProps, environment: WidgetEn
       spacing={isSmall ? 8 : 12}
       modifiers={[
         padding({ all: 14 }),
-        containerBackground("#F4F0E8", "widget"),
+        containerBackground("#FFFFFF", "widget"),
         widgetURL("dukenim://orders"),
       ]}
     >

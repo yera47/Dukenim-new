@@ -164,7 +164,7 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#F5F7F8" },
+  page: { flex: 1, backgroundColor: "#FFFFFF" },
   content: { padding: 22, paddingBottom: 44 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
   back: { color: "#0E3854", fontWeight: "800", fontSize: 15 },
