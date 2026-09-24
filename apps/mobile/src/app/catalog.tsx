@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { loadOwnerContext, type OwnerStore } from "@/lib/owner";
 import { colors, money } from "@/lib/theme";
@@ -26,6 +26,8 @@ export default function CatalogScreen() {
       const selected=context.stores.some(store=>store.id===storeId)?storeId:context.stores[0]?.id??"";
       setStoreId(selected);
       if(!selected){setProducts([]);setVariants([]);setMessage("Сначала создайте магазин в Dukenim.");return;}
+      const selectedStore=context.stores.find(item=>item.id===selected);
+      if(selectedStore?.catalog_status==="not_started"){router.replace("/catalog-builder" as never);return;}
       const [{data:productRows,error:productError},{data:variantRows,error:variantError}]=await Promise.all([
         supabase!.from("products").select("id,tenant_id,title,description,price,is_active,images,created_at").eq("tenant_id",selected).order("created_at",{ascending:false}),
         supabase!.from("product_variants").select("product_id,stock_qty,is_active").eq("tenant_id",selected),

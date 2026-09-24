@@ -22,6 +22,7 @@ export default function NewProductScreen(){
     if(qty<0||qty>100000000){Alert.alert("Проверьте остаток","Укажите корректное количество.");return;}
     setSaving(true);
     const {error}=await supabase!.rpc("create_product_with_variants",{p_tenant_id:tenantId,p_title:title.trim(),p_description:description.trim(),p_price:amount,p_old_price:previous||null,p_category_id:categoryId,p_images:[],p_is_active:true,p_variants:[{size:"",color:"",sku:sku.trim(),stock:qty}]});
+    if(!error){const status=await supabase!.from("tenants").update({catalog_status:"ready"}).eq("id",tenantId).eq("catalog_status","building");if(status.error){setSaving(false);Alert.alert("Товар сохранён","Позиция создана, но этап запуска не обновился. Откройте каталог ещё раз.");router.replace("/catalog" as never);return;}}
     setSaving(false);
     if(error){Alert.alert("Не удалось сохранить","Проверьте данные и повторите. Товар не был создан.");return;}
     Alert.alert("Товар добавлен","Позиция сохранена в каталоге.",[{text:"Открыть каталог",onPress:()=>router.replace("/catalog" as never)}]);

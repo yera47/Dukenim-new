@@ -7,6 +7,10 @@ export type OwnerStore = {
   slug: string;
   business_vertical: string | null;
   catalog_published: boolean;
+  onboarding_completed: boolean;
+  catalog_status: "not_started" | "building" | "ready";
+  next_plan: "basic" | "standard" | "pro" | null;
+  preferred_billing_period: "monthly" | "annual";
 };
 
 export type OwnerContext = {
@@ -29,7 +33,7 @@ export async function loadOwnerContext(): Promise<OwnerContext> {
   if (ids.length) {
     const { data, error } = await supabase
       .from("tenants")
-      .select("id,name,slug,business_vertical,catalog_published")
+      .select("id,name,slug,business_vertical,catalog_published,onboarding_completed,catalog_status,next_plan,preferred_billing_period")
       .in("id", ids)
       .order("created_at", { ascending: true });
     if (error) throw new Error("Не удалось открыть магазины.");
@@ -40,9 +44,19 @@ export async function loadOwnerContext(): Promise<OwnerContext> {
   return { user: auth.user, role, stores };
 }
 
-export async function workspaceRoute(): Promise<"/studio" | "/staff" | "/setup-store"> {
+export function routeForStore(store: OwnerStore): "/onboarding" | "/catalog-builder" | "/catalog" | "/studio" {
+  if (!store.onboarding_completed) return "/onboarding";
+  if (store.catalog_status === "not_started") return "/catalog-builder";
+  if (store.catalog_status === "building") return "/catalog";
+  return "/studio";
+}
+
+export async function workspaceRoute(): Promise<"/onboarding" | "/catalog-builder" | "/catalog" | "/studio" | "/staff" | "/setup-store"> {
   const context = await loadOwnerContext();
-  if (context.stores.length) return "/studio";
+  if (context.stores.length) {
+    const selectedId = globalThis.localStorage?.getItem("dukenim_selected_store");
+    return routeForStore(context.stores.find(store => store.id === selectedId) ?? context.stores[0]);
+  }
   if (!supabase) return "/setup-store";
   const { data } = await supabase.rpc("staff_directory" as never);
   return Array.isArray(data) && data.length > 0 ? "/staff" : "/setup-store";
