@@ -1553,3 +1553,9 @@ Azure: unchanged; no model, deployment, key, quota, inference or cost change.
 Not completed: no real product was created because the owner previously asked to add real products and sales only after his own fresh-store walkthrough. The new authenticated screens, product save, push, widget and camera still require acceptance on the owner's physical iPhone. The complex AI Studio, staff, delivery and payment editors open their mature protected web routes from the mobile dashboard; only catalog creation, orders, scanner and notification settings are native in build 13.
 
 Next recommended action: update Dukenim to build 13 in TestFlight, sign in, open Catalog, add one real product and confirm it appears on the web storefront. Then verify an order notification/deep link, widget and camera scan on the same iPhone.
+
+## 2026-09-24 — white mobile canvas and TestFlight build 14
+
+Result: owner feedback on build 13 replaced the navy/cyan inner D threshold with white and removed the beige mobile canvas. Commit `191b806` is pushed to `main`. The approved D alpha mask has zero changed pixels; only the doorway threshold and generated icon background are `#FFFFFF`. Native shared surfaces, orders, settings, scanner permission state, splash, Android adaptive icon and the orders widget now use a pure white canvas; dark navy remains the action/navigation colour.
+
+Release evidence: mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS export passed; root TypeScript and the 79-route production build passed. Vercel deployment `dpl_4kEvguGyeCFgZ2hGnwySATdLboRH` is Ready/current on `www.dukenim.kz`, and the public SVG returned HTTP 200 with white background/threshold. Signed EAS build `d00cc4d5-96c1-42ad-a6ed-36184a220ff0`, version `1.0.0 (14)`, was submitted as `5eee78c5-031b-4189-b6b4-ead18559df79`; Apple reports `VALID` and `IN_BETA_TESTING`. Remaining action is visual acceptance on the owner's iPhone after updating TestFlight. Azure unchanged.
