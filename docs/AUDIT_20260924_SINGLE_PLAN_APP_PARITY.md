@@ -18,7 +18,7 @@
 | Наглядная сборка витрины | verified | В приложение добавлен центр сборки магазина и визуальные карточки шаблонов, затем нативные переходы к товарам, оформлению, доставке/оплате, историям, акциям, лояльности и предпросмотру. |
 | Интеграции в приложении | verified | Нативный раздел создаёт tenant-scoped заявки Poster/iiko/МойСклад/CRM и показывает общий с web статус. Пароли не собираются. Kaspi и Яндекс остаются в доставке/оплате. |
 | Сайт и приложение используют одни данные | verified | Все owner-экраны работают с теми же tenant tables/RPC/storage в Supabase; RLS и owner/staff access остаются общими. |
-| Новый TestFlight-релиз | in progress | Локальный iOS export завершён; требуется подписанная EAS-сборка и обработка App Store Connect. |
+| Новый TestFlight-релиз | verified | EAS build `956728bd-64b1-474c-84a0-f6701f584f39`, Dukenim `1.0.0 (19)`, успешно подписан и отправлен. App Store Connect завершил обработку; build 19 имеет статус «Готово к отправке» и добавлен в `Dukenim Internal`. |
 
 ## Карта функций сайта и приложения
 
@@ -43,13 +43,13 @@
 | Ссылка, предпросмотр и свой домен | `/admin/domains` | `/store-link`, `/preview`, support | verified; DNS remains support-assisted on both surfaces |
 | Тариф | `/admin/plan` | `/plan` | verified; live provider checkout still needs production transaction acceptance |
 | Поддержка | `/admin/requests` | `/support` | verified |
-| Push и виджет заказов | browser settings | `/settings`, iOS widget | in progress; implementation/export pass, physical-device delivery remains externally blocked |
+| Push и виджет заказов | browser settings | `/settings`, iOS widget | verified for implementation, signed build and TestFlight delivery; foreground/background push, widget refresh and deep link remain externally blocked until physical-device acceptance |
 | Platform superadmin | `/root` | intentionally absent | verified product boundary: this is Ersat's platform console, not a merchant-app function |
 
 ## Оставшиеся внешние границы
 
 - Реальная подписка Polar и webhook должны быть проведены настоящим способом оплаты; сборка не доказывает списание денег.
 - Poster, iiko, МойСклад и CRM не считаются подключёнными без credentials/OAuth и согласного пилотного магазина.
-- Push, камера, виджет, производительность и полный свежий onboarding требуют нового TestFlight build на физическом iPhone.
+- Push, камера, виджет, производительность и полный свежий onboarding требуют проверки build 19 на физическом iPhone.
 - SMS остаётся отложенным по решению владельца.
 - Автоматическая DNS-проверка своего домена отсутствует и на сайте, и в приложении; сейчас это общий support-assisted процесс.

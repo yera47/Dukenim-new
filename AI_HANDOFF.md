@@ -1,5 +1,43 @@
 # Dukenim — AI handoff
 
+## 2026-09-24 — единый тариф и iOS parity release 19
+
+Result: публичная модель упрощена до одного тарифа «Каталог» за 24 900 ₸/месяц со всеми функциями. Web и native onboarding больше не выбирают «Еда и напитки» заранее. В мобильное приложение добавлены нативные центр сборки витрины, интеграции, тариф, продолжение сохранённого этапа, визуальные варианты шаблонов, постоянная карточка следующего шага в AI Studio и Liquid Glass навигация. Все owner-модули используют те же tenant-данные Supabase, что и сайт.
+
+Implemented and verified: production Vercel deployment `dpl_65En54NHGU6QJm8wJJuxmtVW8AuH` is Ready on `www.dukenim.kz`; production visually shows one 24 900 ₸ monthly plan and no annual switch. Migration `20260924103425_unify_catalog_plan_access.sql` is applied; the guarded invoker RPC accepts all six storefront templates. Root/mobile strict TypeScript, 98 test files (490 passed, four intentional live-AI skips), Expo Doctor 21/21, production Next build (82 routes) and clean iOS export pass. EAS build `956728bd-64b1-474c-84a0-f6701f584f39`, Dukenim `1.0.0 (19)`, was submitted as `6135e99c-6ee2-4ee3-8ed9-13046264f442`; App Store Connect finished processing it and assigned it to `Dukenim Internal` with status ready to submit/test. Evidence: `docs/AUDIT_20260924_SINGLE_PLAN_APP_PARITY.md`.
+
+Azure: unchanged. No Azure resource, model, deployment, quota, key, inference or cost changed.
+
+Not completed: the real Polar checkout amount and webhook have not been verified with a payment; the configured provider product may still contain an earlier amount, so the owner must confirm that Polar displays exactly 24 900 ₸ before paying. Full build-19 acceptance on a physical iPhone (fresh registration/resume, push in all app states, widget refresh/deep link, camera and performance), a fresh two-account employee journey, and live CRM/POS sync remain unverified. Provider sync needs vendor credentials and a consenting pilot merchant. SMS remains deferred.
+
+Next recommended action: install build 19 from the `Dukenim Internal` TestFlight group, run the physical-device checklist, and open the production tariff checkout only far enough to confirm 24 900 ₸ before any payment.
+
+## 2026-09-24 — Native parity release 18
+
+Result: expanded the iOS owner workspace from the basic build 17 shell into a shared-data merchant app. Added native promotions, food stories with media, loyalty, storefront theme/copy, permanent store link/share, Realtime support chat, food raw materials and multi-store switching. Product creation now accepts photos and food ingredients plus weight/KБЖУ; catalog publication uses the guarded database RPC. AI Studio now renders actionable task cards and opens the matching native editor.
+
+Staff: removed the web-only AI placeholder. The mobile bearer endpoint authorizes the exact active staff-access row, requires `studio:write`, checks entitlement, reserves credits, re-checks access immediately before saving and refunds the reservation on failure. Focused staff endpoint tests pass.
+
+Checks: mobile and root strict TypeScript pass; Expo Doctor 21/21; focused owner/staff AI API tests 5/5; production Next build outputs 82 routes; clean iOS export is in `output/mobile-native-owner-export-build18`. Exact requirement status and boundaries are in `docs/MOBILE_APP_PARITY_RELEASE_20260924.md`.
+
+Azure: unchanged. The release adds an authenticated mobile path to the existing AI Studio deployment; no Azure resource, model, quota or key was changed and no inference was run.
+
+Release: commit `28c6958` is pushed and Vercel production deployment `dpl_2BdRH9WUacS6FCMmmKqEM9mDAtRz` is Ready on `www.dukenim.kz`. EAS build `bfce8d35-0bc8-49ae-9b3a-92763f1cbf84` produced Dukenim `1.0.0 (18)`; submission `8c1544e4-e8d3-4c12-96b6-63fa738ca7f2` succeeded. App Store Connect finished processing build 18 and assigned it to the `Dukenim Internal` group with one invite; status is ready to submit/test.
+
+Not completed: physical-iPhone acceptance remains. Advanced arbitrary food add-on/combo editing, recipe-to-material mapping, platform superadmin controls, provider-backed payments/refunds/CRM and deferred SMS are not claimed complete. Provider functions require external merchant credentials; device checks require installing build 18 from TestFlight.
+
+## 2026-09-24 — Poster, iiko and МойСклад integration evidence refresh
+
+Result: mailbox review found substantive replies from Poster, iiko and МойСклад. Poster support says its API is open, so Dukenim may start implementation; marketplace/partner publication is optional. iiko says Dukenim must build independently: no 2026 partnership, sandbox or supported pilot is available, and every live restaurant must independently obtain its own API login. The Dukenim developer-company profile was saved in the iiko portal, but the portal still displays email confirmation before application creation. МойСклад explicitly directs Dukenim to its developer account and Vendor API: a draft solution yields application identifiers/secret, while merchant authorization follows its install/resume lifecycle.
+
+Implemented and verified: `docs/INTEGRATION_IMPLEMENTATION_20260909.md` now distinguishes documented provider availability from an actual connected merchant. The acceptance contract is: per-tenant encrypted credentials only; canonical product/availability/order events; idempotency by provider + tenant + entity + source version; a durable outbox/inbox; no payment inference from order status; reconciliation of remote object IDs/status/version; and read-only catalog/availability preflight before the first remote order. No provider account, secret, real restaurant, order or payment was created.
+
+Not completed: Poster/iiko/MoySklad end-to-end sync cannot be claimed without a provider application credential plus a consenting pilot merchant/test account. Poster has not supplied a sample account. iiko has no sandbox and requires a restaurant's individual API login. МойСклад developer registration/application creation needs external account/key actions. Existing Planfix and Business.Ru pilots remain separate and not live-connected.
+
+Required owner action: action-time confirmation is required to send follow-up requests for a Poster sample/test account, request iiko email confirmation, create the iiko developer application, and create a МойСклад developer account/draft solution. Do not accept contracts, paid plans or partner agreements automatically.
+
+Where to verify: Poster developer API; iiko developer portal and the restaurant's own API login; МойСклад developer cabinet/Vendor API. The next engineering slice should add a provider-neutral outbox/inbox/reconciliation layer before enabling any automatic production order transfer.
+
 ## 2026-09-24 — Staff access security and UX (local, awaiting release authorization)
 
 Result: completed a focused owner/employee access audit and prepared a local hardening release. `/admin/team` now explains the model, offers a visible copy-link button with fallback selection, shows accepted employee email for new/backfilled invitations, supports editing permissions, immediate disable/restore, revoking a pending link and audited membership removal. `/staff/join` now explains both new/existing account paths, requires a 15–128 character non-obvious password and preserves the invitation across login without placing new raw tokens in server request URLs.
