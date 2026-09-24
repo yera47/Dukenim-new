@@ -1517,3 +1517,17 @@ Not completed: EAS Submit cannot upload build 12 until App Store Connect organiz
 Required owner action: confirm creation of App Store Connect API access/key and, separately, deletion of the exact disposable QA employee. No Apple password, OTP or private key should be sent through chat.
 
 Where to verify: Apple Developer identifiers/profiles; EAS build `87d46e65-87cd-4847-9a93-b5039519bc85`; App Store Connect Users and Access → Integrations; production `/admin/team` and the separate employee `/staff` session.
+
+## 2026-09-24 — TestFlight submission and exact employee cleanup
+
+Result: App Store Connect organization API access was approved. API key `Dukenim EAS Upload` was created with the App Manager role, downloaded once, stored only in ignored local credentials and assigned to EAS Submit. Submission `7ba4603d-0db5-417d-a6ad-b12f072b20b1` finished. Apple lists Dukenim `1.0.0 (12)` as upload complete and ready for beta testing. Internal group `Dukenim Internal` exists, contains build 12 and has automatic distribution enabled.
+
+Implemented and verified: `eas submit:status` uses the stored EAS key and returns `VALID`, `READY_FOR_BETA_TESTING` and `READY_FOR_BETA_SUBMISSION` for build 12. The exact QA employee deletion was confirmed by the owner and performed with strict one-row guards; post-cleanup counts are 0 Auth users, 0 `staff_access` rows and 0 `staff_invitations` rows. Reloading the employee browser returned the protected login page.
+
+Azure: unchanged. No Azure resource, model, key, quota, inference or expense changed.
+
+Not completed: no TestFlight notification has been sent because adding `yersat47@gmail.com` to the internal group is a representational notification action and still needs action-time confirmation. Physical-iPhone installation, live APNs delivery, widget rendering and camera scanning remain device acceptance items. App Review and public App Store release were not attempted.
+
+Required owner action: confirm adding `yersat47@gmail.com` to `Dukenim Internal`; then install TestFlight on the iPhone and open build 12.
+
+Where to verify: App Store Connect → Dukenim → TestFlight → `Dukenim Internal`; Expo submission `7ba4603d-0db5-417d-a6ad-b12f072b20b1`; production `/admin/team` and the old employee `/staff` tab.

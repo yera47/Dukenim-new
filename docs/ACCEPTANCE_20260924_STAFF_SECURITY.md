@@ -17,7 +17,7 @@
 | Continuous security scanning | verified as configuration | Weekly Dependabot, weekly/push/PR CodeQL and production dependency audit workflows were added; YAML parsed locally. They begin running after push. |
 | Production database migration | verified | Owner authorized publication. `staff_access_security_and_removal` and the covering `staff_invitation_accepted_by_index` migration are applied to project `gklgbesydbottkqilihb`; the complete SQL regression ran inside a transaction and rolled back all fixtures. |
 | Production application release | verified | Commit `f24a20c` is deployed as Vercel production deployment `dpl_4ToSgt3JxbUs8P1Ycj6evujXf79D`, Ready and aliased to `www.dukenim.kz` and `dukenim.kz`. `/admin/team` redirects unauthenticated requests, while `/staff/join` and `/support` return HTTP 200 with HSTS and same-origin frame protection. |
-| Live two-browser journey | verified through restore | A production owner created a disposable invitation; a separate Edge session registered the matching employee, opened `/staff`, and initially saw Orders, Catalog, Stock and Customers. The owner changed the role to Content Manager and the employee view changed to Catalog and AI Studio; disabling showed `Активного доступа нет`, and restoring brought the two modules back. Final removal and exact fixture cleanup remain pending because UI deletion requires a separate action-time confirmation. |
+| Live two-browser journey | verified and cleaned | A production owner created a disposable invitation; a separate Edge session registered the matching employee, opened `/staff`, and initially saw Orders, Catalog, Stock and Customers. The owner changed the role to Content Manager and the employee view changed to Catalog and AI Studio; disabling showed `Активного доступа нет`, and restoring brought the two modules back. After owner confirmation, exact guarded cleanup returned 0 Auth users, 0 staff rows and 0 invitation rows; reloading the employee tab returned the login screen. |
 | Supabase leaked-password protection | externally blocked | The current Supabase Security Advisor reports it disabled; Supabase documents this control as a Pro-plan feature. Local staff passwords still receive length and obvious-password screening. |
 | Mandatory MFA for owners and staff | not started | TOTP enrollment/challenge UI and AAL2 database enforcement are a separate product flow and are not represented as complete. |
 
@@ -42,4 +42,4 @@
 
 ## Production boundary
 
-The database and application release are live. The complete two-browser production journey is verified through restore. The remaining destructive step is to press `Удалить из команды` and then remove the exact synthetic employee account/invitation; this requires an action-time deletion confirmation.
+The database and application release are live. The complete two-browser production journey is verified through restore and exact cleanup. No synthetic employee data remains.

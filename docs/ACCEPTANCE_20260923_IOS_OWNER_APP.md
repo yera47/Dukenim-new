@@ -22,7 +22,7 @@ The native owner application is prepared as an App Store production build. Widge
 | Repeatable TestFlight upload | verified in configuration | `.eas/workflows/submit-latest-ios.yml` validates and selects the latest production iOS build, requires approval, then submits it with release notes. |
 | Static and bundle checks | verified | Mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS Metro export pass. Root TypeScript and the 79-page production web build pass. |
 | Signed App Store IPA | verified | Final production build `d8f33f37-081d-4f99-b37d-fe92462218e8` finished successfully as app `1.0.0`, build `7`, bundle `kz.dukenim.app`, and produced the signed IPA. |
-| TestFlight upload | externally blocked | Widget build `12` is complete. App Store Connect is authenticated, but organization API access has not yet been enabled; creating its persistent API key requires the final confirmed UI action before EAS Submit can upload the IPA. |
+| TestFlight upload | verified | App Store Connect organization API access was approved. Key `Dukenim EAS Upload` has the App Manager role and is assigned to the EAS project. Submission `7ba4603d-0db5-417d-a6ad-b12f072b20b1` finished; Apple reports build `12` as `VALID`, `READY_FOR_BETA_TESTING` and visible in TestFlight. |
 | Widget-enabled signed build | verified | Apple App Group `group.kz.dukenim.app`, widget App ID `kz.dukenim.app.widgets`, App Group associations for both targets and active App Store profiles were created. EAS build `87d46e65-87cd-4847-9a93-b5039519bc85` signed both `Dukenim` and `ExpoWidgetsTarget` and finished as build `12`. |
 
 ## Apple and TestFlight
@@ -36,11 +36,13 @@ The native owner application is prepared as an App Store production build. Widge
 - Final signed IPA artifact: `https://expo.dev/artifacts/eas/I8FaJYpd2u4ex6e0RNMiUN5lR1JTIcF7NyzSBPBaOMk.ipa`.
 - Widget-enabled build 12: `https://expo.dev/accounts/yersat47/projects/dukenim/builds/87d46e65-87cd-4847-9a93-b5039519bc85`.
 - Widget-enabled IPA artifact: `https://expo.dev/artifacts/eas/DVYoaUODCjGgaZnLjxZnkSH6fsa4EI_G944N-14rZQQ.ipa`.
+- TestFlight submission: `https://expo.dev/accounts/yersat47/projects/dukenim/submissions/7ba4603d-0db5-417d-a6ad-b12f072b20b1`.
+- Internal group `Dukenim Internal` exists with build `12` and automatic distribution. No tester notification has been sent yet.
 - No App Review or public App Store release was performed.
 
 ## Required owner action
 
-Approve the one-time App Store Connect API-access request and creation of a least-privilege upload key. The browser session is already authenticated; no password or two-factor code should be sent in chat. Then save the key outside Git, run EAS Submit for build `12`, wait for Apple processing and install through TestFlight.
+Confirm adding `yersat47@gmail.com` to the `Dukenim Internal` TestFlight group. This sends an Apple notification and grants access to build `12`; the action is intentionally left at the final confirmation boundary.
 
 Before App Review, provide approved business/legal data for App Privacy, review contact phone, screenshots and a review account. Run the device checklist for sign-in, RLS order visibility, push delivery/deep link and camera scanning.
 
