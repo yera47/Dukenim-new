@@ -9,9 +9,9 @@ MOBILE = ROOT / "apps" / "mobile" / "assets" / "images"
 
 INK = (17, 24, 32, 255)
 WHITE = (255, 255, 255, 255)
-# The owner chose a white doorway threshold and white icon background. Keep
-# the approved D silhouette and restrict the change to that threshold only.
-THRESHOLD = WHITE
+# The owner chose a visible medium navy doorway threshold on a white icon
+# background. Keep the approved D silhouette and change that threshold only.
+THRESHOLD = (49, 95, 120, 255)
 ICON_BACKGROUND = WHITE
 
 # The approved 196x213 alpha silhouette is the geometry source. The accent is

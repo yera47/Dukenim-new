@@ -1,6 +1,6 @@
 export const colors = {
-  navy: "#173B57",
-  navyDark: "#0E2A40",
+  navy: "#315F78",
+  navyDark: "#274B60",
   navySoft: "#EDF4F8",
   ink: "#111820",
   stone: "#FFFFFF",
