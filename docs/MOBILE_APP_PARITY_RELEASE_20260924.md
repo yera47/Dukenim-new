@@ -27,6 +27,8 @@ The native owner workspace now continues the same registration/catalog stage as 
 | Raw food materials | verified locally | Native material editor reads tenant materials and saves through `owner_save_food_material`, preserving movement-led stock changes. |
 | Multi-store selection | verified locally | Owner can switch the selected store in native management; following screens read that persisted selection. |
 | Dependency/config health | verified | Expo Doctor 21/21, mobile TypeScript, root TypeScript, targeted tests, 82-route production build and clean iOS export pass. |
+| Production web release | verified | Commit `28c6958` is pushed; Vercel deployment `dpl_2BdRH9WUacS6FCMmmKqEM9mDAtRz` is Ready and aliased to `www.dukenim.kz`; the deployed mobile staff endpoint returns the expected validation response. |
+| TestFlight delivery | verified | EAS build `bfce8d35-0bc8-49ae-9b3a-92763f1cbf84` produced Dukenim `1.0.0 (18)`; submission `8c1544e4-e8d3-4c12-96b6-63fa738ca7f2` succeeded. App Store Connect completed processing and shows build 18 as `Ready to Submit` in `Dukenim Internal` with one invite. |
 | Physical iPhone scenarios | externally blocked | Requires installing build 18 from TestFlight and using real camera/media permissions, push delivery and two accounts. |
 | Automatic card/Kaspi settlement, refund and live CRM | externally blocked | Provider merchant credentials/contracts and real settlement webhooks do not exist in the project. |
 | SMS | externally blocked/deferred | Owner explicitly deferred SMS provider onboarding and Sender ID. |
@@ -41,6 +43,10 @@ The native owner workspace now continues the same registration/catalog stage as 
 - `npm test -- src/app/api/mobile/staff-studio/route.test.ts src/app/api/staff/studio/route.test.ts` — 5/5
 - `npx tsc --noEmit`
 - `npm run build` — 82 routes
+- Vercel production deployment `dpl_2BdRH9WUacS6FCMmmKqEM9mDAtRz` — Ready, canonical aliases active
+- EAS iOS build `bfce8d35-0bc8-49ae-9b3a-92763f1cbf84` — Finished
+- EAS submission `8c1544e4-e8d3-4c12-96b6-63fa738ca7f2` — Succeeded
+- App Store Connect — build `1.0.0 (18)` processed, ready and assigned to `Dukenim Internal`
 
 ## Release boundary
 
