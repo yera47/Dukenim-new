@@ -25,9 +25,9 @@
       "ru": {
         "title": "Dukenim для бизнеса",
         "subtitle": "Заказы и каталог магазина",
-        "description": "Рабочее приложение владельца Dukenim. Получайте и просматривайте заказы своих магазинов, следите за их статусом, подключайте push-уведомления и сканируйте штрихкоды товаров. Для входа используется тот же защищённый аккаунт, что и в веб-кабинете Dukenim. Настройки каталога, сотрудников, доставки и оплаты открываются в полном кабинете на dukenim.kz.",
+        "description": "Рабочее приложение владельца Dukenim. Управляйте каталогом, добавляйте товары, просматривайте заказы и показатели магазина, подключайте push-уведомления и сканируйте штрихкоды. AI Studio, сотрудники, доставка, оплата и остальные разделы доступны из единого кабинета. Для входа используется тот же защищённый аккаунт, что и на dukenim.kz.",
         "keywords": ["магазин", "заказы", "каталог", "бизнес", "остатки", "продавец"],
-        "releaseNotes": "Первая версия приложения владельца: безопасный вход, список заказов, push-уведомления, переход к заказу и сканер штрихкодов.",
+        "releaseNotes": "Полный главный кабинет владельца, нативный каталог и добавление товаров, показатели магазина, быстрый доступ к AI Studio, сотрудникам, аналитике, доставке и оплате. Голубой акцент логотипа заменён на тёмно-синий без изменения формы D.",
         "promoText": "Заказы Dukenim и важные действия владельца всегда под рукой.",
         "marketingUrl": "https://www.dukenim.kz",
         "supportUrl": "https://www.dukenim.kz/support",
@@ -36,9 +36,9 @@
       "en-US": {
         "title": "Dukenim for Business",
         "subtitle": "Store orders and catalog",
-        "description": "The owner app for Dukenim. View orders for your stores, track their status, enable push notifications, and scan product barcodes. Sign in with the same secure account you use in the Dukenim web dashboard. Catalog, team, delivery, and payment settings remain available in the full dashboard at dukenim.kz.",
+        "description": "The Dukenim owner app. Manage your catalog, add products, view orders and store metrics, enable push notifications, and scan product barcodes. AI Studio, staff, delivery, payments, and the rest of the dashboard are available from one workspace. Sign in with the same secure account you use at dukenim.kz.",
         "keywords": ["store", "orders", "catalog", "business", "inventory", "merchant"],
-        "releaseNotes": "First owner release with secure sign-in, order list, push notifications, order deep links, and barcode scanning.",
+        "releaseNotes": "A complete owner dashboard, native catalog and product creation, store metrics, and quick access to AI Studio, staff, analytics, delivery, and payments. The logo accent is now dark navy while preserving the approved D shape.",
         "promoText": "Dukenim orders and essential owner tools in one place.",
         "marketingUrl": "https://www.dukenim.kz",
         "supportUrl": "https://www.dukenim.kz/support",

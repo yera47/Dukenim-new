@@ -240,18 +240,18 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 - Legal templates (offer, privacy and cookies) exist but require real company details and legal review before commercial launch.
 - Production has RLS-protected tables for promotion codes, tariff checkout requests, promotion redemptions, and root audit events. The public guest checkout RPC is still legacy-exposed until the server-side replacement is deployed and smoke-tested; its lockdown migration must not be applied earlier.
 - `/admin/ai-studio` and `/admin/requests` (tenant-scoped `change_requests`/`messages`, already RLS-protected, with a root queue at `/root`) now cross-link each other as an explicit "ИИ-помощник / написать в поддержку" choice; no new ticket schema was needed.
-- Storefronts have PWA manifests and a narrow service-worker shell that caches public static assets only. Admin, root, auth and API routes remain network-only to avoid retaining tenant or session data in browser storage. A native Expo SDK 57 iOS/Android client exists under `apps/mobile`: it uses the approved Dukenim identity, public Supabase Auth configuration, owner/superadmin role recognition, a native RLS-scoped order list and order detail, push/deep-link routing, notification settings and camera barcode scanning. EAS production build `90742768-52d6-4837-9608-0181d0e7977f` produced the first signed App Store IPA as iOS version 1.0.0 build 3 for `kz.dukenim.app`. TestFlight upload remains pending because the saved Apple CLI session expired and no App Store Connect API key is configured. Physical-iPhone sign-in, push, deep-link and camera acceptance remain release gates; native social OAuth is a separate completion step.
+- Storefronts have PWA manifests and a narrow service-worker shell that caches public static assets only. Admin, root, auth and API routes remain network-only to avoid retaining tenant or session data in browser storage. A native Expo SDK 57 iOS/Android owner client exists under `apps/mobile`: it uses the same Supabase Auth/RLS scope as the web cabinet, shows store metrics and the full module map, provides native catalog listing and product creation through `create_product_with_variants`, plus native orders/order detail, push/deep-link routing, notification settings, barcode scanning and a privacy-minimal iOS order widget. Build 12 is already distributed through the internal TestFlight group; the expanded owner build is being prepared as its replacement. Physical-iPhone acceptance remains required for the new catalog creation, push/deep link, widget and camera paths.
 - Audit finding (2026-09-03): the historical local migration chain cannot be replayed cleanly because older 12-digit files reference types whose creation is not represented. Production was verified directly and contains the authoritative enum values. No ineffective late "fix" migration is retained; baseline/reconcile the old history before any blanket database push.
 
 ## Brand source of truth
 
 - Current brandbook: `output/pdf/Dukenim_Brandbook_2026.pdf` (version 1.0, August 2026).
 - Current production masters: `public/brand/dukenim-flat-*`.
-- Core colors: Black Jade `#071B17`, Aged Gold `#B08A50`, Pale Stone `#F4F0E8`, Graphite `#101713`, Warm Sand `#E8DFD0`.
-- The threshold and wordmark dot are Aged Gold in the current approved system.
+- Core platform colors: ink `#111820`, dark navy `#173B57` / `#0E2A40`, Pale Stone `#F4F0E8`, white surfaces and semantic status colours.
+- The approved D alpha geometry is unchanged; only the flat inner doorway threshold and wordmark dot use dark navy `#173B57`.
 - Font: Manrope.
-- Older green-accent `dukenim-approved-*`, `dukenim-logo-combo*`, and older PDFs are historical, not the current source of truth.
-- The shared application tokens and owner navigation now use the approved Black Jade/Aged Gold/Pale Stone system. Some feature-specific legacy CSS remains and should be removed incrementally when those screens are touched.
+- Older green/gold/cyan exports, `dukenim-logo-combo*`, and older PDFs are historical, not the current colour source of truth.
+- Shared web/mobile platform tokens and owner navigation use the dark-navy system. Tenant storefront palettes remain merchant-controlled.
 
 ## Marketing system
 

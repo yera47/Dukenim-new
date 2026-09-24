@@ -9,7 +9,9 @@ MOBILE = ROOT / "apps" / "mobile" / "assets" / "images"
 
 INK = (17, 24, 32, 255)
 WHITE = (255, 255, 255, 255)
-BLUE = (111, 185, 232, 255)
+# The owner chose a dark navy threshold. Keep the approved D silhouette and
+# restrict colour to the small doorway threshold only.
+BLUE = (23, 59, 87, 255)
 STONE = (244, 240, 232, 255)
 
 # The approved 196x213 alpha silhouette is the geometry source. The accent is
