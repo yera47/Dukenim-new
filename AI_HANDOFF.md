@@ -1565,3 +1565,14 @@ Release evidence: mobile TypeScript, Expo lint, Expo Doctor 21/21 and iOS export
 Result: the build-14 white threshold was invisible on the white icon canvas. Commit `4d196dd` preserves the exact approved D alpha mask, black body and white background, and changes only the lower doorway threshold to medium navy `#315F78`. Active interface accents that used the former nearly-black `#173B57` now use the same lighter navy family.
 
 Release evidence: threshold pixel `(49,95,120,255)`, icon background `(255,255,255,255)` and zero alpha-mask differences were verified. Mobile TypeScript/lint, Expo Doctor 21/21, iOS export, root TypeScript and 79-route build pass. Vercel `dpl_7iAAEXKj45CiF4pRwXvFYUQphAn4` is Ready/current and production SVG returns the expected colours. EAS build `7986d60f-b924-4f5e-867e-d1c12a0c31fa`, version `1.0.0 (15)`, submission `317be578-5f2f-4728-a9ca-2adc51bb33d4`, is `VALID` and `IN_BETA_TESTING`. Physical-iPhone visual acceptance remains; Azure unchanged.
+## 2026-09-24 — Native owner workspace release preparation
+
+Result: replaced the mobile web-link dashboard with native Expo screens for registration/store setup, AI Studio, Catalog, product create/edit, Orders, payment/status handling, Stock, Customers, Team, Analytics, Scanner, Delivery/Kaspi, Preview and Settings. Added persistent AI Studio/Catalog/Orders/More navigation. All use the existing production Supabase account and tenant data. Employees with active `staff_access` now route to a restricted native staff workspace rather than owner onboarding.
+
+Database: applied `20260924074517_mobile_native_workspace.sql` to `gklgbesydbottkqilihb`. The authenticated-only `create_mobile_owner_store` RPC checks confirmed email, limits store creation, and atomically creates tenant, owner membership, settings and storefront. A production rollback-only probe passed. Added bearer-authenticated `/api/mobile/ai-studio` and `/api/mobile/team`; neither stores bearer tokens or invitation plaintext in the database.
+
+Checks: mobile strict TypeScript and Expo lint pass; Expo Doctor passes 21/21; final iOS Metro export exists at `output/mobile-native-owner-export-build16`; root strict TypeScript passes. The earlier final root suite/build still pass at 488 tests (four intentional live-AI skips) and 81 generated pages with both mobile API routes. Identity remains the approved black D on white with only the lower doorway threshold in `#315F78`.
+
+Azure: unchanged; no Azure model, resource, key, quota, inference or expense change.
+
+Remaining release work: commit/push, Vercel production verification, EAS iOS production build and TestFlight submission. Physical iPhone acceptance is still required for camera, APNs, widget and real account flows. Staff AI design application, story uploads, campaigns, loyalty editor and superadmin tools remain web-only. Detailed evidence: `docs/ACCEPTANCE_20260924_NATIVE_WORKSPACE_BUILD_16.md`.

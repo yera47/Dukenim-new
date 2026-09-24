@@ -12,6 +12,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { updateOrdersWidget } from "@/widgets/orders-widget";
+import { BottomNav } from "@/components/app-shell";
 
 type Filter = "all" | "new" | "active" | "done";
 type MobileOrder = {
@@ -106,6 +107,7 @@ export default function OrdersScreen() {
   useEffect(() => {
     void load();
   }, [load]);
+  useEffect(()=>{const client=supabase;if(!client)return;const channel=client.channel("mobile-orders").on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>void load(true)).subscribe();return()=>{void client.removeChannel(channel);};},[load]);
 
   const visibleOrders = useMemo(() => orders.filter((order) => matchesFilter(order, filter)), [orders, filter]);
 
@@ -158,14 +160,14 @@ export default function OrdersScreen() {
             </Link>
           ))}
         </View>
-      </ScrollView>
+      </ScrollView><BottomNav />
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#FFFFFF" },
-  content: { padding: 22, paddingBottom: 44 },
+  content: { padding: 22, paddingBottom: 115 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
   back: { color: "#0E3854", fontWeight: "800", fontSize: 15 },
   live: { flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "#E9F4F9", paddingHorizontal: 11, paddingVertical: 7, borderRadius: 99 },

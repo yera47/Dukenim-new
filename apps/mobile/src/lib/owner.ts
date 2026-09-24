@@ -40,3 +40,10 @@ export async function loadOwnerContext(): Promise<OwnerContext> {
   return { user: auth.user, role, stores };
 }
 
+export async function workspaceRoute(): Promise<"/studio" | "/staff" | "/setup-store"> {
+  const context = await loadOwnerContext();
+  if (context.stores.length) return "/studio";
+  if (!supabase) return "/setup-store";
+  const { data } = await supabase.rpc("staff_directory" as never);
+  return Array.isArray(data) && data.length > 0 ? "/staff" : "/setup-store";
+}
