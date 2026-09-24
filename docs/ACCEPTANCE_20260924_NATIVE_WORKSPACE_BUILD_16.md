@@ -6,6 +6,8 @@ Date: 2026-09-24
 
 The iOS owner shell was replaced by a native working application. Authentication, registration, first-store creation, AI Studio, Catalog, product creation/editing, Orders, order/payment status, Stock, Customers, Team, Analytics, Scanner, Delivery/Kaspi setup, storefront preview, push settings and sign-out now have native routes backed by the same production Supabase project as `dukenim.kz`. The persistent bottom navigation contains AI Studio, Catalog, Orders and More.
 
+Commit `6e5f060` is pushed to `main`. Vercel deployment `dpl_5sUiahf7KUJrStZ7XkZij8MbH1oS` is Ready/current on `dukenim.kz` and `www.dukenim.kz`. Signed EAS build `5b1a210a-ebe2-43a6-8211-a8e60e46cb7d`, Dukenim `1.0.0 (16)`, was uploaded by submission `ecb36e75-960b-4faf-8603-2b5f284972ad`; Apple reports it as valid and in internal beta testing.
+
 ## Implemented and verified
 
 - Native navigation: every internal route referenced by a mobile button has a matching Expo Router screen. Legal documents and support intentionally open the public web pages.
@@ -35,5 +37,6 @@ Install the new TestFlight build when Apple finishes processing. Sign in with th
 ## Where to verify
 
 - Native: login → registration/setup → AI Studio/Catalog/Orders/More.
-- Production: `https://www.dukenim.kz` and the mobile endpoints `/api/mobile/ai-studio`, `/api/mobile/team`.
+- Production: `https://www.dukenim.kz` and the mobile endpoints `/api/mobile/ai-studio`, `/api/mobile/team`. Anonymous production probes return the expected `401` instead of exposing either action.
 - Database: migration `20260924074517_mobile_native_workspace.sql` in Supabase project `gklgbesydbottkqilihb`.
+- TestFlight: build `1.0.0 (16)` in the existing `Dukenim Internal` group.
