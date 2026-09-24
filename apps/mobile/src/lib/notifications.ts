@@ -1,9 +1,9 @@
 import * as Notifications from "expo-notifications";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
-import AsyncStorage from "expo-sqlite/kv-store";
 import { Platform } from "react-native";
 import { supabase } from "@/lib/supabase";
+import { deviceStorage } from "@/lib/device-storage";
 
 export type PushSetup = { state: "granted" | "denied" | "unavailable"; message: string };
 
@@ -12,7 +12,7 @@ const storageKeyFor = (userId: string) => `dukenim.push.${userId}`;
 async function saveExpoPushToken(token: string, userId: string): Promise<void> {
   if (!supabase) throw new Error("Supabase is not configured");
   const storageKey = storageKeyFor(userId);
-  const previous = await AsyncStorage.getItem(storageKey);
+  const previous = await deviceStorage.getItem(storageKey);
   if (previous && previous !== token) {
     const disabled = await supabase
       .from("mobile_device_tokens")
@@ -26,7 +26,7 @@ async function saveExpoPushToken(token: string, userId: string): Promise<void> {
     { onConflict: "user_id,token" },
   );
   if (error) throw error;
-  await AsyncStorage.setItem(storageKey, token);
+  await deviceStorage.setItem(storageKey, token);
 }
 
 export async function requestPushPermission(): Promise<PushSetup> {
@@ -79,7 +79,7 @@ export async function disableCurrentDevicePush(): Promise<void> {
   if (authError) throw authError;
   if (!user) return;
   const storageKey = storageKeyFor(user.id);
-  let token = await AsyncStorage.getItem(storageKey);
+  let token = await deviceStorage.getItem(storageKey);
   if (!token) {
     const permission = await Notifications.getPermissionsAsync();
     const projectId = process.env.EXPO_PUBLIC_EAS_PROJECT_ID ?? Constants.expoConfig?.extra?.eas?.projectId;
@@ -89,5 +89,5 @@ export async function disableCurrentDevicePush(): Promise<void> {
   const { error } = await supabase.from("mobile_device_tokens").update({ enabled: false, updated_at: new Date().toISOString() })
     .eq("user_id", user.id).eq("token", token);
   if (error) throw error;
-  await AsyncStorage.removeItem(storageKey);
+  await deviceStorage.removeItem(storageKey);
 }

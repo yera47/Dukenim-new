@@ -12,7 +12,6 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { saveCrmIntegrationRequest } from "./actions";
 import { connectBusinessRu } from "./business-ru-actions";
-import { CrmSetupPayment } from "@/components/admin/crm-setup-payment";
 import { KaspiRemoteSettings } from "@/components/admin/kaspi-remote-settings";
 
 const statuses: Record<string, { title: string; description: string }> = {
@@ -67,29 +66,25 @@ export default async function IntegrationsPage({
   let kaspiRemoteEnabled=false;
   let kaspiRemoteLink:string|null=null;
   let requests: IntegrationRequest[] = [];
-  let charges: Array<{id:string;integration_request_id:string;status:string}> = [];
   let requestsUnavailable = false;
 
   if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
     const client = await createClient();
-    const [settings, requestResult, chargeResult] = await Promise.all([
+    const [settings, requestResult] = await Promise.all([
       client.from("tenant_settings").select("payment_setup_preference,kaspi_remote_enabled,kaspi_remote_link").eq("tenant_id", tenantId!).maybeSingle(),
       client.from("crm_integration_requests")
         .select("id,provider,account_url,admin_contact,sync_direction,notes,status,updated_at,preflight_summary")
         .eq("tenant_id", tenantId!)
         .order("updated_at", { ascending: false }),
-      client.from("crm_setup_charges").select("id,integration_request_id,status").eq("tenant_id",tenantId!),
     ]);
     paymentPreference = settings.data?.payment_setup_preference ?? "later";
     kaspiRemoteEnabled=Boolean(settings.data?.kaspi_remote_enabled);
     kaspiRemoteLink=settings.data?.kaspi_remote_link??null;
     requests = requestResult.data ?? [];
-    charges = chargeResult.data ?? [];
     requestsUnavailable = Boolean(requestResult.error);
   }
 
   const byProvider = new Map(requests.map((request) => [request.provider, request]));
-  const chargeByRequest = new Map(charges.map(charge=>[charge.integration_request_id,charge]));
   const requestedProvider = typeof params.provider === "string" && isIntegrationProvider(params.provider)
     ? params.provider
     : null;
@@ -130,13 +125,13 @@ export default async function IntegrationsPage({
     {requestsUnavailable && <div className="mt-6 rounded-2xl border border-amber-300 bg-amber-50 px-5 py-4 text-sm font-bold text-amber-950">Не удалось загрузить сохранённые статусы интеграций. Каталог доступен, но перед изменением заявки обновите страницу.</div>}
 
     <section className="card mt-6 p-5"><h2 className="text-xl font-semibold">Мои подключения</h2>
-      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=>{const charge=chargeByRequest.get(request.id);return <div key={request.provider}><IntegrationStatusDialog provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={request.preflight_summary || statuses[request.status]?.description || "Уточните статус в поддержке."} ready={request.status==="connected"}/>{charge?.status==="awaiting_payment"&&<CrmSetupPayment chargeId={charge.id}/>} {charge?.status==="paid"&&<p className="mt-2 text-sm font-semibold text-emerald-700">Настройка CRM оплачена.</p>}{charge?.status==="included"&&<p className="mt-2 text-sm font-semibold text-emerald-700">Настройка включена в тариф.</p>}</div>}):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
+      <div className="mt-4 grid gap-3">{requests.length ? requests.map(request=><div key={request.provider}><IntegrationStatusDialog provider={request.provider} label={integrationProviders.find(p=>p.key===request.provider)?.label??request.provider} status={statusNames[request.status]??request.status} description={request.preflight_summary || statuses[request.status]?.description || "Уточните статус в поддержке."} ready={request.status==="connected"}/><p className="mt-2 text-sm font-semibold text-emerald-700">Подключение входит в единый тариф; лицензия поставщика оплачивается ему отдельно.</p></div>):<p className="text-sm text-neutral-500">Выберите систему ниже, чтобы отправить первую заявку.</p>}</div>
     </section>
 
     <details id="request-connector" className="card mt-6 p-5" open={Boolean(requestedProvider) || requests.length === 0}>
       <summary className="cursor-pointer text-lg font-semibold">+ Подключить систему</summary>
       <form action={saveCrmIntegrationRequest} className="card p-6">
-        <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно вести несколько заявок одновременно. Пароли и API-ключи сюда не вставляются.</p></div><details className="text-sm"><summary className="cursor-pointer whitespace-nowrap">ⓘ Стоимость</summary><p className="mt-2">«Бренд»: включено. «Старт»: 70 000 ₸ после подключения и проверки. Лицензия поставщика оплачивается отдельно. Сейчас отправляется только заявка, без списания.</p></details></div>
+            <div className="flex items-start justify-between gap-4"><div><h2 className="text-xl font-extrabold">Запросить подключение</h2><p className="mt-1 text-sm text-[var(--ink-60)]">Можно вести несколько заявок одновременно. Пароли и API-ключи сюда не вставляются.</p></div><details className="text-sm"><summary className="cursor-pointer whitespace-nowrap">ⓘ Стоимость</summary><p className="mt-2">Настройка Dukenim входит в единый тариф. Лицензия выбранной CRM, POS или учётной системы оплачивается её поставщику отдельно.</p></details></div>
         <div className="mt-6 grid gap-4 sm:grid-cols-2">
           <label className="grid gap-2 text-sm font-bold">CRM, учёт или POS
             <select name="provider" className="input" defaultValue={selectedProvider} required>

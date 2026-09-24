@@ -42,7 +42,8 @@ export const catalogLaunchTemplates = {
 } as const;
 
 export function launchTemplatesForPlan(plan: "basic" | "standard" | "pro") {
-  return catalogLaunchTemplates[plan === "basic" ? "basic" : "standard"];
+  void plan;
+  return [...catalogLaunchTemplates.basic, ...catalogLaunchTemplates.standard];
 }
 
 export function paletteByKey(key:string|null|undefined){return palettes.find((item)=>item.key===key)??palettes[0]}

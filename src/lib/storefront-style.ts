@@ -10,6 +10,6 @@ export function storefrontStyle(settings: {palette_key?:string|null;brand_color?
     return {"--tenant-accent":accent,"--store-bg":background,"--store-surface":surface,"--store-ink":ink,"--store-muted":ink,"--store-accent-ink":contrastInk(accent)} as CSSProperties;
   }
   const palette=paletteByKey(demo?"mono":settings?.palette_key);
-  const accent=demo||plan==="basic"?palette.accent:safeBrandColor(settings?.brand_color,settings?.palette_key?palette.accent:accentColor);
+  const accent=demo?palette.accent:safeBrandColor(settings?.brand_color,settings?.palette_key?palette.accent:accentColor);
   return {"--tenant-accent":accent,"--store-bg":palette.background,"--store-surface":palette.surface,"--store-ink":palette.ink,"--store-muted":palette.muted,"--store-accent-ink":contrastInk(accent)} as CSSProperties;
 }

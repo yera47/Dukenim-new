@@ -32,7 +32,7 @@ export async function POST(request: Request) {
   if (!draft.success) return NextResponse.json({ error: "Текст нужно сгенерировать заново." }, { status: 422 });
 
   if (generation.data.intent === "promotion") {
-    if (!hasPlan(entitlement.plan, "standard")) return NextResponse.json({ error: "Кампании доступны на тарифе «Бренд»." }, { status: 403 });
+    if (!hasPlan(entitlement.plan, "standard")) return NextResponse.json({ error: "Кампании доступны в тарифе «Каталог» при активной подписке." }, { status: 403 });
     const existing = await client.from("storefront_campaigns").select("id").eq("tenant_id", context.tenantId).eq("ai_generation_id", generation.data.id).maybeSingle();
     if (existing.data) return NextResponse.json({ saved: true, target: "campaign", campaignId: existing.data.id, existing: true });
     const created = await client.from("storefront_campaigns").insert({

@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     if (!context?.user) return NextResponse.json({ error: "Войдите в аккаунт." }, { status: 401 });
     if (!["owner", "superadmin"].includes(context.role)) return NextResponse.json({ error: "Недостаточно прав." }, { status: 403 });
     if (!context.tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту." }, { status: 400 });
-    if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "Баннеры AI Studio доступны на тарифе «Бренд»." }, { status: 403 });
+    if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "Баннеры AI Studio доступны в тарифе «Каталог» при активной подписке." }, { status: 403 });
     if (!getFalImageStatus().configured) return NextResponse.json({ error: "Генерация изображений ещё не подключена на сервере." }, { status: 503 });
     const input = aiStudioBriefSchema.safeParse(await request.json().catch(() => null));
     if (!input.success) return NextResponse.json({ error: "Опишите баннер от 8 до 800 символов." }, { status: 400 });

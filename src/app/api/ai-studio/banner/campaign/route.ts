@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   const context = await getSessionContext();
   if (!context?.user) return NextResponse.json({ error: "Войдите в аккаунт." }, { status: 401 });
   if (!context.tenantId || !["owner", "superadmin"].includes(context.role)) return NextResponse.json({ error: "Недостаточно прав." }, { status: 403 });
-  if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "Кампании доступны на тарифе «Бренд»." }, { status: 403 });
+  if (!await tenantHasPlan(context.tenantId, "standard")) return NextResponse.json({ error: "Кампании доступны в тарифе «Каталог» при активной подписке." }, { status: 403 });
   const parsed = requestSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Баннер не найден." }, { status: 400 });
 

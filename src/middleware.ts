@@ -57,12 +57,8 @@ export async function middleware(request: NextRequest) {
         return redirect(target);
       }
 
-      const restricted = ["/admin/stock", "/admin/analytics", "/admin/customers"];
-      if (entitlement?.active && entitlement.plan === "basic" && restricted.some(path => request.nextUrl.pathname.startsWith(path))) {
-        const target = new URL("/admin/plan", request.url);
-        target.searchParams.set("locked", "standard");
-        return redirect(target);
-      }
+      // The public product has one plan. Active merchants receive the same
+      // workspace regardless of the legacy plan value stored on their tenant.
     }
   }
 

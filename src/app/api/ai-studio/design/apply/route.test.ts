@@ -59,9 +59,9 @@ describe("apply AI storefront design", () => {
     });
   });
 
-  it("rejects a paid template when the current plan is Start", async () => {
+  it("applies every template on the single public plan", async () => {
     const mock = clientWith({ ...design, templateKey: "gallery" }); mocks.client.mockResolvedValue(mock.client);
-    expect((await POST(request())).status).toBe(403);
-    expect(mocks.saveSettings).not.toHaveBeenCalled();
+    expect((await POST(request())).status).toBe(200);
+    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, expect.objectContaining({ template_key: "gallery" }));
   });
 });

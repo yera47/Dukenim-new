@@ -26,7 +26,7 @@ export function BottomNav() {
   const active = pathname.startsWith("/catalog") || pathname.startsWith("/product") ? "/catalog"
     : pathname.startsWith("/orders") || pathname.startsWith("/order") ? "/orders"
     : pathname.startsWith("/studio") ? "/studio" : "/more";
-  return <GlassView glassEffectStyle="regular" tintColor="#F8FCFFFF" isInteractive style={styles.nav}>{tabs.map(tab => {
+  return <GlassView glassEffectStyle="regular" tintColor="#F7FBFCCC" isInteractive style={styles.nav}>{tabs.map(tab => {
     const selected = active === tab.path;
     return <Pressable accessibilityRole="tab" accessibilityState={{ selected }} key={tab.path} onPress={() => router.replace(tab.path as never)} style={({ pressed }) => [styles.tab, selected && styles.tabActive, pressed && styles.pressed]}>
       <Text style={[styles.tabIcon, selected && styles.tabTextActive]}>{tab.icon}</Text><Text style={[styles.tabText, selected && styles.tabTextActive]}>{tab.label}</Text>
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
   header: { flexDirection: "row", alignItems: "center", gap: 11, minHeight: 54, paddingBottom: 6 },
   mark: { width: 42, height: 42, borderRadius: 13, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" }, logo: { width: 25, height: 27 },
   section: { color: colors.navy, fontSize: 9, fontWeight: "900", letterSpacing: 1.4 }, store: { color: colors.ink, fontSize: 18, fontWeight: "900", marginTop: 2 },
-  nav: { position: "absolute", left: 12, right: 12, bottom: 10, height: 72, flexDirection: "row", alignItems: "stretch", borderRadius: 28, overflow: "hidden", borderWidth: 1, borderColor: "#D7E1E7", padding: 5, shadowColor: "#102535", shadowOpacity: .12, shadowRadius: 18, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
-  tab: { flex: 1, borderRadius: 19, alignItems: "center", justifyContent: "center", gap: 3 }, tabActive: { backgroundColor: colors.navySoft }, tabIcon: { color: colors.muted, fontSize: 19, fontWeight: "800" }, tabText: { color: colors.muted, fontSize: 10, fontWeight: "800" }, tabTextActive: { color: colors.navyDark }, pressed: { opacity: .65 },
+  nav: { position: "absolute", left: 12, right: 12, bottom: 10, height: 72, flexDirection: "row", alignItems: "stretch", borderRadius: 30, overflow: "hidden", borderWidth: 1, borderColor: "#FFFFFFCC", padding: 5, shadowColor: "#102535", shadowOpacity: .16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
+  tab: { flex: 1, borderRadius: 22, alignItems: "center", justifyContent: "center", gap: 3 }, tabActive: { backgroundColor: "#EAF4F8C7", borderWidth:1, borderColor:"#FFFFFFB8" }, tabIcon: { color: colors.muted, fontSize: 19, fontWeight: "800" }, tabText: { color: colors.muted, fontSize: 10, fontWeight: "800" }, tabTextActive: { color: colors.navyDark }, pressed: { opacity: .65 },
 });

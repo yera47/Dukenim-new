@@ -44,7 +44,7 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
     const generation=await client.from("ai_studio_generations").select("output").eq("id",query.generation).eq("tenant_id",tenant.id).eq("intent","store_design").maybeSingle();
     const design=aiStudioDesignSchema.safeParse(generation.data?.output);
     const template=design.success?templateCatalog.find(t=>t.key===design.data.templateKey):null;
-    if(generation.error||!design.success||!template||!hasPlan(plan,template.minPlan as Plan)||(plan==="basic"&&design.data.brandColor))return <p role="alert">Предложение недоступно в вашем магазине.</p>;
+    if(generation.error||!design.success||!template||!hasPlan(plan,template.minPlan as Plan))return <p role="alert">Предложение недоступно в вашем магазине.</p>;
     settings={...settings,...proposedDesignSettings(design.data,theme.data)};
     proposedSections=design.data.sections?.map(section=>section.name)??[];
   }

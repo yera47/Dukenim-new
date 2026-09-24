@@ -1,5 +1,5 @@
 import { siteUrl, siteName, siteDescription, absoluteUrl } from "@/lib/site";
-import { planPrice, planAnnualPrice } from "@/lib/plans";
+import { planPrice } from "@/lib/plans";
 
 // Truthful structured data only: no ratings, reviews, or performance claims
 // (see marketing/CONTEXT.md evidence rules). Prices mirror the confirmed public tariffs.
@@ -33,38 +33,14 @@ export function StructuredData() {
         inLanguage: "ru-KZ",
         url: siteUrl,
         publisher: { "@id": `${siteUrl}/#organization` },
-        offers: [
-          {
-            "@type": "Offer",
-            name: "Старт",
-            price: planPrice.basic,
-            priceCurrency: "KZT",
-            url: absoluteUrl("/register?plan=basic"),
-            description: "Каталог, корзина, заказы и AI-помощник. 7 дней выбранного тарифа без карты.",
-          },
-          {
-            "@type": "Offer",
-            name: "Старт — год",
-            price: planAnnualPrice.basic,
-            priceCurrency: "KZT",
-            url: absoluteUrl("/register?plan=basic&billing=year"),
-          },
-          {
-            "@type": "Offer",
-            name: "Бренд",
-            price: planPrice.standard,
-            priceCurrency: "KZT",
-            url: absoluteUrl("/register?plan=standard"),
-            description: "CRM, точная палитра, акции, кампании и AI-баннеры.",
-          },
-          {
-            "@type": "Offer",
-            name: "Бренд — год",
-            price: planAnnualPrice.standard,
-            priceCurrency: "KZT",
-            url: absoluteUrl("/register?plan=standard&billing=year"),
-          },
-        ],
+        offers: [{
+          "@type": "Offer",
+          name: "Каталог",
+          price: planPrice.basic,
+          priceCurrency: "KZT",
+          url: absoluteUrl("/register?plan=basic&billing=month"),
+          description: "Все функции Dukenim в одном тарифе. 7 дней бесплатно, затем ежемесячная оплата после подтверждения владельца.",
+        }],
       },
     ],
   };

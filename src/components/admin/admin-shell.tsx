@@ -45,8 +45,6 @@ const baseNav = [
   ["/admin/settings", "Настройки", Settings],
 ] as const;
 
-const standardOnly = new Set(["/admin/stock", "/admin/analytics", "/admin/customers"]);
-
 type AdminShellProps = {
   children: React.ReactNode;
   role: "owner" | "superadmin";
@@ -101,7 +99,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   }, [menuOpen]);
 
   const section = nav.find(([href]) => isCurrent(pathname, href));
-  const isLocked = (href: string) => role === "owner" && tenant.plan === "basic" && standardOnly.has(href);
+  const isLocked = (href?: string) => Boolean(href && false);
 
   return (
     <div className={`${styles.shell} admin-frame min-h-[100dvh]`}>
@@ -120,7 +118,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
               <Link key={href} href={href} aria-current={active ? "page" : undefined} className={active ? "is-active" : undefined}>
                 <Icon size={18} />
                 <span>{label}</span>
-                {locked ? <LockKeyhole size={13} className="ml-auto" aria-label="Доступно на тарифе Бренд" /> : active && <ChevronRight size={14} className="ml-auto" />}
+                {locked ? <LockKeyhole size={13} className="ml-auto" aria-label="Нужна активная подписка" /> : active && <ChevronRight size={14} className="ml-auto" />}
               </Link>
             );
           })}
@@ -167,11 +165,10 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
       <nav aria-label="Основная навигация" className="admin-mobile-nav md:hidden" style={{gridTemplateColumns:"repeat(4,minmax(0,1fr))"}}>
         {mobilePrimary.map(([href, label, Icon]) => {
           const active = isCurrent(pathname, href);
-          const locked = isLocked(href);
           return (
             <Link key={href} href={href} aria-current={active ? "page" : undefined} className={active ? "is-active" : undefined}>
               <Icon size={19} />
-              <span>{label}{locked && " · Бренд"}</span>
+              <span>{label}</span>
             </Link>
           );
         })}
@@ -192,7 +189,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
               {nav.slice(3).map(([href, label, Icon]) => {
                 const active = isCurrent(pathname, href);
                 const locked = isLocked(href);
-                return <Link key={href} href={href} className={active ? "is-active" : undefined}><Icon size={19} /><span>{label}{locked && <small>Тариф Бренд</small>}</span>{locked ? <LockKeyhole size={15} aria-label="Требуется тариф Бренд" /> : <ChevronRight size={16} />}</Link>;
+                return <Link key={href} href={href} className={active ? "is-active" : undefined}><Icon size={19} /><span>{label}</span>{locked ? <LockKeyhole size={15} aria-label="Нужна активная подписка" /> : <ChevronRight size={16} />}</Link>;
               })}
             </nav>
             <div className="admin-sheet-actions">

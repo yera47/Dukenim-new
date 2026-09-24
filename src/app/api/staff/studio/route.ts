@@ -12,7 +12,7 @@ async function authorize(request:Request,operation:"read"|"write"){
  const {data:member,error}=await client.from("staff_access").select("*").eq("id",id!).eq("user_id",user.id).eq("active",true).maybeSingle();
  if(error||!member||!staffCan(member.permissions,"studio",operation))return null;
  const admin=createStaffAdminClient();const{data:tenant}=await admin.from("tenants").select("id,name,business_vertical,catalog_status,plan,next_plan,status,trial_ends_at").eq("id",member.tenant_id).maybeSingle();
- if(!tenant)return null;const entitlement=computeEntitlement(tenant);if(!entitlement.active||entitlement.plan==="basic")return null;
+ if(!tenant)return null;const entitlement=computeEntitlement(tenant);if(!entitlement.active)return null;
  return {admin,member,user,tenant};
 }
 const headers={"Cache-Control":"private, no-store"};

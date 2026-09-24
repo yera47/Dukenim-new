@@ -10,6 +10,6 @@ export async function staffPreviewContext(access:unknown){
  const {data:member,error}=await client.from("staff_access").select("*").eq("id",access as string).eq("user_id",user.id).eq("active",true).maybeSingle();
  if(error||!member||!staffCan(member.permissions,"studio","read"))return null;
  const admin=createAdminClient();const tenant=await admin.from("tenants").select("plan,next_plan,status,trial_ends_at").eq("id",member.tenant_id).single();
- if(!tenant.data||!computeEntitlement(tenant.data).active||computeEntitlement(tenant.data).plan==="basic")return null;
+ if(!tenant.data||!computeEntitlement(tenant.data).active)return null;
  return {client:admin,tenantId:member.tenant_id,user,write:staffCan(member.permissions,"studio","write")};
 }

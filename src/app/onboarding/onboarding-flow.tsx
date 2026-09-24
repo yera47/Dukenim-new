@@ -3,21 +3,18 @@
 import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store, Play, Images } from "lucide-react";
 import { DukenimLogo } from "@/components/dukenim-logo";
-import { planAnnualPrice, planAnnualSaving, planFeatures, planName, planPrice, publicPlans, type Plan } from "@/lib/plans";
+import { planFeatures, planName, planPrice, type Plan } from "@/lib/plans";
 import type { BusinessVertical } from "@/types/database";
 import { launchVerticals as verticals } from "@/lib/launch-verticals";
-
-type Billing = "month" | "year";
 
 function money(value: number) {
   return new Intl.NumberFormat("ru-KZ").format(value);
 }
 
-export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan; business_vertical?: BusinessVertical | null }; initialBilling?: Billing }) {
+export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan; business_vertical?: BusinessVertical | null }; initialBilling?: "month" | "year" }) {
   const [step, setStep] = useState(1);
   const [vertical, setVertical] = useState<BusinessVertical | null>(tenant.business_vertical ?? null);
-  const [plan, setPlan] = useState<Plan>(tenant.next_plan === "pro" ? "standard" : tenant.next_plan);
-  const [billing, setBilling] = useState<Billing>(initialBilling);
+  const plan: Plan = "basic";
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const trialDate = new Date(tenant.trial_ends_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "long" });
@@ -29,7 +26,7 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: billing === "year" ? "annual" : "monthly" }),
+        body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: "monthly" }),
       });
       const data = await response.json() as { error?: string };
       if (!response.ok) throw new Error(data.error ?? "Не удалось сохранить выбор тарифа.");
@@ -71,24 +68,13 @@ export function OnboardingFlow({ tenant, initialBilling = "month" }: { tenant: {
       </section>}
 
       {step === 2 && <section className="builder-step">
-        <div className="builder-intro">
-          <p>ШАГ 2 ИЗ 3</p><h1>Выберите возможности магазина.</h1>
-          <span>Выберите тариф. Затем в AI Studio вы создадите каталог и выберете оформление, после этого добавите первый товар.</span>
-        </div>
-        <div className="builder-billing mt-7"><button type="button" className={billing === "month" ? "is-active" : ""} onClick={() => setBilling("month")}>Помесячно</button><button type="button" className={billing === "year" ? "is-active" : ""} onClick={() => setBilling("year")}>За год</button></div>
-        <div className="onboarding-plan-grid">
-          {publicPlans.map((item) => {
-            const annual = billing === "year";
-            const amount = annual ? planAnnualPrice[item] : planPrice[item];
-            return <button type="button" key={item} onClick={() => setPlan(item)} className={`onboarding-plan-card ${plan === item ? "is-selected" : ""}`}>
-              <div className="flex items-start justify-between gap-4"><div><p className="data-label">ТАРИФ</p><h2>{planName[item]}</h2></div>{plan === item && <span className="onboarding-selected"><Check size={16} /> Выбран</span>}</div>
-              <strong>{money(amount)} ₸<small>{annual ? "за год" : "в месяц"}</small></strong>
-              {annual && <em>Экономия {money(planAnnualSaving[item])} ₸</em>}
-              <ul>{planFeatures[item].map((feature) => <li key={feature}><Check size={16} />{feature}</li>)}</ul>
-            </button>;
-          })}
-        </div>
-        <p className="onboarding-note">Тариф начнёт действовать после пробного периода. В первые 7 дней доступны все функции выбранного тарифа.</p>
+        <div className="builder-intro"><p>ШАГ 2 ИЗ 3</p><h1>Все возможности уже включены.</h1><span>Один тариф без скрытых разделов. После регистрации AI Studio проведёт вас через каталог и оформление.</span></div>
+        <div className="onboarding-plan-grid"><article className="onboarding-plan-card is-selected">
+          <div className="flex items-start justify-between gap-4"><div><p className="data-label">ЕДИНЫЙ ТАРИФ</p><h2>{planName.basic}</h2></div><span className="onboarding-selected"><Check size={16}/> Все функции</span></div>
+          <strong>{money(planPrice.basic)} ₸<small>в месяц</small></strong>
+          <ul>{planFeatures.basic.map(feature=><li key={feature}><Check size={16}/>{feature}</li>)}</ul>
+        </article></div>
+        <p className="onboarding-note">Первые 7 дней бесплатно. Затем — 24 900 ₸ в месяц. Списание не начинается без подтверждения оплаты.</p>
         <div className="builder-actions"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
       </section>}
 

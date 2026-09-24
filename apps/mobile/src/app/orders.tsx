@@ -118,7 +118,7 @@ export default function OrdersScreen() {
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(true); }} tintColor="#0E3854" />}
       >
         <View style={styles.topRow}>
-          <Link href="/" style={styles.back}>← Главная</Link>
+          <Link accessibilityLabel="Назад" href="/" style={styles.back}>‹</Link>
           <View style={styles.live}><View style={styles.liveDot} /><Text style={styles.liveText}>Обновляется</Text></View>
         </View>
         <Text style={styles.eyebrow}>РАБОЧАЯ ЛЕНТА</Text>

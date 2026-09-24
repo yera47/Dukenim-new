@@ -11,9 +11,9 @@ it('passes brand rules to design and accepts individual hex color on eligible pl
   expect(result.design.brandColor).toBe('#c04455');
   expect(chat.mock.calls[0][0][1].content).toContain('Без зелёного');
 });
-it('does not accept a custom color on basic plan',async()=>{
+it('accepts a custom color on the single public plan',async()=>{
   chat.mockResolvedValue({content:JSON.stringify(design)});
-  await expect(createAiStudioDesign('Спокойный магазин','fashion','basic')).rejects.toThrow();
+  expect((await createAiStudioDesign('Спокойный магазин','fashion','basic')).design.brandColor).toBe('#c04455');
 });
 it('requires the new theme while allowing arbitrary shades on Start',async()=>{
  chat.mockResolvedValue({content:JSON.stringify({...design,brandColor:undefined})});
@@ -39,9 +39,9 @@ it('passes brand context to sections',async()=>{
   await createAiStudioStructure('Создай разделы',{brand:{notes:'Лаконичные названия'}});
   expect(chat.mock.calls[0][0][1].content).toContain('Лаконичные названия');
 });
-it('restricts a first catalog suggestion to templates accepted by atomic creation',async()=>{
+it('offers all launch templates during first catalog creation',async()=>{
  chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'gallery',sections:[{name:'Одежда'},{name:'Аксессуары'}]})});
  await createAiStudioDesign('Создать магазин','fashion','pro',{catalog_status:'not_started'});
- expect(chat.mock.calls[0][0][1].content).not.toContain('"key":"atelier"');
+ expect(chat.mock.calls[0][0][1].content).toContain('"key":"atelier"');
  expect(chat.mock.calls[0][0][1].content).toContain('"key":"gallery"');
 });
