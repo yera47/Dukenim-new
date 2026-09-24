@@ -1,0 +1,10 @@
+import {beforeEach,expect,it,vi} from "vitest";
+const authorize=vi.hoisted(()=>vi.fn(async()=>null));
+const consult=vi.hoisted(()=>vi.fn());
+vi.mock("@/lib/mobile-auth",()=>({getMobileStaff:authorize}));
+vi.mock("@/lib/ai/consultation",()=>({createConsultation:consult}));
+vi.mock("@/lib/ai/studio",()=>({getAiStudioStatus:()=>({configured:true,deployment:"test"})}));
+import {POST} from "./route";
+beforeEach(()=>{authorize.mockClear();consult.mockClear();});
+it("rejects a mobile employee without an active studio grant before AI use",async()=>{const response=await POST(new Request("https://example.test/api/mobile/staff-studio",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer this-token-is-long-enough-for-test"},body:JSON.stringify({accessId:"11111111-1111-4111-8111-111111111111",message:"Проверь каталог"})}));expect(response.status).toBe(403);expect(consult).not.toHaveBeenCalled();});
+it("validates the body before authorization",async()=>{const response=await POST(new Request("https://example.test/api/mobile/staff-studio",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({accessId:"bad",message:"x"})}));expect(response.status).toBe(400);expect(authorize).not.toHaveBeenCalled();});
