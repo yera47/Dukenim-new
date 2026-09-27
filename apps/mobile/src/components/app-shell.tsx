@@ -38,7 +38,7 @@ export function BottomNav() {
 export function AppScreen({ children, section, store, scroll = true, trailing }: PropsWithChildren<{ section: string; store?: string; scroll?: boolean; trailing?: ReactNode }>) {
   const pathname = usePathname();
   const root = pathname === "/catalog" || pathname === "/orders" || pathname === "/more";
-  const backTo = root ? undefined : pathname === "/order" ? "/orders" : pathname === "/product-edit" ? "/catalog" : "/more";
+  const backTo = root ? undefined : pathname === "/order" ? "/orders" : pathname === "/product-edit" || pathname === "/preview" ? "/catalog" : "/more";
   const body = <View style={[styles.content, !scroll && { flex: 1 }]}><BrandHeader section={section} store={store} backTo={backTo} />{trailing}{children}</View>;
   return <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>{scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={root ? styles.scroll : styles.nestedScroll}>{body}</ScrollView> : body}{root ? <BottomNav /> : null}</SafeAreaView>;
 }
