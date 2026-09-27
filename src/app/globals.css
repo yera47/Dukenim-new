@@ -1,9 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --accent:#315f78;--accent-dark:#274b60;--accent-soft:#edf4f8;--accent-bright:#315f78;
+  --accent:#56334d;--accent-dark:#3d2538;--accent-soft:#f6f0f4;--accent-bright:#8c5678;
   --bg:#fafafa;--surface:#ffffff;--surface-2:#f5f5f5;--surface-muted:#ededed;--ink:#171717;--ink-60:#626262;--ink-40:#767676;
-  --line:#dce4ea;--cta:#315f78;--cta-dark:#274b60;--success:#326348;--danger:#bc3e36;--warning:#9f6926;
+  --line:#e4dae2;--cta:#56334d;--cta-dark:#3d2538;--success:#326348;--danger:#bc3e36;--warning:#9f6926;
   --r-card:14px;--r-btn:10px;--tenant-accent:var(--accent);
   --shadow-sm:0 10px 28px rgb(16 23 19 / .055);--shadow-lg:0 32px 90px rgb(9 31 25 / .18);
   color-scheme:light;
@@ -13,7 +13,7 @@ h1,h2,h3,h4,h5,h6{font-family:var(--font-manrope),Arial,sans-serif;letter-spacin
 :focus-visible{outline:3px solid color-mix(in srgb,var(--accent) 35%,transparent);outline-offset:3px}::selection{background:var(--accent-dark);color:white}
 .container{width:min(1220px,calc(100% - 48px));margin-inline:auto}.card{border:0;border-radius:var(--r-card);background:var(--surface);box-shadow:var(--shadow-sm)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:46px;padding:0 19px;border-radius:var(--r-btn);border:1px solid transparent;font-weight:780;white-space:nowrap;transition:transform 180ms cubic-bezier(.2,.8,.2,1),background-color 180ms,border-color 180ms,color 180ms,box-shadow 180ms}
-.btn:active{transform:scale(.975)}.btn-primary{background:var(--accent-dark);color:white;box-shadow:0 10px 24px rgb(14 42 64 / .16)}.btn-primary:hover{background:#071f32;box-shadow:0 14px 32px rgb(14 42 64 / .23)}
+.btn:active{transform:scale(.975)}.btn-primary{background:var(--accent-dark);color:white;box-shadow:0 10px 24px rgb(61 37 56 / .16)}.btn-primary:hover{background:#281828;box-shadow:0 14px 32px rgb(61 37 56 / .23)}
 .btn-cta{background:var(--cta);color:white;box-shadow:0 10px 24px rgb(23 59 87 / .2)}.btn-cta:hover{background:var(--cta-dark)}.btn-secondary{background:var(--surface);border-color:var(--line)}.btn-secondary:hover{background:var(--accent-soft);border-color:#9abbd0}
 .input{width:100%;min-height:48px;padding:0 14px;border:1px solid #cbd3cc;border-radius:var(--r-btn);outline:none;background:var(--surface);transition:border-color 160ms,box-shadow 160ms}.input:hover{border-color:#aebbb2}.input:focus{border-color:var(--accent);box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 13%,transparent)}
 .badge{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent-dark);font-size:12px;font-weight:800}.muted{color:var(--ink-60)}

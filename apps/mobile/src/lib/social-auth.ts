@@ -8,18 +8,27 @@ import { supabase } from "./supabase";
 WebBrowser.maybeCompleteAuthSession();
 
 export const appleAuthReady = process.env.EXPO_PUBLIC_APPLE_AUTH_ENABLED === "true";
+export const nativeAuthRedirect = "dukenim://auth-callback";
 
 export async function signInWithGoogle() {
   if (!supabase) throw new Error("Подключение входа не настроено.");
-  const redirectTo = Linking.createURL("auth-callback");
+  const redirectTo = Platform.OS === "web" ? Linking.createURL("auth-callback") : nativeAuthRedirect;
   const {data,error}=await supabase.auth.signInWithOAuth({provider:"google",options:{redirectTo,skipBrowserRedirect:true}});
   if(error||!data.url)throw new Error("Вход через Google пока недоступен.");
   const browser=await WebBrowser.openAuthSessionAsync(data.url,redirectTo);
   if(browser.type!=="success")return false;
-  const code=Linking.parse(browser.url).queryParams?.code;
+  const response=Linking.parse(browser.url).queryParams;
+  if(response?.error)throw new Error("Google не завершил вход. Повторите попытку.");
+  const existing=await supabase.auth.getSession();
+  if(existing.data.session)return true;
+  const code=response?.code;
   if(typeof code!=="string")throw new Error("Google не вернул код входа.");
   const exchanged=await supabase.auth.exchangeCodeForSession(code);
-  if(exchanged.error)throw new Error("Не удалось завершить вход через Google.");
+  if(exchanged.error){
+    const session=await supabase.auth.getSession();
+    if(session.data.session)return true;
+    throw new Error("Не удалось завершить вход через Google. Повторите попытку.");
+  }
   return true;
 }
 
