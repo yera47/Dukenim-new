@@ -10,7 +10,7 @@ import { studioNextStep, type StudioReadiness } from "@/lib/studio-next-step";
 type Task={intent:"hero"|"store_design"|"catalog_structure"|"promotion";brief:string};type Reply={reply:string;help?:string|null;task?:Task|null};type Turn={id:string;message:string;response:Reply};
 type Design={templateKey:string;paletteKey:string;colorTheme?:{background:string;surface:string;accent:string};heroTitle:string;heroSubtitle:string;heroCtaLabel:string;rationale:string};
 type DesignProposal={generationId:string;design:Design};
-const paths:Record<string,string>={catalog:"/catalog",orders:"/orders",team:"/team",analytics:"/analytics",delivery:"/delivery",kaspi:"/delivery",payments:"/delivery",loyalty:"/loyalty",stories:"/stories",campaigns:"/campaigns",integrations:"/delivery",support:"/support"};
+const paths:Record<string,string>={catalog:"/catalog",orders:"/orders",team:"/team",analytics:"/analytics",delivery:"/delivery",kaspi:"/delivery",payments:"/delivery",loyalty:"/loyalty",stories:"/stories",campaigns:"/campaigns",integrations:"/integrations",support:"/support"};
 const taskPaths:Record<Task["intent"],string>={hero:"/brand",store_design:"/brand",catalog_structure:"/catalog",promotion:"/campaigns"};
 
 export default function Studio(){

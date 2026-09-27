@@ -23,6 +23,7 @@
 | Store link before publication | in progress | Native share/open actions are disabled while the catalog is unpublished and the screen explains why. This prevents sending buyers to a closed storefront; verify after a real publish on iPhone. |
 | Contextual back navigation | in progress | Nested native work screens use the navigation history to return to the originating Catalog, More or AI Studio screen; direct deep links fall back to their section. TypeScript passes; physical-device navigation remains unverified. |
 | Employee invite handoff | in progress | Native Team now presents the created 48-hour invitation link on screen, with separate Copy and Share actions. It does not automatically transmit the link. Existing employee permission edit, disable/restore, remove and invite revoke RPC calls remain; the two-account invite-to-access journey still needs production device/browser acceptance. |
+| AI Studio integration guidance | in progress | The AI response action for integrations now opens the native CRM integration screen rather than the unrelated delivery/payment screen. Confirm with an authenticated AI consultation on a physical device. |
 
 The Supabase redirect change was pushed through an isolated auth-only config file and verified with `config diff` showing zero auth updates. Do not push the repository's general `supabase/config.toml` to production: it declares local Postgres 15 while production is Postgres 17.
 
