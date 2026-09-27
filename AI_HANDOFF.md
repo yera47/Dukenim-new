@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-27 — native AI promotion follow-up
+
+Result: commit `6604374` is pushed to `main`, and Vercel `dpl_6vnmWFLBokk5ySiu8m4heTaA4pRZ` is Ready/current. Added `/api/mobile/ai-promotion` with owner/tenant, entitlement, daily quota and credit checks. Native Campaigns presents generated text separately; owner must insert it into the form, save a draft, then publish. An AI Studio promotion task passes its brief into this screen. No discount, inventory or campaign is invented or automatically published.
+
+Checks: root/mobile `npx tsc --noEmit`, Expo lint, focused 2-test promotion suite, root build (86 pages), iOS Metro export pass. Production promotion route returns HTTP 401 without owner credentials. Signed iOS build 21 (`6f3958e0-7646-44b7-9c66-e8822f0f0431`) and EAS submission `162f70db-2dd5-468a-a770-acbd224349ed` finished; App Store Connect reports `VALID`/`IN_BETA_TESTING`. Azure unchanged; no live authenticated AI generation, campaign save or device acceptance yet.
+
+Next: test the full promotion draft, store setup and Google sign-in on the owner's iPhone with TestFlight build 21. External Apple/SMS provider actions still await owner access/input as described below.
+
 ## 2026-09-27 — Stitch/AI mobile release and TestFlight submission 20
 
 Result: commit `38649dd` was pushed to `main`. Vercel deployment `dpl_D3K9iuS21y2ufyg1fjT3tUPSjs4X` is Ready/current on `dukenim.kz` and `www.dukenim.kz`; homepage HTTP 200. New mobile AI design and logo routes return HTTP 401 to well-formed unauthenticated requests. Signed EAS iOS build `cf6cc060-611e-494b-83ce-9fe8238356f8` finished as `1.0.0 (20)`, and App Store submission `b449ac5e-4058-4bb1-89a1-8ac29b0ef1c3` reports FINISHED. App Store Connect then listed build 20 as `VALID` and `IN_BETA_TESTING`.
