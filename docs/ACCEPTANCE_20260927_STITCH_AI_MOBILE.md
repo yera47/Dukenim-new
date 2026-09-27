@@ -14,9 +14,10 @@
 | Вход Google | in progress | PKCE и callback реализованы; публичные настройки production Supabase возвращают `external.google=true`. Мобильный redirect и вход на iPhone ещё не подтверждены. |
 | Вход Apple | externally blocked | Нативный путь подготовлен, но production Supabase возвращает `external.apple=false`. Кнопка скрыта до подключения провайдера; нужны Apple/Supabase настройки и сборка с ними. |
 | Вход по SMS | externally blocked | Production Supabase возвращает `external.phone=false`. Mobizon требует создание аккаунта, подтверждение номера/email, API-доступ и имя отправителя. Форма открыта, но личные данные и финальная регистрация не переданы без отдельного подтверждения. |
-| Новый iOS/TestFlight релиз | not started | Код проходит TypeScript, Expo lint, Expo Doctor, iOS export; подписанная EAS-сборка и публикация этой ревизии пока не выполнены. |
+| Новый iOS/TestFlight релиз | in progress | Подписанная EAS-сборка `cf6cc060-611e-494b-83ce-9fe8238356f8`, версия 1.0.0 (20), завершена из коммита `38649dd`; отправка `b449ac5e-4058-4bb1-89a1-8ac29b0ef1c3` имеет статус `FINISHED`. Apple ещё не показывает build 20 в списке TestFlight; ждём обработки и подтверждения внутренней группы. |
+| Production API и сайт | verified | Коммит `38649dd` опубликован; Vercel `dpl_D3K9iuS21y2ufyg1fjT3tUPSjs4X` Ready и привязан к `dukenim.kz` и `www.dukenim.kz`. Главная возвращает HTTP 200; новые `/api/mobile/ai-design` и `/api/mobile/logo` отвергают валидные запросы без входа с HTTP 401. Это не проверка авторизованного сохранения. |
 | Проверка пути владельца на физическом iPhone | externally blocked | Нужен владелец с устройством и входом после TestFlight релиза: регистрация → продолжение этапа → AI → каталог/товар → публикация → заказ → логотип и авторизация. |
 
-Проверки: `npm test` — 495 passed, 4 live-AI skipped; root и mobile `npx tsc --noEmit`; `npx expo lint` — 0 ошибок; `npx expo-doctor` — 21/21; `npm run build` — 85 страниц; `npx expo export --platform ios` — успешен. Эти проверки не подменяют живой сценарий.
+Проверки: `npm test` — 495 passed, 4 live-AI skipped до добавления двух проходящих точечных тестов logo API; root и mobile `npx tsc --noEmit`; `npx expo lint` — 0 ошибок; `npx expo-doctor` — 21/21; `npm run build` — 85 страниц; `npx expo export --platform ios` — успешен. Эти проверки не подменяют живой сценарий.
 
 Azure: конфигурация, модель, ключи и тариф Azure не менялись. Доступность AI на опубликованном сайте и фактическая цена генерации здесь не подтверждены.

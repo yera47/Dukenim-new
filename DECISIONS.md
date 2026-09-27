@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-27 owner: mobile and website should share store setup and catalog state. AI Studio should use clear blocks and one persistent context-sensitive next step that disappears when done. The owner requests AI-assisted first copy, categories, layout and colours, with later edits and explicit review before application. Native Google, Apple and SMS sign-in are requested; this supersedes the earlier SMS deferral, but does not make an unconfigured external provider live.
+
 - 2026-09-21 owner clarification: Dukenim does not need a Yandex Delivery integration or merchant Yandex account configuration. The buyer supplies contact and door-to-door address and explicitly accepts that the store will arrange the courier manually, with a distance-based delivery charge agreed later. The store receives the order and chooses how to place and pay for the courier. Do not present the goods total as including this unknown charge.
 
 - 2026-09-21 owner: Yandex delivery is a manual merchant workflow. The buyer sees no delivery price at checkout; after the order the manager requests a door-to-door courier, calculates the distance-based charge and informs the buyer. Show a full-screen acknowledgement before the store can be used, and use cash on receipt. Own delivery may keep merchant-set zone prices. Food setup offers two new-store templates: a premium restaurant gallery and a fast menu suited to doner shops, bakeries and coffee to go, both using the same ordering, history and loyalty functions. Existing stores are not reset.
