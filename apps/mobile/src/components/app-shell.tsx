@@ -16,7 +16,7 @@ const tabs: Tab[] = [
 
 export function BrandHeader({ section, store, backTo }: { section: string; store?: string; backTo?: "/catalog" | "/orders" | "/more" }) {
   return <View style={styles.header}>
-    {backTo ? <Pressable accessibilityLabel="Назад" onPress={() => router.replace(backTo as never)} style={styles.back}><Text style={styles.backArrow}>‹</Text></Pressable> : null}
+    {backTo ? <Pressable accessibilityLabel="Назад" onPress={() => router.canGoBack() ? router.back() : router.replace(backTo as never)} style={styles.back}><Text style={styles.backArrow}>‹</Text></Pressable> : null}
     <View style={styles.mark}><Image alt="" source={logoMark} resizeMode="contain" style={styles.logo} /></View>
     <View style={{ flex: 1 }}><Text style={styles.section}>{section.toUpperCase()}</Text><Text numberOfLines={1} style={styles.store}>{store || "Dukenim"}</Text></View>
   </View>;
