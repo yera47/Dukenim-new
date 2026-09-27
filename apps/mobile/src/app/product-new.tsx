@@ -8,7 +8,7 @@ import { colors } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
 
 type Category={id:string;name:string};
-const integer=(value:string)=>{const normalized=value.replace(/\D/g,"");return normalized?Number(normalized):0;};
+const integer=(value:string)=>/^\d+$/.test(value)?Number(value):null;
 
 export default function NewProductScreen(){
   const {tenantId,tenantName,vertical}=useLocalSearchParams<{tenantId:string;tenantName?:string;vertical?:string}>();
@@ -21,9 +21,9 @@ export default function NewProductScreen(){
   const save=async()=>{
     const amount=integer(price),previous=integer(oldPrice),qty=integer(stock);
     if(!tenantId||title.trim().length<2){Alert.alert("Проверьте название","Название должно содержать минимум 2 символа.");return;}
-    if(amount<1){Alert.alert("Проверьте цену","Укажите цену товара в тенге.");return;}
-    if(previous&&previous<amount){Alert.alert("Проверьте старую цену","Старая цена не может быть ниже текущей.");return;}
-    if(qty<0||qty>100000000){Alert.alert("Проверьте остаток","Укажите корректное количество.");return;}
+    if(amount===null||!Number.isSafeInteger(amount)||amount<1||amount>2_000_000_000){Alert.alert("Проверьте цену","Укажите цену товара в тенге до 2 000 000 000 ₸.");return;}
+    if(oldPrice&&(previous===null||!Number.isSafeInteger(previous)||previous<amount||previous>2_000_000_000)){Alert.alert("Проверьте старую цену","Старая цена не может быть ниже текущей.");return;}
+    if(qty===null||!Number.isInteger(qty)||qty<0||qty>1_000_000){Alert.alert("Проверьте остаток","Укажите целое количество от 0 до 1 000 000.");return;}
     setSaving(true);
     const uploaded:string[]=[];const paths:string[]=[];
     for(const photo of photos){try{if((photo.fileSize??0)>10*1024*1024)throw new Error();const ext=(photo.fileName?.split(".").pop()||"jpg").toLowerCase();const path=`${tenantId}/${Date.now()}-${Math.random().toString(36).slice(2,10)}.${ext}`;const bytes=await(await fetch(photo.uri)).arrayBuffer();const result=await supabase!.storage.from("product-images").upload(path,bytes,{contentType:photo.mimeType??"image/jpeg",upsert:false});if(result.error)throw result.error;paths.push(path);uploaded.push(supabase!.storage.from("product-images").getPublicUrl(path).data.publicUrl);}catch{if(paths.length)await supabase!.storage.from("product-images").remove(paths);setSaving(false);Alert.alert("Фото не загрузились","Используйте JPG, PNG или WebP до 10 МБ.");return;}}
