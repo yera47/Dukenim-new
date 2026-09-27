@@ -14,8 +14,9 @@ const tabs: Tab[] = [
   { label: "Ещё", icon: "☰", path: "/more" },
 ];
 
-export function BrandHeader({ section, store }: { section: string; store?: string }) {
+export function BrandHeader({ section, store, backTo }: { section: string; store?: string; backTo?: "/catalog" | "/orders" | "/more" }) {
   return <View style={styles.header}>
+    {backTo ? <Pressable accessibilityLabel="Назад" onPress={() => router.replace(backTo as never)} style={styles.back}><Text style={styles.backArrow}>‹</Text></Pressable> : null}
     <View style={styles.mark}><Image alt="" source={logoMark} resizeMode="contain" style={styles.logo} /></View>
     <View style={{ flex: 1 }}><Text style={styles.section}>{section.toUpperCase()}</Text><Text numberOfLines={1} style={styles.store}>{store || "Dukenim"}</Text></View>
   </View>;
@@ -35,8 +36,11 @@ export function BottomNav() {
 }
 
 export function AppScreen({ children, section, store, scroll = true, trailing }: PropsWithChildren<{ section: string; store?: string; scroll?: boolean; trailing?: ReactNode }>) {
-  const body = <View style={[styles.content, !scroll && { flex: 1 }]}><BrandHeader section={section} store={store} />{trailing}{children}</View>;
-  return <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>{scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>{body}</ScrollView> : body}<BottomNav /></SafeAreaView>;
+  const pathname = usePathname();
+  const root = pathname === "/catalog" || pathname === "/orders" || pathname === "/more";
+  const backTo = root ? undefined : pathname === "/order" ? "/orders" : pathname === "/product-edit" ? "/catalog" : "/more";
+  const body = <View style={[styles.content, !scroll && { flex: 1 }]}><BrandHeader section={section} store={store} backTo={backTo} />{trailing}{children}</View>;
+  return <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>{scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={root ? styles.scroll : styles.nestedScroll}>{body}</ScrollView> : body}{root ? <BottomNav /> : null}</SafeAreaView>;
 }
 
 export const ui = StyleSheet.create({
@@ -55,8 +59,9 @@ export const ui = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.stone }, scroll: { paddingBottom: 110 }, content: { paddingHorizontal: 20, paddingTop: 10, gap: 16 },
+  safe: { flex: 1, backgroundColor: colors.stone }, scroll: { paddingBottom: 110 }, nestedScroll: { paddingBottom: 32 }, content: { paddingHorizontal: 20, paddingTop: 10, gap: 16 },
   header: { flexDirection: "row", alignItems: "center", gap: 11, minHeight: 54, paddingBottom: 6 },
+  back: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, backArrow: { fontSize: 31, lineHeight: 33, color: colors.navyDark },
   mark: { width: 42, height: 42, borderRadius: 13, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" }, logo: { width: 25, height: 27 },
   section: { color: colors.navy, fontSize: 9, fontWeight: "900", letterSpacing: 1.4 }, store: { color: colors.ink, fontSize: 18, fontWeight: "900", marginTop: 2 },
   nav: { position: "absolute", left: 12, right: 12, bottom: 10, height: 72, flexDirection: "row", alignItems: "stretch", borderRadius: 30, overflow: "hidden", borderWidth: 1, borderColor: "#FFFFFFCC", padding: 5, shadowColor: "#56334D", shadowOpacity: .16, shadowRadius: 24, shadowOffset: { width: 0, height: 10 }, elevation: 10 },
