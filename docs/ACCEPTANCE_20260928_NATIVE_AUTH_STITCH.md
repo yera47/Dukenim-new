@@ -3,6 +3,7 @@
 | Requirement | Status | Evidence / next check |
 | --- | --- | --- |
 | Google returns to native app | in progress | Supabase production redirect allowlist now includes `dukenim://auth-callback`; mobile OAuth uses that exact URL and PKCE. A fresh TestFlight login on the owner's iPhone is still required. |
+| Login launch recovers from session-read errors | in progress | Native entry screen now clears its loading state and offers normal sign-in if the Supabase session read or workspace route fails; it previously could remain on the spinner. Mobile TypeScript, lint and iOS export pass. Physical-device failure/retry still needs acceptance. |
 | Email registration does not trap users waiting for a code | verified | Native registration now presents Google as primary and clearly states email registration is unavailable until mail delivery is configured; Stitch B/C remove code and disable unavailable email action. |
 | Apple sign-in | externally blocked | Native code exists, but the Supabase Apple provider is not enabled and the mobile release flag stays off. Provider setup and physical-iPhone verification remain. |
 | SMS sign-in | externally blocked | No verified sender, customer OTP delivery or accepted end-to-end journey. Do not present SMS as available. |
