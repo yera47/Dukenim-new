@@ -6,5 +6,5 @@ const key = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export const isSupabaseConfigured = Boolean(url && key);
 export const supabase = isSupabaseConfigured
-  ? createClient(url!, key!, { auth: { storage: deviceStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false } })
+  ? createClient(url!, key!, { auth: { storage: deviceStorage, autoRefreshToken: true, persistSession: true, detectSessionInUrl: false, flowType: "pkce" } })
   : null;

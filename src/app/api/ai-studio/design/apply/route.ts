@@ -4,7 +4,6 @@ import { z } from "zod";
 import { getSessionContext } from "@/lib/auth";
 import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
 import { tenantEntitlement } from "@/lib/plan-access";
-import { hasPlan, type Plan } from "@/lib/plans";
 import { getStorefrontSettings, saveStorefrontSettings } from "@/lib/queries/owner";
 import { templateCatalog } from "@/lib/storefront-theme";
 import { createClient } from "@/lib/supabase/server";
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
   const design = aiStudioDesignSchema.safeParse(generation.data.output);
   if (!design.success) return NextResponse.json({ error: "Оформление нужно сгенерировать заново." }, { status: 422 });
   const template = templateCatalog.find((item) => item.key === design.data.templateKey);
-  if (!template || !hasPlan(entitlement.plan, template.minPlan as Plan)) return NextResponse.json({ error: "Этот шаблон недоступен на текущем тарифе." }, { status: 403 });
+  if (!template) return NextResponse.json({ error: "Шаблон недоступен." }, { status: 403 });
 
   const current = await getStorefrontSettings(client, context.tenantId);
   if (current.error) return NextResponse.json({ error: "Не удалось прочитать текущее оформление." }, { status: 500 });

@@ -1,5 +1,29 @@
 # Dukenim — AI handoff
 
+## 2026-09-27 — Stitch cleanup and native AI/auth implementation in progress
+
+Result: simplified Stitch AI Studio and template selection; aligned native `gallery`/`journal` choices, added a fixed next-step guide, owner-reviewed AI design generation/application, native logo upload, Google PKCE and prepared native Apple sign-in. The mobile catalog draft now uses revision compare-and-swap like the website. Current changes are local; no production deployment or new TestFlight build has been made in this entry.
+
+Changed files: `apps/mobile/src/app/{studio,catalog-builder,brand,logo,index,register,auth-callback}.tsx`, `apps/mobile/src/lib/{social-auth,studio-next-step,supabase}.ts`, `apps/mobile/app.json`, mobile package/lockfile, `src/app/api/mobile/{ai-design,logo}`, `src/lib/ai/studio.ts`, `src/app/api/ai-studio/design/apply/route.ts`, tests and `docs/ACCEPTANCE_20260927_STITCH_AI_MOBILE.md`. Unrelated pre-existing working-tree edits remain untouched.
+
+Checks: root/mobile TypeScript pass; Expo lint 0 warnings; Expo Doctor 21/21; iOS export pass; root build 85 pages; root Vitest 495 passed and 4 live-AI skips. The authenticated cross-device and physical-iPhone journeys are not yet verified. Production Supabase public Auth settings report Google enabled, Apple and phone disabled. Supabase Dashboard browser session redirects to login. Mobizon registration form is prepared, awaiting exact owner contact details and action-time confirmation; no account or key created.
+
+Azure: no model, key, quota, deployment or spending change. Next action: complete provider configuration when owner input arrives, publish backend/mobile revision, and run physical-device acceptance. Do not claim that Stitch prototype proves production logic.
+
+## 2026-09-27 — Google Stitch iOS design project
+
+Result: created `Dukenim Merchant iOS Prototype` in Google Stitch at https://stitch.withgoogle.com/u/1/projects/835608249656701686?pli=1 and uploaded `public/brand/dukenim-symbol-current.png`. The canvas contains a design system, onboarding A–L, owner tabs and service screens covering team, integrations, stock, analytics, customers, loyalty, campaigns, fulfilment, domain, subscription, support, notifications and scanner. The full product brief and acceptance checklist are in `docs/STITCH_MOBILE_DESIGN_BRIEF_20260927.md`.
+
+Implemented and verified: observed the screens in Stitch's canvas and reloaded the page to verify persistence. Targeted older welcome, AI Studio, catalog, orders and More screens to remove invented sales/store data. Also corrected the email-login CTA, registration's fake address/code, unsupported marketing claims, manual Kaspi/Yandex copy, and wizard progress D=1/9, E=2/9, F=3/9. A second one-screen quick prototype regenerated after reload contains the corrected welcome; B registration was added to its screen list. These are visual design changes in Stitch; no production code, database, TestFlight build or customer data changed.
+
+Azure: unchanged; no resource, model, quota, key, inference or cost changed.
+
+Not completed: the first quick prototype used an earlier revision with fabricated claims. Reloading Stitch and regenerating confirmed the corrected welcome persists, but the newer prototype contains only welcome and registration; its button transitions and full flow are not accepted. The nested iframe preview could not be reliably clicked through this browser connection. Some later screens may still contain demo copy, inconsistent wizard progress or false integration claims and need individual visual review. Stitch export is limited to 16 screens per batch; no ZIP was exported. Native implementation from this design has not begun in this turn. A passing design generation is not a functional app test.
+
+Required owner action: none to continue editing the design. Review the Stitch project when a fully linked and checked prototype is ready.
+
+Where to verify: linked Stitch project and `docs/STITCH_MOBILE_DESIGN_BRIEF_20260927.md`. Next action: link/test the registration-to-publication and owner-tab prototype, export verified screens in batches, then implement approved design in native app and run device acceptance.
+
 ## 2026-09-24 — единый тариф и iOS parity release 19
 
 Result: публичная модель упрощена до одного тарифа «Каталог» за 24 900 ₸/месяц со всеми функциями. Web и native onboarding больше не выбирают «Еда и напитки» заранее. В мобильное приложение добавлены нативные центр сборки витрины, интеграции, тариф, продолжение сохранённого этапа, визуальные варианты шаблонов, постоянная карточка следующего шага в AI Studio и Liquid Glass навигация. Все owner-модули используют те же tenant-данные Supabase, что и сайт.

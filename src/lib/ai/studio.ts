@@ -4,7 +4,7 @@ import "server-only";
 import { z } from "zod";
 import { AzureFoundryError, createAzureFoundryChatCompletion, getAzureFoundryStatus } from "@/lib/ai/azure-foundry";
 import { aiStudioDesignSchema, aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
-import { hasPlan, type Plan } from "@/lib/plans";
+import type { Plan } from "@/lib/plans";
 import { palettes, templateCatalog, launchTemplatesForPlan } from "@/lib/storefront-theme";
 import type { BusinessVertical } from "@/types/database";
 import { compactShopContext, parseModelJson } from "./shop-context";
@@ -58,7 +58,8 @@ export async function createAiStudioStructure(brief: string, context: unknown = 
 export async function createAiStudioDesign(brief: string, vertical: BusinessVertical, plan: Plan, context: unknown = {}) {
   if (!getAiStudioStatus().configured) throw new AzureFoundryError("AI Studio ещё не включён: не завершена серверная настройка Azure или базы данных.");
   const creating=Boolean(context&&typeof context==="object"&&"catalog_status" in context&&context.catalog_status==="not_started");
-  const templateOptions = templateCatalog.filter(template => hasPlan(plan, template.minPlan as Plan) && (!creating || launchTemplatesForPlan(plan).some(option=>option.key===template.key)));
+  // Dukenim has one catalogue plan; the builder and AI must offer the same templates.
+  const templateOptions = templateCatalog.filter(template => !creating || launchTemplatesForPlan(plan).some(option=>option.key===template.key));
   const allowedTemplates = templateOptions.map(template => template.key);
   const availableConfigurations=templateOptions.map(template=>({templateKey:template.key,...configurationFor(vertical,approachForTemplate(template.key))}));
   const allowedPalettes = palettes.map(palette => palette.key);
