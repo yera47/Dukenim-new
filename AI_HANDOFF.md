@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — Stitch native first-run and navigation follow-up
+
+Result: imported the owner's current Stitch ZIP into untracked `output/stitch-source-20260928` for reference. The native unauthenticated entry now has a dedicated welcome state that routes to registration or existing-account login while preserving automatic session resume. The onboarding and six-step catalog-builder CTAs are pinned above the safe area; the builder's existing shared draft save is unchanged. The translucent four-tab navigation uses the burgundy accent. More shows the selected store's actual publication state and a direct route to setup or its link. Login from an order notification continues to the target order after authentication.
+
+Changed tracked files: `apps/mobile/src/app/{index,onboarding,catalog-builder,more}.tsx`, `apps/mobile/src/components/app-shell.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`. Checks: mobile TypeScript, Expo lint, iOS Metro export and local Expo-web 390 px welcome preview pass. No authenticated iPhone journey was tested. Azure: unchanged. Unrelated user changes in `docs/INTEGRATION_IMPLEMENTATION_20260909.md`, root `app.json`, other pre-existing files and `output/` were preserved.
+
+Not completed: full screen-by-screen visual parity with Stitch; native app binary is still build 22 in TestFlight because EAS Free reset is 2026-10-01. Google on a physical iPhone, cross-device catalog save, Apple provider, email and SMS delivery remain unverified or externally blocked as itemized in the acceptance checklist. Next: continue the native screen parity pass and authenticated device checks; run EAS build/submission after the quota resets.
+
 ## 2026-09-27 — native AI promotion follow-up
 
 Result: commit `6604374` is pushed to `main`, and Vercel `dpl_6vnmWFLBokk5ySiu8m4heTaA4pRZ` is Ready/current. Added `/api/mobile/ai-promotion` with owner/tenant, entitlement, daily quota and credit checks. Native Campaigns presents generated text separately; owner must insert it into the form, save a draft, then publish. An AI Studio promotion task passes its brief into this screen. No discount, inventory or campaign is invented or automatically published.
