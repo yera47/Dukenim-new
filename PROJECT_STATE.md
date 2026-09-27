@@ -262,11 +262,11 @@ Dukenim is a multi-tenant commerce platform for small and growing retailers in K
 
 - Current brandbook: `output/pdf/Dukenim_Brandbook_2026.pdf` (version 1.0, August 2026).
 - Current production masters: `public/brand/dukenim-flat-*`.
-- Core platform colors: ink `#111820`, dark navy `#173B57` / `#0E2A40`, Pale Stone `#F4F0E8`, white surfaces and semantic status colours.
-- The approved D alpha geometry is unchanged; only the flat inner doorway threshold and wordmark dot use dark navy `#173B57`.
+- Core platform colors: ink `#111820`, wine-navy accent `#56334D` / dark `#3D2538`, white surfaces and semantic status colours. Historical brandbook colours remain a reference; the owner requested a newer accent.
+- The approved D alpha geometry is unchanged; only the flat inner doorway threshold and wordmark dot use `#56334D`.
 - Font: Manrope.
 - Older green/gold/cyan exports, `dukenim-logo-combo*`, and older PDFs are historical, not the current colour source of truth.
-- Shared web/mobile platform tokens and owner navigation use the dark-navy system. Tenant storefront palettes remain merchant-controlled.
+- Shared web/mobile platform tokens and owner navigation use the wine-navy system. Tenant storefront palettes remain merchant-controlled.
 
 ## Marketing system
 
@@ -326,3 +326,4 @@ On the published disposable shop, a guest placed a 4,200 ₸ pickup order with K
 
 No real Kaspi transfer, merchant receipt or physical iPhone test was performed. The Kaspi flow remains manual: the owner sends a genuine invoice or supplies their merchant link, checks the actual receipt, then marks the order paid. Azure configuration, quota and usage were unchanged. Detailed acceptance: `docs/ACCEPTANCE_20260922_AI_STUDIO_KASPI.md`.
 - 2026-09-24 native launch synchronization: mobile build 17 resumes the selected store from shared onboarding/catalog status, includes native onboarding and the six-step catalog builder backed by owner-only `catalog_builder_drafts`, and uses a standalone AI Studio chat with Liquid Glass composer plus back navigation. Production `create_mobile_owner_store` now starts new stores with incomplete onboarding; existing business data was not changed. EAS build `1084c33d-bdab-43dd-99ba-006a0b21c0e0` / submission `b07331bd-b23c-4dca-b05e-0f83278bbfe1` is processed and in `Dukenim Internal`. Physical iPhone acceptance remains. Azure unchanged.
+- 2026-09-28 native auth/brand release: commit `ce2cf9c` is Ready in Vercel production. Supabase Auth production redirect allowlist includes `dukenim://auth-callback`; native Google OAuth uses that URL. New native email registration is paused until SMTP delivery is verified, while existing email/password login remains available. The app and web accent is `#56334D` with the D geometry unchanged; six food-format recommendations map to the two supported catalog layouts. EAS build 22 is in progress, with TestFlight and physical-iPhone acceptance pending. Apple provider and verified SMS sender are not enabled. Detailed acceptance: `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`.

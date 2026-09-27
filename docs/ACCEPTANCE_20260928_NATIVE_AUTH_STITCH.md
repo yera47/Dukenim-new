@@ -8,10 +8,12 @@
 | SMS sign-in | externally blocked | No verified sender, customer OTP delivery or accepted end-to-end journey. Do not present SMS as available. |
 | Same store and setup progress on web and iOS | in progress | Existing `workspaceRoute` reads shared tenant and catalog state; native builder saves `catalog_builder_drafts` with revisions. Owner's cross-device journey remains unverified. |
 | Segment-specific catalog choices | in progress | Native builder offers six food-format examples and recommends one of the two supported storefront layouts; non-food advice follows the selected vertical. Confirm a saved store on both devices. |
-| Stitch minimal, truthful screens | verified | Project [Dukenim Merchant iOS Prototype](https://stitch.withgoogle.com/u/1/projects/835608249656701686?pli=1): registration B/C, readiness J and preview K visibly updated. K's publish action is disabled for zero products. It remains a prototype, not backend proof. |
+| Stitch minimal, truthful screens | in progress | Project [Dukenim Merchant iOS Prototype](https://stitch.withgoogle.com/u/1/projects/835608249656701686?pli=1): B/C, F, J/K and Integrations were inspected after edits. Existing email/password login remains, unavailable signup is identified, six food formats map to two template choices, external services show unconfigured/manual states, and K disables publication at zero products. Other historical mock screens still need audit. |
 | Brand and native interface | in progress | Platform accent is `#56334D` on white; approved D alpha geometry is unchanged and only the doorway threshold was recoloured. Verify on iPhone after installation. |
-| Production website / TestFlight release | in progress | Local strict TypeScript, mobile lint, iOS Metro export and Next.js build pass. Deployment/build and device acceptance to follow. |
+| Production website / TestFlight release | in progress | Commit `ce2cf9c` is deployed Ready to production; `www.dukenim.kz/icon.svg` returned 200 with the new accent. Signed EAS iOS build 22 completed and submission `3fe0b745-862b-4f47-a534-03215a99daca` was uploaded to App Store Connect. Apple processing and device acceptance to follow. |
 
 The Supabase redirect change was pushed through an isolated auth-only config file and verified with `config diff` showing zero auth updates. Do not push the repository's general `supabase/config.toml` to production: it declares local Postgres 15 while production is Postgres 17.
 
 Azure: unchanged. No Azure resource or model was modified.
+
+The Stitch project still contains historical screens with unsupported claims, including sample sales and stock. These screens need an explicit demo state or an empty new-store state before treating the whole prototype as verified. Stitch does not change actual backend capabilities.
