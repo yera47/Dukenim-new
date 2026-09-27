@@ -2,7 +2,7 @@
 
 ## 2026-09-27 — Stitch/AI mobile release and TestFlight submission 20
 
-Result: commit `38649dd` was pushed to `main`. Vercel deployment `dpl_D3K9iuS21y2ufyg1fjT3tUPSjs4X` is Ready/current on `dukenim.kz` and `www.dukenim.kz`; homepage HTTP 200. New mobile AI design and logo routes return HTTP 401 to well-formed unauthenticated requests. Signed EAS iOS build `cf6cc060-611e-494b-83ce-9fe8238356f8` finished as `1.0.0 (20)`, and App Store submission `b449ac5e-4058-4bb1-89a1-8ac29b0ef1c3` reports FINISHED. At last check, Apple had not yet listed build 20 in TestFlight; processing/group distribution remains to verify.
+Result: commit `38649dd` was pushed to `main`. Vercel deployment `dpl_D3K9iuS21y2ufyg1fjT3tUPSjs4X` is Ready/current on `dukenim.kz` and `www.dukenim.kz`; homepage HTTP 200. New mobile AI design and logo routes return HTTP 401 to well-formed unauthenticated requests. Signed EAS iOS build `cf6cc060-611e-494b-83ce-9fe8238356f8` finished as `1.0.0 (20)`, and App Store submission `b449ac5e-4058-4bb1-89a1-8ac29b0ef1c3` reports FINISHED. App Store Connect then listed build 20 as `VALID` and `IN_BETA_TESTING`.
 
 Implemented and checked: simplified the Stitch AI Studio and two-template selection; native next-step guide, owner-reviewed AI design generation/application, logo upload, Google PKCE, prepared Apple native path, revision-safe shared catalog draft, and two native visual template previews. Root and mobile TypeScript, Expo lint, Expo Doctor 21/21, iOS export, root build (85 pages) pass. Root test run had 495 passes/4 intentional live-AI skips; two later targeted logo tests passed. Evidence and per-requirement limits are in `docs/ACCEPTANCE_20260927_STITCH_AI_MOBILE.md`.
 
@@ -10,7 +10,7 @@ Azure: no resource, model, key, quota or cost change. The production environment
 
 Not completed: no physical-iPhone or authenticated two-device end-to-end test; Apple provider and phone Auth are disabled in production; Google mobile callback is not physically verified. Mobizon registration requires owner contact details, separate action-time confirmation and account verification. AI does not autonomously generate a new logo or rewrite every page. The whole Stitch canvas/linked prototype has not been visually accepted; only the AI Studio and template-choice screens were cleaned and verified this turn.
 
-Next: confirm Apple processing and internal TestFlight assignment for build 20; use the owner's iPhone for login, resume setup, AI proposal, product save, publish and logo; complete external identity provider setup only after the required owner input. Unrelated working-tree edits and output files remain untouched.
+Next: use the owner's iPhone for login, resume setup, AI proposal, product save, publish and logo; complete external identity provider setup only after the required owner input. Unrelated working-tree edits and output files remain untouched.
 
 ## 2026-09-27 — Stitch cleanup and native AI/auth implementation in progress
 
