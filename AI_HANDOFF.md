@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ account registry
+
+Result: added a root-only bearer API and native no-tab Accounts screen. It reads profile roles, store/active-staff access, new-login block state and last sign-in from the same sources as `/root/accounts`; search is server-filtered and a 1000-user limit is explicitly labelled. It does not grant or revoke rights. Three focused route tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. No account or store data was changed. Azure: unchanged.
+
+Changed tracked files: `src/app/api/mobile/root/accounts/{route.ts,route.test.ts}`, `apps/mobile/src/app/{root.tsx,root-accounts.tsx}`, `PROJECT_STATE.md`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Next: publish and build a new iOS binary, then verify an authorized account read on the owner's iPhone. For edit parity, reuse the existing guarded web account/staff RPCs with exact email, revision, reason and system confirmation; do not implement an email-based role grant. This is newer than build 28. The unrelated modified integration document remains untouched; autonomous heartbeat stays PAUSED.
+
 ## 2026-09-28 — native HQ store detail published in build 28
 
 Result: commit `4d533fb` is pushed; Vercel production deployment `dpl_GHd2mKsk93p8EvMXSta97gzJXLqY` is Ready and current for `www.dukenim.kz`. Live unauthenticated root-store detail GET and publication POST returned 403. iOS 1.0.0 (28), EAS build `110fa453-25e6-4ad4-9b94-7dd3994a7fc7`, finished from that commit and EAS submission `2829b155-7bba-4859-852d-b1dfdf712f8e` uploaded it. App Store Connect shows the binary confirmed and assigned to Dukenim Internal with one tester. This proves delivery, not iPhone functionality. Azure: unchanged.
