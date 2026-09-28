@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native loyalty load and immutable rule handling
+
+Result: the native Loyalty screen no longer edits default values after either server read fails. It exposes Retry, starts a new program disabled, retains all stored rule fields, and reports that complex gift/product/cashback rules need the web editor. Editing a simple existing rule now creates a replacement rule ID only when saving changed conditions; this matches the server's immutable-rule contract and preserves historical customer progress. The screen requires a true RPC result and reloads the saved program after success.
+
+Changed tracked files: `apps/mobile/src/app/loyalty.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and fresh iOS export passed. No production loyalty settings, guests or orders were changed. Azure: unchanged.
+
+Not completed: authenticated iPhone/web save comparison and buyer reward accrual/redemption. The native editor still lacks the website's complex rule editing controls; those saved rules are preserved and labelled rather than misrepresented. EAS Free iOS quota resets 2026-10-01, so build 22 does not contain this fix. Next: continue parity audit, then submit a new build after quota reset and test an actual food-store loyalty change on device.
+
 ## 2026-09-28 — native customer list and truthful totals
 
 Result: the native Customers screen now pages owner-visible tenant rows by stable id instead of silently accepting Supabase's first response as the whole list. A failed page clears the list and hides aggregate figures, with Retry; a new store/read invalidates older responses. It sorts completed results by recent order, offers Refresh, and uses a Stitch-inspired empty state whose CTA goes to Catalog until the storefront is published, then to the store-link screen. The customer value is explicitly the subtotal of goods ordered, which database checkout code increments on order creation even before payment or after a later cancellation. No customer purchases or bank receipts were invented.
