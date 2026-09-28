@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, money } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
@@ -51,13 +51,14 @@ export default function StaffModule() {
       if (current === requestId.current) { setLoading(false); setRefreshing(false); }
     }
   }, [accessId, selectedModule]);
-  useEffect(() => { void load(); return () => { requestId.current += 1; }; }, [load]);
+  useFocusEffect(useCallback(() => { void load(); return () => { requestId.current += 1; }; }, [load]));
 
   return <SafeAreaView style={s.page}>
     <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Назад" onPress={() => router.back()} style={s.back}><Text style={s.backText}>‹</Text></Pressable><Text style={s.headerTitle}>{selectedModule ? names[selectedModule] : "Раздел"}</Text><View style={{ width: 42 }} /></View>
     <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(); }} />} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
       <Text style={s.title}>{selectedModule ? names[selectedModule] : "Раздел недоступен"}</Text>
       {selectedModule ? <Text style={s.copy}>{descriptions[selectedModule]}</Text> : null}
+      {selectedModule === "catalog" && level === "write" && !error ? <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: "/staff-product-new", params: { accessId } } as never)} style={s.button}><Text style={s.buttonText}>＋ Добавить товар</Text></Pressable> : null}
       {loading ? <ActivityIndicator color={colors.navy} /> : error ? <View style={s.card}><Text style={s.cardTitle}>Данные недоступны</Text><Text style={s.copy}>{error}</Text><Pressable onPress={() => void load()} style={s.smallButton}><Text style={s.smallButtonText}>Повторить</Text></Pressable></View> : <>
         <Text style={s.meta}>{level === "write" && selectedModule !== "analytics" ? "Владелец разрешил изменения" : "Только просмотр"}{records.length === 200 ? " · показаны первые 200 записей" : ""}</Text>
         {records.length ? records.map((record, index) => <StaffRecord key={`${field(record, "id") || index}-${field(record, "title")}-${field(record, "name")}-${field(record, "stock_qty")}-${field(record, "price")}-${field(record, "phone")}-${field(record, "is_active")}`} accessId={accessId!} module={selectedModule!} record={record} write={level === "write"} reload={load} />) : <View style={s.card}><Text style={s.cardTitle}>Записей пока нет</Text><Text style={s.copy}>Они появятся здесь после работы магазина.</Text></View>}

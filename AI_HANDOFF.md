@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native employee product creation
+
+Result: employees with current `catalog:write` can open an in-app add-product form from the staff Catalog, select up to four photos and save a hidden item to the shared store. Positive initial stock additionally requires `stock:write`; the existing `staff_create_product` RPC journals it through `stock_movements`. The new `/api/mobile/staff-products` endpoint checks a bearer session and active membership, bounds the upload, normalizes images to WebP in a tenant/employee/request path, rechecks rights before a caller-scoped RPC, and uses a stable request ID for safe retry. Returning from the form refreshes the Catalog. No production item or employee grant was changed.
+
+Changed tracked files: `apps/mobile/src/app/{staff-module,staff-product-new}.tsx`, `src/app/api/mobile/staff-products/{route,route.test}.ts`, a TypeScript-only mock correction in `src/app/api/mobile/staff-studio/route.test.ts`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: 10 focused tests passed across the staff product and AI routes; root/mobile TypeScript, Expo lint, Next.js production build (87 static pages) and iOS Expo export passed. Azure: unchanged. Current Vercel/Expo inspection before publication showed production `32332db` Ready and iOS 1.0.0 (22) as latest completed build.
+
+Not completed: no authenticated employee saved an item on a physical iPhone or confirmed it in the web catalog. The next iOS binary is gated by EAS Free quota until 2026-10-01; build 22 has no OTA channel. Staff module pagination beyond 200 and AI design application are separate remaining parity gaps. Next: publish the prepared code, confirm Vercel Ready and unauthenticated route rejection, then test employee creation/photo/stock rights and owner visibility with two accounts on the new TestFlight binary after quota reset.
+
 ## 2026-09-28 — native registration consent links
 
 Result: before accepting the offer/privacy checkbox on the native Google registration screen, users can now open both documents separately. Production `/legal/offer` and `/legal/privacy` each returned HTTP 200. No email/SMS availability claim changed.
