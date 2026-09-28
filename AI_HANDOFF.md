@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — Starter upgrade and TestFlight build 24
+
+Result: the owner's Expo account now shows Starter ($19/month and $45 build credit). Root/mobile TypeScript, mobile lint and Expo Doctor 21/21 passed. EAS production iOS build `ddea9103-1616-4e6f-9319-7fd89bfbddee` (1.0.0 build 24) finished from Git commit `75fe694`, including mobile changes through `cdba099`. EAS Submit `d7c2ce6d-a071-4aa8-8872-31fec73466c1` succeeded; App Store Connect API reports `VALID` and `IN_BETA_TESTING`. No authenticated iPhone user journey was run, so Google/Apple login, cross-device catalog save and Stitch parity are still in progress. SMS login remains deferred by the owner.
+
+Changed tracked files: `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Azure: unchanged. Next: install build 24 on the owner's iPhone, verify Google and Apple sign-in and persisted store/catalog state against the website, then continue closing the Stitch screen/action gaps. Do not represent an iOS build or a mock screen as end-to-end acceptance.
+
 ## 2026-09-28 — native stock receipt and write-off
 
 Result: added explicit receipt and write-off actions to each owner Stock variant. They write tenant-scoped `stock_movements` entries, as the web Stock screen does, and show the correct write-off label in the native journal. The existing database trigger remains the only stock quantity mutation path. Mobile/root TypeScript, Expo lint and an iOS export pass. No authenticated stock movement or physical-iPhone save was performed; the latest available TestFlight binary is still build 22 because the EAS Free iOS build quota resets on 2026-10-01.
