@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — owner account tabs and native auth callback
+
+Result: opened Edge tabs for Apple Developer identifiers, Supabase project Auth providers and Mobizon registration. Apple and Supabase redirect to sign-in, and the Mobizon registration form is waiting for owner/legal account details; no credentials were entered and no provider was enabled. Independently, native `auth-callback` now shows an actionable error for provider rejection, expired/reused code, missing link credentials or failed session exchange rather than spinning forever. A missing initial URL reports an error after five seconds.
+
+Changed tracked files: `apps/mobile/src/app/auth-callback.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: mobile strict TypeScript, Expo lint and iOS Metro export pass. Azure: unchanged. No production auth, payment or customer data changed.
+
+Not completed: actual Google and recovery callback on a physical iPhone; Apple Developer/Supabase sign-in and Apple provider setup; Mobizon owner registration, sender approval and real SMS delivery; email SMTP delivery. The newest TestFlight binary is still build 22 and cannot receive this code until a fresh EAS build after the stated 2026-10-01 Free quota reset. Next: after the owner privately signs into the opened accounts, inspect existing provider identifiers before changing them, complete verified configuration, then test fresh links and OTP on a new iPhone binary.
+
 ## 2026-09-28 — native owner storefront editor read and save safety
 
 Result: the native Brand editor no longer treats a failed `tenant_storefront_settings` read as empty settings. It blocks edits until a successful read, offers Retry, and sends a store without a settings row to catalog setup. A save updates only the existing tenant row and compares its fetched `updated_at` version, so a design changed on the website or by AI is not silently overwritten. A changed store cannot receive the former store's selected photo or save response. Photo uploads check the actual byte length and supported MIME type; pasted image URLs require credential-free HTTPS.
