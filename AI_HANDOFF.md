@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — paginated native employee modules
+
+Result: removed the silent 200-row ceiling on native employee Catalog, Stock and Customers detail views. Production migration `20260928050347_paginate_staff_modules.sql` creates a bounded `staff_module_page` RPC with active employee/tenant/module/plan checks and no anonymous execute grant. The app requests 80 rows at a time and renders them in a virtualized list with explicit next-page action. A failed later page hides old records and write controls until a fresh successful read. Analytics retains the existing one-row aggregate RPC. Existing web staff behaviour and stock mutation RPC are unchanged.
+
+Changed tracked files: `supabase/migrations/20260928050347_paginate_staff_modules.sql`, `apps/mobile/src/app/staff-module.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: migration applied in production under matching version; grants show `authenticated` execute and no `anon` execute. Read-only production SQL under a real staff identity asserted bounded page shape, the `hasMore` flag against tenant count and distinct adjacent IDs when present; a foreign identity was rejected. Mobile/root TypeScript, Expo lint and iOS export pass. Supabase security advisors list this authenticated SECURITY DEFINER RPC with the existing intended staff RPCs; there is no new anonymous-executable function. Azure: unchanged. No product, stock, customer or staff grant changed.
+
+Not completed: no physical-iPhone page traversal, >80-row performance or authenticated revoke-while-paging test. Expo TestFlight remains build 22 until Free iOS quota resets 2026-10-01. Next: publish native changes, confirm Vercel Ready, then use two accounts and a sufficiently large staff store on the new iOS binary to verify page boundaries and immediate revoke behaviour.
+
 ## 2026-09-28 — native employee product creation
 
 Result: employees with current `catalog:write` can open an in-app add-product form from the staff Catalog, select up to four photos and save a hidden item to the shared store. Positive initial stock additionally requires `stock:write`; the existing `staff_create_product` RPC journals it through `stock_movements`. The new `/api/mobile/staff-products` endpoint checks a bearer session and active membership, bounds the upload, normalizes images to WebP in a tenant/employee/request path, rechecks rights before a caller-scoped RPC, and uses a stable request ID for safe retry. Returning from the form refreshes the Catalog. No production item or employee grant was changed.

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, RefreshControl, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, money } from "@/lib/theme";
@@ -8,6 +8,7 @@ import { supabase } from "@/lib/supabase";
 type Module = "catalog" | "stock" | "customers" | "analytics";
 type Level = "none" | "read" | "write";
 type RecordData = Record<string, unknown>;
+const pageSize = 80;
 const names: Record<Module, string> = { catalog: "Каталог", stock: "Склад", customers: "Клиенты", analytics: "Аналитика" };
 const descriptions: Record<Module, string> = {
   catalog: "Карточки товаров и цены магазина",
@@ -26,6 +27,8 @@ export default function StaffModule() {
   const [level, setLevel] = useState<Level>("none");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState("");
   const requestId = useRef(0);
   const load = useCallback(async () => {
@@ -38,32 +41,51 @@ export default function StaffModule() {
       if (membership.error || !membership.data) throw new Error("Доступ больше не действует.");
       const permission = (membership.data.permissions as Record<string, Level> | null)?.[selectedModule];
       if (permission !== "read" && permission !== "write") throw new Error("Владелец закрыл этот раздел.");
-      const result = await supabase.rpc("staff_module_data" as never, { p_access: accessId, p_module: selectedModule } as never);
-      if (result.error || !Array.isArray(result.data)) throw new Error("Не удалось загрузить данные раздела.");
+      const result = selectedModule === "analytics"
+        ? await supabase.rpc("staff_module_data" as never, { p_access: accessId, p_module: selectedModule } as never)
+        : await supabase.rpc("staff_module_page" as never, { p_access: accessId, p_module: selectedModule, p_offset: 0, p_limit: pageSize } as never);
+      const payload = result.data as { items?: unknown[]; hasMore?: boolean } | unknown[] | null;
+      const rows = selectedModule === "analytics" ? payload : !Array.isArray(payload) ? payload?.items : null;
+      if (result.error || !Array.isArray(rows) || (selectedModule !== "analytics" && (Array.isArray(payload) || typeof payload?.hasMore !== "boolean"))) throw new Error("Не удалось загрузить данные раздела.");
       if (current !== requestId.current) return;
-      setLevel(permission); setRecords(result.data.filter((row): row is RecordData => !!row && typeof row === "object" && !Array.isArray(row)));
+      setLevel(permission); setRecords(rows.filter((row): row is RecordData => !!row && typeof row === "object" && !Array.isArray(row)));
+      setHasMore(selectedModule !== "analytics" && !Array.isArray(payload) && payload?.hasMore === true);
       setError("");
     } catch (cause) {
       if (current !== requestId.current) return;
-      setLevel("none"); setRecords([]);
+      setLevel("none"); setRecords([]); setHasMore(false);
       setError(cause instanceof Error ? cause.message : "Не удалось загрузить раздел.");
     } finally {
-      if (current === requestId.current) { setLoading(false); setRefreshing(false); }
+      if (current === requestId.current) { setLoading(false); setRefreshing(false); setLoadingMore(false); }
     }
   }, [accessId, selectedModule]);
+  const loadMore = useCallback(async () => {
+    if (!supabase || !accessId || !selectedModule || selectedModule === "analytics" || !hasMore || loading || loadingMore || error) return;
+    const current = ++requestId.current;
+    setLoadingMore(true);
+    try {
+      const result = await supabase.rpc("staff_module_page" as never, { p_access: accessId, p_module: selectedModule, p_offset: records.length, p_limit: pageSize } as never);
+      if (current !== requestId.current) return;
+      const payload = result.data as { items?: unknown[]; hasMore?: boolean } | null;
+      if (result.error || !payload || !Array.isArray(payload.items) || typeof payload.hasMore !== "boolean") throw new Error("Page failed");
+      setRecords(previous => [...previous, ...payload.items!.filter((row): row is RecordData => !!row && typeof row === "object" && !Array.isArray(row))]);
+      setHasMore(payload.hasMore);
+    } catch {
+      if (current !== requestId.current) return;
+      setLevel("none"); setRecords([]); setHasMore(false);
+      setError("Не удалось подтвердить следующую страницу и права доступа. Обновите раздел.");
+    } finally {
+      if (current === requestId.current) setLoadingMore(false);
+    }
+  }, [accessId, selectedModule, hasMore, loading, loadingMore, error, records.length]);
   useFocusEffect(useCallback(() => { void load(); return () => { requestId.current += 1; }; }, [load]));
 
   return <SafeAreaView style={s.page}>
     <View style={s.header}><Pressable accessibilityRole="button" accessibilityLabel="Назад" onPress={() => router.back()} style={s.back}><Text style={s.backText}>‹</Text></Pressable><Text style={s.headerTitle}>{selectedModule ? names[selectedModule] : "Раздел"}</Text><View style={{ width: 42 }} /></View>
-    <ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(); }} />} contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-      <Text style={s.title}>{selectedModule ? names[selectedModule] : "Раздел недоступен"}</Text>
-      {selectedModule ? <Text style={s.copy}>{descriptions[selectedModule]}</Text> : null}
-      {selectedModule === "catalog" && level === "write" && !loading && !error ? <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: "/staff-product-new", params: { accessId } } as never)} style={s.button}><Text style={s.buttonText}>＋ Добавить товар</Text></Pressable> : null}
-      {loading ? <ActivityIndicator color={colors.navy} /> : error ? <View style={s.card}><Text style={s.cardTitle}>Данные недоступны</Text><Text style={s.copy}>{error}</Text><Pressable onPress={() => void load()} style={s.smallButton}><Text style={s.smallButtonText}>Повторить</Text></Pressable></View> : <>
-        <Text style={s.meta}>{level === "write" && selectedModule !== "analytics" ? "Владелец разрешил изменения" : "Только просмотр"}{records.length === 200 ? " · показаны первые 200 записей" : ""}</Text>
-        {records.length ? records.map((record, index) => <StaffRecord key={`${field(record, "id") || index}-${field(record, "title")}-${field(record, "name")}-${field(record, "stock_qty")}-${field(record, "price")}-${field(record, "phone")}-${field(record, "is_active")}`} accessId={accessId!} module={selectedModule!} record={record} write={level === "write"} reload={load} />) : <View style={s.card}><Text style={s.cardTitle}>Записей пока нет</Text><Text style={s.copy}>Они появятся здесь после работы магазина.</Text></View>}
-      </>}
-    </ScrollView>
+    <FlatList data={records} keyExtractor={(record, index) => field(record, "id") || String(index)} renderItem={({ item }) => <StaffRecord accessId={accessId!} module={selectedModule!} record={item} write={level === "write"} reload={load} />} ItemSeparatorComponent={() => <View style={{ height: 12 }} />} keyboardShouldPersistTaps="handled" contentContainerStyle={s.content} refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(); }} />}
+      ListHeaderComponent={<View style={s.listHeader}><Text style={s.title}>{selectedModule ? names[selectedModule] : "Раздел недоступен"}</Text>{selectedModule ? <Text style={s.copy}>{descriptions[selectedModule]}</Text> : null}{selectedModule === "catalog" && level === "write" && !loading && !error ? <Pressable accessibilityRole="button" onPress={() => router.push({ pathname: "/staff-product-new", params: { accessId } } as never)} style={s.button}><Text style={s.buttonText}>＋ Добавить товар</Text></Pressable> : null}{loading ? <ActivityIndicator color={colors.navy} /> : error ? <View style={s.card}><Text style={s.cardTitle}>Данные недоступны</Text><Text style={s.copy}>{error}</Text><Pressable onPress={() => void load()} style={s.smallButton}><Text style={s.smallButtonText}>Повторить</Text></Pressable></View> : <Text style={s.meta}>{level === "write" && selectedModule !== "analytics" ? "Владелец разрешил изменения" : "Только просмотр"}{selectedModule !== "analytics" ? ` · загружено ${records.length}` : ""}</Text>}</View>}
+      ListEmptyComponent={!loading && !error ? <View style={s.card}><Text style={s.cardTitle}>Записей пока нет</Text><Text style={s.copy}>Они появятся здесь после работы магазина.</Text></View> : null}
+      ListFooterComponent={hasMore && !error ? <Pressable accessibilityRole="button" disabled={loadingMore} onPress={() => void loadMore()} style={[s.button, { marginTop: 14 }, loadingMore && { opacity: .5 }]}>{loadingMore ? <ActivityIndicator color="white" /> : <Text style={s.buttonText}>Показать ещё</Text>}</Pressable> : null} />
   </SafeAreaView>;
 }
 
@@ -116,5 +138,5 @@ function StaffRecord({ accessId, module, record, write, reload }: { accessId: st
 
 function LabeledInput({ label, ...props }: { label: string } & React.ComponentProps<typeof TextInput>) { return <View style={s.field}><Text style={s.label}>{label}</Text><TextInput {...props} style={s.input} /></View>; }
 const s = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "white" }, header: { height: 60, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, back: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, backText: { fontSize: 31, lineHeight: 34, color: colors.navyDark }, headerTitle: { fontSize: 16, fontWeight: "900", color: colors.ink }, content: { padding: 20, paddingBottom: 56, gap: 13 }, title: { fontSize: 30, fontWeight: "900", color: colors.ink }, copy: { fontSize: 14, lineHeight: 21, color: colors.muted }, meta: { fontSize: 12, lineHeight: 18, color: colors.muted }, card: { gap: 12, borderWidth: 1, borderColor: colors.line, borderRadius: 20, padding: 17, backgroundColor: "white" }, cardTitle: { fontSize: 18, fontWeight: "900", color: colors.ink }, field: { gap: 6 }, label: { fontSize: 13, fontWeight: "800", color: colors.ink }, input: { minHeight: 48, borderWidth: 1, borderColor: colors.line, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, color: colors.ink, fontSize: 15 }, switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, button: { minHeight: 48, borderRadius: 13, backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" }, buttonText: { color: "white", fontWeight: "900" }, smallButton: { alignSelf: "flex-start", backgroundColor: colors.navySoft, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 10 }, smallButtonText: { color: colors.navyDark, fontWeight: "900" }, error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
+  page: { flex: 1, backgroundColor: "white" }, header: { height: 60, flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: colors.line }, back: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, backText: { fontSize: 31, lineHeight: 34, color: colors.navyDark }, headerTitle: { fontSize: 16, fontWeight: "900", color: colors.ink }, content: { padding: 20, paddingBottom: 56 }, listHeader: { gap: 13, marginBottom: 13 }, title: { fontSize: 30, fontWeight: "900", color: colors.ink }, copy: { fontSize: 14, lineHeight: 21, color: colors.muted }, meta: { fontSize: 12, lineHeight: 18, color: colors.muted }, card: { gap: 12, borderWidth: 1, borderColor: colors.line, borderRadius: 20, padding: 17, backgroundColor: "white" }, cardTitle: { fontSize: 18, fontWeight: "900", color: colors.ink }, field: { gap: 6 }, label: { fontSize: 13, fontWeight: "800", color: colors.ink }, input: { minHeight: 48, borderWidth: 1, borderColor: colors.line, borderRadius: 12, paddingHorizontal: 13, paddingVertical: 10, color: colors.ink, fontSize: 15 }, switchRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" }, button: { minHeight: 48, borderRadius: 13, backgroundColor: colors.navy, alignItems: "center", justifyContent: "center" }, buttonText: { color: "white", fontWeight: "900" }, smallButton: { alignSelf: "flex-start", backgroundColor: colors.navySoft, borderRadius: 11, paddingHorizontal: 14, paddingVertical: 10 }, smallButtonText: { color: colors.navyDark, fontWeight: "900" }, error: { color: colors.danger, fontSize: 13, lineHeight: 19 },
 });
