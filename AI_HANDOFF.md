@@ -6,7 +6,9 @@ Result: removed the silent 200-row ceiling on native employee Catalog, Stock and
 
 Changed tracked files: `supabase/migrations/20260928050347_paginate_staff_modules.sql`, `apps/mobile/src/app/staff-module.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: migration applied in production under matching version; grants show `authenticated` execute and no `anon` execute. Read-only production SQL under a real staff identity asserted bounded page shape, the `hasMore` flag against tenant count and distinct adjacent IDs when present; a foreign identity was rejected. Mobile/root TypeScript, Expo lint and iOS export pass. Supabase security advisors list this authenticated SECURITY DEFINER RPC with the existing intended staff RPCs; there is no new anonymous-executable function. Azure: unchanged. No product, stock, customer or staff grant changed.
 
-Not completed: no physical-iPhone page traversal, >80-row performance or authenticated revoke-while-paging test. Expo TestFlight remains build 22 until Free iOS quota resets 2026-10-01. Next: publish native changes, confirm Vercel Ready, then use two accounts and a sufficiently large staff store on the new iOS binary to verify page boundaries and immediate revoke behaviour.
+Publication: commit `6ea3222` is pushed and its Vercel Production deployment is Ready. The matching production migration and its call/grant probes passed before the code release.
+
+Not completed: no physical-iPhone page traversal, >80-row performance or authenticated revoke-while-paging test. Expo TestFlight remains build 22 until Free iOS quota resets 2026-10-01. Next: use two accounts and a sufficiently large staff store on the new iOS binary to verify page boundaries and immediate revoke behaviour.
 
 ## 2026-09-28 — native employee product creation
 
