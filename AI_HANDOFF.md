@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native owner storefront editor read and save safety
+
+Result: the native Brand editor no longer treats a failed `tenant_storefront_settings` read as empty settings. It blocks edits until a successful read, offers Retry, and sends a store without a settings row to catalog setup. A save updates only the existing tenant row and compares its fetched `updated_at` version, so a design changed on the website or by AI is not silently overwritten. A changed store cannot receive the former store's selected photo or save response. Photo uploads check the actual byte length and supported MIME type; pasted image URLs require credential-free HTTPS.
+
+Changed tracked files: `apps/mobile/src/app/brand.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: mobile strict TypeScript, Expo lint without warnings, iOS Metro export and `git diff --check` pass. No production settings, media or store records were changed. Azure: unchanged.
+
+Not completed: physical iPhone photo selection/save, concurrent web/app version-conflict test, and full visual parity of template previews with Stitch. The latest TestFlight binary remains build 22; EAS Free iOS quota resets 2026-10-01. Next: after a new build, compare a Brand edit with the web storefront, and intentionally edit the same design from the web before saving on iPhone to verify the conflict message.
+
 ## 2026-09-28 — native employee design proposals
 
 Result: the employee AI Studio now loads the same saved owner-generated storefront design drafts as the web staff cabinet, but only for a currently authorized `studio:write` employee. Read-only employees receive the shared conversation without drafts or apply controls. A native sample shows the proposed copy and palette, with an explicit second confirmation before invoking the existing caller-scoped `staff_apply_design` RPC. That RPC validates membership, entitlement, draft ownership and storefront version before changing settings; publication status, goods and payment do not change. The sample is labelled as incomplete and does not claim to be the full buyer storefront preview.
