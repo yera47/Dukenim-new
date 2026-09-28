@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — TestFlight build 26 delivered
+
+Result: Expo Starter allowed a production iOS build from commit `db8510e` (`ccc4bdf1-5dbe-4aad-a668-e7ef44c3134a`). EAS Submit `9adfa948-beb3-44d3-9152-c53385c35e38` uploaded it; App Store Connect reports `VALID` and `IN_BETA_TESTING`. Build 25 was independently confirmed with the same state. Build 26 includes native customer creation and the AI Studio positive-stock guide. This is a binary delivery milestone; no physical-iPhone Google/Apple login, web/iPhone catalog/customer save, real order, push or complete Stitch parity was accepted. SMS login stays deferred. Azure: unchanged.
+
+Changed tracked files: `PROJECT_STATE.md`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Checks: build finished, EAS submit succeeded, App Store Connect status read. Next: install build 26 on the owner's iPhone and run the acceptance journey; continue implementing unmet Stitch functions independently, with particular attention to native customer export and the warehouse/fiscalization concepts that exist only as prototypes.
+
 ## 2026-09-28 — AI Studio next-step stock readiness
 
 Result: the persistent native AI Studio guide no longer advances a store with an active but zero-stock product toward publication. It counts active, positive-stock variants in the selected store and links to Stock when none is sellable; published-store new orders remain the immediate priority. The exact joined count filter returned HTTP 200 from the production Supabase Data API using the public key and exposed only a count. Two focused guide tests, root/mobile TypeScript, Expo lint and iOS export pass. A real owner iPhone transition remains unverified. Build 25 was already uploaded before this change; it is not included in that binary.

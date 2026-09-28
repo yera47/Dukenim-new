@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-28 iOS 1.0.0 build 26 was built from `db8510e` and submitted to TestFlight. App Store Connect reports `VALID` / `IN_BETA_TESTING`. It includes native manual customer creation and the AI Studio positive-stock guide. This verifies binary delivery only; Google/Apple login, cross-device save, orders, push and full Stitch visual/functional parity still need real iPhone acceptance. SMS login remains deferred.
+
 - 2026-09-28 field-sales route v2: the 2GIS prospect base is expanded to 2,507 points and split deterministically into 126 compact sectors of 7–20 businesses. `/admin/sales` and `/root/sales` now show per-zone completion, an authenticated server-proxied 2GIS road map, and a persisted trip workflow with exactly one current stop, feedback/outcome capture, automatic next stop, early finish and trip history. The 2GIS key is stored only as a secret production environment variable. Migration `20260928094057_field_sales_microzones_and_trips.sql` is applied; RLS is enabled and the new tables are service-only.
 
 - 2026-09-28 field-sales admin access: the protected Astana sales workspace is also available at `/admin/sales`, appears as «База продаж» for the superadmin and the owner of the single internal `dukenim-9b139` tenant, and remains hidden from every client tenant. Server actions and reads re-check that capability before using the server-only admin client. The internal owner and a superadmin with the selected tenant land there after password login. `/root/sales` remains as a compatible internal address.
