@@ -6,7 +6,9 @@ Result: employees with current `catalog:write` can open an in-app add-product fo
 
 Changed tracked files: `apps/mobile/src/app/{staff-module,staff-product-new}.tsx`, `src/app/api/mobile/staff-products/{route,route.test}.ts`, a TypeScript-only mock correction in `src/app/api/mobile/staff-studio/route.test.ts`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: 10 focused tests passed across the staff product and AI routes; root/mobile TypeScript, Expo lint, Next.js production build (87 static pages) and iOS Expo export passed. Azure: unchanged. Current Vercel/Expo inspection before publication showed production `32332db` Ready and iOS 1.0.0 (22) as latest completed build.
 
-Not completed: no authenticated employee saved an item on a physical iPhone or confirmed it in the web catalog. The next iOS binary is gated by EAS Free quota until 2026-10-01; build 22 has no OTA channel. Staff module pagination beyond 200 and AI design application are separate remaining parity gaps. Next: publish the prepared code, confirm Vercel Ready and unauthenticated route rejection, then test employee creation/photo/stock rights and owner visibility with two accounts on the new TestFlight binary after quota reset.
+Publication: commits `a6021b3` and `43abb8a` were pushed; both Vercel production deployments became Ready. A live unauthenticated POST to `https://www.dukenim.kz/api/mobile/staff-products` returned HTTP 401. The final native access-feedback change also passed mobile TypeScript, Expo lint and a fresh iOS export.
+
+Not completed: no authenticated employee saved an item on a physical iPhone or confirmed it in the web catalog. The next iOS binary is gated by EAS Free quota until 2026-10-01; build 22 has no OTA channel. Staff module pagination beyond 200 and AI design application are separate remaining parity gaps. Next: test employee creation/photo/stock rights and owner visibility with two accounts on the new TestFlight binary after quota reset.
 
 ## 2026-09-28 — native registration consent links
 
