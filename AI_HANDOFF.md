@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ staff revoke/restore
+
+Result: expanded the root account registry with staff access IDs/revisions; added root-only bearer GET/POST `/api/mobile/root/accounts/staff-access` and a native no-tab confirmation screen. It fetches the current staff record and email, requires exact email/reason, then invokes existing service-only `root_set_staff_access`, whose production SQL checks actor role, version, owner membership and writes an audit event atomically. No actual access was changed. Eight focused tests, root/mobile TypeScript, Expo lint, Next build and iOS export pass. Azure unchanged. Changed: account API/tests, new staff-access API/tests, native account/staff screens and acceptance/state/handoff docs. Build 31 predates the screen; another binary and physical-iPhone guarded scenario are needed. Owner account login blocks and detailed permission editing remain web-only. Autonomous heartbeat remains PAUSED.
+
 ## 2026-09-28 — native HQ finance and audit
 
 Result: added `/api/mobile/root/records` with current-superadmin bearer authorization, no-store responses and fail-closed reads for finance/audit; added native no-tab Finance/Audit screen linked from HQ System. It shows actual subscriptions, tariff checkout requests, CRM charges and platform events from the website's sources, with a stated last-200 cap and no false settlement claim. Four focused API tests, root/mobile TypeScript, Expo lint, Next production build and iOS export pass. No financial or audit data changed; Azure unchanged. Changed: `src/app/api/mobile/root/records/{route,route.test}.ts`, `apps/mobile/src/app/{root,root-records}.tsx`, acceptance/state/handoff docs. Build 30 was submitted before this code; a later binary and physical-iPhone check are needed. Autonomous heartbeat remains PAUSED.

@@ -25,12 +25,12 @@ it("returns only matching accounts with database role and no-store headers", asy
   const tables: Record<string, unknown[]> = {
     profiles: [{ user_id: "one", role: "superadmin" }],
     tenant_users: [{ user_id: "one", tenant_id: "store", role: "owner" }],
-    staff_access: [], tenants: [{ id: "store", name: "Shop" }],
+    staff_access: [{ id: "access", user_id: "one", tenant_id: "store", title: "Менеджер", active: true, revision: 2 }], tenants: [{ id: "store", name: "Shop" }],
   };
   const from = vi.fn((name: string) => ({ select: vi.fn(async () => ({ data: tables[name], error: null })) }));
   authorize.mockResolvedValue({ admin: { auth: { admin: { listUsers: vi.fn(async () => ({ data: { users }, error: null })) } }, from } });
   const response = await GET(request("owner@"));
   expect(response.status).toBe(200);
   expect(response.headers.get("Cache-Control")).toBe("no-store, private");
-  expect(await response.json()).toEqual({ accounts: [{ id: "one", email: "owner@example.test", role: "superadmin", blocked: false, lastSignIn: null, stores: [{ name: "Shop", role: "owner", active: true }] }], possiblyMore: false });
+  expect(await response.json()).toEqual({ accounts: [{ id: "one", email: "owner@example.test", role: "superadmin", blocked: false, lastSignIn: null, stores: [{ name: "Shop", role: "owner", active: true }, { name: "Shop", role: "Менеджер", active: true, accessId: "access", revision: 2 }] }], possiblyMore: false });
 });

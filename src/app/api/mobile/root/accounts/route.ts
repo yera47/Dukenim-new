@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     root.admin.auth.admin.listUsers({ page: 1, perPage: 1000 }),
     root.admin.from("profiles").select("user_id,role"),
     root.admin.from("tenant_users").select("user_id,tenant_id,role"),
-    root.admin.from("staff_access").select("user_id,tenant_id,title,active"),
+    root.admin.from("staff_access").select("id,user_id,tenant_id,title,active,revision"),
     root.admin.from("tenants").select("id,name"),
   ]);
   if (users.error || profiles.error || memberships.error || staff.error || tenants.error || !users.data) {
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
   }
   const names = new Map((tenants.data ?? []).map(item => [item.id, item.name]));
   const roles = new Map((profiles.data ?? []).map(item => [item.user_id, item.role]));
-  const access = new Map<string, { name: string; role: string; active: boolean }[]>();
+  const access = new Map<string, { name: string; role: string; active: boolean; accessId?: string; revision?: number }[]>();
   for (const item of memberships.data ?? []) {
     const entries = access.get(item.user_id) ?? [];
     entries.push({ name: names.get(item.tenant_id) ?? "Удалённый магазин", role: item.role, active: true });
@@ -26,7 +26,7 @@ export async function GET(request: Request) {
   for (const item of staff.data ?? []) {
     if (!item.user_id) continue;
     const entries = access.get(item.user_id) ?? [];
-    entries.push({ name: names.get(item.tenant_id) ?? "Удалённый магазин", role: item.title, active: item.active });
+    entries.push({ name: names.get(item.tenant_id) ?? "Удалённый магазин", role: item.title, active: item.active, accessId: item.id, revision: item.revision });
     access.set(item.user_id, entries);
   }
   const accounts = users.data.users
