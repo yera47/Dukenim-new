@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native delivery and manual Kaspi consistency
+
+Result: the native Delivery and Payment screen no longer offers editable defaults when `tenant_settings` fails to load. It shows Retry and requires a confirmed settings row before saving. A partial write to settings followed by a failed manual Yandex zone update is reported as partial and the screen reloads the server state. The native Kaspi switch now matches the website: a link is optional because the merchant may send an invoice personally; a supplied URL must be a Kaspi HTTPS address without embedded credentials or a custom port. Copy makes manual confirmation explicit.
+
+Changed tracked files: `apps/mobile/src/app/delivery.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Verification: native TypeScript, Expo lint and fresh iOS export passed after the final change. Read-only production check found 20 stores with delivery enabled, of which 18 have no active Yandex zone; those stores may use their own delivery zones, so no data was changed or inferred as a failure. Existing Next.js checkout already requires an enabled zone and handles Kaspi without a link by telling the buyer that the merchant will send the invoice. Azure: unchanged.
+
+Not completed: no authenticated iPhone save/checkout/payment-confirmation test; the client settings and zone updates are separate server calls, now reported honestly if the second one fails, not a database transaction. Expo lists build 22 as latest; build 23 remains blocked by the Free allowance until 2026-10-01. App Store Connect redirected to sign-in on refresh, so its current TestFlight state was not rechecked. Next: keep auditing independent native journeys, then build/submit after quota reset and test a merchant settings save plus buyer order on a physical iPhone.
+
 ## 2026-09-28 — CRM request boundary and native integration form
 
 Result: production migration `20260927233938_guard_crm_request_status.sql` closes a tenant-owner escalation path in `crm_integration_requests`: merchant Data API writes cannot declare a provider connected or set platform-only fields, while authenticated reads cannot retrieve `secret_reference`. Existing superadmin/service-role status workflows remain allowed. The native Integrations screen now distinguishes a failed read from no applications, lets the owner retry, prefills previously saved provider details, and prevents editing a provider already under platform review. This does not activate a live CRM connection.
