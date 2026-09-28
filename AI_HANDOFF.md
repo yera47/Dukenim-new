@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native employee design proposals
+
+Result: the employee AI Studio now loads the same saved owner-generated storefront design drafts as the web staff cabinet, but only for a currently authorized `studio:write` employee. Read-only employees receive the shared conversation without drafts or apply controls. A native sample shows the proposed copy and palette, with an explicit second confirmation before invoking the existing caller-scoped `staff_apply_design` RPC. That RPC validates membership, entitlement, draft ownership and storefront version before changing settings; publication status, goods and payment do not change. The sample is labelled as incomplete and does not claim to be the full buyer storefront preview.
+
+Changed tracked files: `src/app/api/mobile/staff-studio/{route,route.test}.ts`, `apps/mobile/src/app/staff-studio.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: six focused route tests; root/mobile strict TypeScript, Expo lint, Next.js production build (87 static pages), iOS Metro export and `git diff --check` pass. The current Stitch AI Studio and web staff design preview/apply flow were inspected. Azure: unchanged. No production design, grant or customer data was mutated.
+
+Not completed: authenticated employee save and version-conflict test on a physical iPhone, full web-equivalent storefront preview and buyer visual check. The latest TestFlight binary remains 1.0.0 (22); EAS Free iOS quota is exhausted until 2026-10-01 and this code cannot reach build 22 by OTA. Next: after a fresh build, open one saved proposal under `studio:write`, apply it with explicit confirmation, compare the storefront on the web, then revoke write rights and verify the button disappears.
+
 ## 2026-09-28 — paginated native employee modules
 
 Result: removed the silent 200-row ceiling on native employee Catalog, Stock and Customers detail views. Production migration `20260928050347_paginate_staff_modules.sql` creates a bounded `staff_module_page` RPC with active employee/tenant/module/plan checks and no anonymous execute grant. The app requests 80 rows at a time and renders them in a virtualized list with explicit next-page action. A failed later page hides old records and write controls until a fresh successful read. Analytics retains the existing one-row aggregate RPC. Existing web staff behaviour and stock mutation RPC are unchanged.

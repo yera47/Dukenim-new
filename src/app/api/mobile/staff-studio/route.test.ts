@@ -16,5 +16,13 @@ it("returns saved consultation history to read-only staff without write permissi
  authorize.mockResolvedValueOnce({admin,member:{tenant_id:"store",permissions:{studio:"read"}}});
  const response=await GET(new Request("https://example.test/api/mobile/staff-studio?accessId=11111111-1111-4111-8111-111111111111"));
  expect(response.status).toBe(200);
- expect(await response.json()).toEqual({turns:[{id:"turn",message:"Вопрос",response:{reply:"Ответ",task:null}}],canWrite:false});
+ expect(await response.json()).toEqual({turns:[{id:"turn",message:"Вопрос",response:{reply:"Ответ",task:null}}],canWrite:false,designs:[],designUpdatedAt:null});
+});
+it("returns valid saved designs and the current version only to staff with write access",async()=>{
+ const design={templateKey:"gallery",paletteKey:"mono",heroTitle:"Новая витрина",heroSubtitle:"Все товары в одном месте",heroCtaLabel:"Смотреть каталог",rationale:"Подходит этому магазину"};
+ const admin={from:(table:string)=>table==="tenants"?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:"store",status:"active"},error:null})})})}:table==="tenant_storefront_settings"?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{updated_at:"2026-09-28T00:00:00Z"},error:null})})})}:{select:()=>({eq:()=>({eq:(_:string,intent:string)=>({order:()=>({limit:async()=>({data:intent==="store_design"?[{id:"draft",output:design},{id:"invalid",output:{}}]:[],error:null})})})})})}};
+ authorize.mockResolvedValueOnce({admin,member:{tenant_id:"store",permissions:{orders:"none",catalog:"none",stock:"none",customers:"none",analytics:"none",studio:"write"}}});
+ const response=await GET(new Request("https://example.test/api/mobile/staff-studio?accessId=11111111-1111-4111-8111-111111111111"));
+ expect(response.status).toBe(200);
+ expect(await response.json()).toEqual({turns:[],canWrite:true,designs:[{id:"draft",design}],designUpdatedAt:"2026-09-28T00:00:00Z"});
 });
