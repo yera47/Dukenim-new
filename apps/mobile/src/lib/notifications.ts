@@ -7,6 +7,23 @@ import { deviceStorage } from "@/lib/device-storage";
 
 export type PushSetup = { state: "granted" | "denied" | "unavailable"; message: string };
 
+export async function currentDevicePushStatus(): Promise<PushSetup> {
+  if (Platform.OS === "web" || !Device.isDevice) return {state: "unavailable", message: "Проверка доступна в установленном приложении на телефоне."};
+  if (!supabase) return {state: "unavailable", message: "Подключение Dukenim недоступно."};
+  const {data: {user}, error: authError} = await supabase.auth.getUser();
+  if (authError || !user) return {state: "unavailable", message: "Войдите в аккаунт Dukenim."};
+  const permission = await Notifications.getPermissionsAsync();
+  if (!permission.granted) return {state: "denied", message: "Уведомления выключены в настройках телефона."};
+  const token = await deviceStorage.getItem(storageKeyFor(user.id));
+  if (!token) return {state: "unavailable", message: "Этот телефон ещё не зарегистрирован для уведомлений."};
+  const {data, error} = await supabase.from("mobile_device_tokens").select("id")
+    .eq("user_id", user.id).eq("token", token).eq("enabled", true).maybeSingle();
+  if (error) throw error;
+  return data
+    ? {state: "granted", message: "Телефон зарегистрирован. Доставку нового заказа нужно проверить отдельно."}
+    : {state: "unavailable", message: "Регистрация этого телефона неактивна. Подключите уведомления снова."};
+}
+
 const storageKeyFor = (userId: string) => `dukenim.push.${userId}`;
 
 async function saveExpoPushToken(token: string, userId: string): Promise<void> {

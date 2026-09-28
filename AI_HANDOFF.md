@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native push registration visibility
+
+Result: Settings now checks the current phone's notification permission, locally stored Expo token and user-owned enabled database row on focus. It says whether this installation is registered and offers refresh; registration alone is not described as proven push delivery. Logout now reports token-revocation or sign-out failure instead of silently doing nothing. Read-only production queries show the Supabase push cron active every minute, one enabled token overall and two failed outbox records whose recipients currently have no enabled device token. No token value or private order data was read or copied.
+
+Changed tracked files: `apps/mobile/src/lib/notifications.ts`, `apps/mobile/src/app/settings.tsx`, `apps/mobile/src/app/more.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and fresh iOS export passed. No production push row, order or user account was changed. Azure: unchanged.
+
+Not completed: receipt-confirmed notification delivery, a physical-device token registration for the intended owner account, notification open-to-order flow and offline logout behavior. Latest TestFlight build 22 predates this status UI; EAS Free iOS quota resets 2026-10-01. Next: on the next iPhone build, open Settings → Connect notifications under the intended account, confirm an enabled token row, place a real test order, and inspect its Expo ticket/receipt and deep link.
+
 ## 2026-09-28 — native AI Studio guidance uses verified store state
 
 Result: the pinned AI Studio “next step” card now follows the compact white Stitch layout. It no longer interprets failed reads of products, new orders or fulfilment settings as zeros and cannot suggest adding a first product to an existing store on that basis; it shows a Retry state instead. Switching stores clears old consultation turns and draft design proposals. A failed Supabase session lookup now releases the AI send spinner and gives a login message.
