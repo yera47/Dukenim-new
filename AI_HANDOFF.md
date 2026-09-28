@@ -6,6 +6,8 @@ Result: the employee AI Studio now loads the same saved owner-generated storefro
 
 Changed tracked files: `src/app/api/mobile/staff-studio/{route,route.test}.ts`, `apps/mobile/src/app/staff-studio.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: six focused route tests; root/mobile strict TypeScript, Expo lint, Next.js production build (87 static pages), iOS Metro export and `git diff --check` pass. The current Stitch AI Studio and web staff design preview/apply flow were inspected. Azure: unchanged. No production design, grant or customer data was mutated.
 
+Publication: commit `debcbd6` is pushed and its Vercel Production deployment is Ready. A live unauthenticated GET of `/api/mobile/staff-studio` with a well-formed access ID returned HTTP 403 and `Cache-Control: no-store, private`.
+
 Not completed: authenticated employee save and version-conflict test on a physical iPhone, full web-equivalent storefront preview and buyer visual check. The latest TestFlight binary remains 1.0.0 (22); EAS Free iOS quota is exhausted until 2026-10-01 and this code cannot reach build 22 by OTA. Next: after a fresh build, open one saved proposal under `studio:write`, apply it with explicit confirmation, compare the storefront on the web, then revoke write rights and verify the button disappears.
 
 ## 2026-09-28 — paginated native employee modules
