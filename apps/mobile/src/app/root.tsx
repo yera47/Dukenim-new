@@ -9,6 +9,7 @@ import { loadOwnerContext } from "@/lib/owner";
 import { supabase } from "@/lib/supabase";
 import logoMark from "../../assets/images/logo-mark-compact.png";
 import businessKit from "../../assets/images/dukenim-business-kit-v1.png";
+import { FloatingBusinessVisual } from "@/components/floating-business-visual";
 import { AppleSignInButton } from "@/components/apple-sign-in-button";
 import { linkAppleToCurrentUser } from "@/lib/social-auth";
 import { disableCurrentDevicePush } from "@/lib/notifications";
@@ -139,7 +140,7 @@ export default function Root() {
     <ScrollView contentContainerStyle={s.body} keyboardShouldPersistTaps="handled">
       {loading ? <ActivityIndicator color={colors.navy} /> : error ? <View style={s.card}><Text style={s.error}>{error}</Text><Pressable onPress={() => void load()} style={s.button}><Text style={s.buttonText}>Повторить</Text></Pressable></View> : null}
       {dashboard && tab === "overview" ? <>
-        <View style={s.overviewHero}><View style={s.overviewHeroCopy}><Text style={s.heroKicker}>ЦЕНТР УПРАВЛЕНИЯ</Text><Text style={s.heroTitle}>Вся платформа в одном месте</Text><Text style={s.heroText}>Магазины, заказы, обращения и выездные продажи используют общие защищённые данные.</Text></View><Image alt="Инструменты управления Dukenim" source={businessKit} resizeMode="contain" style={s.heroArt}/></View>
+        <View style={s.overviewHero}><View style={s.overviewHeroCopy}><Text style={s.heroKicker}>ЦЕНТР УПРАВЛЕНИЯ</Text><Text style={s.heroTitle}>Вся платформа в одном месте</Text><Text style={s.heroText}>Магазины, заказы, обращения и выездные продажи используют общие защищённые данные.</Text></View><FloatingBusinessVisual source={businessKit} accessibilityLabel="Инструменты управления Dukenim" compact style={s.heroArt}/></View>
         <View style={s.metrics}><Metric title="Магазины" value={dashboard.totals.stores} /><Metric title="Новые заказы" value={dashboard.totals.newOrders} /><Metric title="Обращения" value={dashboard.totals.openRequests} /></View>
         <Text style={s.sectionTitle}>Рабочие разделы</Text>
         <Action title="Магазины" copy="Реестр, состояние и массовый выбор" onPress={() => setTab("stores")} />

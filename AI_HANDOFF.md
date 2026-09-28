@@ -2011,3 +2011,38 @@ Changed: `apps/mobile/src/app/index.tsx`, `apps/mobile/src/app/more.tsx`, `apps/
 Checks: mobile strict TypeScript passes, Expo lint passes without warnings, a fresh iOS export includes both new assets, and the logged-out Expo web screen was visually inspected. Authenticated merchant/HQ screens and real-device performance have not been accepted on an iPhone. Stitch still contains old inconsistent/generated screens; updating the external Stitch project is waiting on the required action-time confirmation. Existing Google/password, cross-device data, Apple linkage, field-sales trips/reminders, requests, promotions, integrations, diagnostics, refunds and detailed permission gaps remain in progress. The `dukenim` heartbeat remains paused. Azure unchanged.
 
 Release: scoped commit `6925aa3` was pushed to `main`; Vercel production deployment `dpl_EYhC8LNThiroJju8Vj371pvHJBs2` reached Ready. The native redesign is source-ready but is not in TestFlight build 34; the next EAS iOS build remains deferred until the stated Free quota reset on 2026-10-01.
+
+## 2026-09-29 — shared layered-motion home experience
+
+Outcome:
+- Audited the previous illustration release and confirmed the generated artwork was present only in native screens; the new Next homepage had not used it.
+- Added the original Dukenim system-stack artwork to the public website hero and changed the hero to a responsive text/object composition.
+- Added shallow pointer parallax plus three independently floating explanatory layers for Catalog, AI Studio and Route. Motion stops under `prefers-reduced-motion`.
+- Added one reusable native `FloatingBusinessVisual` to the logged-out welcome, merchant More hero and superadmin overview. The main object and two helper chips move with low amplitude, stop when iOS Reduce Motion is enabled, and never animate actions or real data.
+- The 2GIS reference was used only for hierarchy and layered-motion logic. All artwork, copy, colors and product meaning are original Dukenim work.
+
+Changed files:
+- `src/app/page.tsx`
+- `src/app/home.module.css`
+- `src/components/marketing/living-system-visual.tsx`
+- `public/design/dukenim-system-stack-v1.png`
+- `apps/mobile/src/components/floating-business-visual.tsx`
+- `apps/mobile/src/app/index.tsx`
+- `apps/mobile/src/app/more.tsx`
+- `apps/mobile/src/app/root.tsx`
+- `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`
+
+Checks:
+- Root `npx tsc --noEmit` passed.
+- Mobile `npx tsc --noEmit` passed.
+- `npx expo lint` passed with zero warnings after removing an unused import.
+- `npm run build` passed (96 static pages/routes enumerated).
+- Fresh iOS export passed at `apps/mobile/output/motion-parity-ios`.
+- Local Next homepage was visually inspected; the first screen shows the text and 3D stack side by side with readable floating labels.
+- Local Expo web preview rendered the animated native component and exposed the illustration through accessibility text.
+
+Unresolved risks / next action:
+- The website change still needs commit, push and production deployment verification.
+- Native motion still needs a physical-iPhone performance/reduced-motion check; a new TestFlight binary must wait for the next authorized EAS build window.
+- Stitch remains a design reference and has not received these changes because submitting a prompt in Stitch is an external representational action that still lacks action-time confirmation.
+- Existing broader native parity gaps remain listed in the acceptance checklist.
