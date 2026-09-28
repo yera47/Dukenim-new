@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ orders monitor
+
+Result: added root-only bearer GET `/api/mobile/root/orders`, a separate native Orders screen and links from HQ Overview/System. The screen searches the most recent 500 real orders by number, ID or store, filters status, shows actual totals/payment flags and explicitly avoids treating those flags as bank/Kaspi evidence. Four focused route tests, root/mobile strict TypeScript, mobile lint, Next production build and iOS export pass. No order or payment was changed. Azure: unchanged.
+
+Changed: `src/app/api/mobile/root/orders/{route,route.test}.ts`, `apps/mobile/src/app/{root,root-orders}.tsx`, `PROJECT_STATE.md`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, this handoff. Unresolved: authenticated physical-iPhone read and full root order detail/cancel/refund parity. The new screen is not in TestFlight build 28. Next: publish these source changes, make a new TestFlight binary, then verify same production order on web and iPhone. Preserve unrelated dirty/untracked user files. The `dukenim` autonomous heartbeat remains PAUSED.
+
 ## 2026-09-28 — native HQ account registry
 
 Result: added a root-only bearer API and native no-tab Accounts screen. It reads profile roles, store/active-staff access, new-login block state and last sign-in from the same sources as `/root/accounts`; search is server-filtered and a 1000-user limit is explicitly labelled. It does not grant or revoke rights. Three focused route tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. No account or store data was changed. Azure: unchanged.

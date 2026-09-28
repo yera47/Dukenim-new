@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-28 native HQ orders monitor in development: a protected bearer API and no-tab screen show recent real orders with tenant names, search and status filters, a disclosed 500-order cap and no invented bank payment confirmation. Four focused API tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. Code is newer than TestFlight build 28; native order detail and guarded financial actions remain incomplete.
+
 - 2026-09-28 native HQ accounts in development: a protected mobile API and no-tab screen show real profile roles, store/staff memberships, blocked-new-login state and last sign-in, with search and a truthful first-1000 limit. It does not change permissions. Three route tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. This code is newer than TestFlight build 28; authenticated iPhone reading and edit parity remain open.
 
 - 2026-09-28 iOS 1.0.0 (28) delivery: EAS build `110fa453-25e6-4ad4-9b94-7dd3994a7fc7` from `4d533fb` finished; submission `2829b155-7bba-4859-852d-b1dfdf712f8e` uploaded it. App Store Connect shows a confirmed binary assigned to the one-tester internal group. Vercel deployment `dpl_GHd2mKsk93p8EvMXSta97gzJXLqY` is Ready on `www.dukenim.kz`, and new root-store GET/publication POST return 403 without a bearer. iPhone authentication/save and full admin parity remain unverified. Stitch's Accounts mock still contains invented MFA statuses in its visible HTML despite a correction request; do not use it as an approved reference.
