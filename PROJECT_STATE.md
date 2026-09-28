@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-28 native HQ finance/audit in development: a root-only bearer API and no-tab screen show real subscription, checkout, CRM charge and platform audit records, with a truthful last-200 limit and no claim of bank settlement. Four focused API tests, root/mobile TypeScript, lint, Next build and iOS export pass. This code is newer than iOS build 30 and needs an authenticated iPhone check. CSV export and full finance parity remain open.
+
 - 2026-09-28 native HQ orders in development: protected bearer APIs and no-tab screens show recent real orders with tenant names, search/status filters, a disclosed 500-order cap and no invented bank payment confirmation; the detail screen shows order/customer/items/stock movements. Eight focused API tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. Build 29 includes the monitor and was uploaded to App Store Connect, but predates the new detail screen. Guarded financial actions and physical-iPhone acceptance remain incomplete.
 
 - 2026-09-28 native HQ accounts in development: a protected mobile API and no-tab screen show real profile roles, store/staff memberships, blocked-new-login state and last sign-in, with search and a truthful first-1000 limit. It does not change permissions. Three route tests, root/mobile TypeScript, mobile lint, Next build and iOS export pass. This code is newer than TestFlight build 28; authenticated iPhone reading and edit parity remain open.
