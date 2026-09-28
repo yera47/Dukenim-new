@@ -14,6 +14,7 @@ node_modules/
 coverage/
 **/coverage/
 output/
+**/output/
 tmp/
 supabase/.temp/
 .npm-cache/
