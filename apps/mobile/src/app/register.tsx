@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/lib/theme";
 import { workspaceRoute } from "@/lib/owner";
 import { appleAuthReady, signInWithApple, signInWithGoogle } from "@/lib/social-auth";
+import { AppleSignInButton } from "@/components/apple-sign-in-button";
 import {site} from "@/lib/theme";
 import logoMark from "../../assets/images/logo-mark-compact.png";
 
@@ -45,7 +46,7 @@ export default function RegisterScreen() {
         <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`${site}/legal/privacy`)}><Text style={s.legalLink}>Политика конфиденциальности ↗</Text></Pressable>
       </View>
       <Pressable disabled={pending} onPress={() => void social("google")} style={[s.button, pending && s.pending]}>{pending ? <ActivityIndicator color="white" /> : <Text style={s.buttonText}>Продолжить с Google</Text>}</Pressable>
-      {Platform.OS === "ios" && appleAuthReady ? <Pressable disabled={pending} onPress={() => void social("apple")} style={s.secondary}><Text style={s.secondaryText}>Продолжить с Apple</Text></Pressable> : null}
+      {Platform.OS === "ios" && appleAuthReady ? <AppleSignInButton registration pending={pending} onPress={() => void social("apple")} /> : null}
     </View>
     <Text style={s.note}>Регистрация по email временно недоступна: доставка писем ещё настраивается. Если аккаунт уже создан, войдите по паролю.</Text>
     <Pressable onPress={() => router.replace("/")}><Text style={s.signIn}>Уже есть аккаунт? Войти →</Text></Pressable>

@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — system Apple button before next iOS build
+
+Result: native login and registration now render Expo's system Sign in/Continue with Apple button only after `isAvailableAsync()` succeeds. It uses Apple's approved white-outline appearance, retains the existing nonce/ID-token flow, and suppresses repeated taps while another sign-in is pending. The iOS export was run with `EXPO_PUBLIC_APPLE_AUTH_ENABLED=true` to exercise the production branch. Expo TypeScript, lint and iOS export pass; physical-device appearance and login remain unverified. No current TestFlight binary changed.
+
+Changed tracked files: `apps/mobile/src/components/apple-sign-in-button.tsx`, `apps/mobile/src/app/{index,register}.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Azure: unchanged. Next: include this in the first post-quota iOS build, submit to the already signed-in App Store Connect/TestFlight project, then verify Google, Apple and site/app state on an actual iPhone.
+
 ## 2026-09-28 — Apple native provider prepared; SMS sign-in deferred
 
 Result: owner narrowed this release to Google and Apple authorization, deferring SMS sign-in. In the logged-in Apple Developer account, `kz.dukenim.app` already had Sign in with Apple enabled. Enabled Supabase production Apple provider for this Bundle ID without a web OAuth Services ID/secret, then reopened it and confirmed the enabled state and ID. Added and re-read EAS production `EXPO_PUBLIC_APPLE_AUTH_ENABLED=true`. Google provider remained enabled; Supabase URL Configuration includes `dukenim://auth-callback`. Phone Auth stayed disabled. The native Apple ID-token/nonce flow now captures Apple's first-authorization name when provided, without making name persistence a condition of successful login.
