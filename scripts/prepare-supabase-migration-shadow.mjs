@@ -30,5 +30,7 @@ for (const line of output.split(/\r?\n/)) {
   remoteVersions.add(cells[1]);
 }
 for (const version of remoteVersions) writeFileSync(join(shadow, "supabase", "migrations", `${version}_remote_history.sql`), "-- Existing remote migration; placeholder used only for isolated CLI history reconciliation.\n");
-cpSync(join(root, "supabase", "migrations", "20260928083817_root_field_sales_crm.sql"), join(shadow, "supabase", "migrations", "20260928083817_root_field_sales_crm.sql"));
+for (const file of ["20260928083817_root_field_sales_crm.sql", process.argv[2]].filter(Boolean)) {
+  cpSync(join(root, "supabase", "migrations", file), join(shadow, "supabase", "migrations", file));
+}
 console.log(shadow);

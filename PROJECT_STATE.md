@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-28 field-sales route v2: the 2GIS prospect base is expanded to 2,507 points and split deterministically into 126 compact sectors of 7–20 businesses. `/admin/sales` and `/root/sales` now show per-zone completion, an authenticated server-proxied 2GIS road map, and a persisted trip workflow with exactly one current stop, feedback/outcome capture, automatic next stop, early finish and trip history. The 2GIS key is stored only as a secret production environment variable. Migration `20260928094057_field_sales_microzones_and_trips.sql` is applied; RLS is enabled and the new tables are service-only.
+
 - 2026-09-28 field-sales admin access: the protected Astana sales workspace is also available at `/admin/sales`, appears as «База продаж» for the superadmin and the owner of the single internal `dukenim-9b139` tenant, and remains hidden from every client tenant. Server actions and reads re-check that capability before using the server-only admin client. The internal owner and a superadmin with the selected tenant land there after password login. `/root/sales` remains as a compatible internal address.
 
 - 2026-09-28 Expo Starter is active. iOS build 24 finished and was submitted to App Store Connect; the API reports `VALID` and `IN_BETA_TESTING`. It contains the native changes through `cdba099`. Google/Apple login, cross-device catalog persistence and whole-Stitch parity still require physical-device acceptance. See `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`.
