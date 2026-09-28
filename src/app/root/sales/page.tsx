@@ -5,6 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { requireFieldSalesAccess } from "@/lib/field-sales-access.server";
 import { buildVisitRoute, FIELD_SALES_REMINDER_TYPES, FIELD_SALES_STATUSES, reminderTypeLabel, routeLengthKm, safeExternalUrl, statusLabel, type FieldSalesLead } from "@/lib/field-sales";
 import type { Database } from "@/types/database";
+import { FieldSalesScroll } from "@/components/field-sales-scroll";
 import { cancelFieldSalesTrip, completeFieldSalesReminder, completeFieldSalesStop, createFieldSalesLead, startFieldSalesTrip, updateFieldSalesLead } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -76,6 +77,7 @@ export default async function FieldSalesPage({searchParams}:{searchParams:Promis
   const agenda=(agendaResult.data??[]) as FieldSalesLead[];
 
   return <main className="field-sales-shell">
+    {openedLead&&<FieldSalesScroll leadId={openedLead.id}/>} 
     <header className="field-sales-header"><div className="container"><div><Link href={params.view==="admin"?"/admin":"/root"} className="field-sales-back"><ArrowLeft size={16}/> Назад в панель</Link><p>DUKENIM · ВЫЕЗДНЫЕ ПРОДАЖИ</p><h1>Маршрут по Астане</h1><span>126 компактных зон по 7–20 заведений. Открывайте одну точку, фиксируйте результат — следующая появится сама.</span></div><div className="field-sales-header-actions"><a href={`${basePath}/export`} className="sales-secondary"><Download size={17}/> Выгрузить</a></div></div></header>
     <div className="container field-sales-body">
       {activeTrip&&activeTrip.zone_id!==selectedZone.id&&<section className="sales-warning"><b>Поездка уже идёт</b><span>Завершите текущий маршрут перед новой зоной.</span><Link href={`${basePath}?zone=${activeTrip.zone_id}`}>Вернуться к поездке</Link></section>}
