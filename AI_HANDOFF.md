@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ store detail after build 27
+
+Result: the native HQ store registry now has a separate detail screen with a back arrow and no bottom tab bar. A bearer-protected root-only API reads exact product/order/customer counts, current publication state, delivery/payment settings, recent orders and platform audit events; any incomplete read fails rather than showing partial figures. Publication/hiding uses the existing `root_set_catalog_publication` RPC with the verified actor, expected previous state, exact slug and written reason; the app asks for an additional system confirmation. Four focused route tests, root/mobile TypeScript, mobile lint, Next production build and iOS export pass. No store was published, hidden or deleted during this work. Azure: unchanged.
+
+Changed tracked files: `apps/mobile/src/app/root.tsx`, new `apps/mobile/src/app/root-store.tsx`, `src/app/api/mobile/root/stores/[id]/{route.ts,publication/route.ts,publication/route.test.ts}`, `PROJECT_STATE.md`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Next: publish these routes, then build and submit a newer iOS binary; test a live authorized store read and both success/rejection of the guarded publication action on the owner's iPhone. This work is not in build 27. Preserve the unrelated modified integration document.
+
 ## 2026-09-28 — superadmin web/mobile release and build 27
 
 Result: commit `562877c` added role-checked native HQ overview, live store registry, a basic field-sales lead editor and atomic 2–20-store deletion with a service-only production RPC; commit `8d2c9ac` excluded generated mobile exports from the EAS archive. Both are pushed. Vercel deployment `dpl_7yPNZh7Yy9fsx22GZgETqJDyXaoT` is Ready and aliased to `www.dukenim.kz`. Unauthenticated root API reads returned 403. The authenticated web `/root/stores` page showed 24 real stores and a correct two-store review/form; selection was cleared and no deletion was submitted. Stitch now has separate HQ overview, store list/delete, field sales, lead, trip, platform menu and store detail design screens; their invented data are marked as demos.
