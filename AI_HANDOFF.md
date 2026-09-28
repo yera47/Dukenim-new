@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native manual customer creation
+
+Result: the native Customers screen now saves a manually supplied name and normalized Kazakhstan phone to the current store's `customers` table, which the website already reads. It does not manufacture orders, revenue or SMS marketing consent. Duplicate phone errors are explained; a store switch clears the form. Mobile TypeScript, Expo lint and iOS export pass. Root TypeScript is currently failing in concurrent uncommitted field-sales changes at `src/app/root/sales/actions.ts`; this change did not touch them. A real owner save, duplicate check and web/iPhone refresh remain unverified. Stitch's CSV contact export is still absent. Build 24 predates this change.
+
+Changed tracked files: `apps/mobile/src/app/customers.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Azure: unchanged. Next: validate the owner contact workflow on a new iOS build and the website, then implement a safe contact export only with actual file delivery and an explicit privacy flow.
+
 ## 2026-09-28 — Starter upgrade and TestFlight build 24
 
 Result: the owner's Expo account now shows Starter ($19/month and $45 build credit). Root/mobile TypeScript, mobile lint and Expo Doctor 21/21 passed. EAS production iOS build `ddea9103-1616-4e6f-9319-7fd89bfbddee` (1.0.0 build 24) finished from Git commit `75fe694`, including mobile changes through `cdba099`. EAS Submit `d7c2ce6d-a071-4aa8-8872-31fec73466c1` succeeded; App Store Connect API reports `VALID` and `IN_BETA_TESTING`. No authenticated iPhone user journey was run, so Google/Apple login, cross-device catalog save and Stitch parity are still in progress. SMS login remains deferred by the owner.

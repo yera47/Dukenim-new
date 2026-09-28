@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { router } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { AppScreen, ui } from "@/components/app-shell";
@@ -25,6 +25,10 @@ export default function Customers() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [adding, setAdding] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newPhone, setNewPhone] = useState("");
   const requestId = useRef(0);
 
   const load = useCallback(async () => {
@@ -70,9 +74,37 @@ export default function Customers() {
     if (store) void load();
     return () => { requestId.current += 1; };
   }, [load, store]);
+  useEffect(() => { setAdding(false); setNewName(""); setNewPhone(""); }, [store?.id]);
 
   const visible = useMemo(() => rows.filter(row => `${row.name ?? ""} ${row.phone}`.toLowerCase().includes(query.trim().toLowerCase())), [rows, query]);
   const orderAmount = useMemo(() => rows.reduce((sum, row) => sum + row.total_spent, 0), [rows]);
+  const addCustomer = async () => {
+    if (!store || !supabase || saving) return;
+    const name = newName.trim().replace(/\s+/g, " ");
+    const digits = newPhone.replace(/\D/g, "");
+    const national = digits.length === 10 ? `7${digits}` : digits.length === 11 && digits.startsWith("8") ? `7${digits.slice(1)}` : digits;
+    const phone = national.length === 11 && national.startsWith("7") ? `+${national}` : "";
+    if (name.length < 2 || name.length > 80 || !/^\+7\d{10}$/.test(phone)) {
+      Alert.alert("Проверьте контакт", "Укажите имя от 2 до 80 символов и номер Казахстана в формате +7 777 000 00 00.");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase.from("customers").insert({ tenant_id: store.id, name, phone }).select("id").single();
+      if (error) {
+        Alert.alert("Контакт не сохранён", error.code === "23505" ? "Этот номер уже есть в базе магазина." : "Проверьте доступ к магазину и повторите попытку.");
+        return;
+      }
+      setNewName("");
+      setNewPhone("");
+      setAdding(false);
+      await load();
+    } catch {
+      Alert.alert("Контакт не сохранён", "Проверьте подключение и повторите попытку.");
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return <AppScreen section="Клиенты" store={store?.name}>
     <Text style={ui.title}>Клиенты</Text>
@@ -82,6 +114,16 @@ export default function Customers() {
     {storeError || message ? <View style={ui.card}><Text style={ui.error}>{storeError || message}</Text>{!loading ? <Pressable onPress={() => void (store ? load() : reloadStore())} style={ui.outline}><Text style={ui.outlineText}>Повторить</Text></Pressable> : null}</View> : null}
     {!storeLoading && !loading && store && !storeError && !message ? <>
       <Pressable onPress={() => void load()} style={ui.outline}><Text style={ui.outlineText}>Обновить клиентов</Text></Pressable>
+      <Pressable accessibilityRole="button" accessibilityState={{ expanded: adding }} onPress={() => setAdding(value => !value)} style={ui.outline}><Text style={ui.outlineText}>{adding ? "Закрыть форму" : "Добавить клиента вручную"}</Text></Pressable>
+      {adding ? <View style={ui.card}>
+        <Text style={ui.cardTitle}>Новый контакт</Text>
+        <Text style={ui.subtitle}>Укажите контакт, полученный от клиента с его согласия. Заказы и оплаты не создаются. SMS-рассылки по этому действию не включаются.</Text>
+        <Text style={ui.label}>Имя</Text>
+        <TextInput accessibilityLabel="Имя клиента" value={newName} onChangeText={setNewName} maxLength={80} autoCapitalize="words" style={ui.input} placeholder="Например, Айжан" />
+        <Text style={ui.label}>Телефон</Text>
+        <TextInput accessibilityLabel="Телефон клиента" value={newPhone} onChangeText={setNewPhone} maxLength={20} keyboardType="phone-pad" style={ui.input} placeholder="+7 777 000 00 00" />
+        <Pressable disabled={saving} onPress={() => void addCustomer()} style={[ui.button, saving && { opacity: .5 }]}><Text style={ui.buttonText}>{saving ? "Сохраняем…" : "Сохранить контакт"}</Text></Pressable>
+      </View> : null}
       <View style={s.summary}>
         <View><Text style={s.number}>{rows.length}</Text><Text style={s.label}>клиентов</Text></View>
         <View><Text style={s.number}>{money(orderAmount)}</Text><Text style={s.label}>стоимость заказанных товаров</Text></View>
@@ -94,7 +136,7 @@ export default function Customers() {
       {!visible.length ? <View style={s.empty}>
         <SymbolView name="person.crop.circle" size={54} tintColor={colors.navy} />
         <Text style={s.emptyTitle}>{rows.length ? "По запросу клиентов нет" : "В базе пока нет клиентов"}</Text>
-        <Text style={ui.subtitle}>{rows.length ? "Попробуйте другое имя или номер." : "Клиенты появятся автоматически после первых заказов на вашей витрине."}</Text>
+        <Text style={ui.subtitle}>{rows.length ? "Попробуйте другое имя или номер." : "Клиенты появятся после заказов; контакт с согласия клиента можно добавить вручную."}</Text>
         {!rows.length ? <Pressable onPress={() => router.push((store.catalog_published ? "/store-link" : "/catalog") as never)} style={ui.button}><Text style={ui.buttonText}>{store.catalog_published ? "Поделиться ссылкой на витрину" : "Подготовить витрину"}</Text></Pressable> : null}
       </View> : null}
     </> : null}
