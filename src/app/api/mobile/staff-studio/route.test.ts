@@ -4,7 +4,17 @@ const consult=vi.hoisted(()=>vi.fn());
 vi.mock("@/lib/mobile-auth",()=>({getMobileStaff:authorize}));
 vi.mock("@/lib/ai/consultation",()=>({createConsultation:consult}));
 vi.mock("@/lib/ai/studio",()=>({getAiStudioStatus:()=>({configured:true,deployment:"test"})}));
-import {POST} from "./route";
+vi.mock("@/lib/entitlement",()=>({computeEntitlement:()=>({active:true})}));
+import {GET,POST} from "./route";
 beforeEach(()=>{authorize.mockClear();consult.mockClear();});
 it("rejects a mobile employee without an active studio grant before AI use",async()=>{const response=await POST(new Request("https://example.test/api/mobile/staff-studio",{method:"POST",headers:{"content-type":"application/json",authorization:"Bearer this-token-is-long-enough-for-test"},body:JSON.stringify({accessId:"11111111-1111-4111-8111-111111111111",message:"Проверь каталог"})}));expect(response.status).toBe(403);expect(consult).not.toHaveBeenCalled();});
 it("validates the body before authorization",async()=>{const response=await POST(new Request("https://example.test/api/mobile/staff-studio",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({accessId:"bad",message:"x"})}));expect(response.status).toBe(400);expect(authorize).not.toHaveBeenCalled();});
+it("rejects malformed staff history access before authorization",async()=>{const response=await GET(new Request("https://example.test/api/mobile/staff-studio?accessId=bad"));expect(response.status).toBe(400);expect(authorize).not.toHaveBeenCalled();});
+it("rejects history after employee access is revoked",async()=>{const response=await GET(new Request("https://example.test/api/mobile/staff-studio?accessId=11111111-1111-4111-8111-111111111111"));expect(response.status).toBe(403);expect(authorize).toHaveBeenCalledWith(expect.any(Request),"11111111-1111-4111-8111-111111111111","studio","read");});
+it("returns saved consultation history to read-only staff without write permission",async()=>{
+ const admin={from:(table:string)=>table==="tenants"?{select:()=>({eq:()=>({maybeSingle:async()=>({data:{id:"store",status:"active"},error:null})})})}:{select:()=>({eq:()=>({eq:()=>({order:()=>({limit:async()=>({data:[{id:"turn",input_summary:"Вопрос",output:{reply:"Ответ",task:null}}],error:null})})})})})}};
+ authorize.mockResolvedValueOnce({admin,member:{tenant_id:"store",permissions:{studio:"read"}}});
+ const response=await GET(new Request("https://example.test/api/mobile/staff-studio?accessId=11111111-1111-4111-8111-111111111111"));
+ expect(response.status).toBe(200);
+ expect(await response.json()).toEqual({turns:[{id:"turn",message:"Вопрос",response:{reply:"Ответ",task:null}}],canWrite:false});
+});
