@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ unpaid order cancellation
+
+Result: added root-only bearer POST `/api/mobile/root/orders/[id]/cancel` and a native confirmation form in the order detail screen. It requires the exact order number, current unfinished status and reason, then calls the existing service-only audited `root_cancel_unpaid_order` RPC; production SQL checks actual payment status and prevents cancellation of paid/completed or stale orders. Four focused route tests, root/mobile TypeScript, mobile lint, Next production build and iOS export pass. No production order/stock/payment was changed; Azure unchanged. Changed: new cancel route/test, native order detail, acceptance/state/handoff docs. Build 32 predates this code; another iOS binary and a safe authenticated test order are needed. Refund workflow remains separate. Autonomous heartbeat remains PAUSED.
+
 ## 2026-09-28 — native HQ staff revoke/restore
 
 Result: expanded the root account registry with staff access IDs/revisions; added root-only bearer GET/POST `/api/mobile/root/accounts/staff-access` and a native no-tab confirmation screen. It fetches the current staff record and email, requires exact email/reason, then invokes existing service-only `root_set_staff_access`, whose production SQL checks actor role, version, owner membership and writes an audit event atomically. No actual access was changed. Eight focused tests, root/mobile TypeScript, Expo lint, Next build and iOS export pass. Azure unchanged. Changed: account API/tests, new staff-access API/tests, native account/staff screens and acceptance/state/handoff docs. Build 31 predates the screen; another binary and physical-iPhone guarded scenario are needed. Owner account login blocks and detailed permission editing remain web-only. Autonomous heartbeat remains PAUSED.
