@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native order feed pagination and freshness
+
+Result: the native Orders screen no longer presents the first 100 rows as a complete “All” list. It offers explicit next-page loading and retry, clears stale orders and widget contents after a failed refresh, and labels automatic updates only while the Supabase Realtime channel is subscribed. The closed filter is named accordingly because it includes cancelled orders. Existing order details and payment confirmation logic were not changed.
+
+Changed tracked files: `apps/mobile/src/app/orders.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and iOS export passed; no production order was modified. Azure: unchanged.
+
+Not completed: device testing of the page boundary and rapid incoming orders, full Stitch order visual parity, and buyer/merchant end-to-end status confirmation. Build 22 in TestFlight does not include this change; EAS Free iOS allowance resets 2026-10-01. Next: validate order pagination and live updates on the next signed iOS build against the web cabinet.
+
 ## 2026-09-28 — native loyalty load and immutable rule handling
 
 Result: the native Loyalty screen no longer edits default values after either server read fails. It exposes Retry, starts a new program disabled, retains all stored rule fields, and reports that complex gift/product/cashback rules need the web editor. Editing a simple existing rule now creates a replacement rule ID only when saving changed conditions; this matches the server's immutable-rule contract and preserves historical customer progress. The screen requires a true RPC result and reloads the saved program after success.

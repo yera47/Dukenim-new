@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "expo-router";
 import {
   ActivityIndicator,
@@ -13,8 +13,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { updateOrdersWidget } from "@/widgets/orders-widget";
 import { BottomNav } from "@/components/app-shell";
+import { colors } from "@/lib/theme";
 
 type Filter = "all" | "new" | "active" | "done";
+const PAGE_SIZE = 100;
 type MobileOrder = {
   id: string;
   tenant_id: string;
@@ -39,7 +41,7 @@ const filterLabels: Record<Filter, string> = {
   all: "Все",
   new: "Новые",
   active: "В работе",
-  done: "Завершённые",
+  done: "Закрытые",
 };
 
 function matchesFilter(order: MobileOrder, filter: Filter) {
@@ -56,11 +58,20 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [message, setMessage] = useState("");
+  const [moreError, setMoreError] = useState("");
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [tenantIds, setTenantIds] = useState<string[]>([]);
+  const [connected, setConnected] = useState(false);
+  const requestId = useRef(0);
 
   const load = useCallback(async (quiet = false) => {
+    const id = ++requestId.current;
     const client = supabase;
     if (!quiet) setLoading(true);
     setMessage("");
+    setMoreError("");
+    setLoadingMore(false);
     try {
       if (!client) throw new Error("Мобильное подключение ещё не настроено.");
       const { data: { user }, error: authError } = await client.auth.getUser();
@@ -72,42 +83,91 @@ export default function OrdersScreen() {
         .eq("user_id", user.id);
       if (membershipError) throw new Error("Не удалось загрузить ваши магазины.");
 
-      const tenantIds = [...new Set((memberships ?? []).map((item) => item.tenant_id as string))];
-      if (tenantIds.length === 0) {
+      const ownedTenants = [...new Set((memberships ?? []).map((item) => item.tenant_id as string))];
+      if (ownedTenants.length === 0) {
+        if (id !== requestId.current) return;
         setOrders([]);
         updateOrdersWidget([]);
         setStoreNames({});
+        setTenantIds([]);
+        setHasMore(false);
         setMessage("У этого аккаунта пока нет магазина. Создайте его на dukenim.kz.");
         return;
       }
 
       const [{ data: tenants, error: tenantError }, { data: orderRows, error: orderError }] = await Promise.all([
-        client.from("tenants").select("id,name").in("id", tenantIds),
+        client.from("tenants").select("id,name").in("id", ownedTenants),
         client
           .from("orders")
           .select("id,tenant_id,order_number,status,total,delivery_method,payment_status,created_at")
-          .in("tenant_id", tenantIds)
+          .in("tenant_id", ownedTenants)
           .order("created_at", { ascending: false })
-          .limit(100),
+          .order("id", { ascending: false })
+          .range(0, PAGE_SIZE - 1),
       ]);
+      if (id !== requestId.current) return;
       if (tenantError || orderError) throw new Error("Не удалось обновить заказы. Проверьте интернет.");
 
       setStoreNames(Object.fromEntries((tenants ?? []).map((tenant) => [tenant.id as string, tenant.name as string])));
       const nextOrders = (orderRows ?? []) as MobileOrder[];
+      setTenantIds(ownedTenants);
       setOrders(nextOrders);
+      setHasMore(nextOrders.length === PAGE_SIZE);
       updateOrdersWidget(nextOrders);
     } catch (error) {
+      if (id !== requestId.current) return;
+      setOrders([]);
+      setHasMore(false);
+      updateOrdersWidget([]);
       setMessage(error instanceof Error ? error.message : "Не удалось открыть заказы.");
     } finally {
-      setLoading(false);
-      setRefreshing(false);
+      if (id === requestId.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   }, []);
 
+  const loadMore = async () => {
+    if (!supabase || !hasMore || loadingMore || loading || !tenantIds.length) return;
+    const id = requestId.current;
+    setLoadingMore(true);
+    setMoreError("");
+    try {
+      const {data, error} = await supabase.from("orders")
+        .select("id,tenant_id,order_number,status,total,delivery_method,payment_status,created_at")
+        .in("tenant_id", tenantIds)
+        .order("created_at", {ascending: false})
+        .order("id", {ascending: false})
+        .range(orders.length, orders.length + PAGE_SIZE - 1);
+      if (id !== requestId.current) return;
+      if (error) throw error;
+      const next = (data ?? []) as MobileOrder[];
+      const seen = new Set(orders.map(order => order.id));
+      const combined = [...orders, ...next.filter(order => !seen.has(order.id))];
+      setOrders(combined);
+      setHasMore(next.length === PAGE_SIZE);
+      updateOrdersWidget(combined);
+    } catch {
+      if (id === requestId.current) setMoreError("Не удалось загрузить следующую страницу заказов.");
+    } finally {
+      if (id === requestId.current) setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
+    const sequence = requestId;
     void load();
+    return () => { sequence.current++; };
   }, [load]);
-  useEffect(()=>{const client=supabase;if(!client)return;const channel=client.channel("mobile-orders").on("postgres_changes",{event:"*",schema:"public",table:"orders"},()=>void load(true)).subscribe();return()=>{void client.removeChannel(channel);};},[load]);
+  useEffect(() => {
+    const client = supabase;
+    if (!client) return;
+    const channel = client.channel("mobile-orders")
+      .on("postgres_changes", {event: "*", schema: "public", table: "orders"}, () => void load(true))
+      .subscribe(status => setConnected(status === "SUBSCRIBED"));
+    return () => { void client.removeChannel(channel); };
+  }, [load]);
 
   const visibleOrders = useMemo(() => orders.filter((order) => matchesFilter(order, filter)), [orders, filter]);
 
@@ -115,11 +175,11 @@ export default function OrdersScreen() {
     <SafeAreaView style={styles.page}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(true); }} tintColor="#0E3854" />}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(true); }} tintColor={colors.navy} />}
       >
         <View style={styles.topRow}>
           <Link accessibilityLabel="Назад" href="/" style={styles.back}>‹</Link>
-          <View style={styles.live}><View style={styles.liveDot} /><Text style={styles.liveText}>Обновляется</Text></View>
+          <View style={styles.live}><View style={[styles.liveDot, !connected && styles.offlineDot]} /><Text style={styles.liveText}>{connected ? "Автообновление" : "Обновите вручную"}</Text></View>
         </View>
         <Text style={styles.eyebrow}>РАБОЧАЯ ЛЕНТА</Text>
         <Text style={styles.title}>Заказы</Text>
@@ -133,10 +193,10 @@ export default function OrdersScreen() {
           ))}
         </ScrollView>
 
-        {loading ? <ActivityIndicator color="#0E3854" style={styles.loader} /> : null}
+        {loading ? <ActivityIndicator color={colors.navy} style={styles.loader} /> : null}
         {!loading && message ? <View style={styles.notice}><Text style={styles.noticeText}>{message}</Text></View> : null}
         {!loading && !message && visibleOrders.length === 0 ? (
-          <View style={styles.empty}><Text style={styles.emptyTitle}>Здесь пока тихо</Text><Text style={styles.subtitle}>Заказы выбранной категории появятся автоматически.</Text></View>
+          <View style={styles.empty}><Text style={styles.emptyTitle}>Здесь пока тихо</Text><Text style={styles.subtitle}>{hasMore ? "В загруженных заказах этой категории нет. Нажмите «Показать ещё», чтобы проверить старые." : "Заказы выбранной категории появятся здесь."}</Text></View>
         ) : null}
 
         <View style={styles.list}>
@@ -160,6 +220,10 @@ export default function OrdersScreen() {
             </Link>
           ))}
         </View>
+        {!loading && !message && hasMore ? <Pressable disabled={loadingMore} onPress={() => void loadMore()} style={styles.moreButton}>
+          <Text style={styles.moreText}>{loadingMore ? "Загружаем…" : "Показать ещё заказы"}</Text>
+        </Pressable> : null}
+        {moreError ? <Text style={styles.moreError}>{moreError} Нажмите «Показать ещё» повторно.</Text> : null}
       </ScrollView><BottomNav />
     </SafeAreaView>
   );
@@ -169,16 +233,17 @@ const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: "#FFFFFF" },
   content: { padding: 22, paddingBottom: 115 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
-  back: { color: "#0E3854", fontWeight: "800", fontSize: 15 },
-  live: { flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: "#E9F4F9", paddingHorizontal: 11, paddingVertical: 7, borderRadius: 99 },
+  back: { color: colors.navy, fontWeight: "800", fontSize: 15 },
+  live: { flexDirection: "row", alignItems: "center", gap: 7, backgroundColor: colors.navySoft, paddingHorizontal: 11, paddingVertical: 7, borderRadius: 99 },
   liveDot: { width: 7, height: 7, borderRadius: 99, backgroundColor: "#1D8A66" },
-  liveText: { color: "#0E3854", fontSize: 12, fontWeight: "700" },
+  offlineDot: { backgroundColor: colors.muted },
+  liveText: { color: colors.navy, fontSize: 12, fontWeight: "700" },
   eyebrow: { color: "#63717B", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
   title: { color: "#101820", fontSize: 38, fontWeight: "900", marginTop: 5 },
   subtitle: { color: "#63717B", fontSize: 14, lineHeight: 21, marginTop: 7 },
   filters: { gap: 8, paddingVertical: 22 },
   filter: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 99, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#DDE3E7" },
-  filterActive: { backgroundColor: "#0E3854", borderColor: "#0E3854" },
+  filterActive: { backgroundColor: colors.navy, borderColor: colors.navy },
   filterText: { color: "#45545F", fontWeight: "800" },
   filterTextActive: { color: "#FFFFFF" },
   loader: { marginTop: 48 },
@@ -187,17 +252,20 @@ const styles = StyleSheet.create({
   empty: { backgroundColor: "#FFFFFF", borderRadius: 22, padding: 24, borderWidth: 1, borderColor: "#E2E7EA" },
   emptyTitle: { color: "#101820", fontSize: 20, fontWeight: "900" },
   list: { gap: 12 },
+  moreButton: {marginTop: 16, borderRadius: 18, borderWidth: 1, borderColor: colors.line, padding: 16, alignItems: "center"},
+  moreText: {color: colors.navy, fontWeight: "800"},
+  moreError: {color: colors.danger, fontSize: 13, marginTop: 8},
   orderCard: { backgroundColor: "#FFFFFF", borderRadius: 22, padding: 18, borderWidth: 1, borderColor: "#E2E7EA", gap: 16 },
   pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
   orderTop: { flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", gap: 12 },
   orderHeading: { flex: 1, gap: 5 },
   orderNumber: { color: "#101820", fontSize: 18, fontWeight: "900" },
   store: { color: "#63717B", fontSize: 13 },
-  total: { color: "#0E3854", fontSize: 18, fontWeight: "900" },
+  total: { color: colors.navy, fontSize: 18, fontWeight: "900" },
   orderBottom: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 10 },
   status: { backgroundColor: "#EFF2F4", borderRadius: 99, paddingHorizontal: 10, paddingVertical: 7 },
-  statusNew: { backgroundColor: "#E1F0F8" },
+  statusNew: { backgroundColor: colors.navySoft },
   statusText: { color: "#45545F", fontSize: 12, fontWeight: "800" },
-  statusTextNew: { color: "#0E3854" },
+  statusTextNew: { color: colors.navy },
   meta: { flex: 1, color: "#74818A", fontSize: 12, textAlign: "right" },
 });
