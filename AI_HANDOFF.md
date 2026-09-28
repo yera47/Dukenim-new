@@ -1873,7 +1873,7 @@ Changed files: `.vercelignore`, `DECISIONS.md`, `PROJECT_STATE.md`, `src/app/glo
 
 Checks: focused route/link tests pass (3), strict TypeScript passes, production Next.js build passes with `/root/sales` and `/root/sales/export`, Supabase dry-run selected only the new migration, production migration applied, row count verified, database lint clean. Azure unchanged.
 
-Release status: direct Vercel CLI deploy failed with `Not authorized`; no false production-web claim. Next action is push the scoped commit to `main` so the connected Vercel Git deployment runs, then authenticate at `/root/sales` and verify save → reload, reminder, route persistence and CSV download.
+Release status: scoped commit `d7b3973` was pushed to `main`; the connected Vercel production deployment `Add protected field sales CRM` is Ready and current on `www.dukenim.kz`. The active browser session belongs to an ordinary store owner and correctly redirects away from `/root/sales`, so the final authenticated superadmin save → reload, reminder, route persistence and CSV-download acceptance still requires opening the page under a root account.
 
 ## 2026-09-28 — Native staff module parity
 
