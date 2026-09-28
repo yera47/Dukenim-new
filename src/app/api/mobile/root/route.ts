@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMobileRoot } from "@/lib/mobile-auth";
+import { FIELD_SALES_TENANT_SLUG } from "@/lib/field-sales-access";
 
 export async function GET(request: Request) {
   const root = await getMobileRoot(request);
@@ -13,7 +14,11 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Не удалось полностью загрузить данные платформы." }, { status: 503 });
   }
   return NextResponse.json({
-    stores: stores.data,
+    stores: stores.data.map(store => ({
+      ...store,
+      bulkDeletable: store.slug !== FIELD_SALES_TENANT_SLUG,
+      bulkDeleteBlockReason: store.slug === FIELD_SALES_TENANT_SLUG ? "Внутренний магазин Dukenim защищён" : null,
+    })),
     totals: { stores: stores.count, newOrders: orders.count, openRequests: requests.count },
   }, { headers: { "Cache-Control": "no-store" } });
 }

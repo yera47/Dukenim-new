@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { BulkStoreSelector } from "./bulk-selector";
+import { FIELD_SALES_TENANT_SLUG } from "@/lib/field-sales-access";
 
 export default async function RootStores() {
   const client = createAdminClient();
@@ -12,6 +13,6 @@ export default async function RootStores() {
     <Link href="/root" className="text-sm font-bold text-[#56334D]">← Админ-обзор</Link>
     <h1 className="mt-5 text-3xl font-extrabold">Магазины платформы</h1>
     <p className="mt-2 text-sm text-slate-600">Выберите от 2 до 20 пустых магазинов. Сервер повторно проверит товары, заказы, клиентов, платежи и подключения. При ошибке ни один магазин не удалится.</p>
-    <BulkStoreSelector stores={stores??[]} />
+    <BulkStoreSelector stores={(stores??[]).map(store=>({...store,bulkDeletable:store.slug!==FIELD_SALES_TENANT_SLUG,bulkDeleteBlockReason:store.slug===FIELD_SALES_TENANT_SLUG?"Внутренний магазин Dukenim защищён":null}))} />
   </main>;
 }

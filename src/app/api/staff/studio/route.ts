@@ -33,7 +33,7 @@ export async function POST(request:Request){
  if(recent.error)return NextResponse.json({error:"Не удалось восстановить контекст."},{status:503,headers});
  const history:ConsultationTurn[]=[];for(const row of (recent.data??[]).reverse()){const parsed=consultationSchema.safeParse(row.output);if(parsed.success)history.push({id:row.id,message:row.input_summary,response:parsed.data});}
  const rpc=context.admin as unknown as {rpc:(name:string,args:Record<string,unknown>)=>Promise<{error:unknown}>};
- const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:context.member.tenant_id,p_cost:1,p_monthly_allotment:120});
+ const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:context.member.tenant_id,p_cost:1,p_monthly_allotment: 600});
  if(reserved.error)return NextResponse.json({error:"Лимит AI недоступен. Обратитесь к владельцу."},{status:429,headers});
  try{
   const result=await createConsultation(input.brief,{...context.tenant,actor:"Сотрудник: готовит предложения, не публикует магазин",permissions:context.member.permissions},history);

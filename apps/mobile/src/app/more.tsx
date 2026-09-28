@@ -10,7 +10,7 @@ import { clearOrdersWidget } from "@/widgets/orders-widget";
 import businessKit from "../../assets/images/dukenim-business-kit-v1.png";
 import { FloatingBusinessVisual } from "@/components/floating-business-visual";
 const groups=[
- {title:"Продажи",items:[{title:"Склад",copy:"Остатки и движения",path:"/stock"},{title:"Клиенты",copy:"История покупателей",path:"/customers"},{title:"Аналитика",copy:"Продажи и показатели",path:"/analytics"},{title:"Сканер",copy:"Найти товар по штрихкоду",path:"/scanner"}]},
+ {title:"Продажи",items:[{title:"Склад",copy:"Остатки и движения",path:"/stock"},{title:"Клиенты",copy:"История покупателей",path:"/customers"},{title:"Аналитика",copy:"Продажи и показатели",path:"/analytics"}]},
  {title:"Продвижение",items:[{title:"Сборка магазина",copy:"Все блоки витрины в одном месте",path:"/store-builder"},{title:"Истории",copy:"Фото и видео над меню",path:"/stories"},{title:"Акции",copy:"Баннеры и кампании",path:"/campaigns"},{title:"Лояльность",copy:"Подарки, скидки и друзья",path:"/loyalty"},{title:"Оформление",copy:"Шаблон, обложка и тексты",path:"/brand"}]},
  {title:"Магазин",items:[{title:"Сотрудники",copy:"Приглашения и права",path:"/team"},{title:"Доставка и оплата",copy:"Kaspi, самовывоз и Яндекс",path:"/delivery"},{title:"Интеграции",copy:"CRM, учёт и ресторанные системы",path:"/integrations"},{title:"Ссылка магазина",copy:"Адрес и предпросмотр",path:"/store-link"},{title:"Тариф",copy:"Каталог · 24 900 ₸ в месяц",path:"/plan"},{title:"Поддержка",copy:"Чат с командой Dukenim",path:"/support"},{title:"Настройки",copy:"Уведомления и аккаунт",path:"/settings"}]},
 ] as const;

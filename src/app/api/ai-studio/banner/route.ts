@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     const admin = createAdminClient();
     const rpc = admin as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
     const cost = 20;
-    const reservation = await rpc.rpc("reserve_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost, p_monthly_allotment: 120 });
+    const reservation = await rpc.rpc("reserve_ai_credits", { p_tenant_id: context.tenantId, p_cost: cost, p_monthly_allotment: 600 });
     if (reservation.error) {
       const exhausted = reservation.error.message.includes("Insufficient");
       return NextResponse.json({ error: exhausted ? "Лимит AI Studio исчерпан. Пополните кредиты или попробуйте позже." : "AI Studio временно недоступен.", needsTopup: exhausted }, { status: exhausted ? 429 : 503 });

@@ -26,5 +26,5 @@ export function configurationFor(vertical:string,approach:string) {
   return commerceConfigurations.find(item=>item.vertical===vertical&&item.approach===approach);
 }
 export function approachForTemplate(template:string):CommerceApproach {
-  return template==="market"||template==="gallery"?"assortment":template==="studio"||template==="signature"?"guided":"collection";
+  return template==="market"?"assortment":template==="studio"||template==="signature"?"guided":"collection";
 }

@@ -1,5 +1,5 @@
 import type { PropsWithChildren, ReactNode } from "react";
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { router, usePathname } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
@@ -40,7 +40,7 @@ export function AppScreen({ children, section, store, scroll = true, trailing }:
   const root = pathname === "/catalog" || pathname === "/orders" || pathname === "/more";
   const backTo = root ? undefined : pathname === "/order" ? "/orders" : pathname === "/product-edit" || pathname === "/preview" ? "/catalog" : "/more";
   const body = <View style={[styles.content, !scroll && { flex: 1 }]}><BrandHeader section={section} store={store} backTo={backTo} />{trailing}{children}</View>;
-  return <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}>{scroll ? <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={root ? styles.scroll : styles.nestedScroll}>{body}</ScrollView> : body}{root ? <BottomNav /> : null}</SafeAreaView>;
+  return <SafeAreaView style={styles.safe} edges={["top", "left", "right"]}><KeyboardAvoidingView style={styles.keyboard} behavior={Platform.OS === "ios" ? "padding" : undefined}>{scroll ? <ScrollView keyboardDismissMode="interactive" keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={root ? styles.scroll : styles.nestedScroll}>{body}</ScrollView> : body}{root ? <BottomNav /> : null}</KeyboardAvoidingView></SafeAreaView>;
 }
 
 export const ui = StyleSheet.create({
@@ -59,7 +59,7 @@ export const ui = StyleSheet.create({
 });
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.stone }, scroll: { paddingBottom: 110 }, nestedScroll: { paddingBottom: 32 }, content: { paddingHorizontal: 20, paddingTop: 10, gap: 16 },
+  safe: { flex: 1, backgroundColor: colors.stone }, keyboard: { flex: 1 }, scroll: { paddingBottom: 150 }, nestedScroll: { paddingBottom: 72 }, content: { paddingHorizontal: 20, paddingTop: 10, gap: 16 },
   header: { flexDirection: "row", alignItems: "center", gap: 11, minHeight: 54, paddingBottom: 6 },
   back: { width: 42, height: 42, borderRadius: 21, backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, backArrow: { fontSize: 31, lineHeight: 33, color: colors.navyDark },
   mark: { width: 42, height: 42, borderRadius: 13, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: colors.line, alignItems: "center", justifyContent: "center" }, logo: { width: 25, height: 27 },

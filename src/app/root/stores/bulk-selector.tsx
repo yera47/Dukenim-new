@@ -4,7 +4,7 @@ import { useActionState, useMemo, useState } from "react";
 import Link from "next/link";
 import { deleteSelectedEmptyStores } from "../actions";
 
-type Store = { id:string; name:string; slug:string; status:string };
+type Store = { id:string; name:string; slug:string; status:string; bulkDeletable:boolean; bulkDeleteBlockReason:string|null };
 
 export function BulkStoreSelector({stores}:{stores:Store[]}) {
   const [selected,setSelected]=useState<string[]>([]);
@@ -12,14 +12,14 @@ export function BulkStoreSelector({stores}:{stores:Store[]}) {
   const [state,action,pending]=useActionState(deleteSelectedEmptyStores,{error:""});
   const visible=useMemo(()=>stores.filter(store=>`${store.name} ${store.slug}`.toLowerCase().includes(query.trim().toLowerCase())),[stores,query]);
   const chosen=selected.map(id=>stores.find(store=>store.id===id)).filter((store):store is Store=>Boolean(store));
-  const toggle=(id:string)=>setSelected(current=>current.includes(id)?current.filter(item=>item!==id):current.length<20?[...current,id]:current);
+  const toggle=(store:Store)=>{if(!store.bulkDeletable)return;setSelected(current=>current.includes(store.id)?current.filter(item=>item!==store.id):current.length<20?[...current,store.id]:current);};
   return <form action={action} className="mt-6 space-y-5">
     {selected.map(id=><input key={id} type="hidden" name="store" value={id}/>)}
     <label className="block text-sm font-bold">Поиск магазина<input value={query} onChange={event=>setQuery(event.target.value)} className="input mt-2 w-full" placeholder="Название или адрес витрины"/></label>
-    <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Найдено {visible.length} · выбрано {selected.length} из 20</span><div className="flex gap-4"><button type="button" className="font-bold text-[#56334D] underline" onClick={()=>setSelected(visible.slice(0,20).map(store=>store.id))}>Выбрать первые 20</button><button type="button" className="font-bold text-slate-600 underline" onClick={()=>setSelected([])}>Снять выбор</button></div></div>
+    <div className="flex flex-wrap items-center justify-between gap-3 text-sm"><span>Найдено {visible.length} · выбрано {selected.length} из 20</span><div className="flex gap-4"><button type="button" className="font-bold text-[#56334D] underline" onClick={()=>setSelected(visible.filter(store=>store.bulkDeletable).slice(0,20).map(store=>store.id))}>Выбрать доступные</button><button type="button" className="font-bold text-slate-600 underline" onClick={()=>setSelected([])}>Снять выбор</button></div></div>
     <div className="divide-y rounded-2xl border border-slate-200 bg-white px-4">
-      {visible.map(store=><div key={store.id} className="flex min-h-16 items-center gap-4 py-3">
-        <label className="flex min-w-0 flex-1 cursor-pointer items-center gap-4"><input type="checkbox" checked={selected.includes(store.id)} onChange={()=>toggle(store.id)} className="h-5 w-5 accent-[#56334D]" /><span className="min-w-0"><b className="block truncate">{store.name}</b><small className="text-slate-500">/s/{store.slug} · {store.status}</small></span></label>
+      {visible.map(store=><div key={store.id} className={`flex min-h-16 items-center gap-4 py-3 ${store.bulkDeletable?"":"bg-[#f8f4f7]"}`}>
+        <label className={`flex min-w-0 flex-1 items-center gap-4 ${store.bulkDeletable?"cursor-pointer":"cursor-not-allowed"}`}><input type="checkbox" disabled={!store.bulkDeletable} checked={selected.includes(store.id)} onChange={()=>toggle(store)} className="h-5 w-5 accent-[#56334D]" /><span className="min-w-0"><b className="block truncate">{store.name}</b><small className="text-slate-500">/s/{store.slug} · {store.status}</small>{store.bulkDeleteBlockReason?<small className="block font-bold text-[#56334D]">{store.bulkDeleteBlockReason}</small>:null}</span></label>
         <Link href={`/root/stores/${store.id}`} className="text-sm font-bold text-[#56334D]">Открыть</Link>
       </div>)}
       {!visible.length&&<p className="py-8 text-sm text-slate-500">Магазины не найдены.</p>}

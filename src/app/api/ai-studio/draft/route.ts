@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       admin.from("ai_studio_generations").select("id", { count: "exact", head: true }).gte("created_at", since),
     ]);
     if (tenantUsage.error || platformUsage.error) return NextResponse.json({ error: "Не удалось проверить лимиты AI Studio. Попробуйте позже." }, { status: 503 });
-    const tenantLimit = Math.max(1, Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS) || 5);
+    const tenantLimit = Math.max(1, Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS) || 40);
     const platformLimit = Math.max(1, Number(process.env.AZURE_AI_MAX_PLATFORM_DAILY_REQUESTS) || 250);
     const tenantCount = tenantUsage.count;
     const platformCount = platformUsage.count;
@@ -91,7 +91,7 @@ export async function POST(request: Request) {
     if ((platformCount ?? 0) >= platformLimit) return NextResponse.json({ error: "AI Studio временно занят. Попробуйте позднее." }, { status: 429 });
     const creditCost = input.data.intent === "catalog_structure" ? 5 : input.data.intent === "store_design" ? 3 : 1;
     const rpc = admin as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: { message: string } | null }> };
-    const reservation = await rpc.rpc("reserve_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost, p_monthly_allotment: 120 });
+    const reservation = await rpc.rpc("reserve_ai_credits", { p_tenant_id: context.tenantId, p_cost: creditCost, p_monthly_allotment: 600 });
     if (reservation.error) {
       const exhausted = reservation.error.message.includes("Insufficient");
       return NextResponse.json({ error: exhausted ? "Лимит AI Studio исчерпан. Пополните кредиты или попробуйте позже." : "AI Studio временно недоступен.", needsTopup: exhausted }, { status: exhausted ? 429 : 503 });

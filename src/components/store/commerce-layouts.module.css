@@ -24,6 +24,12 @@
 }
 .root[data-approach="collection"] :global(.storefront-product-grid)>a{grid-column:auto!important;grid-row:auto!important}
 .root[data-approach="collection"] :global(.product-image){border-radius:0;aspect-ratio:3/4!important}
+.root[data-approach="collection"][data-vertical="fashion"] .intro{border-bottom:1px solid color-mix(in srgb,currentColor 20%,transparent);padding-top:4rem;padding-bottom:3rem}
+.root[data-approach="collection"][data-vertical="fashion"] .intro h1{max-width:12ch;font-family:Georgia,"Times New Roman",serif;font-weight:400;letter-spacing:-.045em}
+.root[data-approach="collection"][data-vertical="fashion"] .quickSections a{border-radius:0;border-width:0 0 1px;padding-inline:0;letter-spacing:.06em;text-transform:uppercase}
+.root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid)>a:first-child{grid-column:1/-1!important}
+.root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid)>a:first-child :global(.product-image){aspect-ratio:4/5!important}
+.root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid) h3{font-family:Georgia,"Times New Roman",serif;font-weight:400!important;letter-spacing:-.015em}
 .root[data-approach="guided"] :global(.storefront-product-grid)>a{border:1px solid #e5e5e5;border-radius:18px;overflow:hidden;background:var(--store-surface);padding:10px}
 .root[data-approach="guided"] :global(.product-image){aspect-ratio:1!important;border-radius:12px}
 .root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:1fr!important;gap:12px}
@@ -33,6 +39,9 @@
 @media(min-width:768px){
  .root[data-approach="collection"] :global(.storefront-product-grid){gap:4rem 2rem}
  .root[data-approach="collection"] :global(.storefront-product-grid) h3{font-size:1.25rem}
+ .root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important;align-items:start}
+ .root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid)>a:first-child{grid-column:span 2!important;grid-row:span 2!important}
+ .root[data-approach="collection"][data-vertical="fashion"] :global(.storefront-product-grid)>a:first-child :global(.product-image){aspect-ratio:3/4!important}
  .root[data-approach="guided"] :global(.storefront-product-grid){grid-template-columns:repeat(3,minmax(0,1fr))!important}
  .root[data-approach="assortment"][data-vertical="food"] :global(.storefront-product-grid){grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:20px 36px}
 }

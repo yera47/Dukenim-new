@@ -13,7 +13,7 @@ export async function GET(request: Request) {
   const zoneId = zones.data.find(zone => zone.id === wanted)?.id ?? zones.data[0]?.id;
   if (!zoneId) return NextResponse.json({ zones: [], zoneId: null, leads: [] });
   const leads = await root.admin.from("field_sales_leads")
-    .select("id,zone_id,name,address,segment,status,notes,next_action,contact_name,contact_phone,phone,map_url,reminder_at,last_visit_at")
+    .select("id,zone_id,name,address,segment,status,notes,next_action,contact_name,contact_phone,phone,map_url,instagram_url,website_url,whatsapp_url,reminder_at,last_visit_at")
     .eq("zone_id", zoneId).order("priority_score", { ascending: false }).limit(100);
   if (leads.error || !leads.data) return NextResponse.json({ error: "Точки не загружены." }, { status: 503 });
   return NextResponse.json({ zones: zones.data, zoneId, leads: leads.data }, { headers: { "Cache-Control": "no-store" } });

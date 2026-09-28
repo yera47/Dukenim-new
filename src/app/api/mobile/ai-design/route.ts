@@ -23,9 +23,9 @@ export async function POST(request: Request) {
   if(tenant.error||!tenant.data||settings.error||usage.error)return NextResponse.json({error:"Не удалось загрузить магазин."},{status:503});
   const entitlement=computeEntitlement(tenant.data);
   if(!entitlement.active)return NextResponse.json({error:"Пробный период или подписка завершены."},{status:403});
-  if((usage.count??0)>=Math.max(1,Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS)||5))return NextResponse.json({error:"Дневной лимит AI Studio исчерпан."},{status:429});
+  if((usage.count??0)>=Math.max(1,Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS)||40))return NextResponse.json({error:"Дневной лимит AI Studio исчерпан."},{status:429});
   const rpc=admin as unknown as{rpc:(name:string,args:Record<string,unknown>)=>Promise<{error:{message:string}|null}>};
-  const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:tenantId,p_cost:3,p_monthly_allotment:120});
+  const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:tenantId,p_cost:3,p_monthly_allotment: 600});
   if(reserved.error)return NextResponse.json({error:"Лимит AI Studio исчерпан."},{status:429});
   try{
     const result=await createAiStudioDesign(input.data.brief,tenant.data.business_vertical as BusinessVertical??"other",entitlement.plan,{...tenant.data,storefront:settings.data});

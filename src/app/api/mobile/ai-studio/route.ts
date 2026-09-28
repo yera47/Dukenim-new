@@ -29,11 +29,11 @@ export async function POST(request: Request) {
   ]);
   if (tenant.error || !tenant.data || fulfilment.error || previous.error || usage.error) return NextResponse.json({ error: "Не удалось загрузить контекст магазина." }, { status: 503 });
   if (!computeEntitlement(tenant.data).active) return NextResponse.json({ error: "Бесплатный период или подписка завершены." }, { status: 403 });
-  if ((usage.count ?? 0) >= Math.max(1,Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS)||5)) return NextResponse.json({error:"Дневной лимит AI Studio исчерпан."},{status:429});
+  if ((usage.count ?? 0) >= Math.max(1,Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS)|| 40)) return NextResponse.json({error:"Дневной лимит AI Studio исчерпан."},{status:429});
   const history: ConsultationTurn[] = [];
   for (const row of (previous.data ?? []).reverse()) { const parsed=consultationSchema.safeParse(row.output); if(parsed.success)history.push({id:row.id,message:row.input_summary,response:parsed.data}); }
   const rpc=admin as unknown as{rpc:(name:string,args:Record<string,unknown>)=>Promise<{data:unknown;error:{message:string}|null}>};
-  const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:tenantId,p_cost:1,p_monthly_allotment:120});
+  const reserved=await rpc.rpc("reserve_ai_credits",{p_tenant_id:tenantId,p_cost:1,p_monthly_allotment: 600});
   if(reserved.error)return NextResponse.json({error:reserved.error.message.includes("Insufficient")?"Лимит AI Studio исчерпан.":"AI Studio временно недоступен."},{status:429});
   try {
     const result=await createConsultation(input.data.message,{...tenant.data,fulfilment:fulfilment.data},history);
