@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native registration consent links
+
+Result: before accepting the offer/privacy checkbox on the native Google registration screen, users can now open both documents separately. Production `/legal/offer` and `/legal/privacy` each returned HTTP 200. No email/SMS availability claim changed.
+
+Changed tracked files: `apps/mobile/src/app/register.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and iOS export passed. Azure: unchanged.
+
+Not completed: physical-iPhone link opening, Google OAuth return and store creation in the same user journey. TestFlight build 22 predates this change; EAS Free iOS allowance resets 2026-10-01. Next: verify both legal links and the Google registration continuation on the next iPhone build.
+
 ## 2026-09-28 — native push registration visibility
 
 Result: Settings now checks the current phone's notification permission, locally stored Expo token and user-owned enabled database row on focus. It says whether this installation is registered and offers refresh; registration alone is not described as proven push delivery. Logout now reports token-revocation or sign-out failure instead of silently doing nothing. Read-only production queries show the Supabase push cron active every minute, one enabled token overall and two failed outbox records whose recipients currently have no enabled device token. No token value or private order data was read or copied.
