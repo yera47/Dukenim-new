@@ -44,5 +44,16 @@ export async function signInWithApple() {
   if(!credential.identityToken)throw new Error("Apple не вернул подтверждение входа.");
   const signed=await supabase.auth.signInWithIdToken({provider:"apple",token:credential.identityToken,nonce});
   if(signed.error)throw new Error("Не удалось завершить вход через Apple.");
+  // Apple supplies the person's name only on the first authorization.
+  const givenName=credential.fullName?.givenName?.trim();
+  const familyName=credential.fullName?.familyName?.trim();
+  const fullName=[givenName,familyName].filter(Boolean).join(" ");
+  if(fullName&&!signed.data.user.user_metadata?.full_name){
+    try{
+      await supabase.auth.updateUser({data:{full_name:fullName,given_name:givenName??"",family_name:familyName??""}});
+    }catch{
+      // A profile update must not undo a valid Apple session.
+    }
+  }
   return true;
 }

@@ -1,5 +1,7 @@
 # Dukenim — confirmed decisions
 
+- 2026-09-28 owner: defer SMS codes for sign-in in the upcoming app release. Prioritize Google and native Apple authorization, then deliver the updated app through TestFlight. This changes the sign-in scope, not the separate merchant SMS messaging work.
+
 - 2026-09-27 owner: mobile and website should share store setup and catalog state. AI Studio should use clear blocks and one persistent context-sensitive next step that disappears when done. The owner requests AI-assisted first copy, categories, layout and colours, with later edits and explicit review before application. Native Google, Apple and SMS sign-in are requested; this supersedes the earlier SMS deferral, but does not make an unconfigured external provider live.
 
 - 2026-09-21 owner clarification: Dukenim does not need a Yandex Delivery integration or merchant Yandex account configuration. The buyer supplies contact and door-to-door address and explicitly accepts that the store will arrange the courier manually, with a distance-based delivery charge agreed later. The store receives the order and chooses how to place and pay for the courier. Do not present the goods total as including this unknown charge.

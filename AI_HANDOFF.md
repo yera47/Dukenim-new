@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — Apple native provider prepared; SMS sign-in deferred
+
+Result: owner narrowed this release to Google and Apple authorization, deferring SMS sign-in. In the logged-in Apple Developer account, `kz.dukenim.app` already had Sign in with Apple enabled. Enabled Supabase production Apple provider for this Bundle ID without a web OAuth Services ID/secret, then reopened it and confirmed the enabled state and ID. Added and re-read EAS production `EXPO_PUBLIC_APPLE_AUTH_ENABLED=true`. Google provider remained enabled; Supabase URL Configuration includes `dukenim://auth-callback`. Phone Auth stayed disabled. The native Apple ID-token/nonce flow now captures Apple's first-authorization name when provided, without making name persistence a condition of successful login.
+
+Changed tracked files: `apps/mobile/src/lib/social-auth.ts`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `DECISIONS.md`, `PROJECT_STATE.md`, `AI_HANDOFF.md`. Checks: root/mobile TypeScript, Expo lint and iOS Metro export pass. Azure: unchanged. No live user, order, stock or payment row was changed.
+
+Not completed: new iOS build/TestFlight delivery or physical iPhone Google/Apple login. Expo currently lists build 22 as newest; Usage shows 15 iOS builds in the billing period ending 2026-10-01, and the earlier build 23 attempt was rejected before compilation. Do not retry before quota reset or an owner-chosen paid plan. The saved Stitch export includes “Склады и точки продаж” and “Касса и фискализация” concepts without verified equivalent native workflows; do not claim 1:1 parity. Next: finish independent parity work, then use the hourly continuation to build and submit after the reset, followed by actual iPhone and cross-device acceptance.
+
 ## 2026-09-28 — owner account tabs and native auth callback
 
 Result: opened Edge tabs for Apple Developer identifiers, Supabase project Auth providers and Mobizon registration. Apple and Supabase redirect to sign-in, and the Mobizon registration form is waiting for owner/legal account details; no credentials were entered and no provider was enabled. Independently, native `auth-callback` now shows an actionable error for provider rejection, expired/reused code, missing link credentials or failed session exchange rather than spinning forever. A missing initial URL reports an error after five seconds.
