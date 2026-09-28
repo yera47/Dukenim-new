@@ -163,6 +163,12 @@ export async function cancelFieldSalesTrip(form: FormData) {
   const admin = client as any;
   const result = await admin.from("field_sales_trips").update({ status: "cancelled", completed_at: new Date().toISOString() }).eq("id", tripId).eq("actor_id", actorId).eq("status", "active").select("id").maybeSingle();
   if (!result.data) throw new Error("Поездка уже завершена.");
+  const pendingStops = await admin.from("field_sales_trip_stops").select("lead_id").eq("trip_id", tripId).in("state", ["queued", "current"]);
+  if (pendingStops.error) throw pendingStops.error;
+  const pendingLeadIds = (pendingStops.data ?? []).map((stop: { lead_id: string }) => stop.lead_id);
   await admin.from("field_sales_trip_stops").update({ state: "skipped", completed_at: new Date().toISOString() }).eq("trip_id", tripId).in("state", ["queued", "current"]);
+  if (pendingLeadIds.length > 0) {
+    await admin.from("field_sales_leads").update({ status: "new" }).in("id", pendingLeadIds).eq("status", "planned");
+  }
   refreshSales();
 }
