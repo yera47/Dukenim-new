@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — AI Studio next-step stock readiness
+
+Result: the persistent native AI Studio guide no longer advances a store with an active but zero-stock product toward publication. It counts active, positive-stock variants in the selected store and links to Stock when none is sellable; published-store new orders remain the immediate priority. The exact joined count filter returned HTTP 200 from the production Supabase Data API using the public key and exposed only a count. Two focused guide tests, root/mobile TypeScript, Expo lint and iOS export pass. A real owner iPhone transition remains unverified. Build 25 was already uploaded before this change; it is not included in that binary.
+
+Changed tracked files: `apps/mobile/src/app/studio.tsx`, `apps/mobile/src/lib/studio-next-step.ts`, `apps/mobile/src/lib/studio-next-step.test.ts`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Azure: unchanged. Next: include this in the next iOS build and verify the guide against an actual zero-stock store, then continue the remaining Stitch acceptance items.
+
 ## 2026-09-28 — native manual customer creation
 
 Result: the native Customers screen now saves a manually supplied name and normalized Kazakhstan phone to the current store's `customers` table, which the website already reads. It does not manufacture orders, revenue or SMS marketing consent. Duplicate phone errors are explained; a store switch clears the form. Mobile TypeScript, Expo lint and iOS export pass. Root TypeScript is currently failing in concurrent uncommitted field-sales changes at `src/app/root/sales/actions.ts`; this change did not touch them. A real owner save, duplicate check and web/iPhone refresh remain unverified. Stitch's CSV contact export is still absent. Build 24 predates this change.
