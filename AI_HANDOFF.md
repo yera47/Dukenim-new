@@ -2046,3 +2046,8 @@ Unresolved risks / next action:
 - Native motion still needs a physical-iPhone performance/reduced-motion check; a new TestFlight binary must wait for the next authorized EAS build window.
 - Stitch remains a design reference and has not received these changes because submitting a prompt in Stitch is an external representational action that still lacks action-time confirmation.
 - Existing broader native parity gaps remain listed in the acceptance checklist.
+
+Release verification:
+- Commit `cbf01f6` was pushed to `main`.
+- Vercel production deployment `dukenim-7fk3a2x51-yersat47-s-projects.vercel.app` reached Ready.
+- `https://www.dukenim.kz/` and `/design/dukenim-system-stack-v1.png` returned HTTP 200; the production HTML references the new asset and the public page was inspected through the browser.
