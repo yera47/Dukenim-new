@@ -57,3 +57,27 @@ export async function signInWithApple() {
   }
   return true;
 }
+
+export async function linkAppleToCurrentUser() {
+  if (!appleAuthReady || Platform.OS !== "ios" || !supabase || !await AppleAuthentication.isAvailableAsync()) {
+    throw new Error("Привязка Apple доступна только на iPhone с настроенным Apple входом.");
+  }
+  const { data: current, error: currentError } = await supabase.auth.getUser();
+  if (currentError || !current.user) throw new Error("Войдите в админ-аккаунт перед привязкой Apple.");
+  const before = await supabase.auth.getUserIdentities();
+  if (before.error) throw new Error("Не удалось проверить способы входа.");
+  if (before.data.identities.some(identity => identity.provider === "apple")) return true;
+  const nonce = Crypto.randomUUID();
+  const hashed = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, nonce);
+  let credential: AppleAuthentication.AppleAuthenticationCredential;
+  try { credential = await AppleAuthentication.signInAsync({ nonce: hashed, requestedScopes: [AppleAuthentication.AppleAuthenticationScope.EMAIL] }); }
+  catch (error) { if (error && typeof error === "object" && "code" in error && error.code === "ERR_REQUEST_CANCELED") return false; throw new Error("Не удалось открыть Apple вход."); }
+  if (!credential.identityToken) throw new Error("Apple не вернул подтверждение входа.");
+  const linked = await supabase.auth.linkIdentity({ provider: "apple", token: credential.identityToken, nonce });
+  if (linked.error) throw new Error("Apple ID не привязан. Проверьте настройку привязки аккаунтов и повторите.");
+  const after = await supabase.auth.getUserIdentities();
+  if (after.error || !after.data.identities.some(identity => identity.provider === "apple")) throw new Error("Привязка Apple не подтверждена сервером.");
+  const verified = await supabase.auth.getUser();
+  if (verified.error || verified.data.user?.id !== current.user.id) throw new Error("После привязки изменился аккаунт. Войдите снова.");
+  return true;
+}

@@ -3,6 +3,18 @@ import { staffCan, type StaffModule } from "@/lib/staff-permissions";
 
 const bearerPattern = /^Bearer\s+(.{20,})$/i;
 
+export async function getMobileRoot(request: Request) {
+  const match = request.headers.get("authorization")?.match(bearerPattern);
+  if (!match) return null;
+  const admin = createAdminClient();
+  const { data: auth, error } = await admin.auth.getUser(match[1]);
+  if (error || !auth.user?.email_confirmed_at) return null;
+  const { data: profile, error: profileError } = await admin.from("profiles")
+    .select("role").eq("user_id", auth.user.id).maybeSingle();
+  if (profileError || profile?.role !== "superadmin") return null;
+  return { admin, user: auth.user };
+}
+
 export async function getMobileOwner(request: Request, tenantId: string) {
   const match = request.headers.get("authorization")?.match(bearerPattern);
   if (!match || !tenantId) return null;

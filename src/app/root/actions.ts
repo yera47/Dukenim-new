@@ -1,5 +1,22 @@
 "use server";
 import {redirect} from "next/navigation";
+export async function deleteSelectedEmptyStores(_state: {error:string}, form: FormData): Promise<{error:string}> {
+ try {
+ const {client,actorId}=await rootClient();
+ const raw=form.getAll("store").map(String);
+ const reason=String(form.get("reason")??"").trim();
+ if(raw.length<2||raw.length>20||new Set(raw).size!==raw.length||reason.length<3||reason.length>1000||String(form.get("confirmation"))!==`УДАЛИТЬ ${raw.length}`)throw new Error("Проверьте выбор магазинов, причину и подтверждение.");
+ const ids=raw.filter(id=>UUID_PATTERN.test(id));
+ if(ids.length!==raw.length)throw new Error("Некорректный магазин.");
+ const {data:stores,error}=await client.from("tenants").select("id,slug").in("id",ids);
+ if(error||!stores||stores.length!==ids.length)throw new Error("Список магазинов изменился. Обновите страницу.");
+ const ordered=ids.map(id=>stores.find(store=>store.id===id)!);
+ const rpc=client as unknown as {rpc:(name:"root_bulk_delete_empty_stores",args:{p_stores:{id:string;slug:string}[];p_actor:string;p_reason:string})=>Promise<{data:number|null;error:{message:string}|null}>};
+ const result=await rpc.rpc("root_bulk_delete_empty_stores",{p_stores:ordered,p_actor:actorId,p_reason:reason});
+ if(result.error||result.data!==ids.length)throw new Error(result.error?.message??"Удаление не выполнено.");
+ } catch(cause) { return {error:cause instanceof Error?cause.message:"Удаление не выполнено."}; }
+ revalidatePath("/root");revalidatePath("/root/stores");redirect("/root/stores");
+}
 export async function deleteEmptyStore(form:FormData){
  const {client,actorId}=await rootClient();
  const tenant=String(form.get("tenantId")??""),slug=String(form.get("confirmSlug")??"").trim(),reason=String(form.get("reason")??"").trim();

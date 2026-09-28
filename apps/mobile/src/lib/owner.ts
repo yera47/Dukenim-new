@@ -51,8 +51,9 @@ export function routeForStore(store: OwnerStore): "/onboarding" | "/catalog-buil
   return "/studio";
 }
 
-export async function workspaceRoute(): Promise<"/onboarding" | "/catalog-builder" | "/catalog" | "/studio" | "/staff" | "/setup-store"> {
+export async function workspaceRoute(): Promise<"/root" | "/onboarding" | "/catalog-builder" | "/catalog" | "/studio" | "/staff" | "/setup-store"> {
   const context = await loadOwnerContext();
+  if (context.role === "superadmin") return "/root";
   if (context.stores.length) {
     const selectedId = globalThis.localStorage?.getItem("dukenim_selected_store");
     return routeForStore(context.stores.find(store => store.id === selectedId) ?? context.stores[0]);
