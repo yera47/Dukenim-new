@@ -28,6 +28,7 @@ export default function StaffProductNew() {
     const stockAllowed = (membership.data.permissions as Record<string, string>)?.stock === "write";
     setCanStock(stockAllowed);
     setAccessReady(true);
+    setError("");
     return stockAllowed;
   }, [accessId]);
   useEffect(() => { void checkAccess().catch(cause => setError(cause instanceof Error ? cause.message : "Доступ недоступен.")); }, [checkAccess]);
