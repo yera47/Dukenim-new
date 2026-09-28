@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native stock receipt and write-off
+
+Result: added explicit receipt and write-off actions to each owner Stock variant. They write tenant-scoped `stock_movements` entries, as the web Stock screen does, and show the correct write-off label in the native journal. The existing database trigger remains the only stock quantity mutation path. Mobile/root TypeScript, Expo lint and an iOS export pass. No authenticated stock movement or physical-iPhone save was performed; the latest available TestFlight binary is still build 22 because the EAS Free iOS build quota resets on 2026-10-01.
+
+Changed tracked files: `apps/mobile/src/app/stock.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`. Azure: unchanged. Next: after the quota reset, include this with the pending native changes in a new iOS binary, then verify receipt, write-off, rejection of an overdraw and web/iPhone synchronization using an owner store. Preserve the separate field-sales handoff edit currently present in the working tree.
+
 ## 2026-09-28 — system Apple button before next iOS build
 
 Result: native login and registration now render Expo's system Sign in/Continue with Apple button only after `isAvailableAsync()` succeeds. It uses Apple's approved white-outline appearance, retains the existing nonce/ID-token flow, and suppresses repeated taps while another sign-in is pending. The iOS export was run with `EXPO_PUBLIC_APPLE_AUTH_ENABLED=true` to exercise the production branch. Expo TypeScript, lint and iOS export pass; physical-device appearance and login remain unverified. No current TestFlight binary changed.
