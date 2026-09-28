@@ -1,5 +1,9 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ order detail
+
+Result: added a root-only bearer detail API and separate native screen opened from the order registry. It reads the exact order, store, customer, items and stock movements from the shared database; incomplete reads fail closed. The screen distinguishes app payment state from actual bank/Kaspi settlement. Four focused route tests, root/mobile TypeScript, mobile lint, Next production build and iOS export pass. No order/payment/stock mutation; Azure unchanged. Changed: `src/app/api/mobile/root/orders/[id]/{route,route.test}.ts`, `apps/mobile/src/app/{root-orders,root-order}.tsx`, acceptance/state/handoff docs. Build 29 was already submitted before this detail code; it needs another iOS binary. The `dukenim` autonomous heartbeat remains PAUSED.
+
 ## 2026-09-28 — native HQ orders monitor
 
 Result: added root-only bearer GET `/api/mobile/root/orders`, a separate native Orders screen and links from HQ Overview/System. The screen searches the most recent 500 real orders by number, ID or store, filters status, shows actual totals/payment flags and explicitly avoids treating those flags as bank/Kaspi evidence. Four focused route tests, root/mobile strict TypeScript, mobile lint, Next production build and iOS export pass. No order or payment was changed. Azure: unchanged.
