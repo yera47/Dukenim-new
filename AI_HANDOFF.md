@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native AI Studio guidance uses verified store state
+
+Result: the pinned AI Studio “next step” card now follows the compact white Stitch layout. It no longer interprets failed reads of products, new orders or fulfilment settings as zeros and cannot suggest adding a first product to an existing store on that basis; it shows a Retry state instead. Switching stores clears old consultation turns and draft design proposals. A failed Supabase session lookup now releases the AI send spinner and gives a login message.
+
+Changed tracked files: `apps/mobile/src/app/studio.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and iOS export passed. The current Stitch AI Studio HTML was inspected for its compact persistent widget; its mock product/order/revenue numbers were not copied. No AI request, tenant settings or production store data were changed. Azure: unchanged.
+
+Not completed: whole-screen visual 1:1 match, authenticated native AI send/design apply, iPhone keyboard/safe-area and cross-store scenario. The latest TestFlight binary remains build 22 until the EAS Free iOS quota resets on 2026-10-01. Next: review the AI Studio screen on the new binary with a real owner store, then test generated copy, explicit apply and persisted storefront on the web.
+
 ## 2026-09-28 — native order feed pagination and freshness
 
 Result: the native Orders screen no longer presents the first 100 rows as a complete “All” list. It offers explicit next-page loading and retry, clears stale orders and widget contents after a failed refresh, and labels automatic updates only while the Supabase Realtime channel is subscribed. The closed filter is named accordingly because it includes cancelled orders. Existing order details and payment confirmation logic were not changed.
