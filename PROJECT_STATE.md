@@ -1,5 +1,7 @@
 # Dukenim — current project state
 
+- 2026-09-28 field-sales admin access: the protected Astana sales workspace is also available at `/admin/sales`, appears as «База продаж» only for a superadmin, and keeps the existing superadmin-only Supabase/RLS boundary. A superadmin who owns a selected store lands there after password login. `/root/sales` remains as a compatible internal address.
+
 - 2026-09-28 native login and registration now use the system Apple sign-in button, shown only on supported iPhones with the production flag enabled. Expo TypeScript, lint and an iOS export with that flag enabled pass. App Store Connect shows build 22 assigned to the internal TestFlight group; no new binary exists yet. Physical-device authentication and whole-Stitch parity remain open.
 
 - 2026-09-28 native Apple sign-in configuration: the existing `kz.dukenim.app` Apple App ID already has Sign in with Apple; the production Supabase Apple provider was enabled for this native Bundle ID and EAS production now has `EXPO_PUBLIC_APPLE_AUTH_ENABLED=true`. Google remains enabled with `dukenim://auth-callback` in the redirect allowlist; Supabase Phone Auth remains disabled by the owner's current release decision. The native Apple flow now saves the first authorization name when supplied. No new iOS binary exists: Expo still lists build 22 and Usage shows 15 iOS builds in the period ending 2026-10-01. Physical iPhone login and full Stitch parity remain unverified; see `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`.

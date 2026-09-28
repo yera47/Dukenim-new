@@ -47,6 +47,7 @@ export async function updateFieldSalesLead(form: FormData) {
   });
   if (result.error || !result.data) throw new Error(result.error?.message ?? "Точка не обновлена.");
   revalidatePath("/root/sales");
+  revalidatePath("/admin/sales");
 }
 
 export async function createFieldSalesLead(form: FormData) {
@@ -76,6 +77,7 @@ export async function createFieldSalesLead(form: FormData) {
   if (insert.error || !insert.data) throw new Error("Не удалось добавить заведение.");
   await client.from("field_sales_activities").insert({ lead_id: insert.data.id, actor_id: actorId, event_type: "created", note: "Добавлено вручную" });
   revalidatePath("/root/sales");
+  revalidatePath("/admin/sales");
 }
 
 export async function saveFieldSalesRoute(form: FormData) {
@@ -89,4 +91,5 @@ export async function saveFieldSalesRoute(form: FormData) {
   const result = await rpc.rpc("plan_field_sales_route", { p_zone: zone, p_day: day, p_leads: ids });
   if (result.error || !result.data) throw new Error(result.error?.message ?? "Маршрут не сохранён.");
   revalidatePath("/root/sales");
+  revalidatePath("/admin/sales");
 }

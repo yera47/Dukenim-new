@@ -13,6 +13,7 @@ import {
   Link2,
   LockKeyhole,
   LogOut,
+  MapPinned,
   Menu,
   MessageSquare,
   Package,
@@ -67,7 +68,10 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   const storefrontHref = tenant.catalogPublished === false ? "/store-preview" : `/s/${tenant.slug}`;
   const storefrontLabel = tenant.catalogPublished === false ? "Предпросмотр магазина" : "Открыть витрину";
   const workflow = businessWorkflow(tenant.vertical);
-  const nav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
+  const ownerNav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
+  const nav = role === "superadmin"
+    ? [ownerNav[0], ["/admin/sales", "База продаж", MapPinned] as const, ...ownerNav.slice(1)]
+    : ownerNav;
   const mobilePrimary = nav.slice(0, 3);
   const pathname = usePathname();
   const aiStudio = pathname.startsWith("/admin/ai-studio");

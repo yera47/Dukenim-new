@@ -27,6 +27,10 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
     const membership = await getUserTenant(client, data.user.id);
     redirect(membership.data ? "/admin" : "/stores");
   }
-  redirect(profile.role === "superadmin" ? "/root" : "/");
+  if (profile.role === "superadmin") {
+    const membership = await getUserTenant(client, data.user.id);
+    redirect(membership.data ? "/admin/sales" : "/root");
+  }
+  redirect("/");
 }
 export async function logout() { const client = await createClient(); await client.auth.signOut(); redirect("/login"); }
