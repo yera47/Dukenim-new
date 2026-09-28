@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native HQ store detail published in build 28
+
+Result: commit `4d533fb` is pushed; Vercel production deployment `dpl_GHd2mKsk93p8EvMXSta97gzJXLqY` is Ready and current for `www.dukenim.kz`. Live unauthenticated root-store detail GET and publication POST returned 403. iOS 1.0.0 (28), EAS build `110fa453-25e6-4ad4-9b94-7dd3994a7fc7`, finished from that commit and EAS submission `2829b155-7bba-4859-852d-b1dfdf712f8e` uploaded it. App Store Connect shows the binary confirmed and assigned to Dukenim Internal with one tester. This proves delivery, not iPhone functionality. Azure: unchanged.
+
+Stitch added Accounts and Orders mock screens. The visible Accounts HTML still includes fictional operator/admin cards and enabled demo MFA despite the first correction. A second focused correction was submitted but remained in Thinking state; do not use that screen as a product truth or approved design. Orders includes labelled demo orders/payment statuses and also needs a truthfulness review. Next: verify the Stitch correction in its rendered screen, then continue remaining real native HQ modules and actual iPhone acceptance. The owner's `dukenim` autonomous heartbeat remains PAUSED.
+
 ## 2026-09-28 — native HQ store detail after build 27
 
 Result: the native HQ store registry now has a separate detail screen with a back arrow and no bottom tab bar. A bearer-protected root-only API reads exact product/order/customer counts, current publication state, delivery/payment settings, recent orders and platform audit events; any incomplete read fails rather than showing partial figures. Publication/hiding uses the existing `root_set_catalog_publication` RPC with the verified actor, expected previous state, exact slug and written reason; the app asks for an additional system confirmation. Four focused route tests, root/mobile TypeScript, mobile lint, Next production build and iOS export pass. No store was published, hidden or deleted during this work. Azure: unchanged.
