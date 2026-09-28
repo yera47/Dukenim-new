@@ -1,5 +1,5 @@
 import Link from "next/link";
-import {Activity, ArrowRight, ArrowUpRight, BarChart3, Building2, CircleDollarSign, ClipboardList, Headphones, Megaphone, MessageSquare, Plus, Settings2, ShieldCheck, Users} from "lucide-react";
+import {Activity, ArrowRight, ArrowUpRight, BarChart3, Building2, CircleDollarSign, ClipboardList, Headphones, MapPinned, Megaphone, MessageSquare, Plus, Settings2, ShieldCheck, Users} from "lucide-react";
 import {createClient} from "@/lib/supabase/server";
 import {DukenimLogo} from "@/components/dukenim-logo";
 import {GeneralSupportChat} from "@/components/admin/general-support-chat";
@@ -21,6 +21,7 @@ const destinations=[
   {href:"/root/audit",label:"Аудит действий",detail:"Кто и что изменил",icon:ShieldCheck},
   {href:"/root/diagnostics",label:"Состояние системы",detail:"Ошибки и AI",icon:Activity},
   {href:"/root/marketing",label:"Маркетинг",detail:"Кампании и сигналы",icon:Megaphone},
+  {href:"/root/sales",label:"Выездные продажи",detail:"Зоны, лиды, маршруты и переговоры",icon:MapPinned},
   {href:"/root/management",label:"Карта возможностей",detail:"Что готово и что требуется",icon:BarChart3},
 ] as const;
 const statusLabel:Record<string,string>={active:"Активен",trial:"Пробный период",paused:"Приостановлен"};
