@@ -1,5 +1,13 @@
 # Dukenim — AI handoff
 
+## 2026-09-28 — native customer list and truthful totals
+
+Result: the native Customers screen now pages owner-visible tenant rows by stable id instead of silently accepting Supabase's first response as the whole list. A failed page clears the list and hides aggregate figures, with Retry; a new store/read invalidates older responses. It sorts completed results by recent order, offers Refresh, and uses a Stitch-inspired empty state whose CTA goes to Catalog until the storefront is published, then to the store-link screen. The customer value is explicitly the subtotal of goods ordered, which database checkout code increments on order creation even before payment or after a later cancellation. No customer purchases or bank receipts were invented.
+
+Changed tracked files: `apps/mobile/src/app/customers.tsx`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `AI_HANDOFF.md`, `PROJECT_STATE.md`. Checks: mobile TypeScript, Expo lint and fresh iOS export passed. Read-only production count found 3 customer records across 3 stores, at most 1 per store; no personal data was copied or modified. The Stitch client mock was inspected: its manual-add, CSV export and demo toggle are not implemented website workflows, so full parity for those buttons remains in progress rather than being represented by fake UI. Azure: unchanged.
+
+Not completed: authenticated iPhone/web comparison, multi-page device performance and the Stitch-only manual customer add/export. The TestFlight binary remains build 22 until EAS Free allowance resets on 2026-10-01; this JS change is not on the owner's iPhone. Next: define and implement verified owner-scoped contact creation/export if those are retained in the product, then test real customer search and totals on the latest iPhone build.
+
 ## 2026-09-28 — native delivery and manual Kaspi consistency
 
 Result: the native Delivery and Payment screen no longer offers editable defaults when `tenant_settings` fails to load. It shows Retry and requires a confirmed settings row before saving. A partial write to settings followed by a failed manual Yandex zone update is reported as partial and the screen reloads the server state. The native Kaspi switch now matches the website: a link is optional because the merchant may send an invoice personally; a supplied URL must be a Kaspi HTTPS address without embedded credentials or a custom port. Copy makes manual confirmation explicit.
