@@ -2051,3 +2051,21 @@ Release verification:
 - Commit `cbf01f6` was pushed to `main`.
 - Vercel production deployment `dukenim-7fk3a2x51-yersat47-s-projects.vercel.app` reached Ready.
 - `https://www.dukenim.kz/` and `/design/dukenim-system-stack-v1.png` returned HTTP 200; the production HTML references the new asset and the public page was inspected through the browser.
+
+## 2026-09-29 — paid EAS build 35 delivery
+
+Result:
+- Owner confirmed a paid Expo subscription. A production iOS build was started immediately and the former monthly Free limit did not recur.
+- EAS build `1fc40890-c5ce-4871-8eb7-2d6a7f6f0097`, app version `1.0.0 (35)`, commit `b3b0412`, finished successfully with priority HIGH.
+- Automatic App Store submission `8b247eb4-b7c2-4620-9cd6-f7603782dd0e` finished.
+- App Store Connect API reports build 35 `VALID`, `IN_BETA_TESTING`, and `READY_FOR_BETA_SUBMISSION` for external testing. Internal TestFlight testers can install it.
+
+Scope included:
+- Original Dukenim illustrated welcome, merchant home and HQ overview.
+- Reduced-motion-aware layered object animation.
+- All tracked native functionality present at commit `b3b0412`.
+
+Checks and limits:
+- The preceding source validation passed mobile/root TypeScript, Expo lint, Next build and iOS export.
+- Delivery is verified. Google/Apple login, cross-device state, physical-device animation/performance and broader acceptance checklist journeys remain unverified on the owner's iPhone.
+- No production account, store, order or staff access was changed.

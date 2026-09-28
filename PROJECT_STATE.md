@@ -1,4 +1,6 @@
 # Dukenim — current project state
+- 2026-09-29 iOS 1.0.0 (35) delivery: the owner's paid EAS plan accepted priority build `1fc40890-c5ce-4871-8eb7-2d6a7f6f0097` from `b3b0412` without the previous Free quota rejection. Submission `8b247eb4-b7c2-4620-9cd6-f7603782dd0e` finished; App Store Connect reports `VALID` and `IN_BETA_TESTING`. Build 35 includes the shared illustrated native home and reduced-motion-aware layered animation. Physical-iPhone login, synchronization, performance and full acceptance remain open.
+
 
 - 2026-09-28 iOS 1.0.0 (34) delivery: EAS build `710362da-5a3e-4479-833f-8a8cae980cb4` from `d9e98b1` finished and submission `392d7409-1dc5-484d-b966-ffadfe141614` uploaded it. App Store Connect API reports `VALID` and `IN_BETA_TESTING`. Vercel production for `d9e98b1` is Ready and the account login-control GET/POST reject unauthenticated requests with 403. Delivery does not verify physical-iPhone sign-in, account/staff/order mutations, Stitch parity or Apple identity linking. No production account, staff access, store or order was changed during QA. Autonomous heartbeat remains PAUSED.
 
