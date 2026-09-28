@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireFieldSalesAccess } from "@/lib/field-sales-access.server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { FIELD_SALES_STATUSES, safeExternalUrl, type FieldSalesStatus } from "@/lib/field-sales";
+import { FIELD_SALES_REMINDER_TYPES, FIELD_SALES_STATUSES, fieldSalesReturnPath, parseLocalDateTime, safeExternalUrl, type FieldSalesReminderType, type FieldSalesStatus } from "@/lib/field-sales";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -21,32 +22,49 @@ const optionalUrl = (value: FormDataEntryValue | null) => {
 };
 
 export async function updateFieldSalesLead(form: FormData) {
-  const { client } = await rootClient();
+  const { client, actorId } = await rootClient();
   const leadId = String(form.get("leadId") ?? "");
   const status = String(form.get("status") ?? "");
   const reminderRaw = String(form.get("reminderAt") ?? "").trim();
+  const reminderType = String(form.get("reminderType") ?? "task") as FieldSalesReminderType;
   if (!UUID.test(leadId) || !FIELD_SALES_STATUSES.some((item) => item.value === status)) throw new Error("Проверьте точку и этап переговоров.");
   const notes = String(form.get("notes") ?? "").trim();
   const nextAction = String(form.get("nextAction") ?? "").trim();
   if (notes.length > 10_000 || nextAction.length > 1_000) throw new Error("Заметка или следующий шаг слишком длинные.");
-  const rpc = client as unknown as { rpc: (name: "update_field_sales_lead", args: Record<string, unknown>) => Promise<{ data: boolean | null; error: { message: string } | null }> };
-  const result = await rpc.rpc("update_field_sales_lead", {
-    p_lead: leadId,
-    p_status: status,
-    p_contact_name: String(form.get("contactName") ?? "").trim(),
-    p_contact_role: String(form.get("contactRole") ?? "").trim(),
-    p_contact_phone: String(form.get("contactPhone") ?? "").trim(),
-    p_phone: String(form.get("phone") ?? "").trim(),
-    p_instagram_url: optionalUrl(form.get("instagramUrl")),
-    p_website_url: optionalUrl(form.get("websiteUrl")),
-    p_notes: notes,
-    p_next_action: nextAction,
-    p_reminder_at: reminderRaw ? new Date(reminderRaw).toISOString() : null,
-    p_mark_visit: form.get("markVisit") === "1",
-  });
+  if (!FIELD_SALES_REMINDER_TYPES.some((item) => item.value === reminderType)) throw new Error("Выберите тип напоминания.");
+  const previous = await client.from("field_sales_leads").select("status").eq("id", leadId).maybeSingle();
+  if (previous.error || !previous.data) throw new Error("Точка не найдена.");
+  const result = await client.from("field_sales_leads").update({
+    status: status as FieldSalesStatus,
+    contact_name: String(form.get("contactName") ?? "").trim() || null,
+    contact_role: String(form.get("contactRole") ?? "").trim() || null,
+    contact_phone: String(form.get("contactPhone") ?? "").trim() || null,
+    phone: String(form.get("phone") ?? "").trim() || null,
+    instagram_url: optionalUrl(form.get("instagramUrl")) || null,
+    website_url: optionalUrl(form.get("websiteUrl")) || null,
+    notes,
+    next_action: nextAction,
+    reminder_at: parseLocalDateTime(reminderRaw),
+    reminder_type: reminderType,
+    reminder_completed_at: null,
+    ...(form.get("markVisit") === "1" ? { last_visit_at: new Date().toISOString() } : {}),
+  }).eq("id", leadId).select("id").maybeSingle();
   if (result.error || !result.data) throw new Error(result.error?.message ?? "Точка не обновлена.");
+  await client.from("field_sales_activities").insert({ lead_id: leadId, actor_id: actorId, event_type: previous.data.status !== status ? "status_changed" : form.get("markVisit") === "1" ? "visit" : reminderRaw ? "reminder" : "note", previous_status: previous.data.status, next_status: status, note: notes || nextAction || null });
   revalidatePath("/root/sales");
   revalidatePath("/admin/sales");
+  redirect(fieldSalesReturnPath(form.get("returnTo"), leadId));
+}
+
+export async function completeFieldSalesReminder(form: FormData) {
+  const { client, actorId } = await rootClient();
+  const leadId = String(form.get("leadId") ?? "");
+  if (!UUID.test(leadId)) throw new Error("Задача не найдена.");
+  const result = await client.from("field_sales_leads").update({ reminder_completed_at: new Date().toISOString() }).eq("id", leadId).select("id").maybeSingle();
+  if (result.error || !result.data) throw new Error("Не удалось завершить задачу.");
+  await client.from("field_sales_activities").insert({ lead_id: leadId, actor_id: actorId, event_type: "reminder", note: "Задача выполнена" });
+  refreshSales();
+  redirect(fieldSalesReturnPath(form.get("returnTo")));
 }
 
 export async function createFieldSalesLead(form: FormData) {
@@ -130,7 +148,8 @@ export async function completeFieldSalesStop(form: FormData) {
   const outcome = String(form.get("outcome") ?? "");
   const feedback = String(form.get("feedback") ?? "").trim();
   const reminderRaw = String(form.get("reminderAt") ?? "").trim();
-  if (!UUID.test(stopId) || !OUTCOME_STATUS[outcome] || feedback.length > 4000) throw new Error("Выберите итог встречи и проверьте комментарий.");
+  const reminderType = String(form.get("reminderType") ?? "task") as FieldSalesReminderType;
+  if (!UUID.test(stopId) || !OUTCOME_STATUS[outcome] || feedback.length > 4000 || !FIELD_SALES_REMINDER_TYPES.some((item) => item.value === reminderType)) throw new Error("Выберите итог встречи и проверьте комментарий.");
   // New private trip tables are intentionally absent from the public generated client surface.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const admin = client as any;
@@ -143,7 +162,7 @@ export async function completeFieldSalesStop(form: FormData) {
 
   const now = new Date().toISOString();
   await admin.from("field_sales_trip_stops" as never).update({ state: outcome === "not_available" ? "skipped" : "completed", outcome, feedback, completed_at: now } as never).eq("id" as never, stop.id as never);
-  await admin.from("field_sales_leads").update({ status: OUTCOME_STATUS[outcome], last_visit_at: now, notes: feedback, next_action: outcome === "follow_up" || outcome === "not_available" ? "Вернуться по договорённости" : "", reminder_at: reminderRaw ? new Date(reminderRaw).toISOString() : null }).eq("id", stop.lead_id);
+  await admin.from("field_sales_leads").update({ status: OUTCOME_STATUS[outcome], last_visit_at: now, notes: feedback, next_action: outcome === "follow_up" || outcome === "not_available" ? "Вернуться по договорённости" : "", reminder_at: parseLocalDateTime(reminderRaw), reminder_type: reminderType, reminder_completed_at: null }).eq("id", stop.lead_id);
   await admin.from("field_sales_activities").insert({ lead_id: stop.lead_id, actor_id: actorId, event_type: "visit", next_status: OUTCOME_STATUS[outcome], note: feedback || outcome });
   const nextResult = await admin.from("field_sales_trip_stops" as never).select("id" as never).eq("trip_id" as never, stop.trip_id as never).eq("state" as never, "queued" as never).order("position" as never, { ascending: true }).limit(1).maybeSingle();
   if (nextResult.data) {
