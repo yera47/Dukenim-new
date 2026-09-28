@@ -5,6 +5,7 @@ import { getProfileRole } from "@/lib/queries/auth";
 import { createStaffClient } from "@/lib/staff-server";
 import { getUserTenant } from "@/lib/queries/auth";
 import { safeInternalPath } from "@/lib/safe-redirect";
+import { FIELD_SALES_TENANT_ID } from "@/lib/field-sales-access";
 export type LoginState = { error: string | null };
 export async function login(_: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
@@ -25,7 +26,7 @@ export async function login(_: LoginState, formData: FormData): Promise<LoginSta
   if(next)redirect(next);
   if (profile.role === "owner") {
     const membership = await getUserTenant(client, data.user.id);
-    redirect(membership.data ? "/admin" : "/stores");
+    redirect(membership.data?.tenant_id === FIELD_SALES_TENANT_ID ? "/admin/sales" : membership.data ? "/admin" : "/stores");
   }
   if (profile.role === "superadmin") {
     const membership = await getUserTenant(client, data.user.id);

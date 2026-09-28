@@ -1,6 +1,6 @@
 # Dukenim — current project state
 
-- 2026-09-28 field-sales admin access: the protected Astana sales workspace is also available at `/admin/sales`, appears as «База продаж» only for a superadmin, and keeps the existing superadmin-only Supabase/RLS boundary. A superadmin who owns a selected store lands there after password login. `/root/sales` remains as a compatible internal address.
+- 2026-09-28 field-sales admin access: the protected Astana sales workspace is also available at `/admin/sales`, appears as «База продаж» for the superadmin and the owner of the single internal `dukenim-9b139` tenant, and remains hidden from every client tenant. Server actions and reads re-check that capability before using the server-only admin client. The internal owner and a superadmin with the selected tenant land there after password login. `/root/sales` remains as a compatible internal address.
 
 - 2026-09-28 native login and registration now use the system Apple sign-in button, shown only on supported iPhones with the production flag enabled. Expo TypeScript, lint and an iOS export with that flag enabled pass. App Store Connect shows build 22 assigned to the internal TestFlight group; no new binary exists yet. Physical-device authentication and whole-Stitch parity remain open.
 

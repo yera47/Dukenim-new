@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { requireFieldSalesAccess } from "@/lib/field-sales-access.server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { statusLabel } from "@/lib/field-sales";
 
 export const dynamic = "force-dynamic";
@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 const csv = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""').replaceAll(/\r?\n/g, " ")}"`;
 
 export async function GET() {
-  await requireRole(["superadmin"]);
-  const client = await createClient();
+  await requireFieldSalesAccess();
+  const client = createAdminClient();
   const pages = await Promise.all([0, 1000].map((from) => client.from("field_sales_leads").select("*").order("zone_id").order("priority_score", { ascending: false }).range(from, from + 999)));
   const error = pages.find((page) => page.error)?.error;
   if (error) return NextResponse.json({ error: "Выгрузка пока недоступна" }, { status: 503 });

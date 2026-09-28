@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, BellRing, CalendarDays, CheckCircle2, Download, ExternalLink, Instagram, MapPinned, Navigation, Phone, Plus, Route, Search, Store, Target, Users } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { requireFieldSalesAccess } from "@/lib/field-sales-access.server";
 import { buildVisitRoute, FIELD_SALES_STATUSES, routeLengthKm, safeExternalUrl, statusLabel, type FieldSalesLead } from "@/lib/field-sales";
 import type { Database } from "@/types/database";
 import { createFieldSalesLead, saveFieldSalesRoute, updateFieldSalesLead } from "./actions";
@@ -45,11 +46,12 @@ function FieldMap({ zone, route }: { zone: Zone; route: FieldSalesLead[] }) {
 }
 
 export default async function FieldSalesPage({ searchParams }: { searchParams: Promise<FieldSalesParams> }) {
+  await requireFieldSalesAccess();
   const params = await searchParams;
   const basePath = params.view === "admin" ? "/admin/sales" : "/root/sales";
   const backHref = params.view === "admin" ? "/admin" : "/root";
   const backLabel = params.view === "admin" ? "Панель магазина" : "Центр платформы";
-  const client = await createClient();
+  const client = createAdminClient();
   const zonesResult = await client.from("field_sales_zones").select("*").eq("active", true).order("sort_order");
   const zones = zonesResult.data?.length ? zonesResult.data : fallbackZones;
   const selectedZone = zones.find((zone) => zone.id === params.zone) ?? zones[0];

@@ -30,6 +30,7 @@ import { planName, type Plan } from "@/lib/plans";
 import { TrialTimer } from "./trial-timer";
 import { businessWorkflow } from "@/lib/business-workflow";
 import type { BusinessVertical } from "@/types/database";
+import { FIELD_SALES_TENANT_SLUG } from "@/lib/field-sales-access";
 
 const baseNav = [
   ["/admin/ai-studio", "AI Studio", Sparkles],
@@ -69,7 +70,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
   const storefrontLabel = tenant.catalogPublished === false ? "Предпросмотр магазина" : "Открыть витрину";
   const workflow = businessWorkflow(tenant.vertical);
   const ownerNav = baseNav.map(([href, label, icon]) => [href, href === "/admin/stock" ? workflow.stockLabel : label, icon] as const);
-  const nav = role === "superadmin"
+  const nav = role === "superadmin" || tenant.slug === FIELD_SALES_TENANT_SLUG
     ? [ownerNav[0], ["/admin/sales", "База продаж", MapPinned] as const, ...ownerNav.slice(1)]
     : ownerNav;
   const mobilePrimary = nav.slice(0, 3);

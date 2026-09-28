@@ -1,16 +1,15 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireRole } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import { requireFieldSalesAccess } from "@/lib/field-sales-access.server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { FIELD_SALES_STATUSES, safeExternalUrl } from "@/lib/field-sales";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 async function rootClient() {
-  const context = await requireRole(["superadmin"]);
-  if (!context.user) throw new Error("Требуется вход владельца платформы.");
-  return { client: await createClient(), actorId: context.user.id };
+  const context = await requireFieldSalesAccess();
+  return { client: createAdminClient(), actorId: context.user!.id };
 }
 
 const optionalUrl = (value: FormDataEntryValue | null) => {
