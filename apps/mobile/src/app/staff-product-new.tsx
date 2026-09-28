@@ -37,7 +37,7 @@ export default function StaffProductNew() {
     const picked = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsMultipleSelection: true, selectionLimit: Math.max(1, 4 - photos.length), quality: .85 });
     if (picked.canceled) return;
     const next = [...photos, ...picked.assets].slice(0, 4);
-    if (next.some(photo => photo.fileSize === undefined) || next.reduce((total, photo) => total + (photo.fileSize ?? 0), 0) > 3_000_000) {
+    if (next.reduce((total, photo) => total + (photo.fileSize ?? 0), 0) > 3_000_000) {
       Alert.alert("Фото слишком большие", "Выберите до 4 фотографий JPG, PNG или WebP суммарно до 3 МБ."); return;
     }
     setPhotos(next);
