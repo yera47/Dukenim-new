@@ -44,14 +44,14 @@ export async function loadOwnerContext(): Promise<OwnerContext> {
   return { user: auth.user, role, stores };
 }
 
-export function routeForStore(store: OwnerStore): "/onboarding" | "/catalog-builder" | "/catalog" | "/studio" {
+export function routeForStore(store: OwnerStore): "/onboarding" | "/catalog-builder" | "/catalog" | "/more" {
   if (!store.onboarding_completed) return "/onboarding";
   if (store.catalog_status === "not_started") return "/catalog-builder";
   if (store.catalog_status === "building") return "/catalog";
-  return "/studio";
+  return "/more";
 }
 
-export async function workspaceRoute(): Promise<"/root" | "/onboarding" | "/catalog-builder" | "/catalog" | "/studio" | "/staff" | "/setup-store"> {
+export async function workspaceRoute(): Promise<"/root" | "/onboarding" | "/catalog-builder" | "/catalog" | "/more" | "/staff" | "/setup-store"> {
   const context = await loadOwnerContext();
   if (context.role === "superadmin") return "/root";
   if (context.stores.length) {

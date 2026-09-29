@@ -11,7 +11,7 @@ const tabs: Tab[] = [
   { label: "AI Studio", icon: "✦", path: "/studio" },
   { label: "Каталог", icon: "□", path: "/catalog" },
   { label: "Заказы", icon: "▤", path: "/orders" },
-  { label: "Ещё", icon: "☰", path: "/more" },
+  { label: "Главная", icon: "◫", path: "/more" },
 ];
 
 export function BrandHeader({ section, store, backTo }: { section: string; store?: string; backTo?: "/catalog" | "/orders" | "/more" }) {

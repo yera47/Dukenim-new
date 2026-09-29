@@ -1,5 +1,11 @@
 # Dukenim — AI handoff
 
+## 2026-09-29 — merchant Home and Stitch HQ continuation prepared
+
+Result: the native ready-store destination is now `Главная` (`/more`) instead of AI Studio. It loads the selected tenant's real orders for the Kazakhstan day and previous seven days, exact product count and active low-stock count through the signed-in Supabase client/RLS; paid revenue excludes cancelled orders, and a failed or incomplete read hides the summary rather than displaying fabricated zeroes. The Catalog control block now offers add product, edit products, design, preview and store-link actions; the Catalog root repeats design/preview/link controls and no longer shows a Back button. The fourth glass tab is labelled `Главная`. A temporary Expo web fixture was used for a visual pass and removed. Mobile `npx tsc --noEmit` and `npx expo lint` pass. Azure unchanged; no production row or external project changed.
+
+Changed: `apps/mobile/src/app/more.tsx`, `apps/mobile/src/app/catalog.tsx`, `apps/mobile/src/components/app-shell.tsx`, `apps/mobile/src/lib/owner.ts`, the acceptance/state/decision/handoff documents, and new `docs/STITCH_HOME_HQ_PROMPT_20260929.md`. The prompt is prepared for the existing Stitch project but has not been transmitted because submission changes an external project and requires action-time confirmation. Remaining: send the approved prompt, inspect the completed Stitch flow, transfer only verified screens, run authenticated physical-iPhone data/navigation acceptance, then build a newer binary; TestFlight build 36 predates these changes. Preserve unrelated dirty integration documentation and untracked outputs. Autonomous heartbeat remains PAUSED.
+
 ## 2026-09-29 — visual/function audit production and TestFlight delivery
 
 Result: scoped commit `baa5cf9` is pushed to `main`. Vercel deployment `dpl_8A1tLt4e3JknEAwz7adXtFvs52gi` reached Ready and is current on `www.dukenim.kz`; the production fashion collection was inspected at 390×844 with no horizontal overflow. EAS priority build `33bb2c74-c60f-4cd9-a6e6-47a7db8fd258`, Dukenim `1.0.0 (36)`, finished from `baa5cf9`. Submission `d3fab7d5-0f48-45bf-a12d-0efc364f38bd` and its `submit-ios.yaml` workflow finished successfully, delivering the IPA to App Store Connect. A duplicate build 37 was cancelled before completion.
