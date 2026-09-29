@@ -1,5 +1,15 @@
 # Dukenim — AI handoff
 
+## 2026-09-29 — native field-sales route and trip workflow
+
+Result: extended superadmin field sales in the iOS app with the same zone route sequence used by the web flow, trip start, current stop, outcome/feedback, automatic next stop, early finish, trip history and today's reminders. New bearer-protected `/api/mobile/root/sales/trips` reads only the current verified superadmin's trips; writes validate active zones, unique point IDs, route membership, current-stop state and trip ownership. A completed visit preserves its current reminder unless the caller explicitly sends a replacement. The sales read API returns the same deterministic priority/nearest-neighbour route IDs used by the web algorithm.
+
+Changed: `apps/mobile/src/app/root.tsx`, `src/app/api/mobile/root/sales/route.ts`, new `src/app/api/mobile/root/sales/trips/route.ts` and route tests, plus the acceptance/state/handoff records. Checks pass: root TypeScript, mobile TypeScript, Expo lint, six focused API validation tests, Next production build (97 pages) and iOS export. No field-sales production record was changed. Azure unchanged.
+
+Release state: TestFlight build 38 (`a54eccf1-21d1-4a6a-a018-91f91171906f`, commit `4bfd553`) finished; submission `4ffd2997-ad8a-4bcd-bbd8-2af932bcd13a` finished and App Store Connect reports `VALID` / `IN_BETA_TESTING` / `READY_FOR_BETA_SUBMISSION`. It includes Merchant Home but predates the trip flow. Publish this latest API/mobile change, verify Vercel, then build and submit the next iOS version. Do not claim current source is in TestFlight yet.
+
+Unresolved: the physical-iPhone trip/reminder journeys and Google/Apple/session restore remain unverified. Stitch has relevant HQ pages but the generated project still contains fake demo stores, mock counts and confusing Kaspi controls; treat it as a prototype until corrected and visually re-audited. Full native HQ gaps remain in the acceptance checklist, including request/promo/integration/diagnostics screens, complete permission editing and reminder scheduling. Preserve the unrelated dirty `docs/INTEGRATION_IMPLEMENTATION_20260909.md` and existing untracked output artifacts. Autonomous heartbeat remains PAUSED.
+
 ## 2026-09-29 — merchant Home and Stitch HQ continuation prepared
 
 Result: the native ready-store destination is now `Главная` (`/more`) instead of AI Studio. It loads the selected tenant's real orders for the Kazakhstan day and previous seven days, exact product count and active low-stock count through the signed-in Supabase client/RLS; paid revenue excludes cancelled orders, and a failed or incomplete read hides the summary rather than displaying fabricated zeroes. The Catalog control block now offers add product, edit products, design, preview and store-link actions; the Catalog root repeats design/preview/link controls and no longer shows a Back button. The fourth glass tab is labelled `Главная`. A temporary Expo web fixture was used for a visual pass and removed. Mobile `npx tsc --noEmit` and `npx expo lint` pass. Azure unchanged; no production row or external project changed.

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getMobileRoot } from "@/lib/mobile-auth";
-import { FIELD_SALES_STATUSES } from "@/lib/field-sales";
+import { buildVisitRoute, FIELD_SALES_STATUSES, type FieldSalesLead } from "@/lib/field-sales";
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -13,10 +13,11 @@ export async function GET(request: Request) {
   const zoneId = zones.data.find(zone => zone.id === wanted)?.id ?? zones.data[0]?.id;
   if (!zoneId) return NextResponse.json({ zones: [], zoneId: null, leads: [] });
   const leads = await root.admin.from("field_sales_leads")
-    .select("id,zone_id,name,address,segment,status,notes,next_action,contact_name,contact_phone,phone,map_url,instagram_url,website_url,whatsapp_url,reminder_at,last_visit_at")
+    .select("id,zone_id,name,address,segment,status,notes,next_action,contact_name,contact_phone,phone,map_url,instagram_url,website_url,whatsapp_url,reminder_at,last_visit_at,longitude,latitude,priority_score,review_count")
     .eq("zone_id", zoneId).order("priority_score", { ascending: false }).limit(100);
   if (leads.error || !leads.data) return NextResponse.json({ error: "Точки не загружены." }, { status: 503 });
-  return NextResponse.json({ zones: zones.data, zoneId, leads: leads.data }, { headers: { "Cache-Control": "no-store" } });
+  const routeIds = buildVisitRoute(leads.data as unknown as FieldSalesLead[], 20).map(lead => lead.id);
+  return NextResponse.json({ zones: zones.data, zoneId, leads: leads.data, routeIds }, { headers: { "Cache-Control": "no-store, private" } });
 }
 
 export async function POST(request: Request) {
