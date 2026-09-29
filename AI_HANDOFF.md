@@ -2097,3 +2097,22 @@ Checks and limits:
 - The preceding source validation passed mobile/root TypeScript, Expo lint, Next build and iOS export.
 - Delivery is verified. Google/Apple login, cross-device state, physical-device animation/performance and broader acceptance checklist journeys remain unverified on the owner's iPhone.
 - No production account, store, order or staff access was changed.
+
+## 2026-09-29 — field-sales trip flow shipped; iOS 39 uploaded
+
+Result:
+- Commit `ddb673b554bdd8f4f8f2bd79d50e953ddc54e3ac` is pushed to `main`; its Vercel production deployment reached Ready. The unauthenticated trip API correctly returned HTTP 403.
+- The native superadmin field-sales flow now supports planned route start, current stop, outcome/feedback, automatic next stop, early finish, trip history and same-day reminders through a protected server API and shared sales tables.
+- EAS iOS build `d9ba5842-f781-41d3-ac8c-b751079b8e00`, version 1.0.0 (39), finished successfully. Submission `ba0719b3-4611-4319-81a9-8a0d58d05c40` finished upload to App Store Connect.
+
+Checks:
+- Root and mobile strict TypeScript, Expo lint, six focused trip API tests, Next production build, iOS Expo export, and staged-diff whitespace checks passed.
+- The current ASC status snapshot still lists build 38 as internal beta / ready for external beta submission. Apple processing of build 39 is pending; do not claim it is installable until ASC reports it.
+
+Changed files: `apps/mobile/src/app/root.tsx`, `src/app/api/mobile/root/sales/route.ts`, `src/app/api/mobile/root/sales/trips/route.ts`, `src/app/api/mobile/root/sales/trips/route.test.ts`, `docs/ACCEPTANCE_20260928_NATIVE_AUTH_STITCH.md`, `PROJECT_STATE.md`, and this handoff.
+
+Not completed / next:
+- After Apple processing, verify build 39 becomes internally available in TestFlight.
+- The owner must install build 39 on a physical iPhone to verify authenticated route start, stop completion, reminder completion, and cross-device data.
+- The broader Stitch/project acceptance remains open: Stitch mock fidelity and remaining native feature gaps are not covered by this scoped release. Apple identity linking is unverified; SMS remains deferred by the owner; Google/password and all production account flows still need physical-device verification.
+- The `dukenim` autonomous heartbeat remains PAUSED. Preserve unrelated dirty integration notes and generated output artifacts.
