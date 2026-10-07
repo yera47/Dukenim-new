@@ -37,6 +37,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
         plan: entitlement.plan,
         status: tenant.status,
         trialEndsAt: tenant.trial_ends_at,
+        serverNow: Date.now(),
         vertical: tenant.business_vertical ?? "other",
         catalogPublished: tenant.catalog_published,
       }}

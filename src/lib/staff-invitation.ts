@@ -25,3 +25,10 @@ export function isStaffPasswordAllowed(password: string, email: string) {
   if (emailName.length >= 4 && normalized.includes(emailName)) return false;
   return new Set(password).size >= 6;
 }
+
+export type StaffInvitationState = "pending" | "accepted" | "revoked" | "expired";
+export function staffInvitationState(invitation:{accepted_at:string|null;revoked_at:string|null;expires_at:string}, now=Date.now()):StaffInvitationState {
+  if(invitation.accepted_at)return "accepted";
+  if(invitation.revoked_at)return "revoked";
+  return Date.parse(invitation.expires_at)<=now?"expired":"pending";
+}

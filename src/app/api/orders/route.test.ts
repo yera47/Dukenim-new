@@ -14,7 +14,7 @@ import {buyerIdentity} from "@/lib/buyer-identity";
 import {phoneAuthReady} from "@/lib/phone-auth-ready";
 
 const valid = { slug: "serik-shop", name: "Серик", phone: "+77000000000", deliveryMethod: "pickup", paymentMethod: "cash", items: [{ variantId: "12345678-1234-4123-8123-123456789012", qty: 1 }] };
-function request(body: unknown) { return new Request("https://example.test/api/orders", { method: "POST", body: JSON.stringify(body) }); }
+function request(body: unknown, idempotencyKey = "11111111-1111-4111-8111-111111111111") { return new Request("https://example.test/api/orders", { method: "POST", headers: { "Idempotency-Key": idempotencyKey }, body: JSON.stringify(body) }); }
 
 describe("order API fails safely before database writes", () => {
   beforeEach(() => {
@@ -25,6 +25,10 @@ describe("order API fails safely before database writes", () => {
     vi.mocked(phoneAuthReady).mockReturnValue(false);
   });
   afterEach(() => vi.unstubAllEnvs());
+  it("rejects a malformed idempotency key before database writes", async () => {
+    expect((await POST(request(valid, "invalid"))).status).toBe(400);
+    expect(createAdminClient).not.toHaveBeenCalled();
+  });
   it("does not accept pickup when settings are missing", async () => {
     vi.mocked(getPublicTenantBySlug).mockResolvedValue({data:{id:"mine"},error:null} as Awaited<ReturnType<typeof getPublicTenantBySlug>>);
     vi.mocked(getCheckoutOptions).mockResolvedValue({settings:null,zones:[],error:null});
@@ -58,7 +62,7 @@ describe("order API fails safely before database writes", () => {
     const requestedFor=new Date(Date.now()+60*60_000).toISOString();
     const response=await POST(request({...valid,timingMode:"scheduled",requestedFor}));
     expect(response.status).toBe(200);
-    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({tenantId:"mine",requestedFor,phone:"+77000000000",buyer:expect.objectContaining({userId:"buyer-user"})}));
+    expect(createStorefrontOrder).toHaveBeenCalledWith(admin,expect.objectContaining({tenantId:"mine",requestedFor,phone:"+77000000000",idempotencyKey:"11111111-1111-4111-8111-111111111111",buyer:expect.objectContaining({userId:"buyer-user"})}));
   });
   it("requires a verified phone account before creating the order",async()=>{
     vi.mocked(phoneAuthReady).mockReturnValue(true);

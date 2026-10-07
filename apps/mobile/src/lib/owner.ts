@@ -1,5 +1,6 @@
 import type { User } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
+import { ACTIVE_OWNER_STORE_COLUMNS, ARCHIVE_OWNER_STORE_COLUMNS, storeArchiveEnabled } from "@/lib/store-archive-feature";
 
 export type OwnerStore = {
   id: string;
@@ -11,12 +12,20 @@ export type OwnerStore = {
   catalog_status: "not_started" | "building" | "ready";
   next_plan: "basic" | "standard" | "pro" | null;
   preferred_billing_period: "monthly" | "annual";
+  status?: "active" | "paused" | "trial";
+  trial_ends_at?: string | null;
+  logo_url?: string | null;
+  accent_color?: string;
+  archived_at?: string | null;
+  archive_reason?: string | null;
+  brand_profile?: {color_theme:unknown;layout_config:unknown;brand_color:string|null;template_key?:string|null}|null;
 };
 
 export type OwnerContext = {
   user: User;
   role: "customer" | "owner" | "superadmin";
   stores: OwnerStore[];
+  archivedStores?: OwnerStore[];
 };
 
 export async function loadOwnerContext(): Promise<OwnerContext> {
@@ -33,15 +42,16 @@ export async function loadOwnerContext(): Promise<OwnerContext> {
   if (ids.length) {
     const { data, error } = await supabase
       .from("tenants")
-      .select("id,name,slug,business_vertical,catalog_published,onboarding_completed,catalog_status,next_plan,preferred_billing_period")
+      .select(storeArchiveEnabled ? ARCHIVE_OWNER_STORE_COLUMNS : ACTIVE_OWNER_STORE_COLUMNS)
       .in("id", ids)
       .order("created_at", { ascending: true });
     if (error) throw new Error("Не удалось открыть магазины.");
-    stores = (data ?? []) as OwnerStore[];
+    stores = ((data ?? []) as unknown as Array<OwnerStore&{tenant_storefront_settings?:OwnerStore["brand_profile"]}>).map(({tenant_storefront_settings,...store})=>({...store,brand_profile:tenant_storefront_settings??null}));
   }
   const rawRole = profile?.role;
   const role = rawRole === "superadmin" ? "superadmin" : rawRole === "owner" ? "owner" : "customer";
-  return { user: auth.user, role, stores };
+  const archivedStores = storeArchiveEnabled ? stores.filter(store => Boolean(store.archived_at)) : [];
+  return { user: auth.user, role, stores: storeArchiveEnabled ? stores.filter(store => !store.archived_at) : stores, archivedStores };
 }
 
 export function routeForStore(store: OwnerStore): "/onboarding" | "/catalog-builder" | "/catalog" | "/more" {

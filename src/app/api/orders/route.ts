@@ -50,6 +50,10 @@ function parseItems(value: unknown): CheckoutItem[] | null {
 }
 
 function safeOrderError(message?: string) {
+  if (message?.includes("Idempotency key conflicts")) return "\u0421\u043e\u0441\u0442\u0430\u0432 \u0437\u0430\u043a\u0430\u0437\u0430 \u0438\u0437\u043c\u0435\u043d\u0438\u043b\u0441\u044f \u043f\u043e\u0441\u043b\u0435 \u043f\u0440\u0435\u0434\u044b\u0434\u0443\u0449\u0435\u0439 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u0438. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u044e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u0438 \u043f\u043e\u0432\u0442\u043e\u0440\u0438\u0442\u0435 \u0441 \u0442\u0435\u043a\u0443\u0449\u0435\u0439 \u043a\u043e\u0440\u0437\u0438\u043d\u043e\u0439.";
+  if (message?.includes("requires reconciliation")) return "\u041e\u0442\u0432\u0435\u0442 \u043f\u043e \u0437\u0430\u043a\u0430\u0437\u0443 \u043d\u0435 \u043f\u043e\u043b\u0443\u0447\u0435\u043d. \u041f\u0440\u043e\u0432\u0435\u0440\u044c\u0442\u0435 \u0438\u0441\u0442\u043e\u0440\u0438\u044e \u0437\u0430\u043a\u0430\u0437\u043e\u0432 \u043f\u0435\u0440\u0435\u0434 \u043f\u043e\u0432\u0442\u043e\u0440\u043d\u043e\u0439 \u043e\u0442\u043f\u0440\u0430\u0432\u043a\u043e\u0439.";
+  if (message?.includes("Idempotency key conflicts")) return "Состав заказа изменился после предыдущей отправки. Проверьте историю заказов и повторите с текущей корзиной.";
+  if (message?.includes("requires reconciliation")) return "Ответ по заказу не получен. Проверьте историю заказов перед повторной отправкой.";
   if (!message) return "Не удалось создать заказ";
   if(message.includes("Reward")||message.includes("Sign in"))return "Награда пока недоступна. Обновите карту и проверьте условия.";
   if(/Option|Ingredient|Combo|selection/i.test(message))return "Состав блюда изменился. Откройте его в меню и выберите варианты заново.";
@@ -70,6 +74,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Оформление заказа временно недоступно. Попробуйте позже." }, { status: 503 });
   }
   try {
+    const idempotencyKey = request.headers.get("idempotency-key")?.trim() ?? "";
+    if (!uuidPattern.test(idempotencyKey)) return NextResponse.json({ error: "\u041d\u0435 \u0443\u0434\u0430\u043b\u043e\u0441\u044c \u043f\u043e\u0434\u0442\u0432\u0435\u0440\u0434\u0438\u0442\u044c \u0437\u0430\u043a\u0430\u0437. \u041e\u0431\u043d\u043e\u0432\u0438\u0442\u0435 \u0441\u0442\u0440\u0430\u043d\u0438\u0446\u0443 \u0438 \u043f\u043e\u043f\u0440\u043e\u0431\u0443\u0439\u0442\u0435 \u0435\u0449\u0451 \u0440\u0430\u0437." }, { status: 400 });
+    if (!uuidPattern.test(idempotencyKey)) return NextResponse.json({ error: "������� ���������� ������. �������� ���������� � ���������� ��� ���." }, { status: 400 });
     const raw = await request.text();
     if (raw.length > 64_000) return NextResponse.json({ error: "Заказ слишком большой" }, { status: 413 });
     const body = JSON.parse(raw) as Body;
@@ -129,6 +136,7 @@ export async function POST(request: Request) {
       paymentMethod,
       requestedFor: requestedFor?.toISOString() ?? null,
       items,
+      idempotencyKey,
       buyer:orderBuyer,reward:accountVerified?extra.data.reward:null,referralCode:extra.data.referralCode,
     });
     if (error || !data?.[0]) return NextResponse.json({ error: safeOrderError(error?.message) }, { status: 400 });

@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from "react";
-import {ActivityIndicator,KeyboardAvoidingView,Platform,Pressable,StyleSheet,Text,TextInput,View} from "react-native";
+import {ActivityIndicator,KeyboardAvoidingView,Platform,Pressable,StyleSheet, TextInput,View} from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import {EditorScreen} from "@/components/editor-screen";
 import {ui} from "@/components/app-shell";
 import {useOwnerStore} from "@/lib/use-owner-store";

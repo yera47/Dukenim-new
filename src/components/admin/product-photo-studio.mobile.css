@@ -1,0 +1,41 @@
+@media (max-width: 900px) {
+  section[aria-labelledby="product-photo-title"][data-review="true"] > header { display: none; }
+  section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :last-child {
+    order: -1;
+    border-bottom: 1px solid #e5dce2;
+  }
+  section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :first-child {
+    border-bottom: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  section[aria-labelledby="product-photo-title"] { margin-top: .75rem; }
+  section[aria-labelledby="product-photo-title"] > header { gap: .8rem; padding: 1rem; }
+  #product-photo-title { margin-top: .4rem; font-size: 1.9rem; line-height: 1; }
+  section[aria-labelledby="product-photo-title"] > header p { margin-top: .65rem; font-size: .8rem; line-height: 1.45; }
+  section[aria-labelledby="product-photo-title"] > header > :last-child { padding: .75rem; }
+  section[aria-labelledby="product-photo-title"] > div:nth-child(2) > * { padding: 1rem; }
+  section[aria-labelledby="product-photo-title"] figure img { aspect-ratio: 1; }
+}
+
+section[aria-labelledby="product-photo-title"] > header > :last-child span,
+section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :last-child > :first-child > :last-child,
+section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :last-child > :nth-child(2) figure:first-child figcaption {
+  font-size: 0;
+}
+
+section[aria-labelledby="product-photo-title"] > header > :last-child span::after {
+  content: "В лимит входят только принятые варианты. Повторная проверка пакет не списывает.";
+  font-size: .72rem;
+}
+
+section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :last-child > :first-child > :last-child::after {
+  content: "3 · Черновик";
+  font-size: .68rem;
+}
+
+section[aria-labelledby="product-photo-title"] > div:nth-child(2) > :last-child > :nth-child(2) figure:first-child figcaption::after {
+  content: "Оригинал · эталон товара";
+  font-size: .72rem;
+}

@@ -16,7 +16,7 @@ import { demoProductsFor } from "@/lib/demo-catalogs";
 import { customStoreThemeSchema } from "@/lib/custom-store-theme";
 import {staffPreviewContext} from "@/lib/staff-preview";
 import {approachForTemplate} from "@/lib/commerce-configurations";
-import {loadFoodStories} from "@/lib/food-stories";
+import {loadStoreStories} from "@/lib/food-stories";
 export const dynamic="force-dynamic";
 export const metadata={robots:{index:false,follow:false}};
 
@@ -58,7 +58,7 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
   }
   const sample = query.content === "example";
   const previewProducts = sample ? demoProductsFor(tenant.business_vertical ?? "other") : products;
-  const foodStories = !sample && tenant.business_vertical === "food" ? await loadFoodStories(client, tenant.id).catch(() => []) : undefined;
+  const foodStories = !sample ? await loadStoreStories(client, tenant.id).catch(() => []) : undefined;
   return <div style={storefrontStyle(settings,plan,tenant.accent_color)} className="min-h-screen bg-[var(--store-bg)] text-[var(--store-ink)]">
     <p className="border-b p-3 text-sm">{sample ? "Пример с демонстрационными товарами · они не сохраняются в ваш магазин." : "Ваш магазин · только реальные товары."} Покупка отключена.</p>
     {proposedSections.length>0&&<p className="border-b p-3 text-sm">Предложенные разделы: {proposedSections.join(" · ")}. При создании они сохранятся в каталог; товары в них добавите вы.</p>}

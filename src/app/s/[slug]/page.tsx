@@ -9,7 +9,7 @@ import { getPublicStorePolicies, getStorefrontSettings } from "@/lib/queries/own
 import { getCheckoutOptions } from "@/lib/queries/orders";
 
 import { demoVerticalById } from "@/lib/demo-catalogs";
-import { loadFoodStories } from "@/lib/food-stories";
+import { loadStoreStories } from "@/lib/food-stories";
 
 export default async function StorePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -28,6 +28,6 @@ export default async function StorePage({ params }: { params: Promise<{ slug: st
   const campaign = client
     ? (await client.from("storefront_campaigns").select("title, eyebrow, body, cta_label, cta_href, image_url").eq("tenant_id", tenant.id).eq("status", "published").order("created_at", { ascending: false }).limit(1).maybeSingle()).data
     : null;
-  const foodStories = tenant.business_vertical === "food" && admin ? await loadFoodStories(admin, tenant.id).catch(() => []) : undefined;
+  const foodStories = admin ? await loadStoreStories(admin, tenant.id).catch(() => []) : undefined;
   return <StoreHome slug={slug} tenant={tenant} products={products} settings={settings} campaign={campaign} storePolicies={storePolicies} foodStories={foodStories} checkoutOptions={demo?{deliveryEnabled:true,pickupEnabled:true}:checkout?.settings?{deliveryEnabled:Boolean(checkout.settings.delivery_enabled&&checkout.zones.length),pickupEnabled:checkout.settings.pickup_enabled}:undefined}/>;
 }

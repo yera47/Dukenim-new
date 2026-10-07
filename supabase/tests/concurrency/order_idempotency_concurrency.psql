@@ -1,0 +1,100 @@
+\set ON_ERROR_STOP on
+-- Run only against an isolated local database after applying migrations:
+-- psql "$LOCAL_DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/tests/concurrency/order_idempotency_concurrency.psql
+create extension if not exists dblink;
+drop trigger if exists pause_fixture_order on public.orders;
+drop function if exists public.test_pause_fixture_order_20261001();
+
+select gen_random_uuid() as shop, gen_random_uuid() as product, gen_random_uuid() as variant,
+       gen_random_uuid() as key_a, gen_random_uuid() as key_b \gset
+
+insert into public.tenants(id,slug,name,phone,status,plan,catalog_published)
+values(:'shop','concurrency-'||:'shop','Concurrency fixture','00000000000','active','basic',true);
+insert into public.tenant_settings(tenant_id,pickup_enabled,delivery_enabled) values(:'shop',true,false);
+insert into public.products(id,tenant_id,title,price,is_active) values(:'product',:'shop','Last item',1000,true);
+insert into public.product_variants(id,tenant_id,product_id,stock_qty,is_active) values(:'variant',:'shop',:'product',1,true);
+
+select dblink_connect('order_a','dbname='||current_database());
+select dblink_connect('order_b','dbname='||current_database());
+select dblink_send_query('order_a',format(
+  $q$select * from public.create_buyer_order_idempotent(%L,%L,%L,'pickup','',null,'cash',jsonb_build_array(jsonb_build_object('variant_id',%L::uuid,'qty',1)),null,null,%L,%L::uuid)$q$,
+  :'shop','Buyer A','77000000001',:'variant',repeat('a',64),:'key_a'
+));
+select dblink_send_query('order_b',format(
+  $q$select * from public.create_buyer_order_idempotent(%L,%L,%L,'pickup','',null,'cash',jsonb_build_array(jsonb_build_object('variant_id',%L::uuid,'qty',1)),null,null,%L,%L::uuid)$q$,
+  :'shop','Buyer B','77000000002',:'variant',repeat('b',64),:'key_b'
+));
+
+-- fail_on_error=false lets us assert that exactly one checkout lost the last-item race.
+select * from dblink_get_result('order_a',false) as result(order_id uuid,order_number integer,total integer);
+select dblink_error_message('order_a') as error_a \gset
+select * from dblink_get_result('order_b',false) as result(order_id uuid,order_number integer,total integer);
+select dblink_error_message('order_b') as error_b \gset
+create temporary table checkout_concurrency_errors(error_a text,error_b text);
+insert into checkout_concurrency_errors values(:'error_a',:'error_b');
+
+do $$
+declare fixture_tenant uuid;
+begin
+  select id into fixture_tenant from public.tenants where slug like 'concurrency-%' order by created_at desc limit 1;
+  if (select count(*) from public.orders where tenant_id=fixture_tenant) <> 1 then
+    raise exception 'TEST FAILED: concurrent last-stock checkout did not create exactly one order';
+  end if;
+  if (select stock_qty from public.product_variants where tenant_id=fixture_tenant) <> 0 then
+    raise exception 'TEST FAILED: concurrent last-stock checkout oversold or missed stock';
+  end if;
+  if not exists(
+    select 1 from checkout_concurrency_errors
+    where (error_a='OK' and error_b like '%Variant unavailable%')
+       or (error_b='OK' and error_a like '%Variant unavailable%')
+  ) then raise exception 'TEST FAILED: last-stock loser did not fail for unavailable stock'; end if;
+end
+$$;
+
+-- Prove that price edits wait behind the catalog snapshot lock. A local-only
+-- trigger holds the order transaction after it has acquired product locks.
+insert into public.stock_movements(tenant_id,variant_id,delta,reason)
+values(:'shop',:'variant',1,'restock');
+create function public.test_pause_fixture_order_20261001() returns trigger language plpgsql as $$
+begin
+  if exists(select 1 from public.tenants where id=new.tenant_id and slug like 'concurrency-%') then perform pg_sleep(2); end if;
+  return new;
+end
+$$;
+create trigger pause_fixture_order before insert on public.orders
+for each row execute function public.test_pause_fixture_order_20261001();
+select gen_random_uuid() as price_key \gset
+select dblink_send_query('order_a',format(
+  $q$select * from public.create_buyer_order_idempotent(%L,%L,%L,'pickup','',null,'cash',jsonb_build_array(jsonb_build_object('variant_id',%L::uuid,'qty',1)),null,null,%L,%L::uuid)$q$,
+  :'shop','Price buyer','77000000003',:'variant',repeat('c',64),:'price_key'
+));
+select pg_sleep(0.4);
+select dblink_send_query('order_b',format('update public.products set price=1500 where id=%L::uuid returning price',:'product'));
+select pg_sleep(0.4);
+select dblink_is_busy('order_b') as price_update_waiting \gset
+\if :price_update_waiting
+\else
+  \quit 1
+\endif
+select * from dblink_get_result('order_a') as result(order_id uuid,order_number integer,total integer);
+select * from dblink_get_result('order_b') as result(price integer);
+
+do $$
+declare fixture_tenant uuid;
+begin
+  select id into fixture_tenant from public.tenants where slug like 'concurrency-%' order by created_at desc limit 1;
+  if not exists(
+    select 1 from public.order_items i join public.orders o on o.id=i.order_id
+    where o.tenant_id=fixture_tenant and i.price_snapshot=1000 and o.total=1000
+  ) then raise exception 'TEST FAILED: order price snapshot changed while locked'; end if;
+  if (select price from public.products where tenant_id=fixture_tenant) <> 1500 then
+    raise exception 'TEST FAILED: waiting price edit did not complete after checkout';
+  end if;
+end
+$$;
+
+drop trigger pause_fixture_order on public.orders;
+drop function public.test_pause_fixture_order_20261001();
+select dblink_disconnect('order_a');
+select dblink_disconnect('order_b');
+delete from public.tenants where id=:'shop';

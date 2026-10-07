@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { useLocalSearchParams } from "expo-router";
 import { EditorScreen } from "@/components/editor-screen";
 import { ui } from "@/components/app-shell";

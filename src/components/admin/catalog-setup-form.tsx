@@ -1,10 +1,10 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useState } from "react";
+import { useActionState, useCallback, useEffect, useMemo, useState } from "react";
 import { catalogBuilderStateSchema } from "@/lib/catalog-builder-draft";
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { createCatalogAction, type CatalogActionState } from "@/app/admin/actions";
-import { launchTemplatesForPlan } from "@/lib/storefront-theme";
+import { launchTemplatesForPlan, palettes } from "@/lib/storefront-theme";
 import { nichePresets } from "@/lib/niche-presets";
 import type { BusinessVertical } from "@/types/database";
 import { approachForTemplate, configurationFor } from "@/lib/commerce-configurations";
@@ -20,6 +20,7 @@ import { LoyaltyEditor } from "./loyalty-editor";
 import {newLoyaltyProgram,loyaltyProgramSchema} from "@/lib/loyalty";
 import { TemplateIllustration } from "./template-illustration";
 import { foodConcepts } from "@/lib/food-concepts";
+import { storefrontPreviewHref, storefrontPresetsFor } from "@/lib/storefront-presets";
 
 const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:string}>>>={
   food:[
@@ -31,16 +32,19 @@ const briefPresets:Partial<Record<BusinessVertical,Array<{label:string;text:stri
 
 export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", fromStudio = false, aiEnabled = false, suggestedBrief = "" }: { defaultName: string; slug: string; plan: "basic" | "standard" | "pro"; vertical?: BusinessVertical; fromStudio?: boolean; aiEnabled?: boolean; suggestedBrief?:string }) {
   const [state, action, pending] = useActionState(createCatalogAction, {} as CatalogActionState);
-  const templates = useMemo(() => launchTemplatesForPlan(plan).filter(option => vertical!=="food" || approachForTemplate(option.key)!=="guided"), [plan,vertical]);
+  const templates = useMemo(() => launchTemplatesForPlan(plan), [plan]);
+  const storefrontPresets = useMemo(() => storefrontPresetsFor(vertical).filter(preset => templates.some(option => option.key === preset.templateKey)), [templates, vertical]);
   const [step, setStep] = useState(0); const reviewStep=vertical==="food"?5:4; const [loyalty,setLoyalty]=useState(()=>({...newLoyaltyProgram(),enabled:false}));
-  const [designStage,setDesignStage]=useState<"brief"|"colors"|"examples">("brief");
+  const [designStage,setDesignStage]=useState<"logo"|"brief"|"colors"|"examples">("logo");
+  const [logoStep,setLogoStep]=useState<"saved"|"skipped">();
+  const [businessType,setBusinessType]=useState(vertical==="food"?"Донерная":"Магазин");
   const [colorBrief,setColorBrief]=useState("");
   const [fulfilment,setFulfilment]=useState<FulfilmentDraft>(emptyFulfilment);
   const [paymentPreference,setPaymentPreference]=useState<z.infer<typeof paymentPreferenceSchema>>("later");
   const [colorTheme,setColorTheme]=useState<CustomStoreTheme>();
   const [themeChoices,setThemeChoices]=useState<ReturnType<typeof themeVariations>>([]);
-  const [templateKey, setTemplateKey] = useState<string>(templates[0].key);
-  const [paletteKey, setPaletteKey] = useState("mono");
+  const [templateKey, setTemplateKey] = useState<string>(storefrontPresets[0]?.templateKey ?? templates[0].key);
+  const [paletteKey, setPaletteKey] = useState<string>(storefrontPresets[0]?.paletteKey ?? "mono");
   const [catalogName, setCatalogName] = useState(defaultName);
   const [brief, setBrief] = useState(suggestedBrief.slice(0,650));
   const [aiPending, setAiPending] = useState(false);
@@ -55,6 +59,8 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
   const presets=briefPresets[vertical]??[];
   const selectedApproach=approachForTemplate(templateKey);
   const selectedConfiguration=configurationFor(vertical,selectedApproach);
+  const selectedPreset=storefrontPresets.find(preset=>preset.templateKey===templateKey);
+  const exactPreviewHref=storefrontPreviewHref({name:catalogName,templateKey,paletteKey,example:true});
   useEffect(() => {
     const controller = new AbortController();
     void (async () => {
@@ -66,7 +72,9 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           const parsed = catalogBuilderStateSchema.safeParse(result.draft.state);
           if (!parsed.success || !Number.isSafeInteger(result.draft.revision) || result.draft.revision < 1) throw new Error("Сохранённый черновик требует проверки. Новые изменения его не перезапишут.");
           const saved = parsed.data;
-          setDesignStage(saved.designStage ?? "brief");
+          setDesignStage(saved.designStage ?? (saved.step>0?"brief":"logo"));
+          setLogoStep(saved.logoStep??(saved.step>0?"skipped":undefined));
+          setBusinessType(saved.businessType??(vertical==="food"?"Донерная":"Магазин"));
           setColorBrief(saved.colorBrief ?? "");
           setFulfilment({...saved.fulfilment??emptyFulfilment,preparation:emptyFulfilment.preparation});
           setPaymentPreference(saved.paymentPreference??"later"); if(saved.loyalty)setLoyalty(saved.loyalty);
@@ -83,20 +91,22 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
       } finally { if (!controller.signal.aborted) setDraftLoading(false); }
     })();
     return () => controller.abort();
-  }, [templates]);
+  }, [templates, vertical]);
   useEffect(() => { if(suggestedBrief) { setBrief(suggestedBrief.slice(0,650)); setGenerationId(undefined); setAiReason(""); } }, [suggestedBrief]);
-  async function saveDraft(nextStep = step, nextStage = designStage, savedLoyalty = loyalty) {
+  async function saveDraft(nextStep = step, nextStage = designStage, savedLoyalty = loyalty, savedLogoStep=logoStep) {
     if (draftRevision === null || draftSaving || draftLoading || brandBusy) return;
+    const effectiveStage=nextStep===0&&nextStage==="brief"?"colors":nextStage;
     setDraftSaving(true); setDraftMessage("");
     try {
-      const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step:nextStep,designStage:nextStage,loyalty:savedLoyalty,fulfilment,paymentPreference,colorBrief,colorTheme,catalogName,templateKey,paletteKey,brief,generationId}})});
+      const response = await fetch("/api/catalog-builder/draft", {method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({revision:draftRevision,state:{step:nextStep,designStage:effectiveStage,logoStep:savedLogoStep,businessType,loyalty:savedLoyalty,fulfilment,paymentPreference,colorBrief,colorTheme,catalogName,templateKey,paletteKey,brief,generationId}})});
       const result = await response.json();
       if (!response.ok || !Number.isSafeInteger(result.revision)) throw new Error(result.error || "Сохранение не подтверждено.");
       setDraftRevision(result.revision); setDraftMessage("Черновик сохранён. Можно закрыть страницу и продолжить позже.");
-      setStep(nextStep); setDesignStage(nextStage);
+      setStep(nextStep); setDesignStage(effectiveStage);
     } catch (error) { setDraftMessage(error instanceof Error ? error.message : "Сохранение не подтверждено. Не закрывайте страницу."); }
     finally { setDraftSaving(false); }
   }
+  const acceptBrand=useCallback((result:{colorTheme?:{background:string;surface:string;accent:string};logoUrl?:string|null})=>{if(!result.logoUrl)return;setLogoStep("saved");const parsed=customStoreThemeSchema.safeParse(result.colorTheme);if(parsed.success){setColorTheme(parsed.data);setThemeChoices(themeVariations(parsed.data));}},[]);
   async function recommend() {
     if (aiPending || brandBusy || !aiEnabled || brief.trim().length < 8) return;
     setAiPending(true); setAiError(""); setAiReason("");
@@ -117,14 +127,15 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     if(brandBusy)return;
     setAiError("");
     if(step===4&&vertical==="food"&&loyalty.enabled){const parsed=loyaltyProgramSchema.safeParse(loyalty);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}} if(step===2){const parsed=fulfilmentCommitSchema.safeParse(fulfilment);if(!parsed.success){setAiError(parsed.error.issues[0].message);return;}}
+    if(step===0&&designStage==="logo"){if(!logoStep){setAiError("Сохраните логотип или выберите «Продолжить без логотипа».");return;}if(!colorBrief)setColorBrief("Палитра бренда");await saveDraft(0,"colors",loyalty,logoStep);return;}
     if (step===1 && designStage==="brief") {
       if (brief.trim().length < 8) { setAiError("Расскажите хотя бы коротко, что продаёте и кому."); return; }
       await saveDraft(1,"examples");
       return;
     }
-    if (step===1 && designStage==="colors") {
+    if (step===0 && designStage==="colors") {
       if (colorBrief.trim().length < 3) { setAiError("Опишите желаемые цвета или напишите «На ваш вкус»."); return; }
-      await saveDraft(1,"examples");
+      await saveDraft(1,"brief");
       return;
     }
     await saveDraft(step+1);
@@ -149,7 +160,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
     <div className={fromStudio ? "space-y-4" : "catalog-wizard-layout"}>
       <fieldset key={step} disabled={pending || aiPending || draftLoading || draftSaving || brandBusy} className="catalog-active-step min-w-0 py-4">
         <small className="text-neutral-500">{nichePresets[vertical].label}</small>
-        <h2 className="mt-3 text-2xl font-bold">{step===0?"Как называется ваш магазин?":step===1?(designStage==="brief"?"Расскажите о своём магазине":designStage==="colors"?"Какие цвета вам нравятся?":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":step===4&&vertical==="food"?"Как будете радовать постоянных гостей?":"Проверьте магазин перед добавлением товаров"}</h2>
+        <h2 className="mt-3 text-2xl font-bold">{step===0?(designStage==="logo"?"Добавьте логотип":"Выберите палитру бренда"):step===1?(designStage==="brief"?"Укажите формат магазина":"Посмотрите, как может выглядеть ваш магазин"):step===2?"Как покупатели получат заказ?":step===3?"Как будете принимать оплату?":step===4&&vertical==="food"?"Как будете радовать постоянных гостей?":"Проверьте магазин перед добавлением товаров"}</h2>
         {step===1&&designStage==="brief"&&<div className="mb-6 mt-4 rounded-xl border border-neutral-200 p-4">
           <label className="block text-sm font-semibold">Что продаёте и для кого?<textarea className="input mt-2" value={brief} maxLength={650} rows={3} onChange={event=>{setBrief(event.target.value);setGenerationId(undefined);setAiReason("");}} placeholder="Например, натуральная косметика для ежедневного ухода. Небольшой ассортимент, спокойная светлая подача."/></label>
           {presets.length>0&&<div className="mt-4"><label htmlFor="business-example" className="text-xs font-semibold text-neutral-500">Начать с примера бизнеса</label><select id="business-example" className="input mt-2" value={presets.find(preset=>preset.text===brief)?.label??""} onChange={event=>{const preset=presets.find(item=>item.label===event.target.value);if(preset){setBrief(preset.text);setGenerationId(undefined);setAiReason("");}}}><option value="">Выберите пример или опишите свой</option>{presets.map(preset=><option key={preset.label} value={preset.label}>{preset.label}</option>)}</select>{vertical==="food"&&foodConcepts.find(concept=>concept.brief===brief)&&<p className="mt-2 text-xs leading-5 text-neutral-500">Пример разделов: {foodConcepts.find(concept=>concept.brief===brief)?.sections}. Подойдёт оформление «{foodConcepts.find(concept=>concept.brief===brief)?.layout}». Разделы и товары добавите сами.</p>}</div>}
@@ -157,12 +168,13 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           {aiError&&<p role="alert" className="mt-3 text-sm text-red-700">{aiError}</p>}
           {aiReason&&<p role="status" className="mt-3 text-sm leading-6">{aiReason}</p>}
         </div>}
-        {step===1&&designStage==="colors"&&<div className="mt-5 space-y-4">
-          <button type="button" onClick={()=>void saveDraft(1,"brief")} className="text-sm text-neutral-500">✓ О магазине · Изменить</button>
+        {step===0&&designStage==="logo"&&<div className="mt-5 space-y-4"><p className="text-sm leading-6 text-neutral-500">Загрузите логотип, чтобы сразу получить согласованную палитру. Шаг можно пропустить: существующий логотип и тема магазина не удалятся.</p><BrandMaterials embedded expandedInitially onBusyChange={setBrandBusy} onLoaded={acceptBrand} onSaved={acceptBrand}/><div className="flex flex-wrap gap-3"><button type="button" disabled={!logoStep||draftRevision===null} className="btn btn-primary" onClick={()=>void saveDraft(0,"colors",loyalty,logoStep)}>Использовать логотип и продолжить</button><button type="button" disabled={draftRevision===null} className="btn btn-secondary" onClick={()=>{setLogoStep("skipped");void saveDraft(0,"colors",loyalty,"skipped");}}>Продолжить без логотипа</button></div>{aiError&&<p role="alert" className="text-sm text-red-700">{aiError}</p>}</div>}
+        {step===0&&designStage==="colors"&&<div className="mt-5 space-y-4">
+          <button type="button" onClick={()=>void saveDraft(0,"logo")} className="text-sm text-neutral-500">← К логотипу</button>
           <label className="block text-sm font-semibold">Опишите сочетание своими словами<textarea value={colorBrief} maxLength={300} rows={3} onChange={event=>{setColorBrief(event.target.value);setGenerationId(undefined);setAiReason("");setAiError("");}} className="input mt-2" placeholder="Например: нежно-розовый фон и тёмно-зелёные кнопки. Или: подберите на ваш вкус."/></label>
           <p className="text-sm text-neutral-500">AI учитывает пожелания и сохранённые правила бренда. Выберите оттенки на живых карточках ниже или задайте свои цвета вручную.</p>
-          <BrandMaterials embedded onBusyChange={setBrandBusy}/>
           <div className="grid gap-3 sm:grid-cols-3">{themeChoices.map(choice=><button key={choice.name} type="button" aria-pressed={JSON.stringify(colorTheme)===JSON.stringify(choice.theme)} onClick={()=>setColorTheme(choice.theme)} className="rounded-2xl border-2 p-4 text-left" style={{background:choice.theme.background,color:contrastInk(choice.theme.background),borderColor:JSON.stringify(colorTheme)===JSON.stringify(choice.theme)?choice.theme.accent:"transparent"}}><span className="block text-xs">{choice.name}</span><strong className="my-4 block">{catalogName}</strong><span className="block rounded-xl p-3 text-sm" style={{background:choice.theme.surface}}>Ваш каталог</span><span className="mt-3 block rounded-lg p-2 text-center text-xs" style={{background:choice.theme.accent,color:contrastInk(choice.theme.accent)}}>Смотреть товары →</span></button>)}</div>
+          {themeChoices.length===0&&<div className="grid gap-3 sm:grid-cols-3">{palettes.map(item=><button key={item.key} type="button" aria-pressed={paletteKey===item.key&&!colorTheme} onClick={()=>{setPaletteKey(item.key);setColorTheme(undefined);}} className={`rounded-2xl border-2 p-4 text-left ${paletteKey===item.key&&!colorTheme?"border-neutral-900":"border-neutral-200"}`} style={{background:item.background,color:item.ink}}><span className="block text-xs">{item.name}</span><span className="mt-5 block h-9 rounded-xl" style={{background:item.accent}}/></button>)}</div>}
           <details><summary className="cursor-pointer text-sm">Указать цвета вручную</summary><div className="mt-3 flex flex-wrap gap-4">{([['background','Фон'],['surface','Карточки'],['accent','Кнопки']] as const).map(([key,label])=><label key={key} className="text-sm">{label}<input aria-label={label} type="color" className="mt-2 block h-10 w-20" value={colorTheme?.[key]??(key==='accent'?'#171717':'#ffffff')} onChange={event=>{const next={background:'#ffffff',surface:'#ffffff',accent:'#171717',...colorTheme,[key]:event.target.value};if(key==='background'&&contrastInk(next.background)!==contrastInk(next.surface))next.surface=next.background;if(customStoreThemeSchema.safeParse(next).success){setColorTheme(next);setAiError('');}else setAiError('Сделайте фон и карточки одинаково светлыми или тёмными — так текст останется читаемым.');}}/></label>)}</div></details>
           <button type="button" disabled={!aiEnabled||aiPending||colorBrief.trim().length<3} onClick={()=>void recommend()} className="btn btn-secondary">{aiPending?"Подбираю оформление…":"Предложить оформление с AI"}</button>
           {!aiEnabled&&<p className="text-sm text-neutral-500">AI в этой среде не подключён. Пожелания сохранятся; дальше можно посмотреть примеры.</p>}
@@ -170,12 +182,12 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
           {aiReason&&<p role="status" className="text-sm">{aiReason}</p>}
         </div>}
 
-        {step===0&&<><p className="my-4 text-sm leading-7 text-neutral-500">Это название увидят покупатели. Его можно изменить позже.</p><label className="block text-sm font-semibold">Название<input value={catalogName} maxLength={80} onChange={event=>{setCatalogName(event.target.value);setGenerationId(undefined);setAiReason("");}} className="input mt-2" placeholder="Например, Серик Шоп"/></label><p className="mt-4 break-all text-xs text-neutral-500">dukenim.kz/s/{slug}</p></>}
+        {step===1&&designStage==="brief"&&<><p className="my-4 text-sm leading-7 text-neutral-500">Название, формат и описание сохраняются для этого магазина. Логотип и выбранная палитра останутся без изменений.</p><label className="block text-sm font-semibold">Название<input value={catalogName} maxLength={80} onChange={event=>{setCatalogName(event.target.value);setGenerationId(undefined);setAiReason("");}} className="input mt-2" placeholder="Например, Серик Шоп"/></label><label className="mt-4 block text-sm font-semibold">Формат бизнеса<input value={businessType} maxLength={80} onChange={event=>setBusinessType(event.target.value)} className="input mt-2" placeholder="Например, Донерная"/></label><p className="mt-4 break-all text-xs text-neutral-500">dukenim.kz/s/{slug}</p></>}
         {step===1&&designStage==="examples"&&<>
-          <p className="my-4 text-sm leading-6 text-neutral-500">Выберите оформление витрины. Сначала — общая структура, ваши фотографии и товары добавятся дальше.</p>
+          <p className="my-4 text-sm leading-6 text-neutral-500">Выберите одну из трёх систем витрины. После сохранения эта же система работает в публичном каталоге, карточке товара, корзине и оформлении заказа.</p>
           <button type="button" onClick={()=>void saveDraft(1,"brief")} className="mb-5 text-sm underline underline-offset-4">✓ О магазине · Изменить</button>
-          <div className={`grid gap-2 ${templates.length===2?"grid-cols-2":"grid-cols-3"}`}>{templates.map((option,index)=>{const config=configurationFor(vertical,approachForTemplate(option.key));return <button key={option.key} type="button" aria-pressed={option.key===templateKey} onClick={()=>setTemplateKey(option.key)} className={`min-h-20 rounded-xl border p-2 text-left transition sm:p-3 ${option.key===templateKey?"border-neutral-900 bg-neutral-900 text-white":"border-neutral-200 bg-white hover:border-neutral-500"}`}><span className="text-[9px] opacity-70 sm:text-[10px]">ВАРИАНТ {index+1}</span><strong className="mt-1.5 block text-[11px] leading-4 sm:mt-2 sm:text-sm sm:leading-5">{config?.title??option.benefit}</strong></button>})}</div>
-          <section className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Выбранный вариант оформления"><div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div className="max-w-xl"><h3 className="text-lg font-semibold">{selectedConfiguration?.title}</h3><p className="mt-1 text-sm leading-6 text-neutral-500">{selectedConfiguration?.description}</p></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть целиком ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>
+          <div className="grid gap-2 sm:grid-cols-3">{storefrontPresets.map((preset,index)=><button key={preset.family} type="button" aria-pressed={preset.templateKey===templateKey} onClick={()=>{setTemplateKey(preset.templateKey);setPaletteKey(preset.paletteKey);setColorTheme(undefined);setGenerationId(undefined);}} className={`min-h-28 rounded-xl border p-3 text-left transition ${preset.templateKey===templateKey?"border-neutral-900 bg-neutral-900 text-white":"border-neutral-200 bg-white hover:border-neutral-500"}`}><span className="text-[10px] opacity-70">{index+1} · {preset.family.toUpperCase()}</span><strong className="mt-2 block text-base">{preset.label}</strong><span className="mt-2 block text-xs leading-5 opacity-75">{preset.summary}</span></button>)}</div>
+          <section className="mt-4 overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Выбранный вариант оформления"><div className="mb-4 flex flex-wrap items-start justify-between gap-3"><div className="max-w-xl"><h3 className="text-lg font-semibold">{selectedPreset?.label ?? selectedConfiguration?.title}</h3><p className="mt-1 text-sm leading-6 text-neutral-500">{selectedPreset?.rule ?? selectedConfiguration?.description}</p></div><a href={exactPreviewHref} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold underline underline-offset-4">Открыть точную витрину ↗</a></div><TemplateIllustration vertical={vertical} approach={selectedApproach}/><p className="mt-4 text-xs leading-5 text-neutral-500">В точном предпросмотре показаны изолированные примеры. Они не сохраняются. После добавления товаров этот же renderer покажет реальные фотографии, цены, варианты и наличие магазина.</p></section>
         </>}
         {step===reviewStep&&<><p className="my-4 text-sm leading-7 text-neutral-500">Сохраним «{catalogName}» с выбранным оформлением. Следующий шаг — фотография, цена и варианты вашего первого товара.</p><p className="text-xs leading-6 text-neutral-500">Ниже — выбранное оформление с примерами товаров. Они не добавятся в ваш магазин. Вкладка «Мои товары» показывает только ваши данные.</p></>}
         {step===4&&vertical==="food"&&<div className="mt-5 space-y-4"><p className="text-sm text-neutral-500">Программу можно настроить сейчас или позже в разделе «Настройки → Лояльность». Без неё магазин и заказы работают как обычно.</p>{loyalty.enabled?<LoyaltyEditor value={loyalty} onChange={setLoyalty}/>:<button type="button" className="btn btn-secondary" onClick={()=>setLoyalty({...loyalty,enabled:true,rules:loyalty.rules.map(rule=>rule.reward==="gift"&&!rule.giftVariantId?{...rule,id:crypto.randomUUID(),reward:"percent" as const,value:10,label:"Скидка 10% на следующий заказ"}:rule)})}>Добавить программу лояльности</button>}</div>}{step===2&&<div className="mt-5 space-y-5">
@@ -206,7 +218,7 @@ export function CatalogSetupForm({ defaultName, slug, plan, vertical = "other", 
         {state.error&&<p role="alert" className="mt-4 text-sm text-red-700">{state.error}</p>}
         <div className="mt-8 flex flex-wrap gap-3">{step>0&&<button type="button" disabled={pending||draftRevision===null} className="btn btn-secondary" onClick={()=>void (step===1&&designStage!=="brief"?saveDraft(1,"brief"):saveDraft(step-1))}>Назад</button>}{step<reviewStep?<><button type="button" disabled={catalogName.trim().length<2||draftRevision===null} className="btn btn-primary" onClick={()=>void advance()}>{step===4&&vertical==="food"&&!loyalty.enabled?"Не добавлять и продолжить":step===1&&designStage==="brief"?"Показать варианты":step===1&&designStage==="colors"?"Показать примеры":"Продолжить"} <ArrowRight size={16}/></button>{step===4&&vertical==="food"&&loyalty.enabled&&<button type="button" className="btn btn-secondary" onClick={()=>{const skipped={...loyalty,enabled:false};setLoyalty(skipped);void saveDraft(5,designStage,skipped);}}>Не добавлять и продолжить</button>}</>:<button disabled={pending||draftRevision===null||catalogName.trim().length<2} className="btn btn-primary">{pending?<><LoaderCircle size={16} className="animate-spin"/>Сохраняем…</>:"Сохранить и добавить товар"}</button>}</div>
       </fieldset>
-      {step===reviewStep&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Проверка оформления"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-neutral-500">ВЫБРАННОЕ ОФОРМЛЕНИЕ</p><h3 className="mt-1 text-lg font-semibold">{selectedConfiguration?.title}</h3></div>{selectedConfiguration&&<a href={selectedConfiguration.href} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4">Открыть полный пример ↗</a>}</div><TemplateIllustration vertical={vertical} approach={selectedApproach}/></section>}
+      {step===reviewStep&&<section className="overflow-hidden rounded-2xl border border-neutral-200 bg-white p-3 sm:p-5" aria-label="Проверка оформления"><div className="mb-4 flex flex-wrap items-center justify-between gap-3"><div><p className="text-xs text-neutral-500">ВЫБРАННОЕ ОФОРМЛЕНИЕ</p><h3 className="mt-1 text-lg font-semibold">{selectedPreset?.label ?? selectedConfiguration?.title}</h3></div><a href={exactPreviewHref} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold underline underline-offset-4">Проверить точную витрину ↗</a></div><TemplateIllustration vertical={vertical} approach={selectedApproach}/><p className="mt-4 text-xs leading-5 text-neutral-500">Предпросмотр и опубликованный магазин используют один StoreHome. После публикации меняется доступность для покупателей, а не внешний вид или данные каталога.</p></section>}
     </div>
     <button type="button" className="mt-4 text-xs text-neutral-500 underline underline-offset-4" disabled={draftLoading||draftSaving||aiPending||pending||brandBusy||draftRevision===null} onClick={()=>void saveDraft()}>Сохранить текущий ответ и продолжить позже</button>
   </form>;

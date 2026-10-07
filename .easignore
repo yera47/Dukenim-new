@@ -8,6 +8,8 @@ node_modules/
 **/.expo/
 .expo-export-check/
 **/.expo-export-check/
+.tmp/
+**/.tmp/
 .git/
 .vercel/
 .playwright-cli/
@@ -15,6 +17,8 @@ coverage/
 **/coverage/
 output/
 **/output/
+outputs/
+**/outputs/
 tmp/
 supabase/.temp/
 .npm-cache/

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors } from "@/lib/theme";

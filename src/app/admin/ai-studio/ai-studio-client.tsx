@@ -34,8 +34,9 @@ type Props = {
   initialDesign?: {generationId:string;design:Design};
   initialStructure?: { generationId: string; structure: Structure };
   categories?: Array<{ id: string; name: string }>;
+  comboChoices?: Array<{ id: string; label: string }>;
 };
-export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, deliveryConfigured=false, publicationChecks={product:false,fulfilment:false,tariff:false}, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [] }: Props) {
+export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, catalogPublished=true, deliveryConfigured=false, publicationChecks={product:false,fulfilment:false,tariff:false}, storeName, slug, plan, vertical, initialDesign, initialStructure, categories = [], comboChoices = [] }: Props) {
   const router = useRouter();
   const storefrontHref = catalogPublished ? `/s/${slug}` : "/store-preview";
   const [intent, setIntent] = useState<Intent>("catalog_structure");
@@ -173,7 +174,6 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
       <CatalogSetupForm defaultName={storeName} slug={slug} plan={plan} vertical={vertical} fromStudio aiEnabled={enabled} suggestedBrief={suggestedBrief}/>
     </section>
     {pending&&<p role="status">Готовлю предложение…</p>}{error&&<p role="alert" className={styles.error}>{error}</p>}{designPanel}{earlyResponse}
-    {brandTask}
     </StudioConversation>
   </div>;
 
@@ -185,10 +185,9 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
     {designPanel}
     {design&&<button type="button" className="text-sm underline" onClick={()=>{setDesign(null);setSubmitted("");}}>Вернуться к добавлению товара</button>}
     <section hidden={Boolean(design||pending)} className={styles.setupFlow} aria-label="Добавление первого товара">
-      <ProductForm fromStudio categories={categories} vertical={vertical}/>
+      <ProductForm fromStudio categories={categories} choices={comboChoices} vertical={vertical}/>
     </section>
     {earlyResponse}
-    {brandTask}
     </StudioConversation>
   </div>;
 

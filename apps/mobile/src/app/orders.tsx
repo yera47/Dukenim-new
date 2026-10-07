@@ -1,19 +1,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link } from "expo-router";
+import { Link, useLocalSearchParams } from "expo-router";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   RefreshControl,
   ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+  StyleSheet, View} from "react-native";
+import { AppText as Text } from "@/components/app-text";
+import { Image as ExpoImage } from "expo-image";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { supabase } from "@/lib/supabase";
 import { updateOrdersWidget } from "@/widgets/orders-widget";
 import { BottomNav } from "@/components/app-shell";
 import { colors } from "@/lib/theme";
+import { bulkaMerchantPreviewStore, merchantPreviewStore } from "@/lib/merchant-preview";
+import { useOwnerStore } from "@/lib/use-owner-store";
+import { useMerchantBrand } from "@/components/merchant-brand-theme";
 
 type Filter = "all" | "new" | "active" | "done";
 const PAGE_SIZE = 100;
@@ -27,6 +30,13 @@ type MobileOrder = {
   payment_status: string;
   created_at: string;
 };
+const previewTenant="preview-red-chocoberry";
+const previewOrders:MobileOrder[]=[
+  {id:"preview-1247",tenant_id:previewTenant,order_number:1247,status:"new",total:4200,delivery_method:"delivery",payment_status:"pending",created_at:"2026-10-01T09:42:00Z"},
+  {id:"preview-1246",tenant_id:previewTenant,order_number:1246,status:"new",total:2800,delivery_method:"pickup",payment_status:"paid",created_at:"2026-10-01T09:38:00Z"},
+  {id:"preview-1245",tenant_id:previewTenant,order_number:1245,status:"confirmed",total:6500,delivery_method:"delivery",payment_status:"paid",created_at:"2026-10-01T09:25:00Z"},
+  {id:"preview-1244",tenant_id:previewTenant,order_number:1244,status:"assembled",total:3600,delivery_method:"pickup",payment_status:"paid",created_at:"2026-10-01T09:18:00Z"},
+];
 
 const statusLabels: Record<string, string> = {
   new: "Новый",
@@ -52,6 +62,11 @@ function matchesFilter(order: MobileOrder, filter: Filter) {
 }
 
 export default function OrdersScreen() {
+  const{uiPreview,brand}=useLocalSearchParams<{uiPreview?:string;brand?:string}>();
+  const previewFixture=Platform.OS==="web"&&uiPreview==="390";
+  const previewStore=brand==="bulka"?bulkaMerchantPreviewStore:merchantPreviewStore;
+  const{store}=useOwnerStore(previewFixture?previewStore:undefined);
+  const{theme}=useMerchantBrand();
   const [orders, setOrders] = useState<MobileOrder[]>([]);
   const [storeNames, setStoreNames] = useState<Record<string, string>>({});
   const [filter, setFilter] = useState<Filter>("all");
@@ -72,6 +87,7 @@ export default function OrdersScreen() {
     setMessage("");
     setMoreError("");
     setLoadingMore(false);
+    if(previewFixture){setOrders(previewOrders);setStoreNames({[previewTenant]:`${previewStore.name} · демо`});setTenantIds([previewTenant]);setHasMore(false);setConnected(true);setLoading(false);setRefreshing(false);return;}
     try {
       if (!client) throw new Error("Мобильное подключение ещё не настроено.");
       const { data: { user }, error: authError } = await client.auth.getUser();
@@ -126,7 +142,7 @@ export default function OrdersScreen() {
         setRefreshing(false);
       }
     }
-  }, []);
+  }, [previewFixture,previewStore.name]);
 
   const loadMore = async () => {
     if (!supabase || !hasMore || loadingMore || loading || !tenantIds.length) return;
@@ -161,19 +177,21 @@ export default function OrdersScreen() {
     return () => { sequence.current++; };
   }, [load]);
   useEffect(() => {
+    if(previewFixture)return;
     const client = supabase;
     if (!client) return;
     const channel = client.channel("mobile-orders")
       .on("postgres_changes", {event: "*", schema: "public", table: "orders"}, () => void load(true))
       .subscribe(status => setConnected(status === "SUBSCRIBED"));
     return () => { void client.removeChannel(channel); };
-  }, [load]);
+  }, [load,previewFixture]);
 
   const visibleOrders = useMemo(() => orders.filter((order) => matchesFilter(order, filter)), [orders, filter]);
 
   return (
-    <SafeAreaView style={styles.page}>
+    <SafeAreaView style={[styles.page,{backgroundColor:theme.background}]}>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.content}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); void load(true); }} tintColor={colors.navy} />}
       >
@@ -181,14 +199,16 @@ export default function OrdersScreen() {
           <Link accessibilityLabel="Назад" href="/" style={styles.back}>‹</Link>
           <View style={styles.live}><View style={[styles.liveDot, !connected && styles.offlineDot]} /><Text style={styles.liveText}>{connected ? "Автообновление" : "Обновите вручную"}</Text></View>
         </View>
-        <Text style={styles.eyebrow}>РАБОЧАЯ ЛЕНТА</Text>
-        <Text style={styles.title}>Заказы</Text>
-        <Text style={styles.subtitle}>Новые заказы сверху. Потяните экран вниз, чтобы обновить.</Text>
+        <Text style={[styles.eyebrow,{color:theme.accentStrong}]}>РАБОЧАЯ ЛЕНТА</Text>
+        {previewFixture?<View style={[styles.storeSwitcher,{backgroundColor:theme.surface,borderColor:`${theme.accentStrong}20`}]}>{store?.logo_url?<ExpoImage source={{uri:store.logo_url}} contentFit="contain" style={styles.switcherLogo}/>:null}<View style={styles.switcherCopy}><Text style={styles.switcherLabel}>Магазин</Text><Text numberOfLines={1} style={[styles.switcherName,{color:theme.accentStrong}]}>{store?.name}</Text></View><Text style={[styles.switcherAction,{color:theme.accentStrong}]}>Сменить</Text></View>:null}
+        <Text style={[styles.title,{color:theme.accentStrong}]}>Заказы</Text>
+        <Text style={[styles.subtitle,{color:theme.accentStrong}]}>Новые заказы сверху. Статус и сумма читаются одним взглядом.</Text>
+        {previewFixture?<View style={styles.fixture}><Text style={styles.fixtureText}>ДЕМО · ТОЛЬКО СИНТЕТИЧЕСКИЕ ДАННЫЕ</Text></View>:null}
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filters}>
           {(Object.keys(filterLabels) as Filter[]).map((key) => (
-            <Pressable key={key} onPress={() => setFilter(key)} style={[styles.filter, filter === key && styles.filterActive]}>
-              <Text style={[styles.filterText, filter === key && styles.filterTextActive]}>{filterLabels[key]}</Text>
+            <Pressable key={key} onPress={() => setFilter(key)} style={[styles.filter,{borderRadius:theme.buttonRadius}, filter === key && styles.filterActive,filter===key&&{backgroundColor:theme.accent,borderColor:theme.accent}]}>
+              <Text style={[styles.filterText, filter === key && styles.filterTextActive,filter===key&&{color:theme.accentInk}]}>{filterLabels[key]}</Text>
             </Pressable>
           ))}
         </ScrollView>
@@ -201,18 +221,18 @@ export default function OrdersScreen() {
 
         <View style={styles.list}>
           {visibleOrders.map((order) => (
-            <Link key={order.id} href={{ pathname: "/order", params: { orderId: order.id, tenantId: order.tenant_id } }} asChild>
-              <Pressable style={({ pressed }) => [styles.orderCard, pressed && styles.pressed]}>
+            <Link key={order.id} href={{ pathname: "/order", params: { orderId: order.id, tenantId: order.tenant_id, ...(previewFixture?{uiPreview:"390",brand}: {}) } }} asChild>
+              <Pressable style={({ pressed }) => [styles.orderCard,{backgroundColor:theme.surface,borderColor:`${theme.accentStrong}24`,borderRadius:theme.cardRadius}, pressed && styles.pressed]}>
                 <View style={styles.orderTop}>
                   <View style={styles.orderHeading}>
-                    <Text style={styles.orderNumber}>{order.order_number == null ? "Заказ" : `Заказ №${order.order_number}`}</Text>
-                    <Text style={styles.store}>{storeNames[order.tenant_id] ?? "Ваш магазин"}</Text>
+                    <Text style={[styles.orderNumber,{color:theme.accentStrong}]}>{order.order_number == null ? "Заказ" : `Заказ №${order.order_number}`}</Text>
+                    <Text style={[styles.store,{color:theme.accentStrong}]}>{storeNames[order.tenant_id] ?? "Ваш магазин"}</Text>
                   </View>
-                  <Text style={styles.total}>{order.total.toLocaleString("ru-RU")} ₸</Text>
+                  <Text style={[styles.total,{color:theme.accentStrong}]}>{order.total.toLocaleString("ru-RU")} ₸</Text>
                 </View>
                 <View style={styles.orderBottom}>
-                  <View style={[styles.status, order.status === "new" && styles.statusNew]}>
-                    <Text style={[styles.statusText, order.status === "new" && styles.statusTextNew]}>{statusLabels[order.status] ?? order.status}</Text>
+                  <View style={[styles.status, order.status === "new" && styles.statusNew,order.status==="new"&&{backgroundColor:`${theme.accent}26`}]}>
+                    <Text style={[styles.statusText, order.status === "new" && styles.statusTextNew,order.status==="new"&&{color:theme.accentStrong}]}>{statusLabels[order.status] ?? order.status}</Text>
                   </View>
                   <Text style={styles.meta}>{order.delivery_method === "pickup" ? "Самовывоз" : "Доставка"} · {new Date(order.created_at).toLocaleString("ru-RU", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</Text>
                 </View>
@@ -230,7 +250,7 @@ export default function OrdersScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#FFFFFF" },
+  page: { flex: 1, width:"100%", maxWidth:"100%", overflow:"hidden", backgroundColor: "#FFFFFF" },
   content: { padding: 22, paddingBottom: 115 },
   topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginBottom: 28 },
   back: { color: colors.navy, fontWeight: "800", fontSize: 15 },
@@ -239,8 +259,10 @@ const styles = StyleSheet.create({
   offlineDot: { backgroundColor: colors.muted },
   liveText: { color: colors.navy, fontSize: 12, fontWeight: "700" },
   eyebrow: { color: "#63717B", fontSize: 11, fontWeight: "900", letterSpacing: 1.5 },
+  storeSwitcher:{flexDirection:"row",alignItems:"center",gap:9,marginTop:10,alignSelf:"flex-start",maxWidth:"100%",borderWidth:1,borderRadius:14,paddingHorizontal:10,paddingVertical:8},switcherLogo:{width:34,height:28,borderRadius:8},switcherCopy:{minWidth:0,flexShrink:1},switcherLabel:{fontSize:9,fontWeight:"800",letterSpacing:1,textTransform:"uppercase",color:colors.muted},switcherName:{fontSize:14,fontWeight:"900"},switcherAction:{marginLeft:4,fontSize:11,fontWeight:"800"},
   title: { color: "#101820", fontSize: 38, fontWeight: "900", marginTop: 5 },
   subtitle: { color: "#63717B", fontSize: 14, lineHeight: 21, marginTop: 7 },
+  fixture:{alignSelf:"flex-start",marginTop:14,borderRadius:99,backgroundColor:"#FFF4D8",paddingHorizontal:10,paddingVertical:6},fixtureText:{fontSize:10,fontWeight:"900",color:"#6A4A12"},
   filters: { gap: 8, paddingVertical: 22 },
   filter: { paddingHorizontal: 16, paddingVertical: 10, borderRadius: 99, backgroundColor: "#FFFFFF", borderWidth: 1, borderColor: "#DDE3E7" },
   filterActive: { backgroundColor: colors.navy, borderColor: colors.navy },

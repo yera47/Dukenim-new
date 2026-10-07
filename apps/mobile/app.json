@@ -39,7 +39,7 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Dukenim использует камеру только для сканирования штрихкода товара.",
+          "cameraPermission": "Dukenim использует камеру только для сканирования штрихкодов товаров.",
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }

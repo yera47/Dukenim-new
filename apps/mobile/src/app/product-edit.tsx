@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, StyleSheet, Switch, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router, useLocalSearchParams } from "expo-router";
 import { AppScreen, ui } from "@/components/app-shell";
 import { colors } from "@/lib/theme";

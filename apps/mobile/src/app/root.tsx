@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Linking, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { GlassView } from "expo-glass-effect";
@@ -14,6 +15,7 @@ import { AppleSignInButton } from "@/components/apple-sign-in-button";
 import { linkAppleToCurrentUser } from "@/lib/social-auth";
 import { disableCurrentDevicePush } from "@/lib/notifications";
 import { clearOrdersWidget } from "@/widgets/orders-widget";
+import { useBrandDoorMotion } from "@/components/brand-door-motion";
 
 type Store = { id: string; name: string; slug: string; status: string; catalog_published: boolean; bulkDeletable: boolean; bulkDeleteBlockReason: string | null };
 type Dashboard = { stores: Store[]; totals: { stores: number; newOrders: number; openRequests: number } };
@@ -34,6 +36,7 @@ const salesStatuses = [
 ];
 
 export default function Root() {
+  const { playExit } = useBrandDoorMotion();
   const [tab, setTab] = useState<Tab>("overview");
   const [dashboard, setDashboard] = useState<Dashboard | null>(null);
   const [loading, setLoading] = useState(true);
@@ -105,8 +108,8 @@ export default function Root() {
     setSelected(current => current.includes(store.id) ? current.filter(value => value !== store.id) : current.length < 20 ? [...current, store.id] : current);
   };
   const remove = async () => {
-    if (!supabase || !dashboard || deleting || selected.length < 2 || reason.trim().length < 3 || confirmation !== `УДАЛИТЬ ${selected.length}`) {
-      Alert.alert("Проверьте выбор", "Нужны 2–20 магазинов, причина и точная фраза подтверждения."); return;
+    if (!supabase || !dashboard || deleting || selected.length < 1 || reason.trim().length < 3 || confirmation !== `УДАЛИТЬ ${selected.length}`) {
+      Alert.alert("Проверьте выбор", "Нужны 1–20 магазинов, причина и точная фраза подтверждения."); return;
     }
     const stores = selected.map(id => dashboard.stores.find(store => store.id === id)).filter((store): store is Store => Boolean(store));
     if (stores.length !== selected.length) { Alert.alert("Список изменился", "Обновите страницу."); return; }
@@ -131,7 +134,7 @@ export default function Root() {
   };
   const filtered = dashboard?.stores.filter(store => `${store.name} ${store.slug}`.toLowerCase().includes(search.toLowerCase())) ?? [];
   const linkApple = async () => { setLinkingApple(true); try { const linked = await linkAppleToCurrentUser(); if (linked) { setAppleLinked(true); Alert.alert("Apple ID привязан", "Теперь этот Apple ID ведёт в тот же админ-аккаунт."); } } catch (cause) { Alert.alert("Привязка не завершена", cause instanceof Error ? cause.message : "Повторите позже."); } finally { setLinkingApple(false); } };
-  const signOut = () => Alert.alert("Выйти из Dukenim?", "Сессия на этом устройстве завершится.", [{ text: "Отмена", style: "cancel" }, { text: "Выйти", style: "destructive", onPress: async () => { try { if (!supabase) throw new Error(); await disableCurrentDevicePush(); const result = await supabase.auth.signOut(); if (result.error) throw result.error; clearOrdersWidget(); router.replace("/"); } catch { Alert.alert("Не удалось выйти", "Проверьте соединение и повторите."); } } }]);
+  const signOut = () => Alert.alert("Выйти из Dukenim?", "Сессия на этом устройстве завершится.", [{ text: "Отмена", style: "cancel" }, { text: "Выйти", style: "destructive", onPress: async () => { try { if (!supabase) throw new Error(); await playExit(); await disableCurrentDevicePush(); const result = await supabase.auth.signOut(); if (result.error) throw result.error; clearOrdersWidget(); router.replace("/"); } catch { Alert.alert("Не удалось выйти", "Проверьте соединение и повторите."); } } }]);
   const editLead = (lead: SalesLead) => { setOpenedLead(lead.id); setLeadStatus(lead.status); setLeadNotes(lead.notes ?? ""); setLeadNext(lead.next_action ?? ""); };
   const saveLead = async () => {
     if (!openedLead || !supabase || savingLead) return;
@@ -193,7 +196,7 @@ export default function Root() {
         <TextInput style={s.input} placeholder="Найти по названию или адресу" value={search} onChangeText={setSearch} />
         <Text style={s.eyebrow}>НАЙДЕНО {filtered.length} · ВЫБРАНО {selected.length}</Text>
         {filtered.map(store => <View key={store.id} style={[s.storeRow,!store.bulkDeletable&&s.storeRowProtected]}><Pressable disabled={!store.bulkDeletable} onPress={() => toggle(store)} accessibilityRole="checkbox" accessibilityLabel={store.bulkDeletable?`Выбрать ${store.name}`:`${store.name}: защищён от массового удаления`} accessibilityState={{ checked: selected.includes(store.id), disabled: !store.bulkDeletable }} style={{ flexDirection: "row", alignItems: "center", gap: 12, flex: 1 }}><Text style={[s.checkbox,!store.bulkDeletable&&s.checkboxProtected]}>{selected.includes(store.id) ? "✓" : store.bulkDeletable ? "" : "—"}</Text><View style={{ flex: 1 }}><Text style={s.storeName}>{store.name}</Text><Text style={s.muted}>/s/{store.slug} · {store.status}</Text>{store.bulkDeleteBlockReason?<Text style={s.protectedText}>{store.bulkDeleteBlockReason}</Text>:null}</View></Pressable><Pressable onPress={() => router.push({ pathname: "/root-store", params: { id: store.id } } as never)} accessibilityRole="button" accessibilityLabel={`Открыть ${store.name}`} style={{ minWidth: 48, minHeight: 48, alignItems: "center", justifyContent: "center" }}><Text style={{ color: colors.navy, fontSize: 24 }}>›</Text></Pressable></View>)}
-        {selected.length >= 2 ? <View style={s.dangerCard}><Text style={s.dangerTitle}>Удалить выбранные ({selected.length})</Text><Text style={s.muted}>Это необратимо. Магазины с товарами, заказами, клиентами или финансовой историей не удалятся.</Text><TextInput style={s.input} placeholder="Причина удаления" value={reason} onChangeText={setReason} maxLength={1000} /><TextInput style={s.input} placeholder={`Введите УДАЛИТЬ ${selected.length}`} value={confirmation} onChangeText={setConfirmation} autoCapitalize="characters" /><Pressable disabled={deleting} onPress={() => void remove()} style={s.deleteButton}><Text style={s.buttonText}>{deleting ? "Проверяем…" : "Проверить и удалить"}</Text></Pressable></View> : null}
+        {selected.length >= 1 ? <View style={s.dangerCard}><Text style={s.dangerTitle}>Удалить выбранные ({selected.length})</Text><Text style={s.muted}>Это необратимо. Магазины с товарами, заказами, клиентами или финансовой историей не удалятся.</Text><TextInput style={s.input} placeholder="Причина удаления" value={reason} onChangeText={setReason} maxLength={1000} /><TextInput style={s.input} placeholder={`Введите УДАЛИТЬ ${selected.length}`} value={confirmation} onChangeText={setConfirmation} autoCapitalize="characters" /><Pressable disabled={deleting} onPress={() => void remove()} style={s.deleteButton}><Text style={s.buttonText}>{deleting ? "Проверяем…" : "Проверить и удалить"}</Text></Pressable></View> : null}
       </> : null}
       {dashboard && tab === "sales" ? <><Text style={s.title}>Выездные продажи</Text><Text style={s.muted}>Зоны и точки из той же базы, что и на сайте. Этап, заметка и следующий шаг сохраняются для команды.</Text>
         {salesLoading ? <ActivityIndicator color={colors.navy} /> : null}

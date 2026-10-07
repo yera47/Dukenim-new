@@ -15,7 +15,7 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const business = String(formData.get("business") ?? "").trim();
   const socialRegistration = formData.get("socialRegistration") === "true";
   const requestedPlan = String(formData.get("plan") ?? "");
-  const nextPlan = isPublicPlan(requestedPlan) ? requestedPlan : "standard";
+  const nextPlan = isPublicPlan(requestedPlan) ? requestedPlan : "basic";
   const billingValue = formData.get("billing");
   const billing = billingValue === "year" || billingValue === "annual" ? "year" : "month";
   const password = String(formData.get("password") ?? "");

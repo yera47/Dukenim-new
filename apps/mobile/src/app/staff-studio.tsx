@@ -1,5 +1,6 @@
 import {useCallback,useRef,useState} from "react";
-import {ActivityIndicator,Alert,KeyboardAvoidingView,Platform,Pressable,ScrollView,StyleSheet,Text,TextInput,View} from "react-native";
+import {ActivityIndicator,Alert,KeyboardAvoidingView,Platform,Pressable,ScrollView,StyleSheet, TextInput,View} from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import {router,useFocusEffect,useLocalSearchParams} from "expo-router";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {colors,site} from "@/lib/theme";

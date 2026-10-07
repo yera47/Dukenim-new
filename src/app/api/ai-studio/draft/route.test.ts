@@ -8,7 +8,7 @@ import {GET,POST} from "./route";
 describe("conversation history access",()=>{
   beforeEach(()=>vi.clearAllMocks());
   it("rejects cross-origin and oversized authenticated image requests",async()=>{
-    mocks.session.mockResolvedValue({user:{id:"owner"},role:"owner",tenantId:"mine"});mocks.entitlement.mockResolvedValue({active:true});
+    mocks.session.mockResolvedValue({user:{id:"owner"},role:"owner",tenantId:"mine"});mocks.entitlement.mockResolvedValue({active:true,plan:"standard"});
     const foreign=await POST(new Request("https://example.test/api",{method:"POST",headers:{origin:"https://other.test"},body:"{}"}));expect(foreign.status).toBe(403);
     const large=await POST(new Request("https://example.test/api",{method:"POST",body:"x".repeat(1000001)}));expect(large.status).toBe(413);
     expect(mocks.client).not.toHaveBeenCalled();
@@ -17,6 +17,13 @@ describe("conversation history access",()=>{
     mocks.session.mockResolvedValue(null);
     expect((await GET()).status).toBe(401);
     expect((await POST(new Request("https://example.test",{method:"POST",body:"{}"}))).status).toBe(401);
+    expect(mocks.client).not.toHaveBeenCalled();
+  });
+  it("locks Base before reading the request body",async()=>{
+    mocks.session.mockResolvedValue({user:{id:"owner"},role:"owner",tenantId:"mine"});
+    mocks.entitlement.mockResolvedValue({active:true,plan:"basic"});
+    const response=await POST(new Request("https://example.test",{method:"POST",body:"{}"}));
+    expect(response.status).toBe(403);
     expect(mocks.client).not.toHaveBeenCalled();
   });
   it("loads validated history only for the authenticated tenant",async()=>{

@@ -1,4 +1,5 @@
-import {Alert,Linking,Pressable,Share,StyleSheet,Text,View} from "react-native";
+import {Alert,Linking,Pressable,Share,StyleSheet, View} from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import {EditorScreen} from "@/components/editor-screen";
 import {ui} from "@/components/app-shell";
 import {useOwnerStore} from "@/lib/use-owner-store";

@@ -13,7 +13,7 @@ function Acceptance() {
   return <label className="flex items-start gap-3 text-sm leading-6 text-[var(--ink-60)]"><input name="accepted" type="checkbox" required className="mt-1 size-4 accent-[var(--accent)]" /><span>Я принимаю <Link className="font-bold text-[var(--accent)]" href="/legal/offer">оферту</Link> и <Link className="font-bold text-[var(--accent)]" href="/legal/privacy">политику конфиденциальности</Link>.</span></label>;
 }
 
-export function RegisterForm({ socialRegistration = false, plan = "standard", billing = "month" }: { socialRegistration?: boolean; plan?: PublicPlan; billing?: "month" | "year" }) {
+export function RegisterForm({ socialRegistration = false, plan = "basic", billing = "month" }: { socialRegistration?: boolean; plan?: PublicPlan; billing?: "month" | "year" }) {
   const [state, action, pending] = useActionState(register, initial);
   const [showPassword, setShowPassword] = useState(false);
 

@@ -1,9 +1,11 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Pressable, RefreshControl, ScrollView, StyleSheet, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router, useFocusEffect } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, money } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import { useBrandDoorMotion } from "@/components/brand-door-motion";
 
 type Permissions=Record<string,"none"|"read"|"write">;
 type Access={id:string;title:string;permissions:Permissions;active:boolean};
@@ -14,6 +16,7 @@ const statusLabels:Record<string,string>={new:"Новый",confirmed:"Подтв
 const transitions:Record<string,string[]>={new:["confirmed","cancelled"],confirmed:["assembled","cancelled"],assembled:["delivering","done","cancelled"],delivering:["done"]};
 
 export default function StaffScreen(){
+ const{playExit}=useBrandDoorMotion();
  const[accesses,setAccesses]=useState<Access[]>([]),[shops,setShops]=useState<Shop[]>([]),[orders,setOrders]=useState<Record<string,Order[]>>({}),[modules,setModules]=useState<Record<string,unknown[]>>({}),[loading,setLoading]=useState(true),[refreshing,setRefreshing]=useState(false),[loadError,setLoadError]=useState("");
  const requestId=useRef(0);
  const load=useCallback(async()=>{
@@ -49,7 +52,7 @@ export default function StaffScreen(){
   }
  },[]);
  useFocusEffect(useCallback(()=>{void load();return()=>{requestId.current+=1;};},[load]));
- const signOut=async()=>{if(!supabase)return;const{error}=await supabase.auth.signOut();if(error)Alert.alert("Не удалось выйти","Повторите попытку.");else router.replace("/");};
+ const signOut=async()=>{if(!supabase)return;await playExit();const{error}=await supabase.auth.signOut();if(error)Alert.alert("Не удалось выйти","Повторите попытку.");else router.replace("/");};
  if(loading)return <View style={s.loader}><ActivityIndicator color={colors.navy}/></View>;
  return <SafeAreaView style={s.page}><ScrollView refreshControl={<RefreshControl refreshing={refreshing} onRefresh={()=>{setRefreshing(true);void load();}}/>} contentContainerStyle={s.content}><Text style={s.kicker}>РАБОЧИЙ КАБИНЕТ</Text><Text style={s.title}>Ваши магазины</Text><Text style={s.copy}>Здесь доступны только разделы и действия, которые открыл владелец. Обновите экран после изменения прав.</Text>{loadError?<View style={s.card}><Text style={s.cardTitle}>Данные недоступны</Text><Text style={s.copy}>{loadError}</Text><Pressable onPress={()=>void load()} style={s.small}><Text style={s.smallText}>Повторить</Text></Pressable></View>:!accesses.length?<View style={s.card}><Text style={s.cardTitle}>Активного доступа нет</Text><Text style={s.copy}>Попросите владельца проверить email приглашения или восстановить доступ.</Text></View>:accesses.map(access=><StaffShop key={access.id} access={access} shop={shops.find(x=>x.id===access.id)} orders={orders[access.id]??[]} modules={modules} reload={load}/>) }<Pressable onPress={()=>void signOut()} style={s.outline}><Text style={s.outlineText}>Выйти</Text></Pressable></ScrollView></SafeAreaView>;
 }

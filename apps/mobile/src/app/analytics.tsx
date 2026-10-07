@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { AppScreen, ui } from "@/components/app-shell";
 import { useOwnerStore } from "@/lib/use-owner-store";
 import { colors, money } from "@/lib/theme";

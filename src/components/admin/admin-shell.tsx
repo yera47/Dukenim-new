@@ -56,6 +56,7 @@ type AdminShellProps = {
     plan: Plan;
     status: string;
     trialEndsAt: string | null;
+    serverNow?: number;
     vertical?: BusinessVertical;
     catalogPublished?: boolean;
   };
@@ -154,7 +155,7 @@ export function AdminShell({ children, role, tenant }: AdminShellProps) {
             <div className="flex min-w-0 items-center gap-2.5">
               <b className="truncate">{tenant.name}</b>
               <span className="badge hidden sm:inline-flex">{planName[tenant.plan]}</span>
-              {tenant.status === "trial" && tenant.trialEndsAt && <TrialTimer endsAt={tenant.trialEndsAt} />}
+              {tenant.status === "trial" && tenant.trialEndsAt && <TrialTimer endsAt={tenant.trialEndsAt} serverNow={tenant.serverNow ?? Date.now()} compact />}
             </div>
             </div>
           </div>

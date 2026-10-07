@@ -11,7 +11,7 @@ export async function POST(request: Request) {
   try { body = await request.json(); } catch { return NextResponse.json({ error: "Некорректный запрос" }, { status: 400 }); }
   const stores = body.stores;
   const reason = body.reason?.trim() ?? "";
-  if (!Array.isArray(stores) || stores.length < 2 || stores.length > 20 || stores.some(store => !uuid.test(store.id) || !slug.test(store.slug)) || new Set(stores.map(store => store.id)).size !== stores.length || reason.length < 3 || reason.length > 1000 || body.confirmation !== `УДАЛИТЬ ${stores.length}`) {
+  if (!Array.isArray(stores) || stores.length < 1 || stores.length > 20 || stores.some(store => !uuid.test(store.id) || !slug.test(store.slug)) || new Set(stores.map(store => store.id)).size !== stores.length || reason.length < 3 || reason.length > 1000 || body.confirmation !== `УДАЛИТЬ ${stores.length}`) {
     return NextResponse.json({ error: "Проверьте выбор, причину и фразу подтверждения." }, { status: 400 });
   }
   const rpc = root.admin as unknown as { rpc: (name: "root_bulk_delete_empty_stores", args: { p_stores: { id: string; slug: string }[]; p_actor: string; p_reason: string }) => Promise<{ data: number | null; error: { message: string } | null }> };

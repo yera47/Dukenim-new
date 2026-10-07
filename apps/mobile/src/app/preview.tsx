@@ -1,54 +1,44 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Linking, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
 import { Image } from "expo-image";
+import * as WebBrowser from "expo-web-browser";
+import { AppText as Text } from "@/components/app-text";
 import { AppScreen, ui } from "@/components/app-shell";
+import { themeForStorefront } from "@/components/merchant-brand-theme";
 import { useOwnerStore } from "@/lib/use-owner-store";
 import { colors, money, site } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
 
-type Product = { id: string; title: string; description: string | null; price: number; images: string[]; category: string | null; is_active: boolean };
-type Storefront = { template_key: string; hero_title: string | null; hero_subtitle: string | null; hero_image_url: string | null; hero_cta_label: string | null };
+/* eslint-disable jsx-a11y/alt-text -- expo-image uses accessibilityLabel for native accessibility. */
 
-export default function Preview() {
-  const { store, loading: storeLoading } = useOwnerStore();
-  const [products, setProducts] = useState<Product[]>([]);
-  const [settings, setSettings] = useState<Storefront | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const load = useCallback(async () => {
-    if (!store || !supabase) return;
-    setLoading(true);
-    setError("");
-    const [productResult, settingsResult] = await Promise.all([
-      supabase.from("products").select("id,title,description,price,images,category,is_active").eq("tenant_id", store.id).eq("is_active", true).order("sort_order"),
-      supabase.from("tenant_storefront_settings").select("template_key,hero_title,hero_subtitle,hero_image_url,hero_cta_label").eq("tenant_id", store.id).maybeSingle(),
-    ]);
-    if (productResult.error || settingsResult.error) setError("Не удалось загрузить актуальную витрину. Повторите позже.");
-    else { setProducts((productResult.data ?? []) as Product[]); setSettings(settingsResult.data as Storefront | null); }
-    setLoading(false);
-  }, [store]);
-  useEffect(() => { void load(); }, [load]);
-  const groups = useMemo(() => Array.from(new Set(products.map(product => product.category?.trim()).filter((category): category is string => Boolean(category)))), [products]);
-  const menu = settings?.template_key === "journal";
-  const published = Boolean(store?.catalog_published);
-  const publicUrl = store ? `${site}/s/${store.slug}` : "";
+type Product={id:string;title:string;description:string|null;price:number;images:string[];category:string|null;is_active:boolean};
+type Storefront={template_key:string;palette_key:string|null;brand_color:string|null;color_theme:unknown;layout_config:unknown;hero_title:string|null;hero_subtitle:string|null;hero_image_url:string|null;hero_cta_label:string|null};
+type Story={id:string;title:string;media_path:string;media_type:"image"|"video"};
+const approachForTemplate=(template:string)=>template==="market"?"assortment":template==="studio"||template==="signature"?"guided":"collection";
+
+export default function Preview(){
+  const{store,loading:storeLoading}=useOwnerStore();const[products,setProducts]=useState<Product[]>([]);const[settings,setSettings]=useState<Storefront|null>(null);const[stories,setStories]=useState<Story[]>([]);const[loading,setLoading]=useState(true);const[error,setError]=useState("");
+  const load=useCallback(async()=>{if(!store||!supabase){setLoading(false);return;}setLoading(true);setError("");const[productResult,settingsResult,storyResult]=await Promise.all([
+    supabase.from("products").select("id,title,description,price,images,category,is_active").eq("tenant_id",store.id).eq("is_active",true).order("sort_order"),
+    supabase.from("tenant_storefront_settings").select("template_key,palette_key,brand_color,color_theme,layout_config,hero_title,hero_subtitle,hero_image_url,hero_cta_label").eq("tenant_id",store.id).maybeSingle(),
+    supabase.from("food_stories").select("id,title,media_path,media_type").eq("tenant_id",store.id).eq("status","published").order("sort_order").limit(12),
+  ]);if(productResult.error||settingsResult.error||storyResult.error)setError("Не удалось загрузить актуальную витрину. Повторите ещё раз.");else{setProducts((productResult.data??[]) as Product[]);setSettings(settingsResult.data as Storefront|null);setStories((storyResult.data??[]) as Story[]);}setLoading(false);},[store]);
+  useEffect(()=>{void load();},[load]);
+  const themedStore=useMemo(()=>store?{...store,brand_profile:settings?{color_theme:settings.color_theme,layout_config:settings.layout_config,brand_color:settings.brand_color,template_key:settings.template_key}:store.brand_profile}:null,[settings,store]);
+  const theme=themeForStorefront(themedStore);const groups=useMemo(()=>Array.from(new Set(products.map(product=>product.category?.trim()).filter((category):category is string=>Boolean(category)))),[products]);const approach=approachForTemplate(settings?.template_key??"gallery");const menu=approach==="assortment";const published=Boolean(store?.catalog_published);const publicUrl=store?`${site}/s/${store.slug}`:"";
   return <AppScreen section="Предпросмотр" store={store?.name}>
-    <View style={styles.notice}><Text style={styles.noticeTitle}>{published ? "Витрина опубликована" : "Черновик · виден только вам"}</Text><Text style={styles.noticeText}>Это предпросмотр содержимого в приложении. Перед отправкой ссылки откройте покупательскую витрину и проверьте её оформление.</Text></View>
-    {(loading || storeLoading) ? <ActivityIndicator color={colors.navy} /> : error ? <View style={ui.card}><Text style={ui.error}>{error}</Text><Pressable onPress={() => void load()} style={ui.outline}><Text style={ui.outlineText}>Повторить</Text></Pressable></View> : <>
-      <View style={[styles.hero, menu && styles.menuHero]}>{settings?.hero_image_url ? <Image alt="Обложка магазина" source={{ uri: settings.hero_image_url }} contentFit="cover" style={styles.heroImage} /> : null}<View style={styles.heroOverlay}><Text style={styles.heroEyebrow}>{menu ? "МЕНЮ И ИСТОРИИ" : "ГАЛЕРЕЯ"} · {store?.name}</Text><Text style={styles.heroTitle}>{settings?.hero_title || store?.name}</Text>{settings?.hero_subtitle ? <Text style={styles.heroSubtitle}>{settings.hero_subtitle}</Text> : null}<Text style={styles.heroCta}>{settings?.hero_cta_label || "Смотреть каталог"} →</Text></View></View>
-      <Text style={ui.title}>{store?.business_vertical === "food" ? "Меню" : "Каталог"}</Text>
-      {menu && groups.length > 0 ? <View style={styles.categories}>{groups.map(group => <View key={group} style={styles.category}><Text style={styles.categoryText}>{group}</Text></View>)}</View> : null}
-      <View style={menu ? styles.menuList : styles.grid}>{products.map(product => <View key={product.id} style={menu ? styles.menuProduct : styles.product}><View style={menu ? styles.menuImage : styles.image}>{product.images?.[0] ? <Image alt={product.title} source={{ uri: product.images[0] }} contentFit="cover" style={styles.photo} /> : <Text style={styles.letter}>{product.title.slice(0, 1).toUpperCase()}</Text>}</View><View style={menu ? styles.menuDetails : undefined}><Text numberOfLines={2} style={styles.title}>{product.title}</Text>{menu && product.description ? <Text numberOfLines={2} style={styles.description}>{product.description}</Text> : null}<Text style={styles.price}>{money(product.price)}</Text></View></View>)}</View>
-      {!products.length ? <View style={ui.card}><Text style={ui.cardTitle}>Добавьте первый товар</Text><Text style={ui.subtitle}>После сохранения он появится здесь и в веб-витрине.</Text></View> : null}
-      {published ? <Pressable onPress={() => void Linking.openURL(publicUrl)} style={ui.button}><Text style={ui.buttonText}>Открыть витрину покупателя ↗</Text></Pressable> : null}
+    <View style={[s.notice,{backgroundColor:theme.surface,borderColor:theme.accent,borderRadius:theme.cardRadius}]}><Text style={[s.noticeTitle,{color:theme.accentStrong}]}>{published?"Опубликованная витрина":"Черновик виден только вам"}</Text><Text style={s.noticeText}>{published?"Кнопка ниже открывает точный buyer-экран: тот же web-renderer, данные и адрес, которые видит покупатель.":"Нативный обзор использует сохранённый профиль бренда. После публикации точная витрина откроется по адресу магазина."}</Text></View>
+    {(loading||storeLoading)?<ActivityIndicator color={theme.accent}/>:error?<View style={ui.card}><Text style={ui.error}>{error}</Text><Pressable onPress={()=>void load()} style={ui.outline}><Text style={ui.outlineText}>Повторить</Text></Pressable></View>:<>
+      <View style={[s.brandBar,{backgroundColor:theme.background,borderRadius:theme.cardRadius}]}>{store?.logo_url?<Image accessibilityLabel={`Логотип ${store.name}`} source={{uri:store.logo_url}} contentFit="contain" style={s.logo}/>:<View style={[s.logoFallback,{backgroundColor:theme.accent}]}><Text style={{color:theme.accentInk,fontWeight:"900"}}>{store?.name.slice(0,1).toUpperCase()}</Text></View>}<View style={{flex:1}}><Text style={[s.storeName,{color:theme.accentStrong}]}>{store?.name}</Text><Text style={s.profileMeta}>{settings?.template_key??"gallery"} · {approach}</Text></View></View>
+      {stories.length?<ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={s.stories}>{stories.map(story=>{const url=supabase!.storage.from("food-stories").getPublicUrl(story.media_path).data.publicUrl;return <View key={story.id} style={s.story}><View style={[s.storyRing,{borderColor:theme.accent}]}>{story.media_type==="image"?<Image accessibilityLabel={story.title} source={{uri:url}} contentFit="cover" style={s.storyImage}/>:<View style={[s.storyImage,{backgroundColor:theme.accent,alignItems:"center",justifyContent:"center"}]}><Text style={{color:theme.accentInk}}>▶</Text></View>}</View><Text numberOfLines={1} style={s.storyTitle}>{story.title}</Text></View>})}</ScrollView>:null}
+      <View style={[s.hero,{backgroundColor:theme.accentStrong,borderRadius:theme.cardRadius},menu&&s.menuHero]}>{settings?.hero_image_url?<Image accessibilityLabel="Обложка магазина" source={{uri:settings.hero_image_url}} contentFit="cover" style={s.heroImage}/>:null}<View style={s.heroOverlay}><Text style={s.heroEyebrow}>{menu?"МЕНЮ И ДОСТАВКА":"КОЛЛЕКЦИЯ"} · {store?.name}</Text><Text style={[s.heroTitle,theme.typography==="editorial"&&s.editorial]}>{settings?.hero_title||store?.name}</Text>{settings?.hero_subtitle?<Text style={s.heroSubtitle}>{settings.hero_subtitle}</Text>:null}<View style={[s.heroCta,{backgroundColor:theme.accent,borderRadius:theme.buttonRadius}]}><Text style={{color:theme.accentInk,fontWeight:"900"}}>{settings?.hero_cta_label||"Смотреть каталог"}</Text></View></View></View>
+      <Text style={[ui.title,{color:theme.accentStrong}]}>{store?.business_vertical==="food"?"Меню":"Каталог"}</Text>
+      {menu&&groups.length?<View style={s.categories}>{groups.map(group=><View key={group} style={[s.category,{backgroundColor:theme.surface,borderRadius:theme.buttonRadius}]}><Text style={[s.categoryText,{color:theme.accentStrong}]}>{group}</Text></View>)}</View>:null}
+      <View style={menu?s.menuList:s.grid}>{products.map(product=><View key={product.id} style={[menu?s.menuProduct:s.product,{backgroundColor:theme.surface,borderRadius:theme.cardRadius}]}><View style={menu?s.menuImage:s.image}>{product.images?.[0]?<Image accessibilityLabel={product.title} source={{uri:product.images[0]}} contentFit="cover" style={s.photo}/>:<Text style={[s.letter,{color:theme.accent}]}>{product.title.slice(0,1).toUpperCase()}</Text>}</View><View style={menu?s.menuDetails:undefined}><Text numberOfLines={2} style={s.title}>{product.title}</Text>{menu&&product.description?<Text numberOfLines={2} style={s.description}>{product.description}</Text>:null}<Text style={[s.price,{color:theme.accentStrong}]}>{money(product.price)}</Text></View></View>)}</View>
+      {!products.length?<View style={ui.card}><Text style={ui.cardTitle}>Добавьте первый товар</Text><Text style={ui.subtitle}>После сохранения он появится здесь и в buyer-витрине.</Text></View>:null}
+      {published?<Pressable onPress={()=>void WebBrowser.openBrowserAsync(publicUrl)} style={[ui.button,{backgroundColor:theme.accent,borderRadius:theme.buttonRadius}]}><Text style={[ui.buttonText,{color:theme.accentInk}]}>Открыть точную витрину покупателя →</Text></Pressable>:null}
     </>}
   </AppScreen>;
 }
 
-const styles = StyleSheet.create({
-  notice: { backgroundColor: colors.navySoft, borderRadius: 17, padding: 15, gap: 4 }, noticeTitle: { fontWeight: "900", color: colors.navyDark }, noticeText: { color: colors.muted, fontSize: 12, lineHeight: 18 },
-  hero: { minHeight: 208, borderRadius: 24, overflow: "hidden", backgroundColor: colors.navyDark, justifyContent: "flex-end" }, menuHero: { minHeight: 155 }, heroImage: { ...StyleSheet.absoluteFill }, heroOverlay: { padding: 22, gap: 7, backgroundColor: "#1A1424AD" }, heroEyebrow: { color: "#F2DFE9", fontSize: 10, fontWeight: "900", letterSpacing: 1.2 }, heroTitle: { color: "white", fontSize: 29, fontWeight: "900" }, heroSubtitle: { color: "white", fontSize: 13, lineHeight: 19 }, heroCta: { color: "white", fontSize: 13, fontWeight: "900", marginTop: 5 },
-  categories: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, category: { borderRadius: 30, backgroundColor: colors.navySoft, paddingHorizontal: 12, paddingVertical: 8 }, categoryText: { color: colors.navyDark, fontWeight: "800", fontSize: 12 },
-  grid: { flexDirection: "row", flexWrap: "wrap", gap: 10 }, product: { width: "48%", borderWidth: 1, borderColor: colors.line, borderRadius: 19, padding: 10, backgroundColor: "white", gap: 7 }, image: { aspectRatio: 1, borderRadius: 13, overflow: "hidden", backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, photo: { width: "100%", height: "100%" }, letter: { fontSize: 38, fontWeight: "900", color: colors.navy }, title: { fontWeight: "900", color: colors.ink, fontSize: 14 }, price: { fontWeight: "900", color: colors.navyDark, marginTop: 2 },
-  menuList: { gap: 9 }, menuProduct: { flexDirection: "row", alignItems: "center", gap: 12, borderWidth: 1, borderColor: colors.line, borderRadius: 17, padding: 10, backgroundColor: "white" }, menuImage: { width: 82, height: 82, borderRadius: 11, overflow: "hidden", backgroundColor: colors.navySoft, alignItems: "center", justifyContent: "center" }, menuDetails: { flex: 1, gap: 3 }, description: { color: colors.muted, fontSize: 11, lineHeight: 15 },
-});
+const s=StyleSheet.create({notice:{borderWidth:1,padding:15,gap:4},noticeTitle:{fontWeight:"900"},noticeText:{color:colors.muted,fontSize:12,lineHeight:18},brandBar:{minHeight:68,padding:12,flexDirection:"row",alignItems:"center",gap:12},logo:{width:46,height:46},logoFallback:{width:46,height:46,borderRadius:23,alignItems:"center",justifyContent:"center"},storeName:{fontSize:18,fontWeight:"900"},profileMeta:{fontSize:10,color:colors.muted,marginTop:3},stories:{gap:12,paddingVertical:2},story:{width:72,alignItems:"center",gap:5},storyRing:{width:66,height:66,borderRadius:33,borderWidth:2,padding:3},storyImage:{width:"100%",height:"100%",borderRadius:28},storyTitle:{fontSize:10,color:colors.ink,maxWidth:72},hero:{minHeight:208,overflow:"hidden",justifyContent:"flex-end"},menuHero:{minHeight:164},heroImage:{...StyleSheet.absoluteFill},heroOverlay:{padding:22,gap:8,backgroundColor:"#17121DB8"},heroEyebrow:{color:"#F7EAF1",fontSize:10,fontWeight:"900",letterSpacing:1.2},heroTitle:{color:"white",fontSize:30,fontWeight:"900",lineHeight:34},editorial:{fontFamily:"serif",fontWeight:"700"},heroSubtitle:{color:"white",fontSize:13,lineHeight:19},heroCta:{alignSelf:"flex-start",paddingHorizontal:15,paddingVertical:11,marginTop:3},categories:{flexDirection:"row",flexWrap:"wrap",gap:8},category:{paddingHorizontal:12,paddingVertical:8},categoryText:{fontWeight:"800",fontSize:12},grid:{flexDirection:"row",flexWrap:"wrap",gap:10},product:{width:"48%",borderWidth:1,borderColor:colors.line,padding:10,gap:7},image:{aspectRatio:1,borderRadius:13,overflow:"hidden",backgroundColor:colors.navySoft,alignItems:"center",justifyContent:"center"},photo:{width:"100%",height:"100%"},letter:{fontSize:38,fontWeight:"900"},title:{fontWeight:"900",color:colors.ink,fontSize:14},price:{fontWeight:"900",marginTop:2},menuList:{gap:9},menuProduct:{flexDirection:"row",alignItems:"center",gap:12,borderWidth:1,borderColor:colors.line,padding:10},menuImage:{width:82,height:82,borderRadius:11,overflow:"hidden",backgroundColor:colors.navySoft,alignItems:"center",justifyContent:"center"},menuDetails:{flex:1,gap:3},description:{color:colors.muted,fontSize:11,lineHeight:15}});

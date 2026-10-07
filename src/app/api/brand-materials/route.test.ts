@@ -17,6 +17,6 @@ describe("brand material access",()=>{
   it("returns no logo path and prevents caching private notes",async()=>{
     const chain={select:vi.fn().mockReturnThis(),eq:vi.fn().mockReturnThis(),maybeSingle:vi.fn().mockResolvedValue({data:{revision:1,notes:"rules",colors:[],logo_path:null},error:null})};
     mocks.client.mockResolvedValue({from:vi.fn().mockReturnValue(chain)});
-    const response=await GET();expect(response.headers.get("cache-control")).toBe("private, no-store");expect(await response.json()).toEqual({revision:1,notes:"rules",colors:[],logoUrl:null});
+    const response=await GET();expect(response.headers.get("cache-control")).toBe("private, no-store");expect(await response.json()).toEqual({revision:1,notes:"rules",colors:[],logoUrl:null,colorTheme:{background:"#f5f3f4",surface:"#fcfcfc",accent:"#56334d"}});
   });
 });

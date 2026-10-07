@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, site } from "@/lib/theme";

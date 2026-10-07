@@ -10,7 +10,7 @@ import { useCart } from "@/components/store/cart-provider";
 export default function CartPage() {
   const { slug } = useParams<{ slug: string }>();
   const { items, total } = useCart();
-  return <main className="container min-h-[65vh] py-10">
+  return <main data-store-cart className="container min-h-[65vh] py-10">
     <Link href={`/s/${slug}`} className="muted inline-flex gap-1 text-sm"><ChevronLeft size={17}/> Продолжить покупки</Link>
     <h1 className="mt-7 text-4xl font-semibold">Корзина</h1>
     {items.length === 0 ? <div className="card mt-8 grid place-items-center py-20 text-center"><ShoppingBag className="text-[var(--accent)]" size={38}/><h2 className="mt-4 text-xl font-bold">Корзина пока пуста</h2><p className="muted mt-2">Добавьте товар из каталога</p><Link href={`/s/${slug}`} className="btn btn-cta mt-6">В каталог</Link></div> : <div className="mt-8 grid gap-8 md:grid-cols-[1fr_380px]">

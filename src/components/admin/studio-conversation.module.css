@@ -5,7 +5,7 @@
 .greeting h1{font-size:clamp(29px,3vw,39px);font-weight:700;letter-spacing:-.045em;line-height:1.15}
 .greeting h2{font-size:clamp(24px,2.5vw,33px);font-weight:600;line-height:1.2;color:#667085;letter-spacing:-.04em;margin-top:5px}
 .greeting>p{max-width:650px;margin-top:20px;color:#667085;font-size:clamp(15px,1.6vw,18px);line-height:1.55}
-.quickTasks{display:grid;gap:12px;margin-top:34px}
+.quickTasks{display:grid;gap:12px;margin-top:34px}.quickTasks:has(>button:first-child)>a{display:none}
 .disclaimer{margin-top:16px;color:#8992a3;font-size:12px}
 .quickTasks>a,.quickTasks>button{display:grid;grid-template-columns:48px minmax(0,1fr) 22px;align-items:center;gap:16px;width:100%;min-height:92px;text-align:left;padding:16px 18px;border:1px solid #e2e6ec;border-radius:20px;background:#fff;color:#111827;box-shadow:0 1px 2px #11182708}
 .quickTasks>a:hover,.quickTasks>button:hover{border-color:#a8bed9;background:#fbfdff;box-shadow:0 8px 24px #56334d0d;transform:translateY(-1px)}

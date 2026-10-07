@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router } from "expo-router";
 import { EditorScreen } from "@/components/editor-screen";
 import { ui } from "@/components/app-shell";

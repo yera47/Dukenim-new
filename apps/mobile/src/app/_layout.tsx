@@ -1,10 +1,15 @@
 import { useEffect, useRef } from "react";
 import { Stack, router } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useFonts } from "expo-font";
+import Manrope from "../../assets/fonts/Manrope-500.ttf";
+import ManropeBold from "../../assets/fonts/Manrope-700.ttf";
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
 import { notificationTarget } from "@/lib/notification-target";
 import { listenForPushTokenChanges } from "@/lib/notifications";
+import { MerchantBrandProvider } from "@/components/merchant-brand-theme";
+import { BrandDoorMotionProvider } from "@/components/brand-door-motion";
 
 if (Platform.OS !== "web") {
   Notifications.setNotificationHandler({
@@ -19,6 +24,10 @@ if (Platform.OS !== "web") {
 
 export default function RootLayout() {
   const handled = useRef<string | null>(null);
+  const [fontsLoaded, fontError] = useFonts({
+    Manrope,
+    ManropeBold,
+  });
   useEffect(() => {
     if (Platform.OS === "web") return;
     function open(response: Notifications.NotificationResponse) {
@@ -37,5 +46,6 @@ export default function RootLayout() {
     if (initial) open(initial);
     return () => { subscription.remove(); tokenSubscription?.remove(); };
   }, []);
-  return <><StatusBar style="dark" /><Stack screenOptions={{ headerShown: false, animation: "fade" }} /></>;
+  if (!fontsLoaded && !fontError) return null;
+  return <MerchantBrandProvider><BrandDoorMotionProvider><StatusBar style="dark" /><Stack screenOptions={{ headerShown: false, animation: "fade" }} /></BrandDoorMotionProvider></MerchantBrandProvider>;
 }

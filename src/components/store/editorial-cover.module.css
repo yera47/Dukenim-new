@@ -2,14 +2,17 @@
 .copy{padding:2rem 0;min-width:0}
 .copy h1{font-size:clamp(2.5rem,5.8vw,6.6rem);font-weight:550;letter-spacing:-.055em;line-height:1.02;overflow-wrap:anywhere;text-wrap:balance}
 .copy p{max-width:45ch;font-size:1.05rem;line-height:1.8;opacity:.72;margin-top:1.5rem}
-.cta{display:inline-flex;align-items:center;gap:1rem;margin-top:2rem;background:var(--tenant-accent);padding:1rem 1.35rem;border-radius:8px;font-weight:650;min-height:48px}
+.cta{display:inline-flex;align-items:center;gap:1rem;margin-top:2rem;background:var(--tenant-accent);padding:1rem 1.35rem;border-radius:var(--store-button-radius);font-weight:750;min-height:48px}
 .picture{margin:0;min-width:0;overflow:hidden}
 .picture>img{display:block;width:100%;height:auto;aspect-ratio:4/5;object-fit:cover;background:var(--store-surface)}
 .picture figcaption a{display:flex;justify-content:space-between;gap:1rem;font-size:.8rem;padding-top:.8rem;opacity:.8}
+.placeholder{display:grid;min-height:18rem;place-items:center;background:color-mix(in srgb,var(--tenant-accent) 9%,var(--store-surface))}
+.placeholder span{width:min(52%,18rem);aspect-ratio:1;border:1px solid color-mix(in srgb,var(--tenant-accent) 38%,transparent);border-radius:42% 58% 63% 37%;transform:rotate(-14deg);box-shadow:4rem 2rem 0 color-mix(in srgb,var(--tenant-accent) 10%,transparent)}
 .companion{display:block;min-width:0;font-size:.8rem}
 .companion img{width:100%;aspect-ratio:1;object-fit:cover;background:var(--store-surface)}
 .companion span{display:block;padding-top:.8rem}
 .duet{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.65fr);align-items:end;gap:1.2rem;min-width:0}
+.duet .picture:only-child{grid-column:1/-1}
 .cover[data-cover="fashion"] .copy{border-top:1px solid currentColor}
 .cover[data-cover="fashion"] .picture>img{aspect-ratio:3/4}
 .cover[data-cover="beauty"]{padding-top:2rem;padding-bottom:3rem}
@@ -18,8 +21,11 @@
 .cover[data-cover="food"] .copy h1{font-weight:800;letter-spacing:-.05em;max-width:12ch}
 .cover[data-cover="food"] .picture>img{aspect-ratio:1;border-radius:50%}
 .cover[data-cover="food"] .cta{border-radius:999px}
-.cover[data-cover="flowers"] .picture>img{aspect-ratio:3/4;border-radius:50% 50% 3px 3px}
-.cover[data-cover="flowers"] .copy h1{font-family:Georgia,serif;font-weight:400;line-height:1.1;letter-spacing:-.05em}
+.cover[data-cover="flowers"]{position:relative}
+.cover[data-cover="flowers"] .picture{border-radius:var(--store-card-radius);box-shadow:0 24px 70px color-mix(in srgb,var(--tenant-accent) 16%,transparent)}
+.cover[data-cover="flowers"] .picture>img{aspect-ratio:4/3;border-radius:var(--store-card-radius)}
+.cover[data-cover="flowers"] .copy h1{font-family:var(--store-display-font);font-weight:400;line-height:1.1;letter-spacing:-.05em}
+.flowerStory{position:relative;z-index:2}
 .flowerStory .companion{max-width:170px;margin-left:auto}
 .cover[data-cover="home"]{display:flex;flex-direction:column;align-items:stretch}
 .cover[data-cover="home"] .picture>img{aspect-ratio:16/9}
@@ -27,10 +33,20 @@
 .cover[data-cover="home"] .copy{display:grid;column-gap:3rem}
 .cover[data-cover="other"] .duet{background:var(--store-surface);padding:1.5rem;border-radius:24px}
 .cover[data-cover="other"] .picture>img{aspect-ratio:1}
-.cover[data-cover="other"] .copy h1{font-size:clamp(2.5rem,5vw,5.5rem)}
-.cover[data-illustrated="false"]{display:block;max-width:1100px}
+.cover[data-cover="other"] .copy h1{max-width:8ch;font-size:clamp(2.5rem,5vw,5.5rem);letter-spacing:-.075em;word-spacing:-.08em;text-wrap:wrap}
+.templateMosaic{display:none}
+.templateCover{margin-block:1rem 2rem}.journalHeading span,.galleryHeading span,.signatureCopy>span{font-size:.7rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;opacity:.58}.journalHeading h1,.galleryHeading h1,.signatureCopy h1{font-size:clamp(2.3rem,6vw,5.6rem);line-height:.98;letter-spacing:-.05em}.journalHeading p,.signatureCopy p{margin-top:1rem;max-width:46ch;opacity:.68}.journal .picture{margin-top:1.5rem}.journal .picture>img{aspect-ratio:16/7}.journalCta,.galleryHeading a{display:inline-flex;align-items:center;gap:.5rem;margin-top:1rem;font-weight:800}.gallery{display:grid;gap:1rem}.galleryHeading{display:flex;align-items:end;justify-content:space-between;gap:1rem}.galleryHeading h1{font-size:clamp(2rem,4vw,3.8rem)}.mosaic{display:grid;grid-template-columns:1.4fr .8fr;grid-template-rows:1fr 1fr;gap:.65rem;height:min(62vh,38rem)}.mosaic a{overflow:hidden}.mosaic a[data-lead=true]{grid-row:1/3}.mosaic img{width:100%;height:100%;object-fit:cover}.signature{position:relative;min-height:70vh;overflow:hidden;border-radius:var(--store-card-radius);background:var(--store-surface)}.signature .picture{position:absolute;inset:0}.signature .picture>img{width:100%;height:100%;aspect-ratio:auto;filter:brightness(.62)}.signature .picture figcaption{display:none}.signatureCopy{position:relative;z-index:1;max-width:44rem;padding:clamp(2rem,7vw,6rem);color:white}.signatureCopy h1{margin-top:1rem}.brandGraphic{position:absolute;right:-5rem;bottom:-8rem;width:24rem;height:24rem;border:1px solid #ffffff55;border-radius:42% 58% 62% 38%;transform:rotate(22deg)}
+:global(main[data-template="journal"]) .cover{display:flex;flex-direction:column;gap:1rem;margin-bottom:1rem}:global(main[data-template="journal"]) .cover .picture{order:2}:global(main[data-template="journal"]) .cover .copy{order:1;padding:1rem 0;border-top:0}:global(main[data-template="journal"]) .cover .copy h1{max-width:14ch;font-family:Georgia,serif}:global(main[data-template="journal"]) .cover .picture>img{aspect-ratio:16/9}:global(main[data-template="journal"]) .cover .picture figcaption{display:block}:global(main[data-template="journal"]) .cover .copy:before{content:"Выпуск 01 · Подборка";display:block;margin-bottom:.75rem;font-size:.68rem;font-weight:900;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+:global(main[data-template="gallery"]) .cover{display:block;margin-bottom:.5rem}:global(main[data-template="gallery"]) .cover>.picture,:global(main[data-template="gallery"]) .cover>.copy{display:none}:global(main[data-template="gallery"]) .templateMosaic{display:grid;grid-template-columns:1.4fr .8fr;grid-template-rows:1fr 1fr;gap:.5rem;height:30rem}:global(main[data-template="gallery"]) .templateMosaic a{overflow:hidden}:global(main[data-template="gallery"]) .templateMosaic a:first-child{grid-row:1/3}:global(main[data-template="gallery"]) .templateMosaic img{width:100%;height:100%;object-fit:cover}:global(main[data-template="gallery"]) .templateMosaic:before{content:"Галерея магазина";grid-column:1/3;font-size:clamp(2rem,5vw,4rem);font-weight:700;letter-spacing:-.05em}
 @media(min-width:768px){
  .cover{grid-template-columns:1.1fr .9fr;gap:4rem}
+ .cover[data-cover="flowers"]{grid-template-columns:.78fr 1.22fr;gap:3rem;margin-top:1rem;margin-bottom:.5rem;min-height:20rem}
+ .cover[data-cover="flowers"] .picture{grid-column:2;grid-row:1}
+ .cover[data-cover="flowers"] .picture{align-self:start;margin-top:2rem}
+ .cover[data-cover="flowers"] .picture>img{height:20rem;aspect-ratio:auto}
+ .cover[data-cover="flowers"] .picture>img{object-position:center 35%}
+ .cover[data-cover="flowers"] .flowerStory{grid-column:1;grid-row:1;align-self:center}
+ .cover[data-cover="flowers"] .copy h1{font-size:clamp(3.1rem,5vw,5rem)}
  .cover[data-cover="fashion"] .copy{padding-top:3rem;padding-bottom:4rem}
  .cover[data-cover="beauty"],.cover[data-cover="food"],.cover[data-cover="other"]{grid-template-columns:.85fr 1.15fr}
  .cover[data-cover="food"]{padding-top:3rem;padding-bottom:3rem}
@@ -39,10 +55,31 @@
  .cover[data-cover="home"] .cta{justify-self:start}
 }
 @media(max-width:767px){
- .cover[data-cover="fashion"] .picture{order:2}
- .cover[data-cover="flowers"] .picture{order:2}
+ .cover[data-cover="fashion"]{gap:0;margin-top:1rem;margin-bottom:1rem}
+ .cover[data-cover="fashion"] .picture{border-radius:28px 28px 0 0;overflow:hidden}
+ .cover[data-cover="fashion"] .picture>img{aspect-ratio:1/1}
+ .cover[data-cover="fashion"] .picture figcaption{display:none}
+ .cover[data-cover="fashion"] .copy{position:relative;z-index:1;width:calc(100% - 1.5rem);margin:-2.4rem auto 0;padding:1.15rem 1.25rem;border-top:0;border-radius:28px 28px 0 0;background:var(--store-bg)}
+ .cover[data-cover="fashion"] .copy h1{font-size:min(2.7rem,11vw)}
+ .cover[data-cover="fashion"] .copy p{margin-top:.65rem;font-size:.92rem;line-height:1.5}
+ .cover[data-cover="fashion"] .cta{margin-top:.85rem;padding:.8rem 1.1rem}
+ .cover[data-cover="flowers"]{display:block;min-height:auto!important;margin-top:.65rem;margin-bottom:.35rem}
+ .cover[data-cover="flowers"] .picture{height:14rem;border-radius:24px}
+ .cover[data-cover="flowers"] .picture>img{height:100%;aspect-ratio:auto;border-radius:24px;object-position:center 42%}
+ .cover[data-cover="flowers"] .flowerStory{width:calc(100% - 1.5rem);margin:-4rem auto 0;padding:1rem;border:1px solid color-mix(in srgb,var(--tenant-accent) 18%,transparent);border-radius:22px;background:color-mix(in srgb,var(--store-surface) 96%,transparent);box-shadow:0 16px 36px #00000012;backdrop-filter:blur(16px)}
+ .cover[data-cover="flowers"] .copy{padding:0}
+ .cover[data-cover="flowers"] .copy h1{font-size:clamp(1.9rem,9.3vw,2.5rem);line-height:1.02}
+ .cover[data-cover="flowers"] .copy p{display:-webkit-box;overflow:hidden;margin-top:.55rem;font-size:.82rem;line-height:1.45;-webkit-box-orient:vertical;-webkit-line-clamp:2}
+ .cover[data-cover="flowers"] .cta{margin-top:.8rem;padding:.72rem .9rem;min-height:44px}
  .flowerStory .companion{display:none}
  .cover[data-cover="home"] .picture>img{aspect-ratio:4/3}
  .copy{padding:1rem 0}
  .cover{gap:1.2rem}
+ :global(main[data-template="journal"]) .cover .copy{width:100%;margin:0;padding:.5rem 0;background:transparent}:global(main[data-template="journal"]) .cover .copy h1{font-size:2.4rem}:global(main[data-template="journal"]) .cover .picture{border-radius:0}:global(main[data-template="journal"]) .cover .picture>img{aspect-ratio:16/10}
+ :global(main[data-template="gallery"]) .cover{margin-top:.75rem}:global(main[data-template="gallery"]) .templateMosaic{height:25rem}:global(main[data-template="gallery"]) .templateMosaic:before{font-size:2.1rem}
+ .signature{min-height:36rem;border-radius:24px}.signatureCopy{padding:2rem 1.5rem}.signatureCopy h1{font-size:2.9rem}
 }
+
+:global(main[data-template="gallery"]) .templateMosaic{grid-template-rows:auto 1fr 1fr}
+:global(main[data-template="gallery"]) .templateMosaic:before{grid-row:1}
+:global(main[data-template="gallery"]) .templateMosaic a:first-child{grid-row:2/4}

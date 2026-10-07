@@ -17,6 +17,7 @@ export type CheckoutInput = {
   buyer?:{userId:string|null;hash:string};
   reward?:{ruleId:string;milestone:number}|null;
   referralCode?:string|null;
+  idempotencyKey: string;
   marketingConsent?:boolean;
 };
 
@@ -32,7 +33,7 @@ export async function createStorefrontOrder(client: SupabaseClient<Database>, in
     p_items: input.items.map((item) => ({ variant_id: item.variantId, qty: item.qty,...(item.selection?{selection:item.selection}:{}) })) as Json,
     p_requested_for: input.requestedFor,
   } as Database["public"]["Functions"]["create_storefront_order_v2"]["Args"] & { p_requested_for: string | null };
-  if(input.buyer)return loyaltyClient(client).rpc("create_buyer_order",{...args,p_requested_for:input.requestedFor,p_user:input.buyer.userId,p_guest_hash:input.buyer.hash,p_reward_rule:input.reward?.ruleId??null,p_reward_milestone:input.reward?.milestone??null,p_referral_code:input.referralCode??null});
+  if(input.buyer)return loyaltyClient(client).rpc("create_buyer_order_idempotent",{...args,p_requested_for:input.requestedFor,p_user:input.buyer.userId,p_guest_hash:input.buyer.hash,p_reward_rule:input.reward?.ruleId??null,p_reward_milestone:input.reward?.milestone??null,p_referral_code:input.referralCode??null,p_idempotency_key:input.idempotencyKey});
   return client.rpc("create_storefront_order_v2", args);
 }
 

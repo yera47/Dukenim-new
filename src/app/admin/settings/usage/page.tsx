@@ -1,27 +1,20 @@
-import Link from "next/link";
-import { requireRole } from "@/lib/auth";
-import { createClient } from "@/lib/supabase/server";
+import Link from"next/link";
+import{requireRole}from"@/lib/auth";
+import{createAdminClient}from"@/lib/supabase/admin";
+import{loadTenantCreditBalance,unavailableCreditBalance}from"@/lib/ai/product-credit-admin";
 
-export default async function UsagePage() {
-  const {tenantId}=await requireRole(["owner","superadmin"]);
-  const client=tenantId&&process.env.NEXT_PUBLIC_SUPABASE_URL?await createClient():null;
-  const result=client?await client.from("tenants").select("*").eq("id",tenantId!).single():null;
-  const row=result?.data as {ai_credit_balance?:number;ai_credits_reset_at?:string}|null|undefined;
-  const rawBalance=row?.ai_credit_balance;
-  const reset=row?.ai_credits_reset_at?new Date(row.ai_credits_reset_at):null;
-  const renewalDue=reset&&reset.getTime()<=Date.now();
-  const balance=typeof rawBalance==="number"?rawBalance+(renewalDue?120:0):null;
-  const available=balance===null?null:Math.min(100,Math.round(balance/120*100));
-  return <section className="mx-auto max-w-2xl space-y-6">
+export default async function UsagePage(){
+  const{tenantId}=await requireRole(["owner","superadmin"]);
+  let balance=unavailableCreditBalance(tenantId??"","migration_unavailable");
+  if(tenantId&&process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.SUPABASE_SERVICE_ROLE_KEY){try{balance=await loadTenantCreditBalance(createAdminClient(),tenantId);}catch{/* Fail closed below. */}}
+  const ready=balance.availability==="ready";
+  return <section className="mx-auto max-w-3xl space-y-6">
     <Link href="/admin/settings" className="text-sm text-neutral-500">← Настройки</Link>
-    <div><h1 className="text-3xl font-bold">Использование AI</h1><p className="mt-3 text-neutral-500">Здесь можно проверить доступный объём работы помощника.</p></div>
-    <div className="rounded-2xl border bg-white p-6">{available===null?<p role="status">Не удалось загрузить использование. Попробуйте обновить страницу.</p>:<>
-      <div className="flex justify-between"><b>Доступно от месячного объёма</b><span>{available}%</span></div>
-      <progress aria-label="Доступный объём AI" max={100} value={available} className="mt-5 h-2 w-full accent-black"/>
-      <p className="mt-4 text-sm leading-7 text-neutral-500">Объём пополняется ежемесячно. Неиспользованный и дополнительно приобретённый объём учитываются в остатке. В чате предупреждаем, когда остаётся не более 10% месячного объёма.</p>
-      {reset&&!renewalDue&&<p className="mt-4 text-sm">Следующее пополнение: {reset.toLocaleDateString("ru-KZ",{timeZone:"Asia/Almaty"})}</p>}
-      {available<=10&&<p className="mt-4 rounded-xl bg-neutral-100 p-4 text-sm">Доступный объём заканчивается. <Link className="underline" href="/admin/requests?source=ai-studio">Обратиться в поддержку</Link></p>}
-    </>}</div>
-    <Link href="/admin/ai-studio" className="btn btn-primary">Вернуться в AI Studio</Link>
+    <div><h1 className="text-3xl font-bold">Использование AI</h1><p className="mt-3 text-neutral-500">Баланс читается из того же серверного ledger, которым пользуется superadmin. Магазин не получает доступ к платформенным лимитам или начислениям.</p></div>
+    {!ready?<div className="rounded-2xl border border-amber-200 bg-amber-50 p-6" role="status"><b>Баланс пока недоступен</b><p className="mt-2 text-sm leading-6 text-amber-900">{balance.message} AI‑генерация и покупка дополнительных кредитов остаются выключены; старый локальный счётчик не используется как запасной.</p></div>:<>
+      <div className="grid gap-4 sm:grid-cols-3"><div className="rounded-2xl border bg-white p-5"><small className="text-neutral-500">Доступно</small><b className="mt-2 block text-3xl">{balance.availableTotal}</b></div><div className="rounded-2xl border bg-white p-5"><small className="text-neutral-500">Включено в период</small><b className="mt-2 block text-3xl">{balance.availableAllowance}</b></div><div className="rounded-2xl border bg-white p-5"><small className="text-neutral-500">Куплено отдельно</small><b className="mt-2 block text-3xl">{balance.availablePurchased}</b></div></div>
+      <div className="rounded-2xl border bg-white p-6"><div className="flex justify-between gap-4"><b>Зарезервировано в активных задачах</b><span>{balance.reservedAllowance+balance.reservedPurchased}</span></div><p className="mt-3 text-sm leading-6 text-neutral-500">Сначала используются кредиты периода, затем купленные. Купленные кредиты не показываются как сгорающие. Итог уменьшается только после сохранения технически корректного результата.</p>{!balance.generationEnabled&&<p className="mt-4 rounded-xl bg-neutral-100 p-4 text-sm">Генерация отключена администратором платформы.</p>}</div>
+    </>}
+    <Link href="/admin/ai-studio" aria-disabled={!ready||!balance.generationEnabled} className={`btn btn-primary ${!ready||!balance.generationEnabled?"pointer-events-none opacity-45":""}`}>Открыть AI Studio</Link>
   </section>;
 }

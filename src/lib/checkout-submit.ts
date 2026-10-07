@@ -1,11 +1,11 @@
 export type SubmittedOrder = { orderNumber: number; total: number };
 
 // Never clear a customer's cart on a network failure or an unexpected server body.
-export async function submitCheckout(payload: unknown, send: typeof fetch = fetch): Promise<SubmittedOrder> {
+export async function submitCheckout(payload: unknown, idempotencyKey: string, send: typeof fetch = fetch): Promise<SubmittedOrder> {
   let response: Response;
   try {
     response = await send("/api/orders", {
-      method: "POST", headers: { "Content-Type": "application/json" },
+      method: "POST", headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey },
       body: JSON.stringify(payload),
     });
   } catch {

@@ -1,0 +1,4 @@
+{
+  "bulka": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 250 120'%3E%3Crect width='250' height='120' rx='30' fill='%23fff7e8'/%3E%3Cpath d='M28 48c8-25 44-34 65-18 8 6 12 15 13 26H24c0-3 2-6 4-8Z' fill='%23f59b14' stroke='%23542514' stroke-width='5'/%3E%3Cpath d='M44 37l9 13m14-20 4 18m17-8-9 12' stroke='%23fff7e8' stroke-width='5' stroke-linecap='round'/%3E%3Ctext x='116' y='70' font-family='Arial,sans-serif' font-size='31' font-weight='800' fill='%23542514'%3EBULKA%3C/text%3E%3C/svg%3E",
+  "roseStudio": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Ccircle cx='60' cy='60' r='57' fill='%23b52f65'/%3E%3Cpath d='M26 66c12-28 52-39 68-12-8 26-42 39-68 12Z' fill='%23fff7f2'/%3E%3Cpath d='M45 72c3-17 14-29 33-36-7 10-10 21-9 34' fill='none' stroke='%23b52f65' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E"
+}

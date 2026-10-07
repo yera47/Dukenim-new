@@ -1,16 +1,23 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition, type CSSProperties } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Images } from "lucide-react";
+import { Eye, Images, Maximize2, Minimize2, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { deleteFoodStory, saveFoodStory } from "./actions";
+import { CartProvider } from "@/components/store/cart-provider";
+import { StoreHeader } from "@/components/store/store-header";
+import { StoreHome } from "@/components/store/store-home";
+import type { CommerceApproach } from "@/lib/commerce-configurations";
+import type { Product } from "@/lib/demo-data";
+import type { StoreStory } from "@/lib/food-stories";
+import type { BusinessVertical, Database } from "@/types/database";
 
 export type EditorStory = { id: string; title: string; caption: string | null; media_path: string; media_type: "image" | "video"; product_id: string | null; status: "draft" | "published"; sort_order: number; url: string };
-type ProductOption = { id: string; title: string };
+type PreviewSettings = Database["public"]["Tables"]["tenant_storefront_settings"]["Row"];
 
-export function StoryEditor({ tenantId, stories, products }: { tenantId: string; stories: EditorStory[]; products: ProductOption[] }) {
+export function StoryEditor({ tenantId, stories, products, storeName, storeTagline, storeLogoUrl, businessVertical, approach, previewStyle, previewSettings }: { tenantId: string; stories: EditorStory[]; products: Product[]; storeName: string; storeTagline?: string | null; storeLogoUrl?: string | null; businessVertical: BusinessVertical; approach: CommerceApproach; previewStyle: CSSProperties; previewSettings: PreviewSettings | null }) {
   const [editing, setEditing] = useState<EditorStory | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -22,6 +29,9 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
   const [productId, setProductId] = useState("");
   const [status, setStatus] = useState<"draft" | "published">("draft");
   const [message, setMessage] = useState("");
+  const [confirmPublish, setConfirmPublish] = useState(false);
+  const [fullPreview, setFullPreview] = useState(false);
+  const [previewScrolled, setPreviewScrolled] = useState(false);
   const [pending, startTransition] = useTransition();
   const router = useRouter();
   useEffect(() => { if (!file) { setFilePreview(null); return; } const url = URL.createObjectURL(file); setFilePreview(url); return () => URL.revokeObjectURL(url); }, [file]);
@@ -29,10 +39,11 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
   function select(item: EditorStory | null) {
     setEditing(item); setFile(null); setTitle(item?.title ?? ""); setCaption(item?.caption ?? "");
     if (fileInput.current) fileInput.current.value = "";
-    setProductId(item?.product_id ?? ""); setStatus(item?.status ?? "draft"); setMessage(""); setConfirmDelete(false);
+    setProductId(item?.product_id ?? ""); setStatus(item?.status ?? "draft"); setMessage(""); setConfirmDelete(false); setConfirmPublish(false);
     if (window.innerWidth < 1024) requestAnimationFrame(() => editor.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
   function save() {
+    if (status === "published" && !confirmPublish) { setConfirmPublish(true); return; }
     setMessage("");
     startTransition(async () => {
       let mediaPath = editing?.media_path ?? "";
@@ -54,6 +65,11 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
       select(null); setMessage(status === "published" ? "История опубликована." : "Черновик сохранён."); router.refresh();
     });
   }
+
+  const previewUrl=filePreview??editing?.url??null;
+  const previewStory=previewUrl&&title.trim()?{id:editing?.id??"story-preview",title:title.trim(),caption:caption.trim()||null,mediaUrl:previewUrl,mediaType:(file?.type.startsWith("video/")?"video":editing?.media_type??"image") as "image"|"video",productId:productId||null}:null;
+  const publishedStories:StoreStory[]=stories.filter(item=>item.status==="published").map(item=>({id:item.id,title:item.title,caption:item.caption,mediaUrl:item.url,mediaType:item.media_type,productId:item.product_id}));
+  const previewStories=previewStory?[previewStory,...publishedStories.filter(item=>item.id!==previewStory.id)]:publishedStories;
   function remove(item: EditorStory) {
     startTransition(async () => {
       const result = await deleteFoodStory(item.id);
@@ -63,7 +79,7 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
     });
   }
 
-  return <div className={`grid gap-6 ${stories.length ? "lg:grid-cols-[minmax(0,1fr)_minmax(340px,440px)]" : "max-w-xl"}`}>
+  return <div className={`grid gap-6 ${stories.length ? "max-w-6xl" : "max-w-4xl"}`}>
     {stories.length > 0 && <section className="space-y-3" aria-label="Сохранённые истории">
       <div className="flex items-center justify-between gap-3"><h2 className="text-xl font-bold">Ваши истории</h2><button className="btn btn-primary" onClick={() => select(null)}>+ Новая история</button></div>
       {stories.map(item => <button type="button" key={item.id} onClick={() => select(item)} className={`flex w-full items-center gap-4 rounded-2xl border bg-white p-3 text-left ${editing?.id === item.id ? "border-[var(--accent)]" : "border-[var(--line)]"}`}>
@@ -83,9 +99,24 @@ export function StoryEditor({ tenantId, stories, products }: { tenantId: string;
         <label className="block text-sm font-bold">Короткий текст · необязательно<textarea className="input mt-2 min-h-24 py-3" value={caption} onChange={event => setCaption(event.target.value)} maxLength={300} placeholder="Пара слов о блюде или предложении" /></label>
         <label className="block text-sm font-bold">3. Ссылка на блюдо · необязательно<select className="input mt-2" value={productId} onChange={event => setProductId(event.target.value)}><option value="">Без ссылки</option>{products.map(product => <option key={product.id} value={product.id}>{product.title}</option>)}</select></label>
         <label className="block text-sm font-bold">Показ на витрине<select className="input mt-2" value={status} onChange={event => setStatus(event.target.value as "draft" | "published")}><option value="draft">Черновик · виден только вам</option><option value="published">Опубликовать</option></select></label>
+        <section className="overflow-hidden rounded-2xl border border-[var(--line)]" aria-label="Предпросмотр расположения истории">
+          <div className="flex items-center justify-between gap-3 border-b border-[var(--line)] px-4 py-3"><span className="flex items-center gap-2 text-sm font-bold"><Eye size={17}/>Живая витрина до публикации</span><small className="muted">{approach === "collection" ? "Коллекция" : approach === "assortment" ? "Ассортимент" : "Подбор"}</small></div>
+          <p className="border-b border-[var(--line)] px-4 py-3 text-xs text-[var(--ink-60)]">Прокрутите витрину: черновик вставлен между реальными соседними секциями, но ещё не сохранён.</p>
+          <button type="button" data-story-preview-fullscreen onClick={()=>{setPreviewScrolled(false);setFullPreview(true)}} className="mx-4 mb-3 inline-flex min-h-10 items-center gap-2 rounded-full border border-[var(--line)] bg-white px-4 text-xs font-bold"><Maximize2 size={16}/>Full-screen preview</button>
+          <div data-story-preview-scroll onScroll={event=>setPreviewScrolled(event.currentTarget.scrollTop>70)} className={fullPreview ? "fixed inset-0 z-[80] overflow-y-auto overscroll-contain bg-white" : "max-h-[720px] overflow-y-auto overscroll-contain"} style={previewStyle}>
+            {fullPreview&&<button type="button" onClick={()=>setFullPreview(false)} aria-label="Close full-screen preview" className="fixed right-3 top-3 z-[90] grid size-11 place-items-center rounded-full border border-black/10 bg-white/95 shadow-lg"><Minimize2 size={18}/></button>}
+            <div data-reference-fixture="true" className={`pointer-events-none min-w-0 ${previewScrolled?"[&>header>nav]:hidden":""}`}>
+              <CartProvider storageKey={`story-preview:${tenantId}`}>
+                <StoreHeader slug="preview" name={storeName} logoUrl={storeLogoUrl} categories={Array.from(new Set(products.map(product=>product.category)))} food={businessVertical==="food"} quickFood={businessVertical==="food"&&approach==="assortment"}/>
+                <StoreHome slug="preview" tenant={{name:storeName,catalog_name:storeName,tagline:storeTagline??null,business_vertical:businessVertical}} products={products} settings={previewSettings} campaign={null} storePolicies={null} approach={approach} foodStories={previewStories}/>
+              </CartProvider>
+            </div>
+          </div>
+        </section>
+        {confirmPublish && <div className="rounded-2xl border border-[var(--accent)] bg-[var(--accent-soft)] p-4 text-sm"><div className="flex items-start justify-between gap-3"><div><b>Опубликовать именно этот вариант?</b><p className="muted mt-1">История появится в показанном месте выбранного шаблона. Отмена ничего не публикует.</p></div><button type="button" aria-label="Закрыть подтверждение" onClick={()=>setConfirmPublish(false)}><X size={18}/></button></div><div className="mt-3 flex gap-2"><button type="button" disabled={pending} onClick={save} className="btn btn-primary">Опубликовать</button><button type="button" disabled={pending} onClick={()=>setConfirmPublish(false)} className="btn btn-secondary">Отмена</button></div></div>}
         {message && <p role="status" className="rounded-xl bg-[var(--surface-2)] p-3 text-sm">{message}</p>}
         {editing && confirmDelete && <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm"><p className="font-bold text-red-800">Удалить «{editing.title}»?</p><p className="mt-1 text-red-700">История и её файл исчезнут с витрины.</p><div className="mt-3 flex flex-wrap gap-2"><button type="button" disabled={pending} onClick={() => remove(editing)} className="btn bg-red-700 text-white hover:bg-red-800">Да, удалить</button><button type="button" disabled={pending} onClick={() => setConfirmDelete(false)} className="btn btn-secondary">Отмена</button></div></div>}
-        <div className="flex flex-wrap gap-3"><button type="button" disabled={pending || !title.trim()} onClick={save} className="btn btn-primary">{pending ? "Сохраняем…" : editing ? "Сохранить изменения" : "Создать историю"}</button>{editing && !confirmDelete && <button type="button" disabled={pending} onClick={() => setConfirmDelete(true)} className="btn btn-secondary text-red-700">Удалить</button>}</div>
+        <div className="flex flex-wrap gap-3">{!confirmPublish && <button type="button" disabled={pending || !title.trim()} onClick={save} className="btn btn-primary">{pending ? "Сохраняем…" : editing ? "Сохранить изменения" : "Создать историю"}</button>}{editing && !confirmDelete && <button type="button" disabled={pending} onClick={() => setConfirmDelete(true)} className="btn btn-secondary text-red-700">Удалить</button>}</div>
       </div>
     </section>
   </div>;

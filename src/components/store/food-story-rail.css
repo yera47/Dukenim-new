@@ -1,0 +1,35 @@
+.food-stories-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 0.5rem;
+}
+
+.food-stories-heading p {
+  color: var(--store-muted);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.food-stories-heading h2 {
+  margin-top: 0.1rem;
+  font-size: 1.45rem;
+  font-weight: 850;
+}
+
+.food-stories-heading > span {
+  color: var(--store-muted);
+  font-size: 0.72rem;
+}
+
+button[data-viewed="true"] {
+  border-color: color-mix(in srgb, var(--store-text) 24%, transparent);
+  filter: saturate(0.65);
+}
+
+@media (max-width: 640px) {
+  .food-stories-heading h2 { font-size: 1.25rem; }
+}

@@ -33,6 +33,14 @@ it("passes exact IDs, slugs and actor to the atomic guarded RPC", async () => {
   expect(rpc).toHaveBeenCalledWith("root_bulk_delete_empty_stores", { p_stores: stores, p_actor: "root", p_reason: "cleanup" });
 });
 
+it("allows one explicitly confirmed empty store", async () => {
+  const rpc = vi.fn(async () => ({ data: 1, error: null }));
+  authorize.mockResolvedValue({ admin: { rpc }, user: { id: "root" } });
+  const response = await POST(request({ stores: [stores[0]], reason: "duplicate", confirmation: "УДАЛИТЬ 1" }));
+  expect(response.status).toBe(200);
+  expect(rpc).toHaveBeenCalledWith("root_bulk_delete_empty_stores", { p_stores: [stores[0]], p_actor: "root", p_reason: "duplicate" });
+});
+
 it("does not report a partial database result as success", async () => {
   authorize.mockResolvedValue({ admin: { rpc: vi.fn(async () => ({ data: 1, error: null })) }, user: { id: "root" } });
   expect((await POST(request({ stores, reason: "cleanup", confirmation: "УДАЛИТЬ 2" }))).status).toBe(409);

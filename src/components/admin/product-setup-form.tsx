@@ -8,7 +8,7 @@ import {QuantityStepper} from "./quantity-stepper";
 import Image from "next/image";
 import { ImagePlus } from "lucide-react";
 
-export function ProductSetupForm({categories=[],vertical="other"}:{categories?:Array<{id:string;name:string}>;vertical?:BusinessVertical}){
+export function ProductSetupForm({categories=[],choices=[],vertical="other"}:{categories?:Array<{id:string;name:string}>;choices?:Array<{id:string;label:string}>;vertical?:BusinessVertical}){
   const [state,action,pending]=useActionState(createProductAction,{} as ProductActionState);
   const [step,setStep]=useState(0);const[title,setTitle]=useState("");const[price,setPrice]=useState("");const[error,setError]=useState("");
   const[photos,setPhotos]=useState<string[]>([]);const form=useRef<HTMLFormElement>(null);const workflow=businessWorkflow(vertical);
@@ -37,7 +37,7 @@ export function ProductSetupForm({categories=[],vertical="other"}:{categories?:A
         <label className="block text-sm">Название<input name="title" required minLength={2} maxLength={120} value={title} onChange={e=>setTitle(e.target.value)} className="input mt-2" placeholder={workflow.titleExample}/></label>
         {categories.length>0&&<label className="block text-sm">Раздел<select aria-label="Раздел" name="categoryId" className="input mt-2" defaultValue=""><option value="">Без раздела</option>{categories.map(category=><option key={category.id} value={category.id}>{category.name}</option>)}</select></label>}
         <label className="block text-sm">Описание · необязательно<textarea name="description" maxLength={2000} rows={4} className="input mt-2" placeholder={workflow.descriptionHint}/></label>
-        {vertical==="food"&&<FoodOptionsEditor/>}
+        {vertical==="food"&&<FoodOptionsEditor choices={choices}/>}
       </section>
       <section data-product-step="1" hidden={step!==1} className="space-y-4">
         <h3 className="text-xl font-semibold">Покажите товар покупателю</h3>

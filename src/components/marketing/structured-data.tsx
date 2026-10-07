@@ -2,7 +2,7 @@ import { siteUrl, siteName, siteDescription, absoluteUrl } from "@/lib/site";
 import { planPrice } from "@/lib/plans";
 
 // Truthful structured data only: no ratings, reviews, or performance claims
-// (see marketing/CONTEXT.md evidence rules). Prices mirror the confirmed public tariffs.
+// Prices are draft list amounts; no billing period or live checkout is claimed here.
 export function StructuredData() {
   const graph = {
     "@context": "https://schema.org",
@@ -35,11 +35,18 @@ export function StructuredData() {
         publisher: { "@id": `${siteUrl}/#organization` },
         offers: [{
           "@type": "Offer",
-          name: "Каталог",
+          name: "Base",
           price: planPrice.basic,
           priceCurrency: "KZT",
-          url: absoluteUrl("/register?plan=basic&billing=month"),
-          description: "Все функции Dukenim в одном тарифе. 7 дней бесплатно, затем ежемесячная оплата после подтверждения владельца.",
+          url: absoluteUrl("/register?plan=basic"),
+          description: "Полноценный каталог и заказы без AI-генерации. Период и условия оплаты уточняются до checkout.",
+        }, {
+          "@type": "Offer",
+          name: "Premium",
+          price: planPrice.standard,
+          priceCurrency: "KZT",
+          url: absoluteUrl("/register?plan=standard"),
+          description: "AI-фото и product credits. Период цены и live-оплата пока не подтверждены.",
         }],
       },
     ],

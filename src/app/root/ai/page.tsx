@@ -1,11 +1,43 @@
-import Link from "next/link";
-import { ArrowLeft, Bot, ShieldCheck } from "lucide-react";
-import { requireRole } from "@/lib/auth";
-import { getAzureFoundryStatus } from "@/lib/ai/azure-foundry";
-import { AiTester } from "./ai-tester";
+import Link from"next/link";
+import{ArrowLeft,Bot,ShieldCheck}from"lucide-react";
+import{requireRole}from"@/lib/auth";
+import{createAdminClient}from"@/lib/supabase/admin";
+import{getAzureFoundryStatus}from"@/lib/ai/azure-foundry";
+import{loadCreditPlatformControl,loadTenantCreditBalance,unavailableCreditBalance,type CreditPlatformControl}from"@/lib/ai/product-credit-admin";
+import{configureCreditControls,grantCompensationCredits}from"./actions";
+import{AiTester}from"./ai-tester";
 
-export default async function RootAiPage() {
-  await requireRole(["superadmin"]);
-  const status = getAzureFoundryStatus();
-  return <main className="min-h-screen bg-[#0c1713] text-white"><header className="border-b border-white/10"><div className="container flex h-20 items-center justify-between"><Link href="/root" className="inline-flex items-center gap-2 text-sm font-bold text-white/70 hover:text-white"><ArrowLeft size={17}/>К центру управления</Link><span className="badge bg-white/9 text-[var(--accent-bright)]">AZURE AI</span></div></header><div className="container max-w-3xl py-10"><div className="flex items-center gap-3"><Bot className="text-[var(--accent-bright)]"/><h1 className="text-4xl font-extrabold">Модель Dukenim</h1></div><p className="mt-3 text-white/55">Закрытая серверная интеграция Microsoft Foundry. Ключ никогда не отправляется в браузер и не отображается на странице.</p><section className="mt-8 rounded-[14px] bg-white/7 p-6"><div className="flex items-start justify-between gap-4"><div><p className="data-label text-white/40">СОСТОЯНИЕ</p><h2 className="mt-2 text-xl font-extrabold">{status.configured ? "Готово к проверке" : "Нужны секреты окружения"}</h2><p className="mt-2 text-sm text-white/50">Deployment: {status.deployment ?? "не задан"}</p></div><ShieldCheck className={status.configured ? "text-[var(--accent-bright)]" : "text-white/30"}/></div><AiTester configured={status.configured}/></section></div></main>;
+type TenantChoice={id:string;name:string;slug:string};
+const micros=(value:number)=>`${(value/1_000_000).toFixed(2)} USD`;
+
+export default async function RootAiPage({searchParams}:{searchParams:Promise<{tenant?:string}>}){
+  await requireRole(["superadmin"]);const query=await searchParams;const azure=getAzureFoundryStatus();
+  let tenants:TenantChoice[]=[],selected:string|null=null;
+  let balance=unavailableCreditBalance("","migration_unavailable");
+  let platform:CreditPlatformControl={availability:"migration_unavailable",killSwitch:true,ownerUsdMicrosCap:0,spentUsdMicros:0,reservedUsdMicros:0,message:"Credit ledger migration is not applied."};
+  if(process.env.NEXT_PUBLIC_SUPABASE_URL&&process.env.SUPABASE_SERVICE_ROLE_KEY){
+    try{const client=createAdminClient();const result=await client.from("tenants").select("id,name,slug").order("name").limit(100);tenants=(result.data??[])as TenantChoice[];selected=tenants.some(item=>item.id===query.tenant)?query.tenant??null:tenants[0]?.id??null;if(selected){[balance,platform]=await Promise.all([loadTenantCreditBalance(client,selected),loadCreditPlatformControl(client)]);}}catch{/* Fail-closed cards below remain disabled. */}
+  }
+  const controlsReady=Boolean(selected&&balance.availability==="ready"&&platform.availability==="ready");
+  const selectedTenant=tenants.find(item=>item.id===selected);
+  return <main className="min-h-screen bg-[#0c1713] text-white">
+    <header className="border-b border-white/10"><div className="container flex h-20 items-center justify-between"><Link href="/root" className="inline-flex items-center gap-2 text-sm font-bold text-white/70 hover:text-white"><ArrowLeft size={17}/>К управлению</Link><span className="badge bg-white/9 text-[var(--accent-bright)]">AI CONTROL</span></div></header>
+    <div className="container max-w-5xl py-10">
+      <div className="flex items-center gap-3"><Bot className="text-[var(--accent-bright)]"/><h1 className="text-4xl font-extrabold">AI Dukenim</h1></div><p className="mt-3 max-w-3xl text-white/60">Единый баланс, лимиты и журнал компенсаций. Управление доступно только superadmin; магазин видит только собственный баланс.</p>
+      <section className="mt-8 rounded-[14px] bg-white/7 p-6"><div className="flex items-start justify-between gap-4"><div><p className="data-label text-white/40">Azure text deployment</p><h2 className="mt-2 text-xl font-extrabold">{azure.configured?"Готов к проверке":"Нужна серверная конфигурация"}</h2><p className="mt-2 text-sm text-white/50">Deployment: {azure.deployment??"не задан"}</p></div><ShieldCheck className={azure.configured?"text-[var(--accent-bright)]":"text-white/30"}/></div><AiTester configured={azure.configured}/></section>
+
+      <section className="mt-6 rounded-[14px] border border-white/10 bg-white/7 p-6" aria-labelledby="ledger-title">
+        <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="data-label text-white/40">SERVER LEDGER</p><h2 id="ledger-title" className="mt-2 text-2xl font-extrabold">Кредиты магазина</h2></div><span className={`rounded-full px-3 py-1 text-xs font-extrabold ${controlsReady?"bg-emerald-400/15 text-emerald-200":"bg-amber-300/15 text-amber-100"}`}>{controlsReady?"LEDGER READY":"CONTROLS DISABLED"}</span></div>
+        <form method="get" className="mt-5 flex flex-wrap items-end gap-3"><label className="grid min-w-64 flex-1 gap-2 text-sm text-white/65">Магазин<select name="tenant" defaultValue={selected??""} className="rounded-xl border border-white/15 bg-black/25 px-3 py-3 text-white">{tenants.map(item=><option key={item.id} value={item.id}>{item.name} · {item.slug}</option>)}</select></label><button className="rounded-xl border border-white/20 px-5 py-3 font-bold">Открыть</button></form>
+        {!controlsReady&&<p role="status" className="mt-4 rounded-xl bg-amber-200/10 p-4 text-sm leading-6 text-amber-100">{balance.message} {platform.message} Никакие лимиты или начисления из интерфейса не выполняются.</p>}
+        <div className="mt-5 grid gap-3 sm:grid-cols-4">{[["Доступно",balance.availableTotal],["Период",balance.availableAllowance],["Куплено",balance.availablePurchased],["Зарезервировано",balance.reservedAllowance+balance.reservedPurchased]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-black/20 p-4"><small className="text-white/50">{label}</small><b className="mt-2 block text-xl">{value}</b></div>)}</div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-3"><div className="rounded-xl bg-black/20 p-4 text-sm"><b>Магазин</b><p className="mt-2 text-white/55">{selectedTenant?.name??"Не выбран"}</p></div><div className="rounded-xl bg-black/20 p-4 text-sm"><b>Лимит магазина</b><p className="mt-2 text-white/55">{micros(balance.tenantUsdMicrosCap)} · потрачено {micros(balance.spentUsdMicros)}</p></div><div className="rounded-xl bg-black/20 p-4 text-sm"><b>Лимит платформы</b><p className="mt-2 text-white/55">{micros(platform.ownerUsdMicrosCap)} · потрачено {micros(platform.spentUsdMicros)}</p></div></div>
+      </section>
+
+      <div className="mt-6 grid gap-5 lg:grid-cols-2">
+        <form action={grantCompensationCredits} className="rounded-[14px] border border-white/10 bg-white/7 p-6"><h2 className="text-xl font-extrabold">Компенсационное начисление</h2><p className="mt-2 text-sm leading-6 text-white/55">Только для подтверждённой компенсации. Причина и идентификатор записываются в audit/ledger; повторная отправка не начисляет второй раз.</p><input type="hidden" name="tenantId" value={selected??""}/><input type="hidden" name="requestId" value={crypto.randomUUID()}/><label className="mt-4 grid gap-2 text-sm">Кредиты<input name="credits" type="number" min="1" max="100000" required disabled={!controlsReady} className="rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><label className="mt-3 grid gap-2 text-sm">Причина<textarea name="reason" minLength={8} maxLength={1000} required disabled={!controlsReady} className="min-h-24 rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><button disabled={!controlsReady} className="mt-4 w-full rounded-xl bg-white px-4 py-3 font-extrabold text-black disabled:cursor-not-allowed disabled:opacity-35">Начислить компенсацию</button></form>
+        <form action={configureCreditControls} className="rounded-[14px] border border-white/10 bg-white/7 p-6"><h2 className="text-xl font-extrabold">Лимиты и kill switch</h2><input type="hidden" name="tenantId" value={selected??""}/><div className="mt-4 grid gap-3 sm:grid-cols-2"><label className="grid gap-2 text-sm">Credit cap<input name="tenantCreditCap" type="number" min="0" defaultValue={balance.tenantCreditCap} disabled={!controlsReady} className="rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><label className="grid gap-2 text-sm">Tenant USD micros<input name="tenantUsdMicrosCap" type="number" min="0" defaultValue={balance.tenantUsdMicrosCap} disabled={!controlsReady} className="rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><label className="grid gap-2 text-sm">Owner USD micros<input name="ownerUsdMicrosCap" type="number" min="0" defaultValue={platform.ownerUsdMicrosCap} disabled={!controlsReady} className="rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><label className="flex items-center gap-2 self-end rounded-xl border border-white/15 p-3 text-sm"><input name="generationEnabled" value="true" type="checkbox" defaultChecked={balance.generationEnabled} disabled={!controlsReady}/>Generation enabled</label><label className="flex items-center gap-2 rounded-xl border border-white/15 p-3 text-sm"><input name="killSwitch" value="true" type="checkbox" defaultChecked={platform.killSwitch} disabled={!controlsReady}/>Platform kill switch</label></div><label className="mt-3 grid gap-2 text-sm">Причина изменения<textarea name="reason" minLength={8} maxLength={1000} required disabled={!controlsReady} className="min-h-20 rounded-xl border border-white/15 bg-black/25 px-3 py-3"/></label><button disabled={!controlsReady} className="mt-4 w-full rounded-xl border border-white/20 px-4 py-3 font-extrabold disabled:cursor-not-allowed disabled:opacity-35">Сохранить лимиты</button></form>
+      </div>
+    </div>
+  </main>;
 }

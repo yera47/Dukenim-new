@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { studioNextStep, type StudioReadiness } from "./studio-next-step";
+import { loadStudioReadiness, resolveStudioReadiness, studioNextStep, type StudioReadiness } from "./studio-next-step";
 import type { OwnerStore } from "./owner";
 
 const store: OwnerStore = {
@@ -28,5 +28,22 @@ describe("AI Studio next step", () => {
 
   it("does not count pickup without an address as ready", () => {
     expect(studioNextStep({ ...store, catalog_status: "ready" }, { ...readiness, products: 1, stockedProducts: 1, pickupEnabled: true }).route).toBe("/delivery");
+  });
+
+  it("loads a complete readiness snapshot", async () => {
+    await expect(loadStudioReadiness(async () => [
+      { count: 3 }, { count: 2 }, { count: 1 },
+      { data: { pickup_enabled: true, delivery_enabled: false, pickup_location: { address: "Almaty" } } },
+    ])).resolves.toEqual({ products: 3, stockedProducts: 2, newOrders: 1, pickupEnabled: true, deliveryEnabled: false, pickupAddress: "Almaty" });
+  });
+
+  it("fails on a partial metric response and can be retried", async () => {
+    expect(() => resolveStudioReadiness([{ count: 1 }, { count: null }, { count: 0 }, { data: null }])).toThrow("readiness");
+    let attempt = 0;
+    const loader = async () => ++attempt === 1
+      ? Promise.reject(new Error("offline"))
+      : [{ count: 1 }, { count: 1 }, { count: 0 }, { data: { delivery_enabled: true } }];
+    await expect(loadStudioReadiness(loader)).rejects.toThrow("offline");
+    await expect(loadStudioReadiness(loader)).resolves.toMatchObject({ products: 1, stockedProducts: 1, deliveryEnabled: true });
   });
 });

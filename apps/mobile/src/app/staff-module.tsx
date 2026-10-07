@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, RefreshControl, StyleSheet, Switch, TextInput, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, money } from "@/lib/theme";

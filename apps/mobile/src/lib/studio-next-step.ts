@@ -11,6 +11,40 @@ export type StudioReadiness = {
 
 export type StudioStep = { title: string; detail: string; action: string; route: string; progress: string };
 
+type MetricResult = { count?: number | null; data?: unknown; error?: unknown };
+
+export function resolveStudioReadiness(results: MetricResult[]): StudioReadiness {
+  const [products, stocked, orders, settings] = results;
+  if (!products || !stocked || !orders || !settings || products.error || stocked.error || orders.error || settings.error
+    || products.count === null || products.count === undefined
+    || stocked.count === null || stocked.count === undefined
+    || orders.count === null || orders.count === undefined) {
+    throw new Error("Studio readiness is unavailable");
+  }
+  const data = (settings.data ?? null) as { pickup_enabled?: boolean; delivery_enabled?: boolean; pickup_location?: { address?: string } | null } | null;
+  return {
+    products: products.count,
+    stockedProducts: stocked.count,
+    newOrders: orders.count,
+    pickupEnabled: Boolean(data?.pickup_enabled),
+    deliveryEnabled: Boolean(data?.delivery_enabled),
+    pickupAddress: String(data?.pickup_location?.address ?? ""),
+  };
+}
+
+export async function loadStudioReadiness(loader: () => Promise<MetricResult[]>): Promise<StudioReadiness> {
+  return resolveStudioReadiness(await loader());
+}
+
+export const studioPreviewReadiness: StudioReadiness = {
+  products: 0,
+  stockedProducts: 0,
+  newOrders: 0,
+  pickupEnabled: false,
+  deliveryEnabled: false,
+  pickupAddress: "",
+};
+
 export function studioNextStep(store: OwnerStore, state: StudioReadiness): StudioStep {
   if (store.catalog_status === "not_started") return {
     title: "Соберите витрину", detail: "Выберите шаблон, цвета и способы получения заказа. Черновик продолжится на сайте и в приложении.",

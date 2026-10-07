@@ -1,5 +1,6 @@
 import {useCallback,useEffect,useRef,useState} from "react";
-import {ActivityIndicator,Alert,Pressable,StyleSheet,Text,TextInput,View} from "react-native";
+import {ActivityIndicator,Alert,Pressable,StyleSheet, TextInput,View} from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import {Image} from "expo-image";
 import {router} from "expo-router";
 import * as ImagePicker from "expo-image-picker";

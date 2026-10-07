@@ -50,4 +50,29 @@ describe("private builder drafts",()=>{
     expect((await PUT(request({revision:0,state}))).status).toBe(403);
     expect(mocks.client).not.toHaveBeenCalled();
   });
+  it("serializes two clients that save the same revision",async()=>{
+    let persisted={revision:3,state};
+    mocks.client.mockImplementation(async()=>({from:()=>{
+      let fields:{revision:number;state:typeof state}|null=null;
+      let tenant:string|undefined;
+      let revision:number|undefined;
+      const chain={
+        update:vi.fn((value:{revision:number;state:typeof state})=>{fields=value;return chain;}),
+        eq:vi.fn((field:string,value:string|number)=>{if(field==="tenant_id")tenant=String(value);if(field==="revision")revision=Number(value);return chain;}),
+        select:vi.fn(()=>chain),
+        maybeSingle:vi.fn(async()=>{
+          if(tenant!=="mine"||revision!==persisted.revision||!fields)return{data:null,error:null};
+          persisted={revision:fields.revision,state:fields.state};
+          return{data:{revision:persisted.revision},error:null};
+        }),
+      };
+      return chain;
+    }}));
+    const clientA={...state,brief:"client A"};
+    const clientB={...state,brief:"client B"};
+    const responses=await Promise.all([PUT(request({revision:3,state:clientA})),PUT(request({revision:3,state:clientB}))]);
+    expect(responses.map(response=>response.status).sort()).toEqual([200,409]);
+    expect(persisted.revision).toBe(4);
+    expect(["client A","client B"]).toContain(persisted.state.brief);
+  });
 });

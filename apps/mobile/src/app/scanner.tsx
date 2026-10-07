@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Link } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, View } from "react-native";
+import { AppText as Text } from "@/components/app-text";
 import { colors } from "@/lib/theme";
 
 export default function Scanner() {

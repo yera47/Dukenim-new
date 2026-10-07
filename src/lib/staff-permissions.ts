@@ -17,6 +17,14 @@ export function staffCan(value: unknown, module: StaffModule, operation: "read" 
   const permission = parsed.data[module];
   return permission === "write" || operation === "read" && permission === "read";
 }
+export function staffPermissionSummary(value: unknown): string[] {
+  const parsed = staffPermissionsSchema.safeParse(value);
+  if (!parsed.success) return [];
+  return Object.entries(staffModules).flatMap(([key,label]) => {
+    const level=parsed.data[key as StaffModule];
+    return level==="none"?[]:[`${label} · ${level==="write"?"изменение":"просмотр"}`];
+  });
+}
 export const staffPresets: Record<string, {label:string; permissions:StaffPermissions}> = {
   manager:{label:"Менеджер заказов",permissions:{...noStaffPermissions,orders:"write",catalog:"read",stock:"read",customers:"read"}},
   content:{label:"Контент-менеджер",permissions:{...noStaffPermissions,catalog:"write",studio:"write"}},

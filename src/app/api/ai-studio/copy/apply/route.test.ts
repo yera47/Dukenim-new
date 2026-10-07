@@ -54,13 +54,13 @@ describe("apply AI copy", () => {
     expect(mocks.saveSettings).not.toHaveBeenCalled();
   });
 
-  it("creates a campaign on the single public plan", async () => {
+  it("rejects campaign generation on Base because Base has no AI", async () => {
     const generation = generationClient("promotion");
     const insert = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: "campaign-basic" }, error: null }) }) });
     const campaigns = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }), insert };
     mocks.client.mockResolvedValue({ from: vi.fn((table: string) => table === "ai_studio_generations" ? generation.client.from(table) : campaigns) });
-    expect((await POST(request())).status).toBe(200);
-    expect(insert).toHaveBeenCalledWith(expect.objectContaining({ tenant_id: tenantId, status: "draft" }));
+    expect((await POST(request())).status).toBe(403);
+    expect(insert).not.toHaveBeenCalled();
   });
 
   it("stores a Brand promotion as an unpublished campaign", async () => {

@@ -1,8 +1,12 @@
 import {expect,it} from "vitest";
-import {noStaffPermissions,staffCan,staffPermissionsSchema,staffPresets} from "./staff-permissions";
+import {noStaffPermissions,staffCan,staffPermissionSummary,staffPermissionsSchema,staffPresets} from "./staff-permissions";
 it("denies missing, malformed and revoked access",()=>{
   for(const value of [null,{}, {orders:"write"},{...noStaffPermissions,billing:"write"}]) expect(staffCan(value,"orders","read")).toBe(false);
   expect(staffCan(staffPresets.manager.permissions,"orders","write",false)).toBe(false);
+});
+it("describes only granted permissions in plain language",()=>{
+  expect(staffPermissionSummary(staffPresets.content.permissions)).toEqual(["Каталог · изменение","AI Studio · изменение"]);
+  expect(staffPermissionSummary({...noStaffPermissions,owner:"write"})).toEqual([]);
 });
 it("read cannot write and a module grant never grants another module",()=>{
   expect(staffCan(staffPresets.manager.permissions,"orders","write")).toBe(true);

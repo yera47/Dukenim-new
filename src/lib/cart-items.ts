@@ -2,6 +2,11 @@ import type {Product} from "./demo-data";
 import {emptyFoodOptions,emptyFoodSelection,foodSelectionKey,priceFoodSelection,type FoodSelection} from "./food-options";
 export type CartItem={lineId:string;product:Product;variantId:string;qty:number;selection:FoodSelection;unitPrice:number;labels:string[]};
 export const cartLimit=(product:Product,variantId:string)=>Math.max(0,Math.min(20,product.variants.find(v=>v.id===variantId)?.stock??0));
+export function variantLabel(product:Product,variantId:string){
+ const variant=product.variants.find(item=>item.id===variantId);if(!variant)return"";
+ const color=variant.color&&!/^(Основной|Стандарт)$/i.test(variant.color)?variant.color:"";
+ return [color,variant.size].filter(Boolean).join(" · ");
+}
 export function cartQuantity(items:CartItem[],variantId:string){return items.filter(i=>i.variantId===variantId).reduce((sum,i)=>sum+i.qty,0);}
 export function addCartItem(items:CartItem[],product:Product,variantId:string,selection:FoodSelection=emptyFoodSelection){
  const limit=cartLimit(product,variantId);if(cartQuantity(items,variantId)>=limit)return items;

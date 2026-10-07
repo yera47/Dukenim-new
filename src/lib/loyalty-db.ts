@@ -12,6 +12,7 @@ type LoyaltyDatabase={public:{Tables:{
  claim_buyer_orders:{Args:{p_tenant:string;p_user:string|null;p_guest_hash:string;p_receipts:string[]};Returns:number};
  buyer_history:{Args:{p_tenant:string;p_user:string|null;p_guest_hash:string;p_offset:number};Returns:Json};
  create_buyer_order:{Args:{p_tenant_id:string;p_name:string;p_phone:string;p_delivery_method:string;p_delivery_address:string;p_zone_id:string|null;p_payment_method:string;p_items:Json;p_requested_for:string|null;p_user:string|null;p_guest_hash:string;p_reward_rule:string|null;p_reward_milestone:number|null;p_referral_code:string|null};Returns:{order_id:string;order_number:number;total:number}[]};
+ create_buyer_order_idempotent:{Args:{p_tenant_id:string;p_name:string;p_phone:string;p_delivery_method:string;p_delivery_address:string;p_zone_id:string|null;p_payment_method:string;p_items:Json;p_requested_for:string|null;p_user:string|null;p_guest_hash:string;p_reward_rule:string|null;p_reward_milestone:number|null;p_referral_code:string|null;p_idempotency_key:string};Returns:{order_id:string;order_number:number;total:number}[]};
  owner_confirm_cash:{Args:{p_order:string;p_refund:boolean};Returns:boolean};
  set_variant_stock:{Args:{p_tenant_id:string;p_variant_id:string;p_target:number};Returns:number};
 }}};

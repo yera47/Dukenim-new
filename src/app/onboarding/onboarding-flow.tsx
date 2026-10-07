@@ -14,7 +14,7 @@ function money(value: number) {
 export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: string; trial_ends_at: string; next_plan: Plan; business_vertical?: BusinessVertical | null }; initialBilling?: "month" | "year" }) {
   const [step, setStep] = useState(1);
   const [vertical, setVertical] = useState<BusinessVertical | null>(tenant.business_vertical ?? null);
-  const plan: Plan = "basic";
+  const plan: Plan = tenant.next_plan;
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const trialDate = new Date(tenant.trial_ends_at).toLocaleDateString("ru-KZ", { day: "numeric", month: "long" });
@@ -26,6 +26,7 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
       const response = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Legacy preference required by complete_onboarding_v2; it does not create or confirm a monthly payment plan.
         body: JSON.stringify({ plan, businessVertical: vertical, storefrontFormat: "catalog", billingPeriod: "monthly" }),
       });
       const data = await response.json() as { error?: string };
@@ -68,21 +69,21 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
       </section>}
 
       {step === 2 && <section className="builder-step">
-        <div className="builder-intro"><p>ШАГ 2 ИЗ 3</p><h1>Все возможности уже включены.</h1><span>Один тариф без скрытых разделов. После регистрации AI Studio проведёт вас через каталог и оформление.</span></div>
+        <div className="builder-intro"><p>ШАГ 2 ИЗ 3</p><h1>Проверьте выбранный тариф.</h1><span>Base — полноценный каталог без AI. Premium добавляет AI-фото; в trial доступен один товар и один job на 2–5 фото.</span></div>
         <div className="onboarding-plan-grid"><article className="onboarding-plan-card is-selected">
-          <div className="flex items-start justify-between gap-4"><div><p className="data-label">ЕДИНЫЙ ТАРИФ</p><h2>{planName.basic}</h2></div><span className="onboarding-selected"><Check size={16}/> Все функции</span></div>
-          <strong>{money(planPrice.basic)} ₸<small>в месяц</small></strong>
-          <ul>{planFeatures.basic.map(feature=><li key={feature}><Check size={16}/>{feature}</li>)}</ul>
+          <div className="flex items-start justify-between gap-4"><div><p className="data-label">ВЫБРАННЫЙ ТАРИФ</p><h2>{planName[plan]}</h2></div><span className="onboarding-selected"><Check size={16}/> Trial без списания</span></div>
+          <strong>{money(planPrice[plan])} ₸<small>период уточняется до оплаты</small></strong>
+          <ul>{planFeatures[plan].map(feature=><li key={feature}><Check size={16}/>{feature}</li>)}</ul>
         </article></div>
-        <p className="onboarding-note">Первые 7 дней бесплатно. Затем — 24 900 ₸ в месяц. Списание не начинается без подтверждения оплаты.</p>
+        <p className="onboarding-note">Регистрация не создаёт подписку и не списывает деньги. Период цены пока не подтверждён; условия будут показаны до отдельного checkout.</p>
         <div className="builder-actions"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
       </section>}
 
       {step === 3 && <section className="builder-step onboarding-finish">
         <p className="data-label">ШАГ 3 ИЗ 3</p><h1>Начнём с вашего каталога.</h1>
-        <p className="onboarding-lead">После входа AI Studio покажет короткий маршрут запуска. Сначала создайте каталог и добавьте товар; затем настройте витрину и опубликуйте ссылку.</p>
+        <p className="onboarding-lead">После входа конструктор покажет короткий маршрут запуска. Сначала создайте каталог и добавьте товар; затем настройте витрину и опубликуйте ссылку.</p>
         <div className="onboarding-steps">
-          <div><span>01</span><Store size={23} /><b>Каталог и оформление</b><p>Название, шаблон и палитра в AI Studio.</p></div>
+          <div><span>01</span><Store size={23} /><b>Каталог и оформление</b><p>Название, шаблон и палитра в пошаговом конструкторе.</p></div>
           <div><span>02</span><PackagePlus size={23} /><b>Первый товар</b><p>Название, цена, остаток и фотографии.</p></div>
           <div><span>03</span><Check size={23} /><b>Публикация</b><p>Проверьте каталог и поделитесь ссылкой.</p></div>
         </div>

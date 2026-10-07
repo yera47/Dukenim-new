@@ -7,8 +7,8 @@ export class FalImageError extends Error {
   constructor(message: string, public readonly status?: number) { super(message); }
 }
 
-export function getFalImageStatus() {
-  return { configured: Boolean(process.env.FAL_KEY), model: process.env.FAL_IMAGE_MODEL ?? "fal-ai/flux-pro/v1.1" };
+export function getFalImageStatus(env: NodeJS.ProcessEnv = process.env) {
+  return { configured: Boolean(env.FAL_KEY), model: env.FAL_IMAGE_MODEL ?? "fal-ai/flux-pro/v1.1" };
 }
 
 export async function createFalImage(prompt: string) {

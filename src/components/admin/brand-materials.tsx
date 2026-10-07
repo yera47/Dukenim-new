@@ -4,7 +4,7 @@ import { brandColorsSchema } from "@/lib/brand-materials";
 import { readBrandbookPdf } from "@/lib/pdf-brandbook-client";
 import {BrandPdfVisual} from "./brand-pdf-visual";
 import { FileText, ImagePlus } from "lucide-react";
-export function BrandMaterials({embedded=false,expandedInitially=false,onBusyChange,requestPicker,onSaved}:{embedded?:boolean;expandedInitially?:boolean;onBusyChange?:(busy:boolean)=>void;requestPicker?:{kind:"photo"|"file"|"camera";id:number}|null;onSaved?:()=>void}={}) {
+export function BrandMaterials({embedded=false,expandedInitially=false,onBusyChange,requestPicker,onSaved,onLoaded}:{embedded?:boolean;expandedInitially?:boolean;onBusyChange?:(busy:boolean)=>void;requestPicker?:{kind:"photo"|"file"|"camera";id:number}|null;onSaved?:(result:{colors:string[];colorTheme?:{background:string;surface:string;accent:string};logoUrl?:string|null})=>void;onLoaded?:(result:{colors:string[];colorTheme?:{background:string;surface:string;accent:string};logoUrl?:string|null})=>void}={}) {
   const photoInput=useRef<HTMLInputElement>(null),pdfInput=useRef<HTMLInputElement>(null),cameraInput=useRef<HTMLInputElement>(null);
   const [notes,setNotes]=useState("");const[revision,setRevision]=useState<number|null>(null);
   const [colors,setColors]=useState<string[]>([]);const[logoUrl,setLogoUrl]=useState<string|null>(null);
@@ -29,17 +29,17 @@ export function BrandMaterials({embedded=false,expandedInitially=false,onBusyCha
     const controller=new AbortController();
     void fetch("/api/brand-materials",{cache:"no-store",signal:controller.signal}).then(async response=>{
       const data=await response.json();if(!response.ok)throw new Error(data.error);
-      if(!controller.signal.aborted){setNotes(data.notes);setRevision(data.revision);setLogoUrl(data.logoUrl);setColors(brandColorsSchema.parse(data.colors));}
+      if(!controller.signal.aborted){const loadedColors=brandColorsSchema.parse(data.colors);setNotes(data.notes);setRevision(data.revision);setLogoUrl(data.logoUrl);setColors(loadedColors);onLoaded?.({colors:loadedColors,colorTheme:data.colorTheme,logoUrl:data.logoUrl});}
     }).catch(e=>{if(!controller.signal.aborted)setMessage(e instanceof Error?e.message:"Материалы не загрузились.");});
     return()=>controller.abort();
-  },[]);
+  },[onLoaded]);
   async function save() {
     if(revision===null||busy||pdfBusy||visualBusy)return;setBusy(true);setMessage("");
     try {
       const form=new FormData();form.set("revision",String(revision));form.set("notes",notes);if(file)form.set("logo",file);
       const response=await fetch("/api/brand-materials",{method:"POST",body:form});const data=await response.json();
       if(!response.ok)throw new Error(data.error||"Не удалось сохранить.");
-      setRevision(data.revision);setColors(brandColorsSchema.parse(data.colors));setFile(null);if(file)onSaved?.();
+      const savedColors=brandColorsSchema.parse(data.colors);setRevision(data.revision);setColors(savedColors);setFile(null);if(file)onSaved?.({colors:savedColors,colorTheme:data.colorTheme,logoUrl:data.logoUrl});
       const refreshed=await fetch("/api/brand-materials",{cache:"no-store"});
       if(refreshed.ok){const latest=await refreshed.json();setLogoUrl(latest.logoUrl);}else setLogoUrl(null);
       setMessage("Сохранено приватно. AI учитывает правила и цвета в следующем ответе; опубликованный дизайн не изменён.");
