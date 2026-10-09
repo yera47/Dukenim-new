@@ -9,9 +9,10 @@ export type ProductImageCapabilities = {
 };
 
 export type ProductImageEstimate = { currency: "USD"; amountMicros: number | null; basis: string };
-export type ProductImageUsage = { outputImages: 1; billedAmountMicros: number | null };
+export type ProductImageUsage = { outputImages: 1; billedAmountMicros: number | null; billingBasis: "provider-reported" | "configured-ceiling" };
 export type ProductImageResult = {
   imageUrl: string;
+  storagePath: string;
   requestId: string;
   model: string;
   version: string | null;
@@ -105,6 +106,8 @@ export async function generateProductImage(request: ProductImageRequest, ports: 
 
   const validResult = result.provenance.kind === "ai-assisted-product-photo"
     && result.provenance.sourcePreserved
+    && result.storagePath.startsWith(`${request.tenantId}/`)
+    && !result.storagePath.includes("..")
     && result.usage.outputImages === 1
     && knownNonNegativeMicros(result.usage.billedAmountMicros)
     && result.usage.billedAmountMicros <= estimate.amountMicros;

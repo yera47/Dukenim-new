@@ -1,4 +1,5 @@
 -- DRAFT ONLY. Not a migration and not applied anywhere.
+-- Superseded for generation/credit settlement by 20261009181408_ai_product_photo_generation_ledger.sql.
 -- Create a real timestamped migration with `supabase migration new` before release.
 
 create table public.ai_photo_jobs (
@@ -13,7 +14,7 @@ create table public.ai_photo_jobs (
   original_reference_paths jsonb not null default '[]'::jsonb check (jsonb_typeof(original_reference_paths)='array'),
   instruction text not null check (char_length(btrim(instruction)) between 8 and 500),
   merchant_facts jsonb not null default '{}'::jsonb check (jsonb_typeof(merchant_facts)='object'),
-  output_count smallint not null check (output_count in (4,5)),
+  output_count smallint not null check (output_count between 2 and 5),
   accepted_output_count smallint not null default 0 check (accepted_output_count between 0 and output_count),
   provider_key text,
   provider_request_id text,

@@ -1,13 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const access = vi.hoisted(() => ({ premium: vi.fn(async () => true) }));
-vi.mock("@/lib/auth", () => ({ requireRole: vi.fn(async () => ({ tenantId: "tenant-server", userId: "owner-a" })) }));
+const access = vi.hoisted(() => ({ premium: vi.fn(async () => true), status: vi.fn(), generate: vi.fn() }));
+vi.mock("@/lib/auth", () => ({ requireRole: vi.fn(async () => ({ tenantId: "tenant-server", user: { id: "owner-a" } })) }));
 vi.mock("@/lib/plan-access", () => ({ tenantHasPlan: access.premium }));
+vi.mock("@/lib/ai/product-photo-server", () => ({ getProductPhotoServerStatus: access.status, runProductPhotoGeneration: access.generate }));
 import { GET, POST } from "./route";
 
 function validBody() {
   const body = new FormData();
-  body.set("source", new File(["image"], "source.jpg", { type: "image/jpeg" }));
+  body.set("source", new File([Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Z1pAAAAAASUVORK5CYII=", "base64")], "source.png", { type: "image/png" }));
   body.set("scenario", "product_photos");
   body.set("mode", "background_composite");
   body.set("outputCount", "5");
@@ -23,7 +24,7 @@ function post(body: FormData, headers?: HeadersInit) {
 }
 
 describe("product photo route release gate", () => {
-  beforeEach(() => { vi.clearAllMocks(); access.premium.mockResolvedValue(true); });
+  beforeEach(() => { vi.clearAllMocks(); access.premium.mockResolvedValue(true); access.status.mockResolvedValue({ enabled: false, azureReady: false, creditLedgerReady: false, reason: "server-configuration-incomplete" }); });
 
   it("locks Base before parsing files or contacting a provider", async () => {
     access.premium.mockResolvedValue(false);
@@ -47,6 +48,7 @@ describe("product photo route release gate", () => {
         AZURE_AI_IMAGE_SUPPORTS_REFERENCE: "true",
         AZURE_AI_IMAGE_ESTIMATED_USD_MICROS: "25000",
       });
+      access.status.mockResolvedValue({ enabled: false, azureReady: true, creditLedgerReady: false, reason: "credit-ledger-unavailable" });
       const response = await GET();
       const body = await response.json();
       expect(body).toMatchObject({ enabled: false, provider: null, configuration: { azureReady: true, creditLedgerReady: false, generationRouteReady: false } });
@@ -56,10 +58,12 @@ describe("product photo route release gate", () => {
     }
   });
 
-  it("validates a tenant-bound request then refuses any live provider call", async () => {
+  it("validates a tenant-bound request then returns the server generation result", async () => {
+    access.generate.mockResolvedValue({ reservationId: "reservation-a", outputs: [{ imageUrl: "https://storage.test/a.jpg", model: "FLUX.2-pro", provenance: { kind: "ai-assisted-product-photo" } }], failedOutputs: 0, cached: false });
     const response = await post(validBody());
-    expect(response.status).toBe(503);
-    expect(await response.json()).toMatchObject({ retryable: false });
+    expect(response.status).toBe(201);
+    expect(await response.json()).toMatchObject({ reservationId: "reservation-a", failedOutputs: 0 });
+    expect(access.generate).toHaveBeenCalledWith(expect.objectContaining({ tenantId: "tenant-server", actorId: "owner-a", outputCount: 5 }));
   });
 
   it("requires real reference photos for creative angles", async () => {
@@ -88,6 +92,13 @@ describe("product photo route release gate", () => {
     const noKey = validBody();
     noKey.delete("idempotencyKey");
     expect((await post(noKey)).status).toBe(400);
+  });
+
+  it("rejects a reference whose MIME claim does not match real image bytes", async () => {
+    const body = validBody();
+    body.set("references", new File(["not-an-image"], "fake.jpg", { type: "image/jpeg" }));
+    expect((await post(body)).status).toBe(400);
+    expect(access.generate).not.toHaveBeenCalled();
   });
 
   it("rejects oversized requests before multipart parsing", async () => {

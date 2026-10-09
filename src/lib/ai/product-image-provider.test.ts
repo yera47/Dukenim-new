@@ -19,10 +19,11 @@ const request: ProductImageRequest = {
 };
 const result = {
   imageUrl: "https://example.test/result.webp",
+  storagePath: "tenant/ai/product-photos/result.webp",
   requestId: "provider-request",
   model: "test",
   version: "1",
-  usage: { outputImages: 1 as const, billedAmountMicros: 10 },
+  usage: { outputImages: 1 as const, billedAmountMicros: 10, billingBasis: "provider-reported" as const },
   provenance: { kind: "ai-assisted-product-photo" as const, sourcePreserved: true as const, provider: "test" },
 };
 const capabilities = { enabled: true, provider: "test", model: "test", version: "1", supportsFaithfulProductImprovement: true, maxOutputsPerRequest: 1 as const };

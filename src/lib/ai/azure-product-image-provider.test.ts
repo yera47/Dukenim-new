@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAzureFlux2Transport, createAzureProductImageProvider, getAzureProductImageConfig } from "./azure-product-image-provider";
+import { createAzureFlux2Transport, createAzureProductImageProvider, downloadAzureOutput, getAzureProductImageConfig } from "./azure-product-image-provider";
 
 const configured = {
   NODE_ENV: "test",
@@ -23,7 +23,7 @@ describe("Azure product image provider", () => {
     expect(createAzureProductImageProvider({ env: configured }).capabilities().enabled).toBe(false);
   });
   it("passes tenant-scoped references to an injected transport and returns a review copy", async () => {
-    const transport = vi.fn(async () => ({ imageUrl: "https://example.test/generated.webp", requestId: "azure-request", billedAmountMicros: 20000, modelVersion: "confirmed-version" }));
+    const transport = vi.fn(async () => ({ imageUrl: "https://example.test/generated.webp", storagePath: "tenant-a/ai/product-photos/generated.webp", requestId: "azure-request", billedAmountMicros: 20000, modelVersion: "confirmed-version" }));
     const audit = vi.fn();
     const provider = createAzureProductImageProvider({ env: configured, transport, audit });
     await expect(provider.estimateCost(request)).resolves.toMatchObject({ amountMicros: 25000 });
@@ -35,15 +35,16 @@ describe("Azure product image provider", () => {
   });
   it("rejects a charge above the configured ceiling without logging image bytes", async () => {
     const audit = vi.fn();
-    const provider = createAzureProductImageProvider({ env: configured, audit, transport: async () => ({ imageUrl: "https://example.test/generated.webp", requestId: "azure-request", billedAmountMicros: 25001 }) });
+    const provider = createAzureProductImageProvider({ env: configured, audit, transport: async () => ({ imageUrl: "https://example.test/generated.webp", storagePath: "tenant-a/ai/product-photos/generated.webp", requestId: "azure-request", billedAmountMicros: 25001 }) });
     await expect(provider.generate(request)).rejects.toThrow("validation");
     expect(audit).toHaveBeenLastCalledWith(expect.objectContaining({ outcome: "failed", billedAmountMicros: null }));
     expect(JSON.stringify(audit.mock.calls)).not.toContain("1,2,3");
   });
 
   it("implements the documented FLUX.2-pro multi-reference JSON contract without a live request", async () => {
-    const fetcher = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => { void _url; void _init; return new Response(JSON.stringify({ data: [{ b64_json: Buffer.from("synthetic-output").toString("base64") }] }), { status: 200, headers: { "x-request-id": "azure-flux-request" } }); });
-    const persistOutput = vi.fn(async () => "https://storage.example.test/tenant-a/review-copy.jpeg");
+    const jpeg = Buffer.from([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9]);
+    const fetcher = vi.fn(async (_url: string | URL | Request, _init?: RequestInit) => { void _url; void _init; return new Response(JSON.stringify({ data: [{ b64_json: jpeg.toString("base64") }] }), { status: 200, headers: { "x-request-id": "azure-flux-request" } }); });
+    const persistOutput = vi.fn(async () => ({ imageUrl: "https://storage.example.test/tenant-a/review-copy.jpeg", storagePath: "tenant-a/ai/product-photos/review-copy.jpeg" }));
     const status = getAzureProductImageConfig(configured);
     if (!status.configured) throw new Error("fixture must configure the adapter");
     const result = await createAzureFlux2Transport({ fetcher, persistOutput })({ config: status.config, request, signal: new AbortController().signal });
@@ -54,5 +55,23 @@ describe("Azure product image provider", () => {
     expect(body).toMatchObject({ model: "FLUX.2-pro", input_image: Buffer.from(request.sourceImage).toString("base64"), input_image_2: Buffer.from(request.references![0].image).toString("base64"), num_images: 1 });
     expect(persistOutput).toHaveBeenCalledWith(expect.objectContaining({ tenantId: "tenant-a", idempotencyKey: request.idempotencyKey, contentType: "image/jpeg" }));
     expect(result).toMatchObject({ imageUrl: "https://storage.example.test/tenant-a/review-copy.jpeg", requestId: "azure-flux-request", billedAmountMicros: 25000 });
+  });
+
+  it("downloads a provider URL through a bounded transport before durable storage", async () => {
+    const jpeg = new Uint8Array([0xff, 0xd8, 1, 2, 0xff, 0xd9]);
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ data: [{ url: "https://delivery.example.test/output.jpg" }] }), { status: 200 }));
+    const downloadOutput = vi.fn(async () => jpeg);
+    const persistOutput = vi.fn(async () => ({ imageUrl: "https://signed.storage.test/output", storagePath: "tenant-a/ai/product-photos/output.jpg" }));
+    const status = getAzureProductImageConfig(configured);
+    if (!status.configured) throw new Error("fixture must configure the adapter");
+    await createAzureFlux2Transport({ fetcher, downloadOutput, persistOutput })({ config: status.config, request, signal: new AbortController().signal });
+    expect(downloadOutput).toHaveBeenCalledWith("https://delivery.example.test/output.jpg", expect.any(AbortSignal));
+    expect(persistOutput).toHaveBeenCalledWith(expect.objectContaining({ bytes: jpeg }));
+  });
+
+  it("blocks private or non-JPEG provider URLs", async () => {
+    await expect(downloadAzureOutput("http://127.0.0.1/image.jpg", new AbortController().signal, vi.fn())).rejects.toThrow("unsafe");
+    const fetcher = vi.fn(async () => new Response("not jpeg", { status: 200, headers: { "content-type": "text/plain" } }));
+    await expect(downloadAzureOutput("https://delivery.example.test/image.jpg", new AbortController().signal, fetcher)).rejects.toThrow("validation");
   });
 });
