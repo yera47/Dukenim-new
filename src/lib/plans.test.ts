@@ -2,16 +2,17 @@ import {describe,expect,it} from "vitest";
 import {planFeatures,planName,planPrice,publicPlans} from "./plans";
 
 describe("public plan contract",()=>{
-  it("publishes only Base and Premium at the owner-approved draft prices",()=>{
-    expect(publicPlans).toEqual(["basic","standard"]);
-    expect(planName.basic).toBe("Base");
-    expect(planName.standard).toBe("Premium");
-    expect(planPrice.basic).toBe(25_000);
-    expect(planPrice.standard).toBe(35_000);
+  it("publishes the owner-approved single monthly Catalog plan",()=>{
+    expect(publicPlans).toEqual(["basic"]);
+    expect(planName.basic).toBe("Каталог");
+    expect(planName.standard).toBe("Каталог");
+    expect(planPrice.basic).toBe(24_900);
+    expect(planPrice.standard).toBe(24_900);
   });
 
-  it("keeps AI out of Base and describes Premium AI as credit based",()=>{
-    expect(planFeatures.basic.join(" ")).toMatch(/без AI-генерации/i);
-    expect(planFeatures.standard.join(" ")).toMatch(/product credits/i);
+  it("keeps legacy plan rows feature-equivalent",()=>{
+    expect(planFeatures.basic.join(" ")).toMatch(/AI-помощник/i);
+    expect(planFeatures.basic).toContain("Команда, аналитика, интеграции и выездные продажи");
+    expect(planFeatures.standard.join(" ")).toMatch(/Все функции тарифа/);
   });
 });

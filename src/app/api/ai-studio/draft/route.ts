@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSessionContext } from "@/lib/auth";
 import { tenantEntitlement } from "@/lib/plan-access";
-import { hasPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { aiStudioRequestSchema, createAiStudioDesign, createAiStudioDraft, createAiStudioStructure, getAiStudioStatus } from "@/lib/ai/studio";
 import { AzureFoundryError } from "@/lib/ai/azure-foundry";
@@ -30,7 +29,6 @@ export async function POST(request: Request) {
     if (!["owner", "superadmin"].includes(context.role)) return NextResponse.json({ error: "Недостаточно прав." }, { status: 403 });
     if (!context.tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту." }, { status: 400 });
     const entitlement = await tenantEntitlement(context.tenantId);
-    if (!hasPlan(entitlement.plan, "standard")) return NextResponse.json({ error: "AI Studio доступна на тарифе Premium." }, { status: 403 });
     if (!entitlement.active) return NextResponse.json({ error: "Бесплатный период или подписка завершены. Выберите тариф, чтобы продолжить." }, { status: 403 });
     const origin=request.headers.get("origin");
     if(origin&&origin!==new URL(request.url).origin)return NextResponse.json({error:"Недопустимый источник запроса."},{status:403});

@@ -23,13 +23,13 @@ function validImage(file: File) {
 
 export async function GET() {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
-  if (!tenantId || !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "AI-фотостудия доступна на тарифе Premium." }, { status: 403 });
+  if (!tenantId || !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Пробный период завершён. Подключите тариф «Каталог»." }, { status: 403 });
   return NextResponse.json({ enabled: false, provider: null, reason: "Live image provider and cost budget are not configured." });
 }
 
 export async function POST(request: Request) {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
-  if (tenantId && !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "AI-фотостудия доступна на тарифе Premium." }, { status: 403 });
+  if (tenantId && !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Пробный период завершён. Подключите тариф «Каталог»." }, { status: 403 });
   if (!tenantId) return NextResponse.json({ error: "Магазин не выбран." }, { status: 400 });
   const length = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(length) && length > MAX_REQUEST_BYTES) return NextResponse.json({ error: "Запрос слишком большой." }, { status: 413 });

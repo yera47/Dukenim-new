@@ -1,8 +1,7 @@
 import { siteUrl, siteName, siteDescription, absoluteUrl } from "@/lib/site";
-import { planPrice } from "@/lib/plans";
 
 // Truthful structured data only: no ratings, reviews, or performance claims
-// Prices are draft list amounts; no billing period or live checkout is claimed here.
+// Public price is the owner-confirmed monthly Catalog offer. Live automatic billing remains disabled until provider setup is verified.
 export function StructuredData() {
   const graph = {
     "@context": "https://schema.org",
@@ -35,18 +34,11 @@ export function StructuredData() {
         publisher: { "@id": `${siteUrl}/#organization` },
         offers: [{
           "@type": "Offer",
-          name: "Base",
-          price: planPrice.basic,
+          name: "Каталог",
+          price: 24_900,
           priceCurrency: "KZT",
           url: absoluteUrl("/register?plan=basic"),
-          description: "Полноценный каталог и заказы без AI-генерации. Период и условия оплаты уточняются до checkout.",
-        }, {
-          "@type": "Offer",
-          name: "Premium",
-          price: planPrice.standard,
-          priceCurrency: "KZT",
-          url: absoluteUrl("/register?plan=standard"),
-          description: "AI-фото и product credits. Период цены и live-оплата пока не подтверждены.",
+          description: "Единый тариф со всеми функциями магазина. 7 дней бесплатно, оплата подключается отдельно.",
         }],
       },
     ],

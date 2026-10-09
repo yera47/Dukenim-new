@@ -46,7 +46,7 @@ export async function GET(request: Request) {
   const access = await campaignContext(request, tenantId.data);
   if (!access.ok) return access.response;
   const { context, plan, canManage } = access;
-  if (!canManage) return NextResponse.json({ canManage: false, premiumRequired: true, planName: planName[plan], campaigns: [] }, { headers: { "Cache-Control": "private, no-store" } });
+  if (!canManage) return NextResponse.json({ canManage: false, premiumRequired: false, planName: planName[plan], campaigns: [] }, { headers: { "Cache-Control": "private, no-store" } });
   const result = await context.admin.from("storefront_campaigns")
     .select("id,title,eyebrow,body,cta_label,status,image_url,starts_at,ends_at")
     .eq("tenant_id", tenantId.data).order("created_at", { ascending: false }).limit(100);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   if (!input.success) return NextResponse.json({ error: "Проверьте название и текст акции." }, { status: 400 });
   const access = await campaignContext(request, input.data.tenantId);
   if (!access.ok) return access.response;
-  if (!access.canManage) return NextResponse.json({ error: "Создание акций доступно в Premium." }, { status: 403 });
+  if (!access.canManage) return NextResponse.json({ error: "Пробный период завершён. Посмотрите условия тарифа «Каталог»." }, { status: 403 });
   const { tenantId, title, eyebrow, body, ctaLabel, startsAt, endsAt } = input.data;
   if (startsAt && endsAt && new Date(endsAt) <= new Date(startsAt)) return NextResponse.json({ error: "Дата окончания должна быть позже даты начала." }, { status: 400 });
   const result = await access.context.admin.from("storefront_campaigns").insert({
@@ -77,7 +77,7 @@ export async function PATCH(request: Request) {
   if (!input.success) return NextResponse.json({ error: "Проверьте статус акции." }, { status: 400 });
   const access = await campaignContext(request, input.data.tenantId);
   if (!access.ok) return access.response;
-  if (!access.canManage) return NextResponse.json({ error: "Управление акциями доступно в Premium." }, { status: 403 });
+  if (!access.canManage) return NextResponse.json({ error: "Пробный период завершён. Посмотрите условия тарифа «Каталог»." }, { status: 403 });
   if (input.data.startsAt && input.data.endsAt && new Date(input.data.endsAt) <= new Date(input.data.startsAt)) return NextResponse.json({ error: "Дата окончания должна быть позже даты начала." }, { status: 400 });
   const result = await access.context.admin.from("storefront_campaigns")
     .update({ status: input.data.status, ...(input.data.startsAt !== undefined ? { starts_at: input.data.startsAt } : {}), ...(input.data.endsAt !== undefined ? { ends_at: input.data.endsAt } : {}), updated_at: new Date().toISOString() })

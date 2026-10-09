@@ -39,8 +39,8 @@ describe("mobile AI promotion", () => {
     expect(rpc).toHaveBeenCalledWith("reserve_ai_credits", expect.objectContaining({ p_tenant_id: tenantId, p_cost: 1 }));
   });
 
-  it("requires Premium before reserving AI credits", async () => {
-    mocks.entitlement.mockReturnValue({ active: true, plan: "basic" });
+  it("requires an active trial or paid status before reserving AI credits", async () => {
+    mocks.entitlement.mockReturnValue({ active: false, plan: "basic" });
     const tenant = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), maybeSingle: vi.fn().mockResolvedValue({ data: { name: "Пекарня", business_vertical: "food", plan: "basic", status: "active" }, error: null }) };
     const usage = { select: vi.fn().mockReturnThis(), eq: vi.fn().mockReturnThis(), gte: vi.fn().mockResolvedValue({ count: 0, error: null }) };
     const from = vi.fn((table: string) => table === "tenants" ? tenant : usage);

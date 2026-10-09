@@ -31,7 +31,7 @@ export async function quotePromotion(client: SupabaseClient<Database>, input: { 
   if (!promotion || !promotion.is_active || new Date(promotion.starts_at).getTime() > Date.now() || (promotion.ends_at && new Date(promotion.ends_at).getTime() <= Date.now())) {
     throw new Error("Промокод не найден или срок его действия завершён.");
   }
-  if (promotion.plan && promotion.plan !== input.plan) throw new Error("Этот промокод действует для другого тарифа.");
+  // All historical plan labels now map to the single public Catalog offer.
 
   const [{ count: totalRedemptions }, { count: tenantRedemptions }, { count: activeSubscriptions }] = await Promise.all([
     client.from("subscription_promo_redemptions").select("id", { count: "exact", head: true }).eq("promotion_id", promotion.id),

@@ -17,8 +17,9 @@ export const subscriptionTerms = {
   billingPeriod: "месяц",
   trialDays: 7,
   plans: {
-    basic: { name: "Base", price: 25_000 },
-    standard: { name: "Premium", price: 35_000 },
+    basic: { name: "Каталог", price: 24_900 },
+    standard: { name: "Каталог", price: 24_900 },
+    pro: { name: "Каталог", price: 24_900 },
   },
   cancellation:
     "Отмена подписки прекращает будущие списания. Доступ сохраняется до конца уже оплаченного периода.",

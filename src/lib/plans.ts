@@ -1,20 +1,21 @@
 export type Plan = "basic" | "standard" | "pro";
-export type PublicPlan = "basic" | "standard";
+export type PublicPlan = "basic";
 
-// `pro` remains only for legacy stores and has the same rank as Premium.
-export const publicPlans: PublicPlan[] = ["basic", "standard"];
-export function isPublicPlan(value: unknown): value is PublicPlan { return typeof value === "string" && publicPlans.includes(value as PublicPlan); }
-export const planRank: Record<Plan, number> = { basic: 1, standard: 2, pro: 2 };
-export const planPrice: Record<Plan, number> = { basic: 25_000, standard: 35_000, pro: 35_000 };
-// Monthly billing is confirmed. Annual prices remain legacy-only and are not a public offer.
-export const planAnnualPrice: Record<Plan, number> = { basic: 239_000, standard: 335_000, pro: 335_000 };
-export const planAnnualSaving: Record<Plan, number> = { basic: 59_800, standard: 83_800, pro: 83_800 };
+// These values remain in storage for historical tenant rows; the public offer is one plan.
+export const publicPlans: PublicPlan[] = ["basic"];
+export function isPublicPlan(value: unknown): value is Plan { return value === "basic" || value === "standard" || value === "pro"; }
+export const planRank: Record<Plan, number> = { basic: 1, standard: 1, pro: 1 };
+export const planPrice: Record<Plan, number> = { basic: 24_900, standard: 24_900, pro: 24_900 };
+// Annual billing is not a public offer under the owner-approved single monthly plan.
+export const planAnnualPrice: Record<Plan, number> = { basic: 298_800, standard: 298_800, pro: 298_800 };
+export const planAnnualSaving: Record<Plan, number> = { basic: 0, standard: 0, pro: 0 };
 export const planSetupPrice: Record<Plan, number> = { basic: 0, standard: 0, pro: 0 };
 export const planFirstPayment: Record<Plan, number> = planPrice;
-export const planName: Record<Plan, string> = { basic: "Base", standard: "Premium", pro: "Premium (legacy)" };
-export function hasPlan(current: Plan, required: Plan) { return planRank[current] >= planRank[required]; }
+export const planName: Record<Plan, string> = { basic: "Каталог", standard: "Каталог", pro: "Каталог" };
+// Plan columns stay for compatibility with historical tenant rows, but no longer gate product features.
+export function hasPlan(_current: Plan, _required: Plan) { void _current; void _required; return true; }
 export const planFeatures: Record<Plan, string[]> = {
-  basic: ["Каталог, корзина и оформление заказа", "Варианты, остатки, скидки и карточки товаров", "Самовывоз, доставка и способы оплаты", "Постоянная ссылка на магазин", "Без AI-генерации"],
-  standard: ["Всё из Base", "AI-инструменты для оформления товаров", "Product credits с прозрачным балансом", "Акции и сезонные кампании витрины", "Дополнительные кредиты после запуска оплаты", "Расширенная аналитика после отдельного запуска", "Приоритетная поддержка"],
-  pro: ["Возможности Premium", "AI-инструменты для оформления товаров", "Расширенная аналитика после отдельного запуска"],
+  basic: ["Каталог, оформление заказов и публичная витрина", "Товары, варианты, цены, скидки и остатки", "Самовывоз, доставка и подключаемые способы оплаты", "AI-помощник и сезонные кампании (при доступности сервиса)", "Команда, аналитика, интеграции и выездные продажи"],
+  standard: ["Все функции тарифа «Каталог»"],
+  pro: ["Все функции тарифа «Каталог»"],
 };

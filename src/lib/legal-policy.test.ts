@@ -2,9 +2,10 @@ import { describe, expect, it } from "vitest";
 import { legalPolicyStatus, marketplaceSeparation, operatorDetails, subscriptionTerms } from "./legal-policy";
 
 describe("legal policy contract", () => {
-  it("keeps the confirmed monthly KZT prices consistent", () => {
-    expect(subscriptionTerms.plans.basic.price).toBe(25_000);
-    expect(subscriptionTerms.plans.standard.price).toBe(35_000);
+  it("keeps all legacy plan rows mapped to the single confirmed monthly KZT price", () => {
+    expect(subscriptionTerms.plans.basic.price).toBe(24_900);
+    expect(subscriptionTerms.plans.standard.price).toBe(24_900);
+    expect(subscriptionTerms.plans.pro.price).toBe(24_900);
     expect(subscriptionTerms.billingPeriod).toBe("месяц");
   });
 

@@ -10,7 +10,7 @@ export async function POST(request: Request) {
   try {
     const { plan, billingPeriod, promoCode } = await request.json() as Body;
     if (!isPublicPlan(plan)) return NextResponse.json({ error: "Неизвестный тариф" }, { status: 400 });
-    if (billingPeriod !== "monthly" && billingPeriod !== "annual") return NextResponse.json({ error: "Выберите период оплаты" }, { status: 400 });
+    if (billingPeriod !== "monthly") return NextResponse.json({ error: "Доступна только ежемесячная оплата." }, { status: 400 });
     const { tenantId } = await requireRole(["owner", "superadmin"]);
     if (!tenantId) return NextResponse.json({ error: "Магазин не привязан к аккаунту" }, { status: 400 });
     if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return NextResponse.json({ error: "Подключение тарифа временно недоступно. Попробуйте позже." }, { status: 503 });
@@ -18,11 +18,12 @@ export async function POST(request: Request) {
     const client = createAdminClient();
     const normalizedCode = normalizePromotionCode(promoCode);
     if (String(promoCode ?? "").trim() && !normalizedCode) return NextResponse.json({ error: "Проверьте формат промокода." }, { status: 400 });
-    const quote = await quotePromotion(client, { tenantId, plan: plan as Plan, period: billingPeriod as BillingPeriod, code: normalizedCode });
+    const publicPlan: Plan = "basic";
+    const quote = await quotePromotion(client, { tenantId, plan: publicPlan, period: billingPeriod as BillingPeriod, code: normalizedCode });
     const { data: checkout, error } = await client.from("subscription_checkout_requests").insert({
       tenant_id: tenantId,
-      plan,
-      billing_period: billingPeriod,
+      plan: publicPlan,
+      billing_period: "monthly",
       base_amount: quote.finalAmount + quote.discountAmount,
       discount_amount: quote.discountAmount,
       bonus_days: quote.bonusDays,
