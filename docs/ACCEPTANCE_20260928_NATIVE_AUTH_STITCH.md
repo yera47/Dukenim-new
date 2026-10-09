@@ -9,6 +9,8 @@
 | Native selected plan persists across site and phone | in progress | Native onboarding now passes the chosen `next_plan` to `complete_onboarding_v2` rather than hardcoding Base. TypeScript passes; cross-device signed-in save/reopen on iPhone remains unverified. |
 | Price at real checkout | externally blocked | Provider products/checkout have not been confirmed at 25,000/35,000 ₸ and no successful payment is verified. Do not activate a mismatched checkout. |
 | Demo examples and login clarity | in progress | Source now presents two segment templates, returns directly to the example list, replaces inert flower-delivery buttons with information, removes internal-process copy from `/demo`, and changes the login headline to white on dark. Build and TypeScript pass; production visual/navigation check remains. |
+| Food template previews stay visible | in progress | Browser screenshot of `/demo/food` found both embedded stores obscured by the buyer fulfilment dialog. The dialog now opens automatically only in a full storefront, not inside the template chooser iframe; build passed. Visual verification after deployment remains. |
+| Active Stitch Catalog frame has current dates and actions | in progress | A targeted correction was submitted again, but direct iframe AX inspection after Stitch reported success still showed «Наурыз мейрамы», March/April dates and «(Концепт)». The agent's response is not accepted as proof; this frame still needs direct repair and visual recheck. |
 
 ## 2026-10-09 — owner-review design draft (not implementation)
 

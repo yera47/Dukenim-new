@@ -12,7 +12,9 @@ export function FoodFulfilmentGate({slug,deliveryEnabled,pickupEnabled}:{slug:st
   useEffect(()=>{
     const saved=window.sessionStorage.getItem(`dukenim:${slug}:fulfilment`);
     if((saved==="courier"&&deliveryEnabled)||(saved==="pickup"&&pickupEnabled)) setSelected(saved);
-    else setOpen(true);
+    // The template chooser embeds storefronts as previews; let the buyer choose
+    // fulfilment only after they open the storefront itself.
+    else if (window.self === window.top) setOpen(true);
   },[deliveryEnabled,pickupEnabled,slug]);
 
   function choose(method:Method){
