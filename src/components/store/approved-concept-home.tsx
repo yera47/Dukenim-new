@@ -38,7 +38,7 @@ export function ApprovedConceptHome({ vertical, products, slug, heroImage }: { v
   const catalog = <section id="catalog" className={styles.catalog} aria-labelledby="approved-catalog-title"><header className={styles.catalogTitle}><h2 id="approved-catalog-title">{copy.catalog}</h2></header><CatalogBrowser products={products} slug={slug} approach="collection" filterLabel="Фильтры и сортировка"/></section>;
 
   return <main className={styles.root} data-approved-concept={vertical} data-vertical={vertical}>
-    {vertical === "flowers" && <div className={styles.deliveryContext} aria-label="Параметры доставки"><button type="button"><MapPin size={18}/> Доставка в ваш район</button><button type="button"><CalendarDays size={18}/> Сегодня и в нужный день</button></div>}
+    {vertical === "flowers" && <div className={styles.deliveryContext} aria-label="Условия доставки"><span><MapPin size={18}/> Доставка по согласованному району</span><span><CalendarDays size={18}/> Дату уточним при заказе</span></div>}
     <div className={styles.primary}>{hero}{catalog}</div>
     <StoryRail products={products} slug={slug} labels={copy.stories}/>
     <div className={styles.bottomAction}><Link href={`${base}/catalog`}>Смотреть весь каталог <ArrowRight size={17}/></Link></div>

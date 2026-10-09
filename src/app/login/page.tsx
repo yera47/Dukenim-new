@@ -18,7 +18,7 @@ export default async function LoginPage({searchParams}:{searchParams:Promise<{ne
       <Link href="/" className="relative flex items-center gap-3 text-xl font-extrabold"><DukenimLogo inverse/></Link>
       <div className="relative max-w-xl">
         <div className="data-label text-white/50">ЕДИНАЯ СИСТЕМА ТОРГОВЛИ</div>
-        <h1 className="mt-4 text-6xl font-extrabold leading-[.98]">Магазин работает.<br/><span className="text-[var(--accent-bright)]">Вы всё видите.</span></h1>
+        <h1 className="mt-4 text-6xl font-extrabold leading-[.98]">Магазин работает.<br/><span className="text-white">Вы всё видите.</span></h1>
         <div className="mt-10 border-y border-white/12">{["Заказы и продажи в одном потоке", "Точные остатки без ручной сверки", "Решения на основе понятных данных"].map((item) => <div key={item} className="flex items-center gap-4 border-b border-white/12 py-4 last:border-0"><Check size={18} className="text-[var(--accent-bright)]"/><b>{item}</b></div>)}</div>
       </div>
       <small className="relative text-white/42">dukenim.kz · Сделано для предпринимателей Казахстана</small>

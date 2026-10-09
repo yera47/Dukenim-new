@@ -8,6 +8,7 @@
 | Premium AI-photo with credit accounting | in progress | Entitlement and credit scaffolding exist; `product-photos` route still reports the provider unavailable. Exact included quota, successful image generation and debit-on-success need an authenticated provider test. |
 | Native selected plan persists across site and phone | in progress | Native onboarding now passes the chosen `next_plan` to `complete_onboarding_v2` rather than hardcoding Base. TypeScript passes; cross-device signed-in save/reopen on iPhone remains unverified. |
 | Price at real checkout | externally blocked | Provider products/checkout have not been confirmed at 25,000/35,000 ₸ and no successful payment is verified. Do not activate a mismatched checkout. |
+| Demo examples and login clarity | in progress | Source now presents two segment templates, returns directly to the example list, replaces inert flower-delivery buttons with information, removes internal-process copy from `/demo`, and changes the login headline to white on dark. Build and TypeScript pass; production visual/navigation check remains. |
 
 ## 2026-10-09 — owner-review design draft (not implementation)
 
