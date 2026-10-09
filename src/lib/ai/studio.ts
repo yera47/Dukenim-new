@@ -32,7 +32,8 @@ const instruction: Record<AiStudioIntent, string> = {
 
 export function getAiStudioStatus() {
   const azure = getAzureFoundryStatus();
-  return { configured: azure.configured && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), imageConfigured: getMarketingImageStatus().configured, deployment: azure.deployment };
+  const image = getMarketingImageStatus();
+  return { configured: azure.configured && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), imageConfigured: process.env.AI_IMAGE_LIVE_ENABLED === "true" && image.configured && image.provider === "azure", deployment: azure.deployment };
 }
 
 export async function createAiStudioDraft(intent: AiStudioIntent, brief: string, context: unknown = {}) {
