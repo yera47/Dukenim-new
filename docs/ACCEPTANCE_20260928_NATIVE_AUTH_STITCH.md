@@ -1,5 +1,14 @@
 # Dukenim iOS / Stitch acceptance — 2026-09-28
 
+## 2026-10-09 — latest owner tariff correction (supersedes one-plan entries below)
+
+| Requirement | Status | Evidence / next check |
+| --- | --- | --- |
+| Base 25,000 ₸/month and Premium 35,000 ₸/month | in progress | Owner corrected the earlier 24,900 ₸ single-plan decision. Source and native onboarding now expose both plans; publish and check both production domains before marking verified. |
+| Premium AI-photo with credit accounting | in progress | Entitlement and credit scaffolding exist; `product-photos` route still reports the provider unavailable. Exact included quota, successful image generation and debit-on-success need an authenticated provider test. |
+| Native selected plan persists across site and phone | in progress | Native onboarding now passes the chosen `next_plan` to `complete_onboarding_v2` rather than hardcoding Base. TypeScript passes; cross-device signed-in save/reopen on iPhone remains unverified. |
+| Price at real checkout | externally blocked | Provider products/checkout have not been confirmed at 25,000/35,000 ₸ and no successful payment is verified. Do not activate a mismatched checkout. |
+
 ## 2026-10-09 — owner-review design draft (not implementation)
 
 | Requirement | Status | Evidence / next check |

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { DukenimLogo } from "@/components/dukenim-logo";
 import { Check } from "lucide-react";
 import { RegisterForm } from "./register-form";
-import { planName } from "@/lib/plans";
+import { isPublicPlan, planName } from "@/lib/plans";
 import { openGraph } from "@/lib/site";
 
 const registerDescription = "Создайте магазин Dukenim: каталог, корзина и заказы. Пробный период не списывает деньги автоматически.";
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 export default async function RegisterPage({ searchParams }: { searchParams: Promise<{ social?: string; plan?: string; billing?: string }> }) {
   const query = await searchParams;
   const socialRegistration = query.social === "1";
-  const plan = "basic" as const;
+  const plan = isPublicPlan(query.plan) ? query.plan : "basic";
   const billing = "month" as const;
 
   return <main className="grid min-h-screen bg-[var(--surface)] lg:grid-cols-[.9fr_1.1fr]">
@@ -26,7 +26,7 @@ export default async function RegisterPage({ searchParams }: { searchParams: Pro
       <Link href="/" className="flex items-center gap-3 text-xl font-extrabold"><DukenimLogo inverse/></Link>
       <div>
         <h1 className="text-6xl font-extrabold leading-[.98]">Ваш бизнес.<br/><span className="text-[var(--accent-bright)]">Понятная система.</span></h1>
-        <div className="mt-10 border-y border-white/12">{["Каталог, заказы и витрина в одном месте", "Все функции в одном понятном тарифе", "7 дней бесплатно, без автоматического списания"].map(item => <div key={item} className="flex items-center gap-4 border-b border-white/12 py-4 last:border-0"><Check className="text-[var(--accent-bright)]" size={18}/><b>{item}</b></div>)}</div>
+        <div className="mt-10 border-y border-white/12">{["Витрина, каталог и заказы в одном месте", "Base без AI или Premium с AI-инструментами", "Пробный период без привязки карты"].map(item => <div key={item} className="flex items-center gap-4 border-b border-white/12 py-4 last:border-0"><Check className="text-[var(--accent-bright)]" size={18}/><b>{item}</b></div>)}</div>
       </div>
       <small className="text-white/45">Создано в Казахстане для локального бизнеса</small>
     </section>

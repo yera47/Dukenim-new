@@ -5,7 +5,7 @@ import type { OwnerStore } from "./owner";
 const store: OwnerStore = {
   id: "tenant", name: "Магазин", slug: "shop", business_vertical: "food",
   catalog_published: false, onboarding_completed: true, catalog_status: "not_started",
-  next_plan: "basic", preferred_billing_period: "monthly",
+  plan: "basic", next_plan: "basic", preferred_billing_period: "monthly",
 };
 const readiness: StudioReadiness = { products: 0, stockedProducts: 0, newOrders: 0, pickupEnabled: false, deliveryEnabled: false, pickupAddress: "" };
 

@@ -25,12 +25,12 @@ function mockOwner(plan: "basic" | "standard" = "standard") {
 describe("mobile campaigns entitlement", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("gives a basic legacy tenant access to shared campaigns", async () => {
+  it("does not read or expose campaigns to a Base owner", async () => {
     const { campaign } = mockOwner("basic");
     const result = await GET(response("GET"));
     expect(result.status).toBe(200);
-    expect(await result.json()).toMatchObject({ canManage: true, premiumRequired: false, planName: "Каталог", campaigns: [{ id: campaignId }] });
-    expect(campaign.select).toHaveBeenCalled();
+    expect(await result.json()).toMatchObject({ canManage: false, premiumRequired: true, planName: "Base", campaigns: [] });
+    expect(campaign.select).not.toHaveBeenCalled();
   });
 
   it("creates a Premium campaign only as a draft", async () => {
@@ -46,14 +46,14 @@ describe("mobile campaigns entitlement", () => {
     expect(result.status).toBe(400);
   });
 
-  it("allows the single-plan legacy owner to create and update campaigns", async () => {
+  it("rejects Base writes and status changes on the server", async () => {
     const { campaign } = mockOwner("basic");
     const create = await POST(response("POST", { tenantId, title: "Скидка", ctaLabel: "Смотреть" }));
     const change = await PATCH(response("PATCH", { tenantId, campaignId, status: "published" }));
-    expect(create.status).toBe(201);
-    expect(change.status).toBe(200);
-    expect(campaign.insert).toHaveBeenCalled();
-    expect(campaign.update).toHaveBeenCalled();
+    expect(create.status).toBe(403);
+    expect(change.status).toBe(403);
+    expect(campaign.insert).not.toHaveBeenCalled();
+    expect(campaign.update).not.toHaveBeenCalled();
   });
 
   it("requires an authenticated shop owner", async () => {

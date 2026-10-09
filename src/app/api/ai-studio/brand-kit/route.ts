@@ -21,13 +21,13 @@ const profileInput = z.object({
 
 export async function GET() {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
-  if (!tenantId || !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Пробный период завершён. Подключите тариф «Каталог»." }, { status: 403 });
+  if (!tenantId || !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Brand Kit доступен на тарифе Premium." }, { status: 403 });
   return NextResponse.json({ enabled: false, promptVersion: "brand-kit-v1", provider: null, reason: "Провайдер изображений и бюджет пока не подключены." });
 }
 
 export async function POST(request: Request) {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
-  if (tenantId && !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Пробный период завершён. Подключите тариф «Каталог»." }, { status: 403 });
+  if (tenantId && !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "Brand Kit доступен на тарифе Premium." }, { status: 403 });
   if (!tenantId) return NextResponse.json({ error: "Магазин не выбран." }, { status: 400 });
   const length = Number(request.headers.get("content-length") ?? 0);
   if (Number.isFinite(length) && length > 32_000) return NextResponse.json({ error: "Запрос слишком большой." }, { status: 413 });

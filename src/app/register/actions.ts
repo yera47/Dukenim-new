@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { cookies } from "next/headers";
+import { isPublicPlan } from "@/lib/plans";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
@@ -13,7 +14,10 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const name = String(formData.get("name") ?? "").trim();
   const business = String(formData.get("business") ?? "").trim();
   const socialRegistration = formData.get("socialRegistration") === "true";
-  const nextPlan = "basic" as const;
+  const requestedPlan = String(formData.get("plan") ?? "");
+  const nextPlan = isPublicPlan(requestedPlan) ? requestedPlan : "basic";
+  const billingValue = formData.get("billing");
+  const billing = billingValue === "year" || billingValue === "annual" ? "year" : "month";
   const password = String(formData.get("password") ?? "");
   const passwordConfirmation = String(formData.get("passwordConfirmation") ?? "");
 
@@ -48,7 +52,7 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
   const existing = await admin.from("tenants").select("id").eq("slug", slug).maybeSingle();
   if (existing.data) slug = `${slug}-${userId.slice(0, 5)}`;
   const trialEnd = new Date(Date.now() + 7 * 86400000).toISOString();
-  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: nextPlan, preferred_billing_period: "monthly", trial_ends_at: trialEnd, onboarding_completed: false, catalog_published: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
+  const { data: tenant, error: tenantError } = await admin.from("tenants").insert({ name: business, slug, status: "trial", plan: "basic", next_plan: nextPlan, preferred_billing_period: billing === "year" ? "annual" : "monthly", trial_ends_at: trialEnd, onboarding_completed: false, catalog_published: false, accent_color: "#0b4b3a", phone: "" }).select("id").single();
   if (tenantError || !tenant) {
     if (shouldDeleteUserOnFailure) await admin.auth.admin.deleteUser(userId);
     return { error: "Не удалось создать магазин. Попробуйте другое название." };
@@ -72,5 +76,5 @@ export async function register(_: RegisterState, formData: FormData): Promise<Re
     if (signInError) return { error: "Аккаунт создан. Войдите с указанными данными." };
   }
   (await cookies()).set("dukenim_selected_tenant", tenant.id, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax", path: "/", maxAge: 60 * 60 * 24 * 365 });
-  redirect("/onboarding?billing=month");
+  redirect(`/onboarding?billing=${billing}`);
 }

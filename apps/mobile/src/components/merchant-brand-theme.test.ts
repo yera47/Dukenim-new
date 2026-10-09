@@ -2,7 +2,7 @@ import {describe,expect,it} from "vitest";
 import {DUKENIM_MERCHANT_THEME,themeForStore,themeForStorefront} from "./merchant-brand-theme";
 import type {OwnerStore} from "@/lib/owner";
 
-const store={id:"tenant-a",name:"A",slug:"a",business_vertical:"flowers",catalog_published:true,onboarding_completed:true,catalog_status:"ready",next_plan:"standard",preferred_billing_period:"monthly"} satisfies OwnerStore;
+const store={id:"tenant-a",name:"A",slug:"a",business_vertical:"flowers",catalog_published:true,onboarding_completed:true,catalog_status:"ready",plan:"basic",next_plan:"standard",preferred_billing_period:"monthly"} satisfies OwnerStore;
 
 describe("merchant brand theme",()=>{
   it("keeps merchant chrome on one Dukenim theme for every tenant",()=>{

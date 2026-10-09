@@ -10,6 +10,7 @@ export type OwnerStore = {
   catalog_published: boolean;
   onboarding_completed: boolean;
   catalog_status: "not_started" | "building" | "ready";
+  plan: "basic" | "standard" | "pro";
   next_plan: "basic" | "standard" | "pro" | null;
   preferred_billing_period: "monthly" | "annual";
   status?: "active" | "paused" | "trial";

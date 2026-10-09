@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, Check, ChevronLeft, LoaderCircle, PackagePlus, Store, Play, Images } from "lucide-react";
 import { DukenimLogo } from "@/components/dukenim-logo";
-import { planFeatures, planName, type Plan } from "@/lib/plans";
+import { planFeatures, planName, planPrice, type Plan } from "@/lib/plans";
 import type { BusinessVertical } from "@/types/database";
 import { launchVerticals as verticals } from "@/lib/launch-verticals";
 
@@ -69,13 +69,13 @@ export function OnboardingFlow({ tenant }: { tenant: { name: string; slug: strin
       </section>}
 
       {step === 2 && <section className="builder-step">
-        <div className="builder-intro"><p>ШАГ 2 ИЗ 3</p><h1>Один тариф. Все функции.</h1><span>Первые 7 дней бесплатно, затем 24 900 ₸ в месяц. Каталог, команда, акции и AI-инструменты доступны в одном плане; AI-функции работают при подключённом сервисе.</span></div>
+        <div className="builder-intro"><p>ШАГ 2 ИЗ 3</p><h1>Проверьте выбранный тариф.</h1><span>Base — полноценный каталог без AI. Premium добавляет AI-фото; в trial доступен один товар и один job на 2–5 фото.</span></div>
         <div className="onboarding-plan-grid"><article className="onboarding-plan-card is-selected">
           <div className="flex items-start justify-between gap-4"><div><p className="data-label">ВЫБРАННЫЙ ТАРИФ</p><h2>{planName[plan]}</h2></div><span className="onboarding-selected"><Check size={16}/> Trial без списания</span></div>
-          <strong>{money(24_900)} ₸<small>в месяц после 7 бесплатных дней</small></strong>
+          <strong>{money(planPrice[plan])} ₸<small>в месяц после пробного периода</small></strong>
           <ul>{planFeatures[plan].map(feature=><li key={feature}><Check size={16}/>{feature}</li>)}</ul>
         </article></div>
-        <p className="onboarding-note">Регистрация не создаёт подписку и не списывает деньги. После пробных 7 дней платный доступ можно подключить отдельно за 24 900 ₸ в месяц.</p>
+        <p className="onboarding-note">Регистрация не создаёт подписку и не списывает деньги. Ежемесячную оплату можно будет подключить отдельно, когда платёжный сервис станет доступен.</p>
         <div className="builder-actions"><button onClick={() => setStep(1)} className="btn btn-secondary"><ChevronLeft size={18} />Назад</button><button onClick={() => setStep(3)} className="btn btn-primary">Продолжить <ArrowRight size={18} /></button></div>
       </section>}
 

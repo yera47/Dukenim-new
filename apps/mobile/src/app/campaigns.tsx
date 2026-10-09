@@ -144,13 +144,13 @@ export default function Campaigns() {
     <Text style={ui.title}>Оформление к датам</Text>
     <Text style={ui.subtitle}>Подготовьте предложение, проверьте текст и отдельно решите, когда показать его покупателям.</Text>
     {loading ? <ActivityIndicator color={colors.navy} /> : loadError ? <View style={ui.card}><Text style={ui.cardTitle}>Не удалось проверить тариф и акции</Text><Text style={ui.subtitle}>Чтобы не открыть действия без проверки прав, повторите загрузку.</Text><Pressable accessibilityRole="button" onPress={() => void load()} style={ui.button}><Text style={ui.buttonText}>Повторить</Text></Pressable></View> : premiumRequired ? <View style={ui.card}>
-      <Text style={s.eyebrow}>ТАРИФ «КАТАЛОГ»</Text>
+      <Text style={s.eyebrow}>PREMIUM</Text>
       <Text style={ui.cardTitle}>Акции и сезонные предложения</Text>
       <Text style={ui.subtitle}>Создавайте кампании, например к празднику или запуску коллекции. AI предложит текст по вашим условиям, а вы сами проверите и опубликуете его. Витрина не меняется без вашего действия.</Text>
-      <Pressable accessibilityRole="button" onPress={() => router.push("/plan" as never)} style={ui.button}><Text style={ui.buttonText}>Посмотреть доступ</Text></Pressable>
+      <Pressable accessibilityRole="button" onPress={() => router.push("/plan" as never)} style={ui.button}><Text style={ui.buttonText}>Посмотреть Premium</Text></Pressable>
     </View> : <>
       <View style={ui.card}>
-        <Text style={s.eyebrow}>ПЛАНИРОВАНИЕ · ТАРИФ «КАТАЛОГ»</Text>
+        <Text style={s.eyebrow}>ПЛАНИРОВАНИЕ · PREMIUM</Text>
         <Text style={ui.cardTitle}>План акций по месяцам</Text>
         <Text style={ui.subtitle}>Выберите горизонт и идею. Это сезонные темы для планирования, не список официальных праздников.</Text>
         <View style={s.horizons}>{campaignHorizons.map(value => <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: horizon === value }} onPress={() => setHorizon(value)} style={[s.horizon, horizon === value && s.horizonSelected]}><Text style={[s.horizonText, horizon === value && s.horizonTextSelected]}>{value} {value === 1 ? "месяц" : value < 5 ? "месяца" : "месяцев"}</Text></Pressable>)}</View>

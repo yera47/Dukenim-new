@@ -10,12 +10,11 @@ import { merchantPreviewStore } from "@/lib/merchant-preview";
 import { trialDisplay } from "@/lib/trial-clock";
 import { DUKENIM_MERCHANT_THEME as theme } from "@/components/merchant-brand-theme";
 
-const catalogFeatures = [
-  "Каталог, оформление заказов и публичная витрина",
-  "Товары, варианты, цены, скидки и остатки",
-  "Самовывоз, доставка и способы оплаты",
-  "AI-помощник, акции, команда и аналитика при доступности сервисов",
-  "Выездные продажи и интеграции",
+const premiumFeatures = [
+  "Фото Studio: пакеты из 4–5 вариантов с ручным одобрением",
+  "Новые Stories и расширенные шаблоны публичной витрины",
+  "История исходников, результатов и действий публикации",
+  "Командные роли и расширенная аналитика",
 ] as const;
 type TrialClockRow = { status:"active"|"paused"|"trial"; trial_ends_at:string|null; server_now:string };
 
@@ -46,20 +45,23 @@ export default function Plan() {
 
   const serverNow = clock ? Date.parse(clock.server_now) + (performance.now() - monotonicStart.current) : 0;
   const trial = clock ? trialDisplay(clock.status, clock.trial_ends_at, serverNow) : null;
+  const selectedPlan = (clock?.status === "trial" ? store?.next_plan : store?.plan) ?? "basic";
+  const premiumSelected = selectedPlan === "standard" || selectedPlan === "pro";
   return <EditorScreen title="Тариф" subtitle={store?.name}>
     <Text style={ui.title}>Прозрачный тариф без скрытой активации</Text>
     <Text style={ui.subtitle}>Пробный период считается на сервере. После его окончания оплата не включается автоматически.</Text>
     <View style={s.current}>
       <Text style={s.eyebrow}>{clock?.status === "active" ? "ТЕКУЩИЙ ДОСТУП" : "ПРОБНЫЙ ПЕРИОД"}</Text>
       {loading ? <ActivityIndicator color="#FFFFFF" /> : <Text style={s.clock}>{trial?.fullLabel ?? (clockError || "Срок недоступен")}</Text>}
-      <Text style={s.period}>Действующий тариф «Каталог»: 24 900 ₸ в месяц после отдельного подтверждения.</Text>
+      <Text style={s.period}>{clock?.status === "trial" ? "Выбранный план" : "Текущий план"}: {premiumSelected ? "Premium · 35 000 ₸" : "Base · 25 000 ₸"} в месяц. Оплата оформляется отдельно.</Text>
     </View>
     <View style={s.premium}>
-      <View style={s.premiumHeader}><View style={{flex:1}}><Text style={s.premiumEyebrow}>ОДИН ТАРИФ · ПОЛНЫЙ ДОСТУП</Text><Text style={s.premiumTitle}>Каталог</Text></View><View style={s.price}><Text style={s.priceValue}>24 900 ₸</Text><Text style={s.priceNote}>в месяц</Text></View></View>
-      <Text style={s.premiumLead}>7 дней бесплатно. Функции магазина не разделяются по планам, автосписания нет.</Text>
-      {catalogFeatures.map(item => <View key={item} style={s.feature}><Text style={s.check}>✓</Text><Text style={s.featureText}>{item}</Text></View>)}
-      <View style={s.quota}><Text style={s.quotaTitle}>Оплата пока не подключена</Text><Text style={s.quotaCopy}>После настройки провайдера сумма и условия будут показаны до подтверждения платежа. Сейчас деньги не списываются.</Text></View>
-      <Text style={s.legal}>AI-генерация изображений требует работающего подключения Azure. Это состояние не меняется покупкой тарифа.</Text>
+      <View style={s.premiumHeader}><View style={{flex:1}}><Text style={s.premiumEyebrow}>AI-ФОТО И КРЕДИТЫ</Text><Text style={s.premiumTitle}>Premium</Text></View><View style={s.price}><Text style={s.priceValue}>35 000 ₸</Text><Text style={s.priceNote}>в месяц</Text></View></View>
+      <Text style={s.premiumLead}>Base — 25 000 ₸ в месяц за каталог и заказы. Premium добавляет AI-фото с учётом кредитов и работу с контентом. Генерация фото пока не подключена.</Text>
+      {premiumFeatures.map(item => <View key={item} style={s.feature}><Text style={s.check}>✓</Text><Text style={s.featureText}>{item}</Text></View>)}
+      <View style={s.quota}><Text style={s.quotaTitle}>Квота AI-фото уточняется</Text><Text style={s.quotaCopy}>Баланс кредитов и списания после успешной генерации предусмотрены. Точное включённое количество объявим после проверки стоимости и запуска провайдера.</Text></View>
+      <Pressable disabled accessibilityRole="button" style={s.disabledButton}><Text style={s.disabledText}>Оплата пока недоступна</Text></Pressable>
+      <Text style={s.legal}>Paddle рассматривается только для web‑подписки Dukenim. Покупки физических товаров через него не проводятся; для iOS требуется отдельная проверка IAP.</Text>
     </View>
     <Pressable onPress={() => router.push("/support" as never)} style={[ui.button, { backgroundColor:theme.accent, borderRadius:theme.buttonRadius }]}><Text style={[ui.buttonText, { color:theme.accentInk }]}>Задать вопрос поддержке</Text></Pressable>
   </EditorScreen>;

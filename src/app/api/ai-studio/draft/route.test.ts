@@ -19,9 +19,9 @@ describe("conversation history access",()=>{
     expect((await POST(new Request("https://example.test",{method:"POST",body:"{}"}))).status).toBe(401);
     expect(mocks.client).not.toHaveBeenCalled();
   });
-  it("rejects an expired account before reading the request body",async()=>{
+  it("locks Base before reading the request body",async()=>{
     mocks.session.mockResolvedValue({user:{id:"owner"},role:"owner",tenantId:"mine"});
-    mocks.entitlement.mockResolvedValue({active:false,plan:"basic"});
+    mocks.entitlement.mockResolvedValue({active:true,plan:"basic"});
     const response=await POST(new Request("https://example.test",{method:"POST",body:"{}"}));
     expect(response.status).toBe(403);
     expect(mocks.client).not.toHaveBeenCalled();

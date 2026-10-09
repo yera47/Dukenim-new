@@ -10,6 +10,7 @@ export const merchantPreviewStore: OwnerStore = {
   catalog_published: true,
   onboarding_completed: true,
   catalog_status: "ready",
+  plan: "basic",
   next_plan: "standard",
   preferred_billing_period: "monthly",
   status: "trial",

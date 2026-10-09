@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { premiumDraft } from "./premium-plan";
 
 describe("premium plan", () => {
-  it("uses the single owner-confirmed monthly 24,900 KZT Catalog offer", () => {
+  it("uses the owner-confirmed monthly 35,000 KZT offer", () => {
     expect(premiumDraft({ NODE_ENV: "test", AI_PHOTO_PACKS_MONTHLY: "90" } as NodeJS.ProcessEnv)).toMatchObject({
-      priceKzt: 24_900,
+      priceKzt: 35_000,
       billingPeriod: "month",
       periodStatus: "monthly_confirmed",
       photoPackLimit: null,
