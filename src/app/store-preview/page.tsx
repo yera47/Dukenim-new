@@ -48,7 +48,7 @@ export default async function StorePreview({searchParams}:{searchParams:Promise<
     settings={...settings,...proposedDesignSettings(design.data,theme.data)};
     proposedSections=design.data.sections?.map(section=>section.name)??[];
   }
-  if(typeof query.template==="string"&&launchTemplatesForPlan(plan).some(t=>t.key===query.template)) settings.template_key=query.template;
+  if(typeof query.template==="string"&&launchTemplatesForPlan(plan,tenant.business_vertical??"other").some(t=>t.key===query.template)) settings.template_key=query.template;
   // Sample data is read-only and never written to the merchant's catalogue.
   if(typeof query.colors==="string") {
     try {

@@ -10,10 +10,15 @@ import {useOwnerStore} from "@/lib/use-owner-store";
 import {colors} from "@/lib/theme";
 import {supabase} from "@/lib/supabase";
 
-const templates=[
- {key:"gallery",title:"Галерея",copy:"Премиальная подача для ресторанов, брендов и больших каталогов."},
- {key:"journal",title:"Меню и истории",copy:"Донерные, выпечка, кофе с собой и быстрые заказы."},
-] as const;
+const templatePairs={
+ fashion:[{key:"atelier",title:"Коллекция и образы",copy:"Крупные фотографии, подборки, размеры и цвета."},{key:"market",title:"Размеры и наличие",copy:"Компактный каталог с вариантами, ценой и остатком."}],
+ food:[{key:"gallery",title:"Фото-меню",copy:"Фотографии блюд, понятные разделы и состав."},{key:"market",title:"Быстрый заказ",copy:"Короткий путь к выбору, опциям и повторному заказу."}],
+ home:[{key:"atelier",title:"Интерьерная коллекция",copy:"Комнатные подборки, крупные фото и детали материалов."},{key:"market",title:"По комнатам и наличию",copy:"Категории, размеры, материалы, цена и остаток."}],
+ beauty:[{key:"studio",title:"Редакционная подборка",copy:"Спокойные фото и ясные категории ухода."},{key:"market",title:"Уход по категориям",copy:"Категории и цены рядом с выбором варианта."}],
+ flowers:[{key:"atelier",title:"Цветочная коллекция",copy:"Крупные фотографии композиций и сезонные подборки."},{key:"market",title:"Букеты к событию",copy:"Поводы, цена и доступность заказа на первом плане."}],
+ other:[{key:"studio",title:"Чистая витрина",copy:"Лаконичная подача, разделы и собственные фото."},{key:"market",title:"Каталог по категориям",copy:"Категории, цены, варианты и наличие в одном месте."}],
+} as const;
+function templatesFor(vertical:string|null|undefined){return templatePairs[vertical as keyof typeof templatePairs]??templatePairs.other;}
 type Settings={template_key:string;hero_title:string|null;hero_subtitle:string|null;hero_cta_label:string|null;hero_image_url:string|null};
 const empty:Settings={template_key:"gallery",hero_title:"",hero_subtitle:"",hero_cta_label:"Смотреть каталог",hero_image_url:""};
 const validHeroUrl=(value:string)=>{if(!value)return true;if(value.length>2000)return false;try{const url=new URL(value);return url.protocol==="https:"&&!url.username&&!url.password&&!url.port;}catch{return false;}};
@@ -34,7 +39,8 @@ export default function Brand(){
    if(current!==request.current)return;
    if(error){setState("error");return;}
    if(!data){setState("setup");return;}
-   setForm({template_key:data.template_key??"gallery",hero_title:data.hero_title??"",hero_subtitle:data.hero_subtitle??"",hero_cta_label:data.hero_cta_label??"Смотреть каталог",hero_image_url:data.hero_image_url??""});
+   const choices=templatesFor(store.business_vertical);
+   setForm({template_key:choices.some(item=>item.key===data.template_key)?data.template_key:choices[0].key,hero_title:data.hero_title??"",hero_subtitle:data.hero_subtitle??"",hero_cta_label:data.hero_cta_label??"Смотреть каталог",hero_image_url:data.hero_image_url??""});
    setVersion(data.updated_at);setState("ready");
   }catch{if(current===request.current)setState("error");}
  },[store,storeLoading]);
@@ -91,7 +97,7 @@ export default function Brand(){
    <Text style={ui.title}>Внешний вид</Text>
    <Text style={ui.subtitle}>Те же настройки использует витрина на сайте. Выберите подачу и заполните тексты без технических терминов.</Text>
    <Text style={ui.cardTitle}>Шаблон</Text>
-   {templates.map(item=><Pressable key={item.key} onPress={()=>setForm(current=>({...current,template_key:item.key}))} style={[s.template,form.template_key===item.key&&s.selected]}><View style={[s.preview,item.key==="journal"&&s.previewFast]}/><View style={{flex:1}}><Text style={s.templateTitle}>{item.title}</Text><Text style={ui.subtitle}>{item.copy}</Text></View><Text style={s.check}>{form.template_key===item.key?"✓":""}</Text></Pressable>)}
+   {templatesFor(store?.business_vertical).map(item=><Pressable key={item.key} onPress={()=>setForm(current=>({...current,template_key:item.key}))} style={[s.template,form.template_key===item.key&&s.selected]}><View style={[s.preview,item.key==="market"&&s.previewFast]}/><View style={{flex:1}}><Text style={s.templateTitle}>{item.title}</Text><Text style={ui.subtitle}>{item.copy}</Text></View><Text style={s.check}>{form.template_key===item.key?"✓":""}</Text></Pressable>)}
    <Pressable onPress={()=>router.push("/logo" as never)} style={s.logoLink}><Text style={s.logoLinkTitle}>Логотип магазина →</Text><Text style={ui.subtitle}>Загрузите свой знак для витрины</Text></Pressable>
    <View style={ui.card}><Text style={ui.label}>Фото обложки</Text><Pressable disabled={saving} onPress={()=>void chooseHero()} style={s.heroPicker}>{form.hero_image_url?<Image alt="Обложка магазина" source={{uri:form.hero_image_url}} contentFit="cover" style={s.heroImage}/>:<Text style={s.heroText}>＋ Выбрать фото из медиатеки</Text>}</Pressable><Text style={ui.label}>Заголовок обложки</Text><TextInput style={ui.input} value={form.hero_title??""} onChangeText={value=>setForm(current=>({...current,hero_title:value}))} placeholder={store?.name||"Название магазина"}/><Text style={ui.label}>Короткое описание</Text><TextInput style={ui.input} value={form.hero_subtitle??""} onChangeText={value=>setForm(current=>({...current,hero_subtitle:value}))} placeholder="Что вы предлагаете покупателю"/><Text style={ui.label}>Текст кнопки</Text><TextInput style={ui.input} value={form.hero_cta_label??""} onChangeText={value=>setForm(current=>({...current,hero_cta_label:value}))} maxLength={40}/><Text style={ui.label}>Или вставьте ссылку на фото</Text><TextInput autoCapitalize="none" keyboardType="url" style={ui.input} value={form.hero_image_url??""} onChangeText={value=>setForm(current=>({...current,hero_image_url:value}))} placeholder="https://..."/></View>
    <Pressable disabled={saving} onPress={()=>void save()} style={ui.button}><Text style={ui.buttonText}>{saving?"Сохраняем…":"Сохранить оформление"}</Text></Pressable>

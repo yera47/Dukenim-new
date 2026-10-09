@@ -1,3 +1,5 @@
+import type { BusinessVertical } from "@/types/database";
+
 export type Palette = { key:string; name:string; background:string; surface:string; ink:string; muted:string; accent:string; accentInk:string };
 
 // Curated combinations only: a Start customer chooses a coherent system, never random independent colors.
@@ -22,28 +24,27 @@ export const templateCatalog = [
   {key:"studio",name:"Чистая витрина",minPlan:"basic",description:"Спокойная подача товара без лишних декоративных блоков."},
   {key:"market",name:"Быстрый каталог",minPlan:"basic",description:"Категории и ассортимент сразу на первом экране."},
   {key:"journal",name:"Истории и подборки",minPlan:"standard",description:"Коллекции, история бренда и расширенная товарная подача."},
-  {key:"gallery",name:"Визуальная витрина",minPlan:"standard",description:"Крупные изображения, акции и фирменные блоки."},
+  {key:"gallery",name:"Фотоколлекция",minPlan:"basic",description:"Крупные фотографии и подборки для визуального ассортимента."},
   {key:"signature",name:"Фирменная витрина",minPlan:"standard",description:"Просторная подача для собственной айдентики и кампаний."},
 ] as const;
 
-// Three sales approaches per supported business; database creation RPC enforces the same keys.
-// The full builder remains available later in settings for eligible plans.
-export const catalogLaunchTemplates = {
-  basic: [
-    { key: "atelier", benefit: "Выразительная обложка и крупные карточки — лучше для одежды, косметики и авторских вещей." },
-    { key: "market", benefit: "Быстрый просмотр ассортимента и категорий — лучше для широкого каталога и повторных заказов." },
-    { key: "studio", benefit: "Выбор через иллюстрированные разделы каталога." },
-  ],
-  standard: [
-    { key: "journal", benefit: "Подборки, история бренда и коллекции — подходит магазинам с сильной визуальной подачей." },
-    { key: "gallery", benefit: "Премиальная витрина с акциями и бренд-блоками — для собственной айдентики и кампаний." },
-    { key: "signature", benefit: "Выбор через иллюстрированные разделы с фирменным оформлением." },
-  ],
+export const segmentTemplateKeys = {
+  fashion: ["atelier", "market"],
+  food: ["gallery", "market"],
+  home: ["atelier", "market"],
+  beauty: ["studio", "market"],
+  flowers: ["atelier", "market"],
+  other: ["studio", "market"],
 } as const;
 
-export function launchTemplatesForPlan(plan: "basic" | "standard" | "pro") {
-  void plan;
-  return [...catalogLaunchTemplates.basic, ...catalogLaunchTemplates.standard];
+// Keep setup focused: two working storefront shapes per segment, with one shared renderer.
+// Advanced legacy keys stay readable on old stores but are no longer offered as launch choices.
+export function launchTemplatesForPlan(plan: "basic" | "standard" | "pro", vertical: BusinessVertical = "other") {
+  const allowed: readonly string[] = segmentTemplateKeys[vertical as keyof typeof segmentTemplateKeys] ?? segmentTemplateKeys.other;
+  return allowed.flatMap((key) => {
+    const template = templateCatalog.find((item) => item.key === key);
+    return template && (plan !== "basic" || template.minPlan === "basic") ? [template] : [];
+  });
 }
 
 export function paletteByKey(key:string|null|undefined){return palettes.find((item)=>item.key===key)??palettes[0]}

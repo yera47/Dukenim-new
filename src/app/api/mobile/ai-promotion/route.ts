@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getMobileOwner } from "@/lib/mobile-auth";
 import { computeEntitlement } from "@/lib/entitlement";
+import { hasPlan } from "@/lib/plans";
 import { createAiStudioDraft, getAiStudioStatus } from "@/lib/ai/studio";
 
 const inputSchema = z.object({
@@ -22,7 +23,9 @@ export async function POST(request: Request) {
     admin.from("ai_studio_generations").select("id", { count: "exact", head: true }).eq("tenant_id", tenantId).gte("created_at", new Date(Date.now() - 86_400_000).toISOString()),
   ]);
   if (tenant.error || !tenant.data || usage.error) return NextResponse.json({ error: "Не удалось загрузить магазин." }, { status: 503 });
-  if (!computeEntitlement(tenant.data).active) return NextResponse.json({ error: "Пробный период или подписка завершены." }, { status: 403 });
+  const entitlement = computeEntitlement(tenant.data);
+  if (!entitlement.active) return NextResponse.json({ error: "Пробный период или подписка завершены." }, { status: 403 });
+  if (!hasPlan(entitlement.plan, "standard")) return NextResponse.json({ error: "AI-акции доступны в тарифе Premium." }, { status: 403 });
   if ((usage.count ?? 0) >= Math.max(1, Number(process.env.AZURE_AI_MAX_TENANT_DAILY_REQUESTS) || 40)) return NextResponse.json({ error: "Дневной лимит AI Studio исчерпан." }, { status: 429 });
   const rpc = admin as unknown as { rpc: (name: string, args: Record<string, unknown>) => Promise<{ error: { message: string } | null }> };
   const reserved = await rpc.rpc("reserve_ai_credits", { p_tenant_id: tenantId, p_cost: 1, p_monthly_allotment: 600 });

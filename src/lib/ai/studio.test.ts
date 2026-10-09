@@ -16,13 +16,13 @@ it('accepts a custom color on the single public plan',async()=>{
   expect((await createAiStudioDesign('Спокойный магазин','fashion','basic')).design.brandColor).toBe('#c04455');
 });
 it('requires the new theme while allowing arbitrary shades on Start',async()=>{
- chat.mockResolvedValue({content:JSON.stringify({...design,brandColor:undefined})});
+ chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'studio',brandColor:undefined})});
  expect((await createAiStudioDesign('Розовый и зелёный','beauty','basic')).design.colorTheme).toEqual(design.colorTheme);
- chat.mockResolvedValue({content:JSON.stringify({...design,colorTheme:undefined})});
+ chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'studio',colorTheme:undefined})});
  await expect(createAiStudioDesign('Розовый и зелёный','beauty','pro')).rejects.toThrow();
 });
 it('bounds verbose explanation without dropping valid colours',async()=>{
- chat.mockResolvedValue({content:JSON.stringify({...design,rationale:'Объяснение '.repeat(70)})});
+ chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'studio',rationale:'Объяснение '.repeat(70)})});
  const result=await createAiStudioDesign('Розовый и зелёный','beauty','pro');
  expect(result.design.rationale.length).toBe(240);
  expect(result.design.colorTheme).toEqual(design.colorTheme);
@@ -39,9 +39,11 @@ it('passes brand context to sections',async()=>{
   await createAiStudioStructure('Создай разделы',{brand:{notes:'Лаконичные названия'}});
   expect(chat.mock.calls[0][0][1].content).toContain('Лаконичные названия');
 });
-it('offers all launch templates during first catalog creation',async()=>{
- chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'gallery',sections:[{name:'Одежда'},{name:'Аксессуары'}]})});
+it('offers exactly the two segment-specific launch templates and categories during first catalog creation',async()=>{
+ chat.mockResolvedValue({content:JSON.stringify({...design,templateKey:'atelier',sections:[{name:'Одежда'},{name:'Аксессуары'}]})});
  await createAiStudioDesign('Создать магазин','fashion','pro',{catalog_status:'not_started'});
  expect(chat.mock.calls[0][0][1].content).toContain('"key":"atelier"');
- expect(chat.mock.calls[0][0][1].content).toContain('"key":"gallery"');
+ expect(chat.mock.calls[0][0][1].content).toContain('"key":"market"');
+ expect(chat.mock.calls[0][0][1].content).not.toContain('"key":"gallery"');
+ expect(chat.mock.calls[0][0][0].content).toContain('sections');
 });
