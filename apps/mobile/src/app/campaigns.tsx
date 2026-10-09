@@ -7,6 +7,7 @@ import { ui } from "@/components/app-shell";
 import { useOwnerStore } from "@/lib/use-owner-store";
 import { colors, site } from "@/lib/theme";
 import { supabase } from "@/lib/supabase";
+import { campaignHorizons, campaignIdeaBrief, campaignMonthLabel, getCampaignPlanningMonths, type CampaignHorizon } from "../../../../src/lib/campaign-calendar";
 
 type Campaign = { id: string; title: string; eyebrow: string | null; body: string | null; cta_label: string; status: "draft" | "published" | "archived"; image_url: string | null; starts_at: string | null; ends_at: string | null };
 type AiDraft = { eyebrow?: string; title: string; body: string; ctaLabel: string };
@@ -31,6 +32,8 @@ export default function Campaigns() {
   const [endsAt, setEndsAt] = useState("");
   const [editingPeriod, setEditingPeriod] = useState<string | null>(null);
   const [periodDraft, setPeriodDraft] = useState({ startsAt: "", endsAt: "" });
+  const [horizon, setHorizon] = useState<CampaignHorizon>(1);
+  const [selectedIdea, setSelectedIdea] = useState<string | null>(null);
 
   useEffect(() => { if (typeof params.brief === "string") setAiBrief(params.brief.slice(0, 800)); }, [params.brief]);
   const request = useCallback(async (path: string, method: "GET" | "POST" | "PATCH", payload?: Record<string, string | null>) => {
@@ -95,6 +98,15 @@ export default function Campaigns() {
     return `${part("year")}-${part("month")}-${part("day")}`;
   };
   const dateLabel = (value: string | null) => value ? new Date(value).toLocaleDateString("ru-KZ", { timeZone: "Asia/Almaty" }) : "без ограничения";
+  const planningMonths = getCampaignPlanningMonths(horizon, store?.business_vertical);
+  const selectIdea = (idea: typeof planningMonths[number]) => {
+    setSelectedIdea(idea.key);
+    setTitle(idea.title);
+    setEyebrow(campaignMonthLabel(idea.key));
+    setStartsAt(idea.startsAt);
+    setEndsAt(idea.endsAt);
+    setAiBrief(campaignIdeaBrief(store?.name ?? "Мой магазин", idea));
+  };
   const create = async () => {
     if (!store || title.trim().length < 2) return Alert.alert("Добавьте заголовок", "Минимум два символа.");
     const starts = toIsoDate(startsAt), ends = toIsoDate(endsAt, true);
@@ -137,6 +149,17 @@ export default function Campaigns() {
       <Text style={ui.subtitle}>Создавайте кампании, например к празднику или запуску коллекции. AI предложит текст по вашим условиям, а вы сами проверите и опубликуете его. Витрина не меняется без вашего действия.</Text>
       <Pressable accessibilityRole="button" onPress={() => router.push("/plan" as never)} style={ui.button}><Text style={ui.buttonText}>Посмотреть Premium</Text></Pressable>
     </View> : <>
+      <View style={ui.card}>
+        <Text style={s.eyebrow}>ПЛАНИРОВАНИЕ · PREMIUM</Text>
+        <Text style={ui.cardTitle}>План акций по месяцам</Text>
+        <Text style={ui.subtitle}>Выберите горизонт и идею. Это сезонные темы для планирования, не список официальных праздников.</Text>
+        <View style={s.horizons}>{campaignHorizons.map(value => <Pressable key={value} accessibilityRole="button" accessibilityState={{ selected: horizon === value }} onPress={() => setHorizon(value)} style={[s.horizon, horizon === value && s.horizonSelected]}><Text style={[s.horizonText, horizon === value && s.horizonTextSelected]}>{value} {value === 1 ? "месяц" : value < 5 ? "месяца" : "месяцев"}</Text></Pressable>)}</View>
+        {planningMonths.map(idea => <View key={idea.key} style={s.ideaRow}>
+          <View style={s.ideaCopy}><Text style={s.ideaMonth}>{campaignMonthLabel(idea.key)}</Text><Text style={s.ideaTitle}>{idea.title}</Text><Text style={s.ideaSubtitle}>{idea.subtitle}</Text></View>
+          <Pressable accessibilityRole="button" onPress={() => selectIdea(idea)} style={[s.ideaButton, selectedIdea === idea.key && s.ideaButtonSelected]}><Text style={[s.ideaButtonText, selectedIdea === idea.key && s.ideaButtonTextSelected]}>{selectedIdea === idea.key ? "Выбрано" : "В план"}</Text></Pressable>
+        </View>)}
+        {selectedIdea ? <Text style={ui.subtitle}>Идея и даты добавлены в форму ниже. Нажмите «Предложить текст», затем проверьте и сохраните черновик сами.</Text> : null}
+      </View>
       <View style={ui.card}>
         <Text style={ui.cardTitle}>Черновик с AI</Text>
         <Text style={ui.subtitle}>Опишите товары и точные условия. AI не придумает скидку, срок или наличие.</Text>
@@ -185,6 +208,9 @@ export default function Campaigns() {
 
 const s = StyleSheet.create({
   multiline: { minHeight: 92, textAlignVertical: "top", paddingTop: 14 }, disabled: { opacity: .45 },
+  horizons: { flexDirection: "row", flexWrap: "wrap", gap: 8, marginTop: 4, marginBottom: 5 },
+  horizon: { borderWidth: 1, borderColor: colors.line, borderRadius: 18, minHeight: 40, paddingHorizontal: 13, justifyContent: "center" }, horizonSelected: { backgroundColor: colors.navySoft, borderColor: colors.navy }, horizonText: { color: colors.muted, fontSize: 12, fontWeight: "800" }, horizonTextSelected: { color: colors.navyDark },
+  ideaRow: { flexDirection: "row", alignItems: "center", gap: 10, borderTopWidth: 1, borderTopColor: colors.line, paddingTop: 12 }, ideaCopy: { flex: 1, gap: 2 }, ideaMonth: { color: colors.navy, fontSize: 10, fontWeight: "900", textTransform: "uppercase", letterSpacing: .8 }, ideaTitle: { color: colors.ink, fontSize: 14, fontWeight: "900" }, ideaSubtitle: { color: colors.muted, fontSize: 12, lineHeight: 17 }, ideaButton: { minHeight: 40, borderRadius: 12, paddingHorizontal: 12, alignItems: "center", justifyContent: "center", borderWidth: 1, borderColor: colors.line }, ideaButtonSelected: { backgroundColor: colors.navy, borderColor: colors.navy }, ideaButtonText: { color: colors.navyDark, fontSize: 12, fontWeight: "900" }, ideaButtonTextSelected: { color: "white" },
   eyebrow: { fontSize: 10, fontWeight: "900", letterSpacing: 1.3, color: colors.navy },
   status: { alignSelf: "flex-start", paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10, backgroundColor: colors.navySoft, color: colors.navyDark, fontSize: 11, fontWeight: "900" },
   actions: { flexDirection: "row", flexWrap: "wrap", gap: 8 }, smallPrimary: { minHeight: 46, borderRadius: 13, backgroundColor: colors.navy, paddingHorizontal: 15, alignItems: "center", justifyContent: "center" },

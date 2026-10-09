@@ -63,6 +63,12 @@ export function AiStudioClient({ enabled, imageEnabled, brand, catalogStatus, ca
   const [brandOpen,setBrandOpen]=useState(false);
   const [brandDone,setBrandDone]=useState(false);
   useEffect(()=>{if(catalogStatus!=="ready")return;const controller=new AbortController();void fetch("/api/brand-materials",{cache:"no-store",signal:controller.signal}).then(response=>response.ok?response.json():null).then(data=>{if(!controller.signal.aborted&&data?.logoUrl)setBrandDone(true);}).catch(()=>{});return()=>controller.abort();},[catalogStatus]);
+  useEffect(()=>{
+    const params=new URLSearchParams(window.location.search);
+    const requestedIntent=params.get("intent");
+    const requestedBrief=params.get("brief");
+    if(requestedIntent==="promotion"&&requestedBrief){setIntent("promotion");setBrief(requestedBrief.slice(0,800));}
+  },[]);
   const [pickerRequest,setPickerRequest]=useState<{kind:"photo"|"file"|"camera";id:number}|null>(null);
   const [copied, setCopied] = useState(false);
   const suggestedBrief = "";
