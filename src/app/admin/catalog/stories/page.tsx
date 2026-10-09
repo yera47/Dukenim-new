@@ -16,8 +16,9 @@ export default async function FoodStoriesPage() {
     getStorefrontProducts(client,tenantId!).catch(()=>[]),
   ]);
   const stories: EditorStory[] = (storyResult.data ?? []).map(item => ({ ...item, url: client.storage.from("food-stories").getPublicUrl(item.media_path).data.publicUrl }));
+  if (tenant.data && tenant.data.business_vertical !== "food") return <div className="card mx-auto max-w-2xl p-6"><h1 className="text-2xl font-bold">Истории кафе</h1><p className="muted mt-2">Сейчас публикация историй доступна только магазинам еды. Для других магазинов используйте акции с датами и фото.</p><Link href="/admin/catalog/campaigns" className="btn btn-primary mt-5">Открыть акции</Link></div>;
   return <div className="mx-auto max-w-6xl"><Link href="/admin/catalog" className="text-sm text-[var(--ink-60)]">← Каталог</Link>
-    <div className="mb-8 mt-4"><p className="data-label">КАТАЛОГ · ЕДА</p><h1 className="mt-2 text-3xl font-semibold">Истории кафе</h1><p className="muted mt-2 max-w-2xl">Короткие фото и видео над меню. Добавьте заголовок и, если нужно, кнопку перехода к блюду. Новая история сначала может оставаться черновиком.</p></div>
+    <div className="mb-8 mt-4"><p className="data-label">КАТАЛОГ · ИСТОРИИ</p><h1 className="mt-2 text-3xl font-semibold">Истории кафе</h1><p className="muted mt-2 max-w-2xl">Короткие фото и видео над меню. Добавьте заголовок и, если нужно, переход к блюду. Сначала можно сохранить черновик.</p></div>
     {storyResult.error || !tenant.data ? <p role="alert" className="card p-5">Истории не загрузились. Проверьте подключение и попробуйте обновить страницу.</p> : <StoryEditor tenantId={tenantId!} stories={stories} products={products} storeName={tenant.data.catalog_name||tenant.data.name} storeTagline={tenant.data.tagline} storeLogoUrl={tenant.data.logo_url} businessVertical={tenant.data.business_vertical??"other"} approach={approachForTemplate(settings.data?.template_key??"atelier")} previewSettings={settings.data} previewStyle={storefrontStyle(settings.data,tenant.data.plan,tenant.data.accent_color)} />}
   </div>;
 }

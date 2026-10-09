@@ -34,7 +34,26 @@ describe("product photo route release gate", () => {
   it("reports an honest disabled capability", async () => {
     const response = await GET();
     expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ enabled: false, provider: null });
+    expect(await response.json()).toMatchObject({ enabled: false, provider: null, configuration: { creditLedgerReady: false, generationRouteReady: false } });
+  });
+
+  it("does not expose a live button when Azure variables are present but accounting is absent", async () => {
+    const original = { ...process.env };
+    try {
+      Object.assign(process.env, {
+        AZURE_AI_FLUX_ENDPOINT: "https://example.services.ai.azure.com",
+        AZURE_AI_FOUNDRY_API_KEY: "test-secret-key-with-enough-length",
+        AZURE_AI_FLUX_DEPLOYMENT: "FLUX.2-pro",
+        AZURE_AI_IMAGE_SUPPORTS_REFERENCE: "true",
+        AZURE_AI_IMAGE_ESTIMATED_USD_MICROS: "25000",
+      });
+      const response = await GET();
+      const body = await response.json();
+      expect(body).toMatchObject({ enabled: false, provider: null, configuration: { azureReady: true, creditLedgerReady: false, generationRouteReady: false } });
+      expect(JSON.stringify(body)).not.toContain("test-secret-key");
+    } finally {
+      process.env = original;
+    }
   });
 
   it("validates a tenant-bound request then refuses any live provider call", async () => {

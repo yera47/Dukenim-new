@@ -1,5 +1,15 @@
 # Dukenim iOS / Stitch acceptance — 2026-09-28
 
+## 2026-10-09 — website-only stories and image setup (current owner priority)
+
+| Requirement | Status | Evidence / next check |
+| --- | --- | --- |
+| Keep Stories in the food catalog | in progress | The food catalog retains the Stories link and now shows a marked sample photo card. The editor shows a vertical placement example before upload, while its existing draft, publication confirmation, product link and actual storefront preview remain. Live SQL read-only confirms `check_food_story_product()` restricts writes to food stores, so non-food stores do not get a misleading action. Signed-in save/reopen and buyer display still need an owner-controlled test. |
+| Show explanatory imagery | in progress | Three original, compressed example photos are in `public/examples/stories/` for food, fashion and home. Catalog Stories and campaign planning use clearly marked example cards. Other website flows still need a screen-by-screen visual audit; these examples are never published as merchant content. |
+| Azure image generation and Premium photo credits | in progress | The web route reports precise disabled setup status without disclosing credentials; it never calls Azure. AI Studio now checks the explicitly selected image provider rather than only `FAL_KEY`, and no longer promises a durable queue or zero Azure cost. The live photo job/output/ledger tables, verified deployment and owner budget, included-credit amount, durable output persistence and signed-in generation/review are still missing. |
+| App/TestFlight | externally blocked | Owner paused app work for this iteration; no EAS build or TestFlight action. The current paid credit balance would not cover the next $2 build without additional cost. |
+
+
 ## 2026-10-09 — latest owner tariff correction (supersedes one-plan entries below)
 
 | Requirement | Status | Evidence / next check |

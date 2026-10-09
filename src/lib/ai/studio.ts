@@ -8,6 +8,7 @@ import type { Plan } from "@/lib/plans";
 import { palettes, launchTemplatesForPlan } from "@/lib/storefront-theme";
 import type { BusinessVertical } from "@/types/database";
 import { compactShopContext, parseModelJson } from "./shop-context";
+import { getMarketingImageStatus } from "./marketing-image-provider";
 
 export const aiStudioIntentSchema = z.enum(["hero", "promotion", "catalog_copy", "catalog_structure", "store_design", "consultation"]);
 export type AiStudioIntent = z.infer<typeof aiStudioIntentSchema>;
@@ -31,7 +32,7 @@ const instruction: Record<AiStudioIntent, string> = {
 
 export function getAiStudioStatus() {
   const azure = getAzureFoundryStatus();
-  return { configured: azure.configured && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), imageConfigured: Boolean(process.env.FAL_KEY), deployment: azure.deployment };
+  return { configured: azure.configured && Boolean(process.env.SUPABASE_SERVICE_ROLE_KEY), imageConfigured: getMarketingImageStatus().configured, deployment: azure.deployment };
 }
 
 export async function createAiStudioDraft(intent: AiStudioIntent, brief: string, context: unknown = {}) {

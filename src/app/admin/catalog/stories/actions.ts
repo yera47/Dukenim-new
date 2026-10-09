@@ -16,7 +16,7 @@ export async function saveFoodStory(input: StoryInput): Promise<{ error?: string
   if (!media) return { error: "Файл истории не найден. Загрузите его ещё раз." };
   if (input.productId) {
     const { data: product } = await client.from("products").select("id").eq("id", input.productId).eq("tenant_id", tenantId).eq("is_active", true).maybeSingle();
-    if (!product) return { error: "Выбранное блюдо недоступно в этом магазине." };
+    if (!product) return { error: "Выбранный товар недоступен в этом магазине." };
   }
   const values = { tenant_id: tenantId, title: input.title.trim(), caption: input.caption.trim() || null, media_path: path, media_type: input.mediaType, product_id: input.productId, status: input.status, sort_order: input.sortOrder };
   const previous = input.id ? (await client.from("food_stories").select("media_path").eq("id", input.id).eq("tenant_id", tenantId).maybeSingle()).data : null;

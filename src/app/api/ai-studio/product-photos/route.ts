@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireRole } from "@/lib/auth";
 import { validateProductPhotoDraft } from "@/lib/ai/product-photo-workflow";
 import { tenantHasPlan } from "@/lib/plan-access";
+import { getAzureProductImageConfig } from "@/lib/ai/azure-product-image-provider";
 
 const MAX_IMAGE_BYTES = 10_000_000;
 const MAX_REQUEST_BYTES = 65_000_000;
@@ -24,7 +25,15 @@ function validImage(file: File) {
 export async function GET() {
   const { tenantId } = await requireRole(["owner", "superadmin"]);
   if (!tenantId || !await tenantHasPlan(tenantId, "standard")) return NextResponse.json({ error: "AI-фотостудия доступна на тарифе Premium." }, { status: 403 });
-  return NextResponse.json({ enabled: false, provider: null, reason: "Live image provider and cost budget are not configured." });
+  const azure = getAzureProductImageConfig();
+  return NextResponse.json({
+    enabled: false,
+    provider: null,
+    configuration: { azureReady: azure.configured, creditLedgerReady: false, generationRouteReady: false },
+    reason: azure.configured
+      ? "Учёт кредитов и сохранение результатов ещё не подключены. Запросы в Azure не отправляются."
+      : "Azure-модель изображений, бюджет и учёт кредитов ещё не подключены. Запросы в Azure не отправляются.",
+  });
 }
 
 export async function POST(request: Request) {
@@ -70,5 +79,5 @@ export async function POST(request: Request) {
     merchantFacts: parsed.data.merchantFacts,
   });
   if (!validation.ok) return NextResponse.json({ error: validation.errors[0], details: validation.errors }, { status: 400 });
-  return NextResponse.json({ error: "Live-генерация недоступна: провайдер и бюджет не подключены.", retryable: false }, { status: 503 });
+  return NextResponse.json({ error: "Генерация ещё не запущена: нужны проверенная Azure-модель, лимит расходов, учёт кредитов и сохранение результатов.", retryable: false }, { status: 503 });
 }
