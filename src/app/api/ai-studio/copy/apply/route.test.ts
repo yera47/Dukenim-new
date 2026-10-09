@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ getSessionContext: mocks.context }));
 vi.mock("@/lib/plan-access", () => ({ tenantEntitlement: mocks.entitlement }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client }));
-vi.mock("@/lib/queries/owner", () => ({ getStorefrontSettings: mocks.getSettings, saveStorefrontSettings: mocks.saveSettings }));
+vi.mock("@/lib/queries/owner", () => ({ getStorefrontSettings: mocks.getSettings, updateStorefrontSettingsIfCurrent: mocks.saveSettings }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { POST } from "./route";
@@ -27,8 +27,8 @@ describe("apply AI copy", () => {
     vi.clearAllMocks();
     mocks.context.mockResolvedValue({ user: { id: "owner" }, role: "owner", tenantId });
     mocks.entitlement.mockResolvedValue({ active: true, plan: "basic" });
-    mocks.getSettings.mockResolvedValue({ data: { template_key: "market", palette_key: "paper-forest", brand_color: "#123456", hero_image_url: "https://example.com/hero.jpg" }, error: null });
-    mocks.saveSettings.mockResolvedValue({ error: null });
+    mocks.getSettings.mockResolvedValue({ data: { updated_at: "2026-10-09T10:00:00.000Z", template_key: "market", palette_key: "paper-forest", brand_color: "#123456", hero_image_url: "https://example.com/hero.jpg" }, error: null });
+    mocks.saveSettings.mockResolvedValue({ data: { tenant_id: tenantId }, error: null });
   });
 
   it("rejects unauthenticated requests before database access", async () => {
@@ -42,7 +42,7 @@ describe("apply AI copy", () => {
     const response = await POST(request());
     expect(response.status).toBe(200);
     expect(mock.eq).toHaveBeenCalledWith("tenant_id", tenantId);
-    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, {
+    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, "2026-10-09T10:00:00.000Z", {
       template_key: "market", palette_key: "paper-forest", brand_color: "#123456",
       hero_title: draft.title, hero_subtitle: draft.body, hero_image_url: "https://example.com/hero.jpg", hero_cta_label: draft.ctaLabel,
     });
@@ -54,6 +54,12 @@ describe("apply AI copy", () => {
     expect(mocks.saveSettings).not.toHaveBeenCalled();
   });
 
+  it("rejects a stale hero-text write instead of overwriting newer media", async () => {
+    const mock = generationClient("hero"); mocks.client.mockResolvedValue(mock.client);
+    mocks.saveSettings.mockResolvedValue({ data: null, error: null });
+    expect((await POST(request())).status).toBe(409);
+  });
+
   it("rejects campaign generation on Base because Base has no AI", async () => {
     const generation = generationClient("promotion");
     const insert = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: "campaign-basic" }, error: null }) }) });
@@ -63,7 +69,7 @@ describe("apply AI copy", () => {
     expect(insert).not.toHaveBeenCalled();
   });
 
-  it("stores a Brand promotion as an unpublished campaign", async () => {
+  it("stores a Premium promotion as an unpublished campaign", async () => {
     mocks.entitlement.mockResolvedValue({ active: true, plan: "standard" });
     const generation = generationClient("promotion");
     const insert = vi.fn().mockReturnValue({ select: vi.fn().mockReturnValue({ single: vi.fn().mockResolvedValue({ data: { id: "campaign-1" }, error: null }) }) });

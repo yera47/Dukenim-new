@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth", () => ({ getSessionContext: mocks.context }));
 vi.mock("@/lib/plan-access", () => ({ tenantEntitlement: mocks.entitlement }));
 vi.mock("@/lib/supabase/server", () => ({ createClient: mocks.client }));
-vi.mock("@/lib/queries/owner", () => ({ getStorefrontSettings: mocks.getSettings, saveStorefrontSettings: mocks.saveSettings }));
+vi.mock("@/lib/queries/owner", () => ({ getStorefrontSettings: mocks.getSettings, updateStorefrontSettingsIfCurrent: mocks.saveSettings }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
 import { POST } from "./route";
@@ -31,8 +31,8 @@ describe("apply AI storefront design", () => {
     vi.clearAllMocks();
     mocks.context.mockResolvedValue({ user: { id: "owner" }, role: "owner", tenantId });
     mocks.entitlement.mockResolvedValue({ active: true, plan: "basic" });
-    mocks.getSettings.mockResolvedValue({ data: { brand_color: "#123456", hero_image_url: "https://example.com/hero.jpg" }, error: null });
-    mocks.saveSettings.mockResolvedValue({ error: null });
+    mocks.getSettings.mockResolvedValue({ data: { updated_at: "2026-10-09T10:00:00.000Z", brand_color: "#123456", hero_image_url: "https://example.com/hero.jpg" }, error: null });
+    mocks.saveSettings.mockResolvedValue({ data: { tenant_id: tenantId }, error: null });
   });
 
   it("rejects unauthenticated requests before database access", async () => {
@@ -52,16 +52,22 @@ describe("apply AI storefront design", () => {
   it("preserves owner media and color while applying the approved suggestion", async () => {
     const mock = clientWith(design); mocks.client.mockResolvedValue(mock.client);
     expect((await POST(request())).status).toBe(200);
-    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, {
+    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, "2026-10-09T10:00:00.000Z", {
       template_key: "market", palette_key: "paper-forest", brand_color: "#123456",
       hero_title: design.heroTitle, hero_subtitle: design.heroSubtitle,
       hero_image_url: "https://example.com/hero.jpg", hero_cta_label: design.heroCtaLabel,
     });
   });
 
-  it("applies every template on the single public plan", async () => {
+  it("applies a saved design while preserving the version check", async () => {
     const mock = clientWith({ ...design, templateKey: "gallery" }); mocks.client.mockResolvedValue(mock.client);
     expect((await POST(request())).status).toBe(200);
-    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, expect.objectContaining({ template_key: "gallery" }));
+    expect(mocks.saveSettings).toHaveBeenCalledWith(mock.client, tenantId, "2026-10-09T10:00:00.000Z", expect.objectContaining({ template_key: "gallery" }));
+  });
+
+  it("rejects a stale design write after another device has changed the storefront", async () => {
+    const mock = clientWith(design); mocks.client.mockResolvedValue(mock.client);
+    mocks.saveSettings.mockResolvedValue({ data: null, error: null });
+    expect((await POST(request())).status).toBe(409);
   });
 });

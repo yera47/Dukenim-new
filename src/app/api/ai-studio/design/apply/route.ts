@@ -4,7 +4,7 @@ import { z } from "zod";
 import { getSessionContext } from "@/lib/auth";
 import { aiStudioDesignSchema } from "@/lib/ai/studio-schemas";
 import { tenantEntitlement } from "@/lib/plan-access";
-import { getStorefrontSettings, saveStorefrontSettings } from "@/lib/queries/owner";
+import { getStorefrontSettings, updateStorefrontSettingsIfCurrent } from "@/lib/queries/owner";
 import { templateCatalog } from "@/lib/storefront-theme";
 import { createClient } from "@/lib/supabase/server";
 import { proposedDesignSettings } from "@/lib/ai/design-settings";
@@ -39,8 +39,10 @@ export async function POST(request: Request) {
 
   const current = await getStorefrontSettings(client, context.tenantId);
   if (current.error) return NextResponse.json({ error: "Не удалось прочитать текущее оформление." }, { status: 500 });
-  const saved = await saveStorefrontSettings(client, context.tenantId, proposedDesignSettings(design.data,current.data));
+  if (!current.data?.updated_at) return NextResponse.json({ error: "Настройки витрины ещё не готовы. Завершите сборку каталога." }, { status: 409 });
+  const saved = await updateStorefrontSettingsIfCurrent(client, context.tenantId, current.data.updated_at, proposedDesignSettings(design.data,current.data));
   if (saved.error) return NextResponse.json({ error: "Не удалось применить оформление. Повторите попытку." }, { status: 500 });
+  if (!saved.data) return NextResponse.json({ error: "Оформление изменилось в другой вкладке или приложении. Обновите страницу и проверьте предложение ещё раз." }, { status: 409 });
 
   revalidatePath("/admin/ai-studio");
   revalidatePath("/admin/settings");

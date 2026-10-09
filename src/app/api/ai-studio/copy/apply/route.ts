@@ -5,7 +5,7 @@ import { getSessionContext } from "@/lib/auth";
 import { aiStudioDraftSchema } from "@/lib/ai/studio-schemas";
 import { tenantEntitlement } from "@/lib/plan-access";
 import { hasPlan } from "@/lib/plans";
-import { getStorefrontSettings, saveStorefrontSettings } from "@/lib/queries/owner";
+import { getStorefrontSettings, updateStorefrontSettingsIfCurrent } from "@/lib/queries/owner";
 import { createClient } from "@/lib/supabase/server";
 
 const requestSchema = z.object({ generationId: z.string().uuid() });
@@ -51,7 +51,8 @@ export async function POST(request: Request) {
 
   const current = await getStorefrontSettings(client, context.tenantId);
   if (current.error) return NextResponse.json({ error: "Не удалось прочитать текущее оформление." }, { status: 500 });
-  const saved = await saveStorefrontSettings(client, context.tenantId, {
+  if (!current.data?.updated_at) return NextResponse.json({ error: "Настройки витрины ещё не готовы. Завершите сборку каталога." }, { status: 409 });
+  const saved = await updateStorefrontSettingsIfCurrent(client, context.tenantId, current.data.updated_at, {
     template_key: current.data?.template_key ?? "atelier",
     palette_key: current.data?.palette_key ?? "ink-brass",
     brand_color: current.data?.brand_color ?? null,
@@ -61,6 +62,7 @@ export async function POST(request: Request) {
     hero_cta_label: draft.data.ctaLabel,
   });
   if (saved.error) return NextResponse.json({ error: "Не удалось применить текст. Повторите попытку." }, { status: 500 });
+  if (!saved.data) return NextResponse.json({ error: "Оформление изменилось в другой вкладке или приложении. Обновите страницу и проверьте предложение ещё раз." }, { status: 409 });
   revalidatePath("/admin/settings");
   revalidatePath("/s/[slug]", "page");
   return NextResponse.json({ saved: true, target: "storefront" });
